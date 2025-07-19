@@ -76,6 +76,17 @@
       font-size: 12px;
       margin-top: 5px;
     }
+    #pasteArea {
+      border: 2px dashed #ccc;
+      padding: 10px;
+      min-height: 100px;
+      background: #fafafa;
+      color: #999;
+    }
+    #previewArea img {
+      max-width: 100%;
+      margin-top: 10px;
+    }
   </style>
   <script defer src="ai.js"></script>
 </head>
@@ -112,6 +123,10 @@
       <textarea name="observacoes"></textarea>
       <label>Anexar orçamento (PDF ou imagem):</label>
       <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg" />
+
+      <label>Ou cole texto ou imagem (Ctrl + V):</label>
+      <div id="pasteArea" contenteditable="true">Clique aqui ou pressione Ctrl+V</div>
+      <div id="previewArea"></div>
     </div>
 
     <button type="submit">Gerar Orçamento</button>
@@ -140,6 +155,33 @@
       const texto = document.getElementById(id).innerText;
       navigator.clipboard.writeText(texto);
     }
+
+    const pasteArea = document.getElementById('pasteArea');
+    const previewArea = document.getElementById('previewArea');
+
+    pasteArea.addEventListener('paste', function (e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            previewArea.innerHTML = '';
+            previewArea.appendChild(img);
+          };
+          reader.readAsDataURL(blob);
+        } else if (item.type === 'text/plain') {
+          item.getAsString(function (text) {
+            previewArea.innerHTML = '<p>' + text + '</p>';
+          });
+        }
+      }
+    });
   </script>
 </body>
 </html>
+
