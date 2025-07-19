@@ -1,0 +1,1 @@
+function analisarPDF() { alert('Função de análise ainda será integrada com OpenAI.'); } function copiar(id) { const el = document.getElementById(id); navigator.clipboard.writeText(el.innerText); alert('Texto copiado!'); }

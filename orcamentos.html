@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerar Orçamento - CVC Itaqua</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Geração de Orçamento com IA</h1>
+    <a href="index.html">← Voltar</a>
+  </header>
+  <main>
+    <form id="orcamentoForm">
+      <fieldset>
+        <legend>Tipo de orçamento</legend>
+        <label><input type="checkbox" name="tipo" value="aereo_vbi"> Aéreo VBI</label>
+        <label><input type="checkbox" name="tipo" value="hotel"> Hotel</label>
+        <label><input type="checkbox" name="tipo" value="cruzeiro"> Cruzeiro</label>
+      </fieldset>
+      <label>Destino:</label>
+      <input type="text" name="destino">
+      <label>Adultos:</label>
+      <input type="number" name="adultos">
+      <label>Crianças:</label>
+      <input type="number" name="criancas">
+      <label>Idades:</label>
+      <input type="text" name="idades_criancas">
+      <label>Observações:</label>
+      <textarea name="observacoes"></textarea>
+      <input type="file" accept="image/*,.pdf">
+      <button type="submit">Gerar Orçamento</button>
+    </form>
+    <section id="resultados">
+      <h3>Orçamento</h3><pre id="orcamentoIA"></pre><button onclick="copiar('orcamentoIA')">📋 Copiar</button>
+      <h3>Texto do Destino</h3><pre id="textoDestino"></pre><button onclick="copiar('textoDestino')">📋 Copiar</button>
+      <h3>Ranking Hotéis</h3><pre id="rankingHoteis"></pre><button onclick="copiar('rankingHoteis')">📋 Copiar</button>
+    </section>
+  </main>
+</body>
+</html>

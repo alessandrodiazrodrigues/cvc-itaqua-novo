@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVC Itaqua - Gestão</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>CVC Itaqua - Painel de Gestão</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="orcamentos.html">Gerar Orçamento</a></li>
+        <li><a href="cadastro-vendas.html">Cadastro de Vendas</a></li>
+        <li><a href="embarques.html">Embarques</a></li>
+        <li><a href="orbiuns.html">Orbiuns</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>📊 Dashboard</h2>
+    <iframe src="https://lookerstudio.google.com/embed/reporting/XYZ" width="100%" height="400"></iframe>
+    <h2>📄 Análise de Planejamento (PDF)</h2>
+    <input type="file" id="pdfUpload">
+    <button onclick="analisarPDF()">Analisar PDF</button>
+    <div id="analiseIA"></div>
+  </main>
+  <script src="ai.js"></script>
+</body>
+</html>
