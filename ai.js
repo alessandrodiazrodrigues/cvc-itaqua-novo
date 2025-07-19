@@ -9,26 +9,44 @@ document.getElementById("orcamentoForm").addEventListener("submit", async functi
   const criancas = form.criancas.value;
   const idades = form.idades_criancas.value;
   const observacoes = form.observacoes.value;
-  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value).join(", ");
+  const tiposSelecionados = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
+  const tipos = tiposSelecionados.join(", ");
 
-  const prompt = `
-Você é uma atendente da CVC. Formate um orçamento para WhatsApp baseado nos dados abaixo, seguindo o padrão da loja CVC Itaqua:
+  let prompt = "";
 
+  if (tiposSelecionados.includes("Aéreo Facial")) {
+    prompt = `Você é uma atendente da CVC. Monte um orçamento para WhatsApp com base nas informações abaixo, utilizando formatação clara, emojis e estilo direto, como os modelos usados na loja CVC Itaqua.
+
+Dados:
 Destino: ${destino}
 Adultos: ${adultos}
 Crianças: ${criancas} (idades: ${idades})
-Serviços solicitados: ${tipos}
+Serviços: ${tipos}
 Observações: ${observacoes}
 
-Inclua:
-- Cabeçalho com destino e datas se informado
-- Lista com o que está incluso
-- Hotéis com nome, valor, link e café incluso
-- Texto breve de apresentação do destino
-- Ranking dos hotéis com nota e distância dos principais pontos turísticos
+Caso haja imagem anexa, analise se são múltiplos voos e quais as cias, horários, tarifas e bagagens incluídas. Combine isso com os links de pagamento, se houverem.
 
-Use emojis, negrito onde necessário e formatação clara para WhatsApp.
-`;
+Formato esperado:
+
+🛫 *Passagem Aérea*
+
+1️⃣ ✈️ Cia Aérea
+📅 Data - Origem (Sigla) / Destino (Sigla)
+⏱️ Duração / Tipo de voo
+💼 Tipo de tarifa (facial, bagagem, etc)
+💰 Valor total com taxas
+💳 Condição de pagamento (parcelamento)
+🔗 Link do orçamento
+
+Finalize com a seguinte mensagem:
+✨ *Importante:*
+Valores sujeitos a alteração e disponibilidade!
+A melhor forma de garantir o preço é efetuando a compra.
+Você pode usar o link que enviamos — é simples, rápido e seguro! Ou, se preferir, chama a gente por aqui que te ajudamos com a compra 💛`;
+  } else {
+    document.getElementById("orcamentoIA").innerText = "⛔ Tipo de orçamento ainda não implementado.";
+    return;
+  }
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -53,3 +71,4 @@ Use emojis, negrito onde necessário e formatação clara para WhatsApp.
     console.error(err);
   }
 });
+
