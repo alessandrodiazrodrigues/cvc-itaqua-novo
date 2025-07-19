@@ -88,7 +88,6 @@
       margin-top: 10px;
     }
   </style>
-  <script defer src="ai.js"></script>
 </head>
 <body>
   <h1>Geração de Orçamento com IA</h1>
@@ -112,17 +111,17 @@
 
     <div class="form-section">
       <label>Destino:</label>
-      <input type="text" name="destino" required />
+      <input type="text" name="destino" id="destino" placeholder="Opcional: Ex. Orlando">
       <label>Adultos:</label>
       <input type="number" name="adultos" required />
       <label>Crianças:</label>
-      <input type="number" name="criancas" />
+      <input type="number" name="criancas">
       <label>Idades:</label>
-      <input type="text" name="idades_criancas" placeholder="Ex: 5, 8" />
+      <input type="text" name="idades_criancas" placeholder="Ex: 5, 8">
       <label>Observações:</label>
       <textarea name="observacoes"></textarea>
       <label>Anexar orçamento (PDF ou imagem):</label>
-      <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg" />
+      <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg">
 
       <label>Ou cole texto ou imagem (Ctrl + V):</label>
       <div id="pasteArea" contenteditable="true">Clique aqui ou pressione Ctrl+V</div>
@@ -150,6 +149,7 @@
     <pre id="rankingIA"></pre>
   </div>
 
+  <script src="ai.js"></script>
   <script>
     function copiarTexto(id) {
       const texto = document.getElementById(id).innerText;
@@ -184,4 +184,3 @@
   </script>
 </body>
 </html>
-
