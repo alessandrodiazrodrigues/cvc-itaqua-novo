@@ -3,182 +3,207 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geração de Orçamento com IA</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 20px;
-      color: #003399;
-    }
-    h1 {
-      color: #003399;
-    }
-    form {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .form-section {
-      margin-bottom: 15px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 5px;
-    }
-    input[type="text"],
-    input[type="number"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    input[type="file"] {
-      margin-bottom: 10px;
-    }
-    .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .checkbox-group label {
-      display: flex;
-      align-items: center;
-      font-weight: normal;
-    }
-    .output-section {
-      background: #fff;
-      padding: 15px;
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #003399;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #002277;
-    }
-    .copiar {
-      font-size: 12px;
-      margin-top: 5px;
-    }
-    #pasteArea {
-      border: 2px dashed #ccc;
-      padding: 10px;
-      min-height: 100px;
-      background: #fafafa;
-      color: #999;
-    }
-    #previewArea img {
-      max-width: 100%;
-      margin-top: 10px;
-    }
-  </style>
+  <title>Geração de Orçamento com IA - CVC Itaqua</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="https://www.cvc.com.br/favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <h1>Geração de Orçamento com IA</h1>
+  <header>
+    <h1>💰 Geração de Orçamento com IA</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">📊 Dashboard</a></li>
+        <li><a href="orcamentos.html" class="active">💰 Orçamentos</a></li>
+        <li><a href="cadastro-vendas.html">📈 Vendas</a></li>
+        <li><a href="embarques.html">✈️ Embarques</a></li>
+        <li><a href="orbiuns.html">📋 Orbiuns</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <form id="orcamentoForm">
-    <div class="form-section">
-      <label>Tipo de orçamento:</label>
-      <div class="checkbox-group">
-        <label><input type="checkbox" name="tipo" value="Aéreo Facial"> Aéreo Facial</label>
-        <label><input type="checkbox" name="tipo" value="Aéreo VBI/Fácil"> Aéreo VBI/Fácil</label>
-        <label><input type="checkbox" name="tipo" value="Frete"> Frete</label>
-        <label><input type="checkbox" name="tipo" value="Hotel"> Hotel</label>
-        <label><input type="checkbox" name="tipo" value="Cruzeiro"> Cruzeiro</label>
-        <label><input type="checkbox" name="tipo" value="Carro"> Carro</label>
-        <label><input type="checkbox" name="tipo" value="Traslado"> Traslado</label>
-        <label><input type="checkbox" name="tipo" value="Passeios"> Passeios</label>
-        <label><input type="checkbox" name="tipo" value="Seguro"> Seguro</label>
-        <label><input type="checkbox" name="tipo" value="Circuito"> Circuito</label>
+  <main>
+    <!-- Formulário de Orçamento -->
+    <section>
+      <h2>📝 Dados do Orçamento</h2>
+      
+      <form id="orcamentoForm">
+        <div class="form-section">
+          <label>Tipo de orçamento:</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="tipo" value="Aéreo Facial"> ✈️ Aéreo Facial</label>
+            <label><input type="checkbox" name="tipo" value="Aéreo VBI/Fácil"> ✈️ Aéreo VBI/Fácil</label>
+            <label><input type="checkbox" name="tipo" value="Frete"> 📦 Frete</label>
+            <label><input type="checkbox" name="tipo" value="Hotel"> 🏨 Hotel</label>
+            <label><input type="checkbox" name="tipo" value="Cruzeiro"> 🚢 Cruzeiro</label>
+            <label><input type="checkbox" name="tipo" value="Carro"> 🚗 Carro</label>
+            <label><input type="checkbox" name="tipo" value="Traslado"> 🚌 Traslado</label>
+            <label><input type="checkbox" name="tipo" value="Passeios"> 🎢 Passeios</label>
+            <label><input type="checkbox" name="tipo" value="Seguro"> 🛡️ Seguro</label>
+            <label><input type="checkbox" name="tipo" value="Circuito"> 🗺️ Circuito</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label for="destino">🌍 Destino:</label>
+          <input type="text" name="destino" id="destino" placeholder="Ex: Orlando, Paris, Buenos Aires">
+          
+          <label for="adultos">👨‍👩‍👧‍👦 Adultos:</label>
+          <input type="number" name="adultos" id="adultos" min="1" max="10" required />
+          
+          <label for="criancas">👶 Crianças:</label>
+          <input type="number" name="criancas" id="criancas" min="0" max="10">
+          
+          <label for="idades_criancas">🎂 Idades das crianças:</label>
+          <input type="text" name="idades_criancas" id="idades_criancas" placeholder="Ex: 5, 8, 12">
+          
+          <label for="observacoes">📝 Observações:</label>
+          <textarea name="observacoes" id="observacoes" placeholder="Preferências, datas, observações especiais..."></textarea>
+        </div>
+
+        <div class="form-section">
+          <label for="arquivo">📎 Anexar orçamento (PDF ou imagem):</label>
+          <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg">
+
+          <label>📋 Ou cole texto ou imagem (Ctrl + V):</label>
+          <div id="pasteArea" contenteditable="true">
+            📌 Clique aqui ou pressione Ctrl+V para colar conteúdo
+          </div>
+          <div id="previewArea"></div>
+        </div>
+
+        <button type="submit">🚀 Gerar Orçamento Completo</button>
+      </form>
+    </section>
+
+    <!-- Resultados -->
+    <div class="output-section">
+      <h3>💰 Orçamento Principal
+        <button class="copiar" onclick="copiarTexto('orcamentoIA')">📋 Copiar</button>
+      </h3>
+      <pre id="orcamentoIA">Preencha o formulário acima para gerar o orçamento...</pre>
+    </div>
+
+    <div class="output-section">
+      <h3>🌍 Texto do Destino
+        <button class="copiar" onclick="copiarTexto('destinoIA')">📋 Copiar</button>
+      </h3>
+      <pre id="destinoIA">Será gerado automaticamente quando você informar um destino...</pre>
+    </div>
+
+    <div class="output-section">
+      <h3>🏨 Ranking de Hotéis
+        <button class="copiar" onclick="copiarTexto('rankingIA')">📋 Copiar</button>
+      </h3>
+      <pre id="rankingIA">Será gerado automaticamente se você selecionar "Hotel"...</pre>
+    </div>
+
+    <!-- Dicas de Uso -->
+    <section>
+      <h2>💡 Dicas de Uso</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+        
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
+          <h4>📝 Para melhores resultados:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Informe destino específico</li>
+            <li>Selecione todos os tipos relevantes</li>
+            <li>Cole prints de orçamentos existentes</li>
+            <li>Adicione observações detalhadas</li>
+          </ul>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
+          <h4>🤖 O que a IA faz:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Formata no padrão CVC</li>
+            <li>Gera texto promocional do destino</li>
+            <li>Cria ranking de hotéis (se aplicável)</li>
+            <li>Pronto para envio por WhatsApp</li>
+          </ul>
+        </div>
+        
       </div>
-    </div>
+    </section>
+  </main>
 
-    <div class="form-section">
-      <label>Destino:</label>
-      <input type="text" name="destino" id="destino" placeholder="Opcional: Ex. Orlando">
-      <label>Adultos:</label>
-      <input type="number" name="adultos" required />
-      <label>Crianças:</label>
-      <input type="number" name="criancas">
-      <label>Idades:</label>
-      <input type="text" name="idades_criancas" placeholder="Ex: 5, 8">
-      <label>Observações:</label>
-      <textarea name="observacoes"></textarea>
-      <label>Anexar orçamento (PDF ou imagem):</label>
-      <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg">
-
-      <label>Ou cole texto ou imagem (Ctrl + V):</label>
-      <div id="pasteArea" contenteditable="true">Clique aqui ou pressione Ctrl+V</div>
-      <div id="previewArea"></div>
-    </div>
-
-    <button type="submit">Gerar Orçamento</button>
-  </form>
-
-  <div class="output-section">
-    <h3>Orçamento</h3>
-    <button class="copiar" onclick="copiarTexto('orcamentoIA')">📋 Copiar</button>
-    <pre id="orcamentoIA"></pre>
-  </div>
-
-  <div class="output-section">
-    <h3>Texto do Destino</h3>
-    <button class="copiar" onclick="copiarTexto('destinoIA')">📋 Copiar</button>
-    <pre id="destinoIA"></pre>
-  </div>
-
-  <div class="output-section">
-    <h3>Ranking Hotéis</h3>
-    <button class="copiar" onclick="copiarTexto('rankingIA')">📋 Copiar</button>
-    <pre id="rankingIA"></pre>
-  </div>
+  <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
+    <p>© 2025 CVC Itaqua | Sistema de Orçamentos com IA</p>
+  </footer>
 
   <script>
+    // Função local de copiar (mantida para compatibilidade)
     function copiarTexto(id) {
       const texto = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(texto);
+      navigator.clipboard.writeText(texto).then(() => {
+        // Feedback visual
+        const button = event.target;
+        const originalText = button.innerText;
+        button.innerText = "✅ Copiado!";
+        setTimeout(() => {
+          button.innerText = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error("Erro ao copiar:", err);
+        alert("Erro ao copiar. Tente selecionar o texto manualmente.");
+      });
     }
 
+    // Melhorar área de paste
     const pasteArea = document.getElementById('pasteArea');
     const previewArea = document.getElementById('previewArea');
 
-    pasteArea.addEventListener('paste', function (e) {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+    if (pasteArea && previewArea) {
+      pasteArea.addEventListener('paste', function (e) {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
 
-        if (item.type.indexOf('image') !== -1) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = function (event) {
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            previewArea.innerHTML = '';
-            previewArea.appendChild(img);
-          };
-          reader.readAsDataURL(blob);
-        } else if (item.type === 'text/plain') {
-          item.getAsString(function (text) {
-            previewArea.innerHTML = '<p>' + text + '</p>';
-          });
+          if (item.type.indexOf('image') !== -1) {
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const img = document.createElement('img');
+              img.src = event.target.result;
+              img.style.maxWidth = '100%';
+              previewArea.innerHTML = '';
+              previewArea.appendChild(img);
+              previewArea.dataset.fileData = event.target.result;
+            };
+            reader.readAsDataURL(blob);
+          } else if (item.type === 'text/plain') {
+            item.getAsString(function (text) {
+              previewArea.innerHTML = '<p>' + text + '</p>';
+            });
+          }
         }
-      }
+      });
+
+      // Destacar área quando hover
+      pasteArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#003399';
+        this.style.backgroundColor = '#e9ecef';
+      });
+
+      pasteArea.addEventListener('dragleave', function(e) {
+        this.style.borderColor = '#007bff';
+        this.style.backgroundColor = '#f8f9fa';
+      });
+    }
+
+    // Destacar página atual na navegação
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      const navLinks = document.querySelectorAll('nav a');
+      
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPage) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
     });
   </script>
 
