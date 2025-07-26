@@ -4,6 +4,8 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw_0-r2e70JEoJRmf-NI
 let formElements = {};
 
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("🚀 Sistema CVC iniciado");
+  
   // Cache elementos DOM
   formElements = {
     form: document.getElementById("orcamentoForm"),
@@ -16,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Event Listeners
   if (formElements.form) {
     formElements.form.addEventListener("submit", handleOrcamentoSubmit);
+    console.log("✅ Formulário conectado");
   }
   
   if (formElements.arquivo) {
@@ -25,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Para index.html - análise de PDF
   if (formElements.pdfUpload) {
     window.analisarPDF = handlePDFAnalysis;
+    console.log("✅ Análise PDF configurada");
   }
 
   setupPasteArea();
@@ -33,26 +37,33 @@ document.addEventListener("DOMContentLoaded", function () {
 // 🎯 FUNÇÃO PRINCIPAL: Gerar Orçamento
 async function handleOrcamentoSubmit(e) {
   e.preventDefault();
+  console.log("🤖 Gerando orçamento...");
   
   showLoading();
   
   try {
     const formData = extractFormData(e.target);
+    console.log("📊 Dados extraídos:", formData);
     
     // Gerar orçamento principal
     await generateOrcamento(formData);
     
     // Gerar texto do destino (se destino informado)
     if (formData.destino && formData.destino !== "(Destino não informado)") {
+      console.log("🌍 Gerando texto do destino...");
       await generateTextoDestino(formData.destino);
     }
     
     // Gerar ranking de hotéis (se for tipo Hotel)
     if (formData.tipos.includes("Hotel")) {
+      console.log("🏨 Gerando ranking de hotéis...");
       await generateRankingHoteis(formData.destino);
     }
     
+    console.log("✅ Orçamento gerado com sucesso!");
+    
   } catch (error) {
+    console.error("❌ Erro:", error);
     showError("Erro ao processar solicitação: " + error.message);
   } finally {
     hideLoading();
@@ -68,8 +79,8 @@ function extractFormData(form) {
     idades: form.idades_criancas.value,
     observacoes: form.observacoes.value,
     tipos: Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value),
-    textoColado: formElements.pasteArea.innerText,
-    arquivoBase64: formElements.previewArea.dataset.fileData || ""
+    textoColado: formElements.pasteArea?.innerText || "",
+    arquivoBase64: formElements.previewArea?.dataset.fileData || ""
   };
 }
 
@@ -102,12 +113,14 @@ https://www.cvc.com.br/carrinho-dinamico/...
 
 Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra. Pode usar o link que enviamos mesmo, é bem simples e seguro, ou pode chamar a gente que te ajudamos com a compra.`;
 
-  const response = await callAI(prompt);
+  const response = await callAI(prompt, 'orcamento');
   updateElement("orcamentoIA", response);
 }
 
 // 🌍 Gerar texto do destino
 async function generateTextoDestino(destino) {
+  console.log("🌍 Gerando texto sobre:", destino);
+  
   const prompt = `Crie um texto promocional sobre ${destino} para WhatsApp da CVC. 
   
 Inclua:
@@ -118,12 +131,14 @@ Inclua:
 - Máximo 200 palavras
 - Use emojis`;
 
-  const response = await callAI(prompt);
+  const response = await callAI(prompt, 'destino'); // ✅ CORRIGIDO: adicionado tipo
   updateElement("destinoIA", response);
 }
 
 // 🏨 Gerar ranking de hotéis
 async function generateRankingHoteis(destino) {
+  console.log("🏨 Gerando ranking para:", destino);
+  
   const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias com crianças.
 
 Formato:
@@ -134,7 +149,7 @@ Formato:
 
 Seja realista e informativo.`;
 
-  const response = await callAI(prompt);
+  const response = await callAI(prompt, 'ranking'); // ✅ CORRIGIDO: adicionado tipo
   updateElement("rankingIA", response);
 }
 
@@ -147,6 +162,7 @@ async function handlePDFAnalysis() {
   }
 
   showLoading("analiseIA");
+  console.log("📄 Analisando arquivo:", file.name);
   
   try {
     const base64 = await fileToBase64(file);
@@ -159,10 +175,12 @@ async function handlePDFAnalysis() {
 
 Formato executivo, objetivo e prático.`;
 
-    const response = await callAI(prompt);
+    const response = await callAI(prompt, 'analise');
     updateElement("analiseIA", response);
+    console.log("✅ PDF analisado com sucesso");
     
   } catch (error) {
+    console.error("❌ Erro na análise:", error);
     updateElement("analiseIA", "❌ Erro ao analisar PDF: " + error.message);
   } finally {
     hideLoading("analiseIA");
@@ -174,6 +192,8 @@ async function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
+  console.log("📁 Upload:", file.name);
+  
   try {
     const base64 = await fileToBase64(file);
     formElements.previewArea.dataset.fileData = base64;
@@ -188,7 +208,7 @@ async function handleFileUpload(e) {
       formElements.previewArea.innerHTML = `<p>📄 ${file.name} carregado</p>`;
     }
   } catch (error) {
-    console.error("Erro no upload:", error);
+    console.error("❌ Erro no upload:", error);
   }
 }
 
@@ -197,6 +217,7 @@ function setupPasteArea() {
   if (!formElements.pasteArea) return;
   
   formElements.pasteArea.addEventListener('paste', function (e) {
+    console.log("📋 Conteúdo colado");
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     
     for (let i = 0; i < items.length; i++) {
@@ -222,20 +243,47 @@ function setupPasteArea() {
   });
 }
 
-// 🔧 Funções auxiliares
-async function callAI(prompt) {
-  const res = await fetch(WEBAPP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt })
-  });
-
-  if (!res.ok) throw new Error("Erro na requisição");
+// 🔧 Função principal de chamada à IA
+async function callAI(prompt, type = 'orcamento') {
+  console.log(`🤖 Chamando IA (${type})...`);
   
-  const json = await res.json();
-  return json.choices?.[0]?.message?.content || "❌ Resposta da IA vazia.";
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        prompt: prompt,
+        type: type // ✅ CORRIGIDO: enviando tipo para o backend
+      })
+    });
+
+    console.log("📥 Resposta:", res.status, res.statusText);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
+    const json = await res.json();
+    
+    if (json.error) {
+      throw new Error(json.error);
+    }
+    
+    const content = json.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error("Resposta vazia da IA");
+    }
+    
+    console.log("✅ Resposta recebida:", content.substring(0, 100) + "...");
+    return content;
+    
+  } catch (error) {
+    console.error("❌ Erro na IA:", error);
+    throw error;
+  }
 }
 
+// 🔧 Funções auxiliares
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -249,6 +297,9 @@ function updateElement(id, content) {
   const element = document.getElementById(id);
   if (element) {
     element.innerText = content;
+    console.log(`✅ ${id} atualizado`);
+  } else {
+    console.warn(`⚠️ Elemento ${id} não encontrado`);
   }
 }
 
@@ -262,18 +313,23 @@ function hideLoading(elementId = "orcamentoIA") {
 
 function showError(message) {
   updateElement("orcamentoIA", message);
+  console.error("❌ Erro:", message);
 }
 
 // 📋 Copiar texto (global)
 function copiarTexto(id) {
   const texto = document.getElementById(id).innerText;
   navigator.clipboard.writeText(texto).then(() => {
-    // Feedback visual opcional
+    console.log("📋 Copiado:", id);
+    
+    // Feedback visual
     const button = event.target;
     const originalText = button.innerText;
     button.innerText = "✅ Copiado!";
     setTimeout(() => {
       button.innerText = originalText;
     }, 2000);
+  }).catch(err => {
+    console.error("❌ Erro ao copiar:", err);
   });
 }
