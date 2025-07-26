@@ -1,4 +1,4 @@
-const OPENAI_API_KEY = "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";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw_0-r2e70JEoJRmf-NILoX_Ehr0lYECtj8Vs_5ygC0PNJzWf6bDDwofC4v8ooPLiWI/exec";
 
 document.getElementById("orcamentoForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -9,7 +9,9 @@ document.getElementById("orcamentoForm").addEventListener("submit", async functi
   const criancas = form.criancas.value;
   const idades = form.idades_criancas.value;
   const observacoes = form.observacoes.value;
-  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value).join(", ");
+  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked"))
+    .map(el => el.value)
+    .join(", ");
   const colado = document.getElementById("pasteArea").innerText;
 
   const prompt = `
@@ -37,27 +39,20 @@ Use emojis, formatação de WhatsApp e clareza na resposta.
 `;
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(WEBAPP_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
-      })
+      body: JSON.stringify({ prompt })
     });
 
     const json = await res.json();
-    const reply = json.choices[0].message.content;
-
+    const reply = json.choices?.[0]?.message?.content || "❌ Erro: resposta da IA veio vazia.";
     document.getElementById("orcamentoIA").innerText = reply;
   } catch (err) {
     document.getElementById("orcamentoIA").innerText = "❌ Erro ao conectar com a IA.";
     console.error(err);
   }
 });
-
 
