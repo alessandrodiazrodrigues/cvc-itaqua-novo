@@ -1,4 +1,4 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw_0-r2e70JEoJRmf-NILoX_Ehr0lYECtj8Vs_5ygC0PNJzWf6bDDwofC4v8ooPLiWI/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzFdSfHXeabhWaH2d3K3dDjL0BRSk_85JGAB6j86JkJa3IRmO2dWL0flXUKbMeaVQ/exec";
 
 // 🧪 TESTE DE CONECTIVIDADE AUTOMÁTICO
 document.addEventListener("DOMContentLoaded", async function () {
