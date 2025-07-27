@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVC Itaqua - Gestão</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="https://www.cvc.com.br/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <header>
+    <h1>🏢 CVC Itaqua - Painel de Gestão</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="active">📊 Dashboard</a></li>
+        <li><a href="orcamentos.html">💰 Orçamentos</a></li>
+        <li><a href="cadastro-vendas.html">📈 Vendas</a></li>
+        <li><a href="embarques.html">✈️ Embarques</a></li>
+        <li><a href="orbiuns.html">📋 Orbiuns</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Dashboard de Vendas -->
+    <section>
+      <h2>📊 Dashboard de Vendas</h2>
+      <p>Acompanhe o desempenho da filial 6220 em tempo real:</p>
+      <iframe 
+        src="https://lookerstudio.google.com/embed/reporting/XYZ" 
+        width="100%" 
+        height="450"
+        title="Dashboard CVC Itaqua">
+      </iframe>
+      <div class="alert alert-warning mt-1">
+        <strong>⚠️ Atenção:</strong> O link do dashboard precisa ser atualizado com o URL real do Looker Studio.
+      </div>
+    </section>
+
+    <!-- Análise Inteligente de PDFs -->
+    <section>
+      <h2>🤖 Análise Inteligente de Relatórios</h2>
+      <p>Faça upload de relatórios da franqueadora para análise automática com IA:</p>
+      
+      <div class="form-section">
+        <label for="pdfUpload">📄 Selecione o arquivo (PDF, Excel, Imagem):</label>
+        <input 
+          type="file" 
+          id="pdfUpload" 
+          accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg"
+          title="Formatos aceitos: PDF, Excel, PNG, JPG"
+        />
+        
+        <button onclick="analisarPDF()" class="mt-1">
+          🔍 Analisar com IA
+        </button>
+      </div>
+
+      <div class="output-section" id="analiseContainer" style="display: none;">
+        <h3>📋 Resultado da Análise</h3>
+        <button class="copiar" onclick="copiarTexto('analiseIA')">📋 Copiar</button>
+        <pre id="analiseIA">Carregue um arquivo para ver a análise...</pre>
+      </div>
+    </section>
+
+    <!-- Resumo Rápido -->
+    <section>
+      <h2>⚡ Acesso Rápido</h2>
+      <div class="checkbox-group">
+        <a href="orcamentos.html" style="text-decoration: none;">
+          <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; text-align: center; color: #1976d2;">
+            <h3>💰 Gerar Orçamento</h3>
+            <p>Crie orçamentos formatados com IA</p>
+          </div>
+        </a>
+        
+        <a href="cadastro-vendas.html" style="text-decoration: none;">
+          <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center; color: #388e3c;">
+            <h3>📈 Registrar Venda</h3>
+            <p>Cadastre vendas e acompanhe metas</p>
+          </div>
+        </a>
+        
+        <a href="embarques.html" style="text-decoration: none;">
+          <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; text-align: center; color: #f57c00;">
+            <h3>✈️ Embarques</h3>
+            <p>Controle de passageiros</p>
+          </div>
+        </a>
+        
+        <a href="orbiuns.html" style="text-decoration: none;">
+          <div style="background: #fce4ec; padding: 1rem; border-radius: 8px; text-align: center; color: #c2185b;">
+            <h3>📋 Orbiuns</h3>
+            <p>Gestão de processos</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Informações do Sistema -->
+    <section>
+      <h2>ℹ️ Informações do Sistema</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+          <h4>🏪 Filial</h4>
+          <p><strong>6220 - Itaquaquecetuba</strong></p>
+          <p>Sistema interno de gestão</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+          <h4>🤖 IA Integrada</h4>
+          <p><strong>OpenAI GPT-4</strong></p>
+          <p>Geração automática de conteúdo</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+          <h4>☁️ Cloud Storage</h4>
+          <p><strong>Google Sheets</strong></p>
+          <p>Dados sincronizados em tempo real</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+          <h4>📱 Responsivo</h4>
+          <p><strong>Mobile-First</strong></p>
+          <p>Acesso de qualquer dispositivo</p>
+        </div>
+        
+      </div>
+    </section>
+  </main>
+
+  <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
+    <p>© 2025 CVC Itaqua | Projeto Interno - Filial 6220</p>
+    <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+      Sistema desenvolvido para otimização de processos internos
+    </p>
+  </footer>
+
+  <script src="ai.js"></script>
+  
+  <!-- Script para mostrar/ocultar resultado da análise -->
+  <script>
+    // Função global para compatibilidade
+    window.analisarPDF = function() {
+      const container = document.getElementById('analiseContainer');
+      if (container) {
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+      }
+      
+      // Chama a função do ai.js
+      if (window.handlePDFAnalysis) {
+        window.handlePDFAnalysis();
+      }
+    };
+
+    // Destacar página atual na navegação
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      const navLinks = document.querySelectorAll('nav a');
+      
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPage) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
