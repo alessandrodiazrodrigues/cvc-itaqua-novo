@@ -1,4 +1,4 @@
-// public/ai.js - Frontend modificado para Vercel API
+// public/ai.js - Frontend melhorado para Vercel API
 
 // URL da API (automaticamente detecta o domínio)
 const API_URL = '/api/ai';
@@ -89,10 +89,8 @@ async function handleOrcamentoSubmit(e) {
     // Gerar orçamento principal
     await generateOrcamento(formData);
     
-    // Gerar texto do destino (se destino informado)
-    if (formData.destino && formData.destino !== "(Destino não informado)") {
-      await generateTextoDestino(formData.destino);
-    }
+    // Habilitar botão de gerar dicas do destino
+    habilitarBotaoDicas();
     
     // Gerar ranking de hotéis (se for tipo Hotel)
     if (formData.tipos.includes("Hotel")) {
@@ -109,15 +107,26 @@ async function handleOrcamentoSubmit(e) {
   }
 }
 
-// 📊 Extrair dados do formulário
+// 📊 Extrair dados do formulário (MELHORADO)
 function extractFormData(form) {
   const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
+  
+  // Coletar idades das crianças individualmente
+  const qtdeCriancas = parseInt(form.criancas.value) || 0;
+  let idadesCriancas = [];
+  
+  for (let i = 1; i <= qtdeCriancas; i++) {
+    const idadeInput = document.getElementById(`idade_crianca_${i}`);
+    if (idadeInput && idadeInput.value) {
+      idadesCriancas.push(idadeInput.value);
+    }
+  }
   
   const formData = {
     destino: form.destino.value || "(Destino não informado)",
     adultos: form.adultos.value || "2",
     criancas: form.criancas.value || "0",
-    idades: form.idades_criancas.value || "",
+    idades: idadesCriancas.join(', '), // Idades individuais
     observacoes: form.observacoes.value || "",
     tipos: tipos,
     textoColado: formElements.pasteArea?.innerText || '',
@@ -126,6 +135,7 @@ function extractFormData(form) {
   };
   
   console.log("Tipos selecionados:", tipos);
+  console.log("Idades das crianças:", idadesCriancas);
   console.log("Tem imagem:", formData.temImagem);
   
   return formData;
@@ -138,30 +148,12 @@ async function generateOrcamento(data) {
   const prompt = `Dados do orçamento:
 Destino: ${data.destino}
 Adultos: ${data.adultos}
-Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades})` : ''}
-Observações: ${data.observacoes}
+Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades} anos)` : ''}
+Observações e dados específicos: ${data.observacoes}
 Texto adicional enviado: ${data.textoColado}`;
 
   const response = await callAI(prompt, 'orcamento', data);
   updateElement("orcamentoIA", response);
-}
-
-// 🌍 Gerar texto do destino
-async function generateTextoDestino(destino) {
-  console.log("🌍 Gerando texto do destino:", destino);
-  
-  const prompt = `Crie um texto promocional sobre ${destino} para WhatsApp da CVC. 
-  
-Inclua:
-- Principais atrações
-- Melhor época para visitar  
-- Dicas importantes
-- Tom vendedor mas informativo
-- Máximo 200 palavras
-- Use emojis`;
-
-  const response = await callAI(prompt, 'destino', { destino });
-  updateElement("destinoIA", response);
 }
 
 // 🏨 Gerar ranking de hotéis
@@ -340,6 +332,15 @@ async function callAI(prompt, tipo, extraData = {}) {
   } catch (error) {
     console.error("❌ Erro na chamada da API:", error);
     throw error;
+  }
+}
+
+// 🎯 Habilitar botão de gerar dicas (NOVA FUNÇÃO)
+function habilitarBotaoDicas() {
+  const btnGerar = document.getElementById('btnGerarDicas');
+  if (btnGerar) {
+    btnGerar.disabled = false;
+    console.log("✅ Botão de gerar dicas habilitado");
   }
 }
 
