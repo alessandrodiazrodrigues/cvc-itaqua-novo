@@ -1,4 +1,4 @@
-// public/ai.js - Frontend melhorado para Vercel API
+/// public/ai.js - Frontend com função copiar ROBUSTA
 
 // URL da API (automaticamente detecta o domínio)
 const API_URL = '/api/ai';
@@ -376,31 +376,121 @@ function showError(message) {
   updateElement("orcamentoIA", "❌ " + message);
 }
 
-// 📋 Copiar texto (função global)
+// 📋 FUNÇÃO COPIAR TEXTO ROBUSTA (CORRIGIDA)
 function copiarTexto(id) {
   const elemento = document.getElementById(id);
   if (!elemento) {
     console.error("❌ Elemento não encontrado:", id);
+    alert("Elemento não encontrado!");
     return;
   }
   
   const texto = elemento.innerText;
   
-  navigator.clipboard.writeText(texto).then(() => {
-    console.log("✅ Texto copiado:", id);
+  // Método 1: Tentar Clipboard API (moderno)
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(texto).then(() => {
+      console.log("✅ Texto copiado via Clipboard API:", id);
+      mostrarFeedbackCopia(event.target, "✅ Copiado!");
+    }).catch(err => {
+      console.warn("❌ Clipboard API falhou, tentando método alternativo...");
+      tentarCopiaAlternativa(texto, event.target);
+    });
+  } else {
+    // Método 2: Fallback para navegadores mais antigos
+    tentarCopiaAlternativa(texto, event.target);
+  }
+}
+
+// Método alternativo de cópia (mais compatível)
+function tentarCopiaAlternativa(texto, button) {
+  try {
+    // Criar elemento temporário
+    const textArea = document.createElement('textarea');
+    textArea.value = texto;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
     
-    // Feedback visual
-    const button = event.target;
-    const originalText = button.innerText;
-    button.innerText = "✅ Copiado!";
+    // Selecionar e copiar
+    textArea.focus();
+    textArea.select();
+    
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    if (successful) {
+      console.log("✅ Texto copiado via execCommand");
+      mostrarFeedbackCopia(button, "✅ Copiado!");
+    } else {
+      throw new Error("execCommand falhou");
+    }
+  } catch (err) {
+    console.error("❌ Todos os métodos de cópia falharam:", err);
+    mostrarInstrucoesManuais(button);
+  }
+}
+
+// Mostrar feedback visual de sucesso
+function mostrarFeedbackCopia(button, texto) {
+  if (!button) return;
+  
+  const originalText = button.innerText;
+  button.innerText = texto;
+  button.style.background = '#28a745';
+  
+  setTimeout(() => {
+    button.innerText = originalText;
+    button.style.background = '';
+  }, 2000);
+}
+
+// Mostrar instruções manuais se todos os métodos falharem
+function mostrarInstrucoesManuais(button) {
+  if (button) {
+    button.innerText = "❌ Erro";
+    button.style.background = '#dc3545';
     
     setTimeout(() => {
-      button.innerText = originalText;
-    }, 2000);
-  }).catch(err => {
-    console.error("❌ Erro ao copiar:", err);
-    alert("Erro ao copiar. Tente selecionar o texto manualmente.");
-  });
+      button.innerText = "📋 Copiar";
+      button.style.background = '';
+    }, 3000);
+  }
+  
+  // Modal com instruções
+  const modal = document.createElement('div');
+  modal.innerHTML = `
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.7); z-index: 10000; display: flex; 
+                align-items: center; justify-content: center;">
+      <div style="background: white; padding: 2rem; border-radius: 12px; 
+                  max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <h3 style="color: #003399; margin-bottom: 1rem;">📋 Como copiar manualmente</h3>
+        <p style="margin-bottom: 1rem; line-height: 1.5;">
+          Por questões de segurança do navegador, a cópia automática falhou.<br><br>
+          <strong>Para copiar:</strong><br>
+          1. Selecione todo o texto com o mouse<br>
+          2. Pressione <kbd style="background: #f1f1f1; padding: 2px 6px; border-radius: 3px;">Ctrl+C</kbd><br>
+          3. Cole onde precisar com <kbd style="background: #f1f1f1; padding: 2px 6px; border-radius: 3px;">Ctrl+V</kbd>
+        </p>
+        <button onclick="this.parentElement.parentElement.remove()" 
+                style="background: #003399; color: white; border: none; 
+                       padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+          OK, Entendi
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Remover modal automaticamente após 10 segundos
+  setTimeout(() => {
+    if (modal.parentElement) {
+      modal.remove();
+    }
+  }, 10000);
 }
 
 console.log("🚀 Sistema CVC Itaqua carregado com sucesso!");
