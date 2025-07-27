@@ -1,211 +1,131 @@
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxWtCaq_O07y_h_N6YR453i1xJBz9OTtW6gm2hYgBZG3hGuHTMVZ_XM2ibBBZGYyDN5/exec";
 
-console.log("🔧 DEBUG DEFINITIVO JSONP");
+console.log("⚡ VERSÃO ULTRA SIMPLES - SEM ERROS");
+
+// Variáveis globais para evitar problemas de escopo
+let currentScript = null;
+let currentCallback = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("orcamentoForm");
   if (form) {
-    form.addEventListener("submit", handleSubmitDebug);
+    form.addEventListener("submit", enviarFormulario);
     console.log("✅ Formulário conectado");
   }
   
-  configurarPasteImagem();
-  testarURLCompleto();
+  configurarPaste();
+  testarBasico();
 });
 
-// 🧪 TESTE COMPLETO DA URL
-async function testarURLCompleto() {
-  console.log("🧪 === TESTANDO URL COMPLETO ===");
+// 🧪 TESTE BÁSICO
+function testarBasico() {
+  console.log("🧪 Teste básico...");
   
-  // Teste 1: URL básica
-  console.log("📡 Teste 1: URL básica");
-  try {
-    const response = await fetch(WEBAPP_URL);
-    console.log("✅ URL responde:", response.status, response.statusText);
-    
-    if (response.ok) {
-      const text = await response.text();
-      console.log("📄 Resposta:", text.substring(0, 100) + "...");
-    }
-  } catch (error) {
-    console.error("❌ URL básica falhou:", error);
-    return;
-  }
+  const callback = 'test' + Date.now();
   
-  // Teste 2: URL com parâmetro simples
-  console.log("📡 Teste 2: URL com parâmetro");
-  try {
-    const testURL = WEBAPP_URL + "?test=true";
-    const response = await fetch(testURL);
-    console.log("✅ URL com parâmetro:", response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📄 JSON:", data);
-    }
-  } catch (error) {
-    console.error("❌ URL com parâmetro falhou:", error);
-    return;
-  }
-  
-  // Teste 3: JSONP super simples
-  console.log("📡 Teste 3: JSONP super simples");
-  testarJSONPBasico();
-}
-
-// 🔄 TESTE JSONP BÁSICO
-function testarJSONPBasico() {
-  console.log("🔄 Iniciando JSONP básico...");
-  
-  const callback = 'testBasico' + Date.now();
-  console.log("📝 Callback:", callback);
-  
-  // Timeout
-  const timeout = setTimeout(() => {
-    console.error("❌ TIMEOUT: JSONP básico demorou mais de 10 segundos");
-    limpar();
-  }, 10000);
-  
-  function limpar() {
-    if (window[callback]) {
-      delete window[callback];
-      console.log("🧹 Callback removido");
-    }
-    if (script.parentNode) {
-      script.parentNode.removeChild(script);
-      console.log("🧹 Script removido");
-    }
-    clearTimeout(timeout);
-  }
-  
-  // Callback
   window[callback] = function(data) {
-    console.log("✅ JSONP BÁSICO FUNCIONOU!");
-    console.log("📊 Dados:", data);
-    limpar();
+    console.log("✅ Teste básico OK:", data);
+    delete window[callback];
+    if (currentScript && currentScript.parentNode) {
+      currentScript.parentNode.removeChild(currentScript);
+    }
   };
   
-  // URL super simples
-  const testURL = `${WEBAPP_URL}?prompt=teste&type=orcamento&callback=${callback}`;
-  console.log("📤 URL JSONP básica:", testURL);
-  
-  const script = document.createElement('script');
-  
-  script.onerror = function(event) {
-    console.error("❌ ERRO NO SCRIPT BÁSICO:");
-    console.error("- Event:", event);
-    console.error("- Type:", event.type);
-    console.error("- Target:", event.target);
-    console.error("- URL:", script.src);
-    limpar();
-  };
-  
-  script.onload = function() {
-    console.log("✅ Script básico carregou (aguardando callback...)");
-  };
-  
-  script.src = testURL;
-  document.head.appendChild(script);
+  currentScript = document.createElement('script');
+  currentScript.src = `${WEBAPP_URL}?prompt=teste&type=orcamento&callback=${callback}`;
+  currentScript.onerror = () => console.error("❌ Teste básico falhou");
+  document.head.appendChild(currentScript);
 }
 
-// 📝 ENVIO DO FORMULÁRIO COM DEBUG INTENSIVO
-async function handleSubmitDebug(e) {
+// 📝 ENVIAR FORMULÁRIO
+async function enviarFormulario(e) {
   e.preventDefault();
-  console.log("📝 === ENVIANDO FORMULÁRIO DEBUG ===");
+  console.log("📝 Enviando formulário...");
   
+  // Extrair dados
+  const formData = new FormData(e.target);
+  const destino = formData.get('destino') || 'Porto';
+  const adultos = formData.get('adultos') || '2';
+  const tipos = Array.from(e.target.querySelectorAll("input[name='tipo']:checked"))
+    .map(el => el.value).join(", ") || "Aéreo";
+  
+  console.log("📊 Dados:", { destino, adultos, tipos });
+  
+  // Verificar imagem
+  const previewArea = document.getElementById("previewArea");
+  const imagemColada = previewArea?.dataset.fileData || '';
+  const temImagem = !!imagemColada;
+  
+  console.log("🖼️ Tem imagem:", temImagem);
+  
+  // Criar prompt
+  let prompt;
+  if (temImagem) {
+    // Prompt para imagem (bem resumido)
+    prompt = `Analise imagem de passagens ${tipos} para ${destino}, ${adultos} adultos. Extraia preços exatos e datas. Imagem: ${imagemColada.substring(0, 500)}`;
+  } else {
+    // Prompt sem imagem
+    prompt = `Orçamento ${tipos} para ${destino}, ${adultos} adultos, formato CVC com emojis`;
+  }
+  
+  console.log("📝 Prompt (tamanho:", prompt.length, ")");
+  
+  // Mostrar loading
+  document.getElementById("orcamentoIA").innerText = "🤖 Gerando orçamento...";
+  
+  // Enviar
   try {
-    // Extrair dados básicos
-    const formData = new FormData(e.target);
-    const destino = formData.get('destino') || 'Porto';
-    const adultos = formData.get('adultos') || '2';
-    const tipos = Array.from(e.target.querySelectorAll("input[name='tipo']:checked"))
-      .map(el => el.value).join(", ") || "Aéreo";
-    
-    console.log("📊 Dados extraídos:", { destino, adultos, tipos });
-    
-    // Verificar imagem
-    const previewArea = document.getElementById("previewArea");
-    const imagemColada = previewArea?.dataset.fileData || '';
-    const temImagem = !!imagemColada;
-    
-    console.log("🖼️ Tem imagem:", temImagem);
-    if (temImagem) {
-      console.log("🖼️ Tamanho da imagem:", imagemColada.length, "caracteres");
-    }
-    
-    // Criar prompt CURTO (evitar URL muito longa)
-    let prompt;
-    if (temImagem) {
-      // Prompt super compacto para imagem
-      prompt = `Analise esta imagem de passagens e extraia todas as opções com preços exatos.
-Destino: ${destino}, ${adultos} adultos, ${tipos}.
-Formato: ✈️ TAP Porto - OPÇÃO 1: R$ [preço exato] para ${adultos} adultos.
-Imagem: ${imagemColada.substring(0, 1000)}...`; // Limitar tamanho
-    } else {
-      // Prompt sem imagem
-      prompt = `Orçamento ${tipos} para ${destino}, ${adultos} adultos. Use formato CVC com emojis.`;
-    }
-    
-    console.log("📝 Prompt criado:");
-    console.log("- Tamanho:", prompt.length, "caracteres");
-    console.log("- Primeiros 100:", prompt.substring(0, 100) + "...");
-    
-    // Mostrar loading
-    document.getElementById("orcamentoIA").innerText = "🔧 Debugando envio...";
-    
-    // Tentar envio com debug
-    await enviarComDebugCompleto(prompt, 'orcamento');
-    
+    await enviarJSONP(prompt, 'orcamento');
   } catch (error) {
-    console.error("❌ Erro no formulário:", error);
     document.getElementById("orcamentoIA").innerText = "❌ Erro: " + error.message;
   }
 }
 
-// 🔄 ENVIO COM DEBUG COMPLETO
-function enviarComDebugCompleto(prompt, tipo) {
+// 🔄 ENVIAR VIA JSONP - ULTRA SIMPLES
+function enviarJSONP(prompt, type) {
   return new Promise((resolve, reject) => {
-    console.log("🔄 === ENVIANDO COM DEBUG COMPLETO ===");
+    console.log("🔄 Enviando JSONP...");
     
-    const callback = 'debug' + Date.now() + Math.random().toString(36).substr(2, 3);
-    console.log("📝 Callback único:", callback);
+    // Limpar anterior se existir
+    if (currentCallback && window[currentCallback]) {
+      delete window[currentCallback];
+    }
+    if (currentScript && currentScript.parentNode) {
+      currentScript.parentNode.removeChild(currentScript);
+    }
     
-    // Criar script PRIMEIRO
-    const script = document.createElement('script');
+    // Novo callback
+    currentCallback = 'cb' + Date.now();
     
-    // Timeout maior
+    // Timeout
     const timeout = setTimeout(() => {
-      console.error("❌ === TIMEOUT COMPLETO ===");
-      limpar();
-      reject(new Error("Timeout após 15 segundos"));
-    }, 15000);
+      console.error("❌ Timeout");
+      limparTudo();
+      reject(new Error("Timeout"));
+    }, 20000);
     
-    function limpar() {
-      if (window[callback]) {
-        delete window[callback];
-        console.log("🧹 Callback limpo");
+    function limparTudo() {
+      if (currentCallback && window[currentCallback]) {
+        delete window[currentCallback];
       }
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-        console.log("🧹 Script removido");
+      if (currentScript && currentScript.parentNode) {
+        currentScript.parentNode.removeChild(currentScript);
       }
       clearTimeout(timeout);
     }
     
-    // Callback com debug
-    window[callback] = function(data) {
-      console.log("✅ === CALLBACK EXECUTADO ===");
-      console.log("📊 Dados recebidos:", data);
-      
-      limpar();
+    // Callback
+    window[currentCallback] = function(data) {
+      console.log("✅ Resposta recebida:", data);
+      limparTudo();
       
       if (data && data.choices && data.choices[0]) {
         const content = data.choices[0].message.content;
         document.getElementById("orcamentoIA").innerText = content;
-        console.log("✅ Sucesso! Modelo:", data.model);
+        console.log("✅ Sucesso!");
         resolve(content);
       } else if (data && data.error) {
-        document.getElementById("orcamentoIA").innerText = "❌ Erro da IA: " + data.error;
+        document.getElementById("orcamentoIA").innerText = "❌ Erro: " + data.error;
         reject(new Error(data.error));
       } else {
         document.getElementById("orcamentoIA").innerText = "❌ Resposta inválida";
@@ -213,79 +133,49 @@ function enviarComDebugCompleto(prompt, tipo) {
       }
     };
     
-    // Verificar tamanho da URL
+    // Criar URL (limitando tamanho)
+    const promptLimitado = prompt.substring(0, 1000); // Bem pequeno
     const params = new URLSearchParams({
-      prompt: prompt.substring(0, 2000), // Limitar para evitar URL muito longa
-      type: tipo,
-      callback: callback
+      prompt: promptLimitado,
+      type: type,
+      callback: currentCallback
     });
     
-    const fullURL = `${WEBAPP_URL}?${params.toString()}`;
+    const url = `${WEBAPP_URL}?${params.toString()}`;
+    console.log("📤 URL (tamanho:", url.length, ")");
     
-    console.log("📊 Estatísticas da URL:");
-    console.log("- Tamanho total:", fullURL.length, "caracteres");
-    console.log("- Tamanho do prompt:", prompt.length, "caracteres");
-    console.log("- URL (primeiros 150):", fullURL.substring(0, 150) + "...");
+    // Criar script
+    currentScript = document.createElement('script');
+    currentScript.src = url;
     
-    // Verificar se URL é muito longa
-    if (fullURL.length > 8000) {
-      console.warn("⚠️ URL muito longa! Pode falhar.");
-      
-      // Tentar versão simplificada
-      const promptSimples = `${tipo} para ${prompt.split(',')[0]}, resposta curta.`;
-      const paramsSimples = new URLSearchParams({
-        prompt: promptSimples,
-        type: tipo,
-        callback: callback
-      });
-      
-      const urlSimples = `${WEBAPP_URL}?${paramsSimples.toString()}`;
-      console.log("🔄 Tentando URL simplificada:", urlSimples.length, "chars");
-      
-      script.src = urlSimples;
-    } else {
-      script.src = fullURL;
-    }
-    
-    // Configurar handlers DEPOIS de criar o script
-    script.onerror = function(event) {
-      console.error("❌ === ERRO DETALHADO NO SCRIPT ===");
-      console.error("- Event type:", event.type);
-      console.error("- Event target:", event.target);
-      console.error("- Script readyState:", script.readyState);
-      console.error("- Script src:", script.src);
-      console.error("- Error message:", event.message || 'Não disponível');
-      console.error("- Error filename:", event.filename || 'Não disponível');
-      console.error("- Error lineno:", event.lineno || 'Não disponível');
-      
-      limpar();
-      document.getElementById("orcamentoIA").innerText = "❌ Falha na comunicação";
-      reject(new Error("Falha ao carregar script JSONP - verifique console"));
+    currentScript.onerror = function() {
+      console.error("❌ Erro no script");
+      limparTudo();
+      document.getElementById("orcamentoIA").innerText = "❌ Erro na comunicação";
+      reject(new Error("Erro no script"));
     };
     
-    script.onload = function() {
-      console.log("✅ Script carregado com sucesso, aguardando callback...");
+    currentScript.onload = function() {
+      console.log("✅ Script carregado");
     };
     
-    console.log("📎 Adicionando script ao DOM...");
-    document.head.appendChild(script);
+    // Adicionar ao DOM
+    document.head.appendChild(currentScript);
   });
 }
 
 // 📋 CONFIGURAR PASTE SIMPLES
-function configurarPasteImagem() {
+function configurarPaste() {
   const pasteArea = document.getElementById("pasteArea");
   const previewArea = document.getElementById("previewArea");
   
   if (pasteArea && previewArea) {
     pasteArea.addEventListener('paste', function (e) {
-      console.log("📋 Paste detectado");
       const items = (e.clipboardData || e.originalEvent.clipboardData).items;
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.type.indexOf('image') !== -1) {
-          console.log("🖼️ Processando imagem...");
           const blob = item.getAsFile();
           const reader = new FileReader();
           
@@ -299,7 +189,7 @@ function configurarPasteImagem() {
             previewArea.appendChild(img);
             previewArea.dataset.fileData = base64;
             
-            console.log("✅ Imagem salva, tamanho:", base64.length);
+            console.log("✅ Imagem salva");
           };
           
           reader.readAsDataURL(blob);
@@ -316,4 +206,4 @@ function copiarTexto(id) {
   navigator.clipboard.writeText(document.getElementById(id).innerText);
 }
 
-console.log("🔧 Debug definitivo carregado");
+console.log("🔧 Sistema ultra simples carregado");
