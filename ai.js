@@ -1,4 +1,4 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzoVVO1ZJgoZ-jysI4p8fMkUMpGCSiwFO-9Zk3fwrwxfC4C4cywCrvxqlowi4pEJHD9/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwCnLpZYbKcfbql7GysU7_K9fiV3pzWNA-OWv-uoJtuO-f4szNj5OtFwkiaLou4cknS/exec";
 
 console.log("🔄 CVC JSONP - Versão Ultra Simples");
 
@@ -10,9 +10,80 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("✅ Formulário conectado");
   }
   
+  // Configurar área de paste e upload
+  configurarPasteEUpload();
+  
   // Teste automático
   testarJSONP();
 });
+
+// 📋 CONFIGURAR PASTE E UPLOAD
+function configurarPasteEUpload() {
+  const pasteArea = document.getElementById("pasteArea");
+  const previewArea = document.getElementById("previewArea");
+  const arquivo = document.getElementById("arquivo");
+  
+  // Configurar paste de imagens
+  if (pasteArea && previewArea) {
+    pasteArea.addEventListener('paste', function (e) {
+      console.log("📋 Conteúdo colado");
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        if (item.type.indexOf('image') !== -1) {
+          console.log("🖼️ Imagem detectada");
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '8px';
+            previewArea.innerHTML = '<p>🖼️ Imagem carregada para análise:</p>';
+            previewArea.appendChild(img);
+            previewArea.dataset.fileData = event.target.result;
+            console.log("✅ Imagem salva para envio");
+          };
+          reader.readAsDataURL(blob);
+        } else if (item.type === 'text/plain') {
+          item.getAsString(function (text) {
+            console.log("📝 Texto colado:", text.substring(0, 50) + "...");
+            previewArea.innerHTML = '<p>📝 Texto colado:</p><div style="background: #f0f0f0; padding: 10px; border-radius: 5px;">' + text + '</div>';
+          });
+        }
+      }
+    });
+  }
+  
+  // Configurar upload de arquivo
+  if (arquivo) {
+    arquivo.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      console.log("📁 Arquivo selecionado:", file.name);
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '8px';
+          previewArea.innerHTML = '<p>📁 Arquivo carregado:</p>';
+          previewArea.appendChild(img);
+        } else {
+          previewArea.innerHTML = `<p>📄 ${file.name} carregado</p>`;
+        }
+        previewArea.dataset.fileData = event.target.result;
+        console.log("✅ Arquivo salvo para envio");
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
 
 // 🧪 TESTE JSONP
 async function testarJSONP() {
@@ -30,28 +101,65 @@ async function handleSubmit(e) {
   e.preventDefault();
   console.log("📝 Enviando formulário...");
   
-  // Extrair dados
+  // Extrair dados do formulário
   const formData = new FormData(e.target);
-  const destino = formData.get('destino') || 'Orlando';
+  const destino = formData.get('destino') || 'não informado';
   const adultos = formData.get('adultos') || '2';
+  const criancas = formData.get('criancas') || '0';
+  const idades = formData.get('idades_criancas') || '';
+  const observacoes = formData.get('observacoes') || '';
   const tipos = Array.from(e.target.querySelectorAll("input[name='tipo']:checked"))
     .map(el => el.value).join(", ") || "Aéreo";
   
-  const prompt = `Você é atendente da CVC. Crie orçamento para WhatsApp:
-
+  // Verificar se há imagem colada
+  const previewArea = document.getElementById("previewArea");
+  const pasteArea = document.getElementById("pasteArea");
+  const imagemColada = previewArea?.dataset.fileData || '';
+  const textoColado = pasteArea?.innerText || '';
+  
+  // Montar prompt detalhado
+  let prompt = `DADOS DO CLIENTE:
 Destino: ${destino}
 Adultos: ${adultos}
-Tipos: ${tipos}
+Crianças: ${criancas}${idades ? ` (idades: ${idades})` : ''}
+Tipos solicitados: ${tipos}
+${observacoes ? `Observações: ${observacoes}` : ''}
 
-Use formato da CVC com emojis, preços e "Valores sujeitos a alteração".`;
+`;
 
+  // Adicionar informações de imagem/texto colado
+  if (imagemColada) {
+    prompt += `IMPORTANTE: Uma captura de tela foi colada com informações de preços. 
+ANALISE A IMAGEM e use EXATAMENTE os preços, datas e companhias mostrados.
+Dados da imagem: ${imagemColada}
+
+`;
+  }
+  
+  if (textoColado && textoColado.trim() !== 'Clique aqui ou pressione Ctrl+V') {
+    prompt += `TEXTO ADICIONAL FORNECIDO:
+${textoColado}
+
+`;
+  }
+
+  prompt += `Você é atendente da CVC Itaquaquecetuba. Crie um orçamento PRECISO para WhatsApp usando EXATAMENTE os dados fornecidos acima.
+
+REGRAS OBRIGATÓRIAS:
+- Use APENAS preços reais da imagem/texto (NUNCA invente valores)
+- Se há captura de tela, extraia dados EXATOS (companhia, preços, datas)
+- Use formato atrativo da CVC com emojis
+- Mencione que valores podem alterar`;
+
+  console.log("📤 Prompt detalhado:", prompt.substring(0, 200) + "...");
+  
   // Mostrar loading
-  document.getElementById("orcamentoIA").innerText = "🤖 Gerando orçamento...";
+  document.getElementById("orcamentoIA").innerText = "🤖 Analisando dados e gerando orçamento...";
   
   try {
     const resposta = await chamarIA(prompt, "orcamento");
     document.getElementById("orcamentoIA").innerText = resposta;
-    console.log("✅ Orçamento gerado!");
+    console.log("✅ Orçamento gerado com dados reais!");
   } catch (error) {
     document.getElementById("orcamentoIA").innerText = "❌ Erro: " + error.message;
     console.error("❌ Erro:", error);
