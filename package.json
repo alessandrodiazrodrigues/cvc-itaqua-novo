@@ -1,0 +1,13 @@
+{
+  "name": "cvc-itaqua-sistema",
+  "version": "1.0.0",
+  "description": "Sistema de gestão CVC Itaqua com IA",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Build concluído'",
+    "dev": "vercel dev"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
