@@ -1,209 +1,405 @@
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxWtCaq_O07y_h_N6YR453i1xJBz9OTtW6gm2hYgBZG3hGuHTMVZ_XM2ibBBZGYyDN5/exec";
+// public/ai.js - Frontend modificado para Vercel API
 
-console.log("⚡ VERSÃO ULTRA SIMPLES - SEM ERROS");
+// URL da API (automaticamente detecta o domínio)
+const API_URL = '/api/ai';
 
-// Variáveis globais para evitar problemas de escopo
-let currentScript = null;
-let currentCallback = null;
+console.log("⚡ CVC ITAQUA - SISTEMA VERCEL ATIVO");
+
+// Variáveis globais
+let formElements = {};
 
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("orcamentoForm");
-  if (form) {
-    form.addEventListener("submit", enviarFormulario);
-    console.log("✅ Formulário conectado");
+  console.log("🔄 Iniciando sistema...");
+  
+  // Cache elementos DOM
+  formElements = {
+    form: document.getElementById("orcamentoForm"),
+    pasteArea: document.getElementById("pasteArea"),
+    previewArea: document.getElementById("previewArea"),
+    arquivo: document.getElementById("arquivo"),
+    pdfUpload: document.getElementById("pdfUpload") // Para index.html
+  };
+
+  // Event Listeners
+  if (formElements.form) {
+    formElements.form.addEventListener("submit", handleOrcamentoSubmit);
+    console.log("✅ Formulário de orçamento conectado");
   }
   
-  configurarPaste();
-  testarBasico();
+  if (formElements.arquivo) {
+    formElements.arquivo.addEventListener("change", handleFileUpload);
+    console.log("✅ Upload de arquivo conectado");
+  }
+
+  // Para index.html - análise de PDF
+  if (formElements.pdfUpload) {
+    window.analisarPDF = handlePDFAnalysis;
+    console.log("✅ Análise de PDF conectada");
+  }
+
+  setupPasteArea();
+  testarConexaoAPI();
 });
 
-// 🧪 TESTE BÁSICO
-function testarBasico() {
-  console.log("🧪 Teste básico...");
-  
-  const callback = 'test' + Date.now();
-  
-  window[callback] = function(data) {
-    console.log("✅ Teste básico OK:", data);
-    delete window[callback];
-    if (currentScript && currentScript.parentNode) {
-      currentScript.parentNode.removeChild(currentScript);
-    }
-  };
-  
-  currentScript = document.createElement('script');
-  currentScript.src = `${WEBAPP_URL}?prompt=teste&type=orcamento&callback=${callback}`;
-  currentScript.onerror = () => console.error("❌ Teste básico falhou");
-  document.head.appendChild(currentScript);
-}
-
-// 📝 ENVIAR FORMULÁRIO
-async function enviarFormulario(e) {
-  e.preventDefault();
-  console.log("📝 Enviando formulário...");
-  
-  // Extrair dados
-  const formData = new FormData(e.target);
-  const destino = formData.get('destino') || 'Porto';
-  const adultos = formData.get('adultos') || '2';
-  const tipos = Array.from(e.target.querySelectorAll("input[name='tipo']:checked"))
-    .map(el => el.value).join(", ") || "Aéreo";
-  
-  console.log("📊 Dados:", { destino, adultos, tipos });
-  
-  // Verificar imagem
-  const previewArea = document.getElementById("previewArea");
-  const imagemColada = previewArea?.dataset.fileData || '';
-  const temImagem = !!imagemColada;
-  
-  console.log("🖼️ Tem imagem:", temImagem);
-  
-  // Criar prompt
-  let prompt;
-  if (temImagem) {
-    // Prompt para imagem (bem resumido)
-    prompt = `Analise imagem de passagens ${tipos} para ${destino}, ${adultos} adultos. Extraia preços exatos e datas. Imagem: ${imagemColada.substring(0, 500)}`;
-  } else {
-    // Prompt sem imagem
-    prompt = `Orçamento ${tipos} para ${destino}, ${adultos} adultos, formato CVC com emojis`;
-  }
-  
-  console.log("📝 Prompt (tamanho:", prompt.length, ")");
-  
-  // Mostrar loading
-  document.getElementById("orcamentoIA").innerText = "🤖 Gerando orçamento...";
-  
-  // Enviar
+// 🧪 TESTAR CONEXÃO COM API
+async function testarConexaoAPI() {
   try {
-    await enviarJSONP(prompt, 'orcamento');
-  } catch (error) {
-    document.getElementById("orcamentoIA").innerText = "❌ Erro: " + error.message;
-  }
-}
-
-// 🔄 ENVIAR VIA JSONP - ULTRA SIMPLES
-function enviarJSONP(prompt, type) {
-  return new Promise((resolve, reject) => {
-    console.log("🔄 Enviando JSONP...");
+    console.log("🧪 Testando conexão com API...");
     
-    // Limpar anterior se existir
-    if (currentCallback && window[currentCallback]) {
-      delete window[currentCallback];
-    }
-    if (currentScript && currentScript.parentNode) {
-      currentScript.parentNode.removeChild(currentScript);
-    }
-    
-    // Novo callback
-    currentCallback = 'cb' + Date.now();
-    
-    // Timeout
-    const timeout = setTimeout(() => {
-      console.error("❌ Timeout");
-      limparTudo();
-      reject(new Error("Timeout"));
-    }, 20000);
-    
-    function limparTudo() {
-      if (currentCallback && window[currentCallback]) {
-        delete window[currentCallback];
-      }
-      if (currentScript && currentScript.parentNode) {
-        currentScript.parentNode.removeChild(currentScript);
-      }
-      clearTimeout(timeout);
-    }
-    
-    // Callback
-    window[currentCallback] = function(data) {
-      console.log("✅ Resposta recebida:", data);
-      limparTudo();
-      
-      if (data && data.choices && data.choices[0]) {
-        const content = data.choices[0].message.content;
-        document.getElementById("orcamentoIA").innerText = content;
-        console.log("✅ Sucesso!");
-        resolve(content);
-      } else if (data && data.error) {
-        document.getElementById("orcamentoIA").innerText = "❌ Erro: " + data.error;
-        reject(new Error(data.error));
-      } else {
-        document.getElementById("orcamentoIA").innerText = "❌ Resposta inválida";
-        reject(new Error("Resposta inválida"));
-      }
-    };
-    
-    // Criar URL (limitando tamanho)
-    const promptLimitado = prompt.substring(0, 1000); // Bem pequeno
-    const params = new URLSearchParams({
-      prompt: promptLimitado,
-      type: type,
-      callback: currentCallback
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: 'teste de conexão',
+        tipo: 'teste'
+      })
     });
     
-    const url = `${WEBAPP_URL}?${params.toString()}`;
-    console.log("📤 URL (tamanho:", url.length, ")");
+    if (response.ok) {
+      console.log("✅ API Vercel conectada com sucesso!");
+    } else {
+      console.warn("⚠️ API retornou status:", response.status);
+      const errorData = await response.json();
+      console.warn("Detalhes:", errorData);
+    }
+  } catch (error) {
+    console.error("❌ Erro na conexão com API:", error);
+    console.error("Verifique se o deploy foi feito corretamente");
+  }
+}
+
+// 🎯 FUNÇÃO PRINCIPAL: Gerar Orçamento
+async function handleOrcamentoSubmit(e) {
+  e.preventDefault();
+  console.log("📝 Processando formulário...");
+  
+  showLoading();
+  
+  try {
+    const formData = extractFormData(e.target);
+    console.log("📊 Dados extraídos:", formData);
     
-    // Criar script
-    currentScript = document.createElement('script');
-    currentScript.src = url;
+    // Validação básica
+    if (!formData.tipos || formData.tipos.length === 0) {
+      throw new Error("Selecione pelo menos um tipo de serviço");
+    }
     
-    currentScript.onerror = function() {
-      console.error("❌ Erro no script");
-      limparTudo();
-      document.getElementById("orcamentoIA").innerText = "❌ Erro na comunicação";
-      reject(new Error("Erro no script"));
-    };
+    // Gerar orçamento principal
+    await generateOrcamento(formData);
     
-    currentScript.onload = function() {
-      console.log("✅ Script carregado");
-    };
+    // Gerar texto do destino (se destino informado)
+    if (formData.destino && formData.destino !== "(Destino não informado)") {
+      await generateTextoDestino(formData.destino);
+    }
     
-    // Adicionar ao DOM
-    document.head.appendChild(currentScript);
+    // Gerar ranking de hotéis (se for tipo Hotel)
+    if (formData.tipos.includes("Hotel")) {
+      await generateRankingHoteis(formData.destino);
+    }
+    
+    console.log("✅ Orçamento gerado com sucesso!");
+    
+  } catch (error) {
+    console.error("❌ Erro ao processar:", error);
+    showError("Erro ao processar solicitação: " + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+// 📊 Extrair dados do formulário
+function extractFormData(form) {
+  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
+  
+  const formData = {
+    destino: form.destino.value || "(Destino não informado)",
+    adultos: form.adultos.value || "2",
+    criancas: form.criancas.value || "0",
+    idades: form.idades_criancas.value || "",
+    observacoes: form.observacoes.value || "",
+    tipos: tipos,
+    textoColado: formElements.pasteArea?.innerText || '',
+    arquivoBase64: formElements.previewArea?.dataset.fileData || "",
+    temImagem: !!(formElements.previewArea?.dataset.fileData)
+  };
+  
+  console.log("Tipos selecionados:", tipos);
+  console.log("Tem imagem:", formData.temImagem);
+  
+  return formData;
+}
+
+// 🤖 Gerar orçamento principal
+async function generateOrcamento(data) {
+  console.log("🤖 Gerando orçamento principal...");
+  
+  const prompt = `Dados do orçamento:
+Destino: ${data.destino}
+Adultos: ${data.adultos}
+Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades})` : ''}
+Observações: ${data.observacoes}
+Texto adicional enviado: ${data.textoColado}`;
+
+  const response = await callAI(prompt, 'orcamento', data);
+  updateElement("orcamentoIA", response);
+}
+
+// 🌍 Gerar texto do destino
+async function generateTextoDestino(destino) {
+  console.log("🌍 Gerando texto do destino:", destino);
+  
+  const prompt = `Crie um texto promocional sobre ${destino} para WhatsApp da CVC. 
+  
+Inclua:
+- Principais atrações
+- Melhor época para visitar  
+- Dicas importantes
+- Tom vendedor mas informativo
+- Máximo 200 palavras
+- Use emojis`;
+
+  const response = await callAI(prompt, 'destino', { destino });
+  updateElement("destinoIA", response);
+}
+
+// 🏨 Gerar ranking de hotéis
+async function generateRankingHoteis(destino) {
+  console.log("🏨 Gerando ranking de hotéis para:", destino);
+  
+  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias com crianças.
+
+Formato:
+🏆 1. Nome do Hotel - Estrelas
+📍 Localização  
+💰 Faixa de preço
+⭐ Destaques
+
+Seja realista e informativo.`;
+
+  const response = await callAI(prompt, 'ranking', { destino });
+  updateElement("rankingIA", response);
+}
+
+// 📄 Análise de PDF (para index.html)
+async function handlePDFAnalysis() {
+  const file = formElements.pdfUpload.files[0];
+  if (!file) {
+    alert("Selecione um arquivo primeiro!");
+    return;
+  }
+
+  console.log("📄 Analisando arquivo:", file.name);
+  showLoading("analiseIA");
+  
+  try {
+    const base64 = await fileToBase64(file);
+    const prompt = `Analise este relatório da CVC e extraia:
+    
+1. Principais métricas de vendas
+2. Metas vs realizado  
+3. Produtos mais vendidos
+4. Recomendações de ação
+
+Formato executivo, objetivo e prático.`;
+
+    const response = await callAI(prompt, 'analise', { 
+      temImagem: true, 
+      arquivo: base64 
+    });
+    
+    updateElement("analiseIA", response);
+    
+    // Mostrar container de resultado
+    const container = document.getElementById('analiseContainer');
+    if (container) {
+      container.style.display = 'block';
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro na análise:", error);
+    updateElement("analiseIA", "❌ Erro ao analisar arquivo: " + error.message);
+  } finally {
+    hideLoading("analiseIA");
+  }
+}
+
+// 📁 Upload de arquivo
+async function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  console.log("📁 Arquivo selecionado:", file.name);
+
+  try {
+    const base64 = await fileToBase64(file);
+    formElements.previewArea.dataset.fileData = base64;
+    
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = base64;
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '8px';
+      formElements.previewArea.innerHTML = '<p>✅ Imagem carregada com sucesso</p>';
+      formElements.previewArea.appendChild(img);
+    } else {
+      formElements.previewArea.innerHTML = `<p>📄 ${file.name} carregado com sucesso</p>`;
+    }
+    
+    console.log("✅ Arquivo processado");
+  } catch (error) {
+    console.error("❌ Erro no upload:", error);
+    formElements.previewArea.innerHTML = `<p>❌ Erro ao carregar: ${file.name}</p>`;
+  }
+}
+
+// 📋 Configurar área de paste
+function setupPasteArea() {
+  if (!formElements.pasteArea) return;
+  
+  console.log("📋 Configurando área de paste...");
+  
+  formElements.pasteArea.addEventListener('paste', function (e) {
+    console.log("📋 Conteúdo colado");
+    
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type.indexOf('image') !== -1) {
+        console.log("🖼️ Imagem detectada no paste");
+        
+        const blob = item.getAsFile();
+        const reader = new FileReader();
+        
+        reader.onload = function (event) {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '8px';
+          formElements.previewArea.innerHTML = '<p>✅ Imagem colada com sucesso</p>';
+          formElements.previewArea.appendChild(img);
+          formElements.previewArea.dataset.fileData = event.target.result;
+          
+          console.log("✅ Imagem salva no preview");
+        };
+        
+        reader.readAsDataURL(blob);
+        break;
+        
+      } else if (item.type === 'text/plain') {
+        item.getAsString(function (text) {
+          formElements.previewArea.innerHTML = '<p>📝 Texto colado: ' + text.substring(0, 100) + '...</p>';
+          console.log("📝 Texto colado:", text.length, "caracteres");
+        });
+      }
+    }
   });
 }
 
-// 📋 CONFIGURAR PASTE SIMPLES
-function configurarPaste() {
-  const pasteArea = document.getElementById("pasteArea");
-  const previewArea = document.getElementById("previewArea");
-  
-  if (pasteArea && previewArea) {
-    pasteArea.addEventListener('paste', function (e) {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.type.indexOf('image') !== -1) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          
-          reader.onload = function (event) {
-            const base64 = event.target.result;
-            const img = document.createElement('img');
-            img.src = base64;
-            img.style.maxWidth = '100%';
-            
-            previewArea.innerHTML = '<p>✅ Imagem carregada</p>';
-            previewArea.appendChild(img);
-            previewArea.dataset.fileData = base64;
-            
-            console.log("✅ Imagem salva");
-          };
-          
-          reader.readAsDataURL(blob);
-          break;
-        }
-      }
+// 🔧 FUNÇÃO PRINCIPAL: Chamar API
+async function callAI(prompt, tipo, extraData = {}) {
+  try {
+    console.log("🔄 Enviando para API:", { tipo, temImagem: extraData.temImagem });
+    
+    const requestData = {
+      prompt,
+      tipo,
+      destino: extraData.destino,
+      tipos: extraData.tipos,
+      temImagem: extraData.temImagem,
+      arquivo: extraData.arquivo
+    };
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData)
     });
-    console.log("✅ Paste configurado");
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Erro da API:", errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("✅ Resposta da API recebida");
+    
+    if (data.success && data.choices?.[0]?.message?.content) {
+      return data.choices[0].message.content;
+    } else {
+      console.error("❌ Formato de resposta inválido:", data);
+      throw new Error("Resposta inválida da API");
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro na chamada da API:", error);
+    throw error;
   }
 }
 
-// 📋 COPIAR
-function copiarTexto(id) {
-  navigator.clipboard.writeText(document.getElementById(id).innerText);
+// 🔧 Funções auxiliares
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+    reader.readAsDataURL(file);
+  });
 }
 
-console.log("🔧 Sistema ultra simples carregado");
+function updateElement(id, content) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.innerText = content;
+    console.log("📝 Elemento atualizado:", id);
+  } else {
+    console.warn("⚠️ Elemento não encontrado:", id);
+  }
+}
+
+function showLoading(elementId = "orcamentoIA") {
+  updateElement(elementId, "🤖 Processando com IA...");
+}
+
+function hideLoading(elementId = "orcamentoIA") {
+  // Loading será substituído pelo conteúdo real
+}
+
+function showError(message) {
+  updateElement("orcamentoIA", "❌ " + message);
+}
+
+// 📋 Copiar texto (função global)
+function copiarTexto(id) {
+  const elemento = document.getElementById(id);
+  if (!elemento) {
+    console.error("❌ Elemento não encontrado:", id);
+    return;
+  }
+  
+  const texto = elemento.innerText;
+  
+  navigator.clipboard.writeText(texto).then(() => {
+    console.log("✅ Texto copiado:", id);
+    
+    // Feedback visual
+    const button = event.target;
+    const originalText = button.innerText;
+    button.innerText = "✅ Copiado!";
+    
+    setTimeout(() => {
+      button.innerText = originalText;
+    }, 2000);
+  }).catch(err => {
+    console.error("❌ Erro ao copiar:", err);
+    alert("Erro ao copiar. Tente selecionar o texto manualmente.");
+  });
+}
+
+console.log("🚀 Sistema CVC Itaqua carregado com sucesso!");
