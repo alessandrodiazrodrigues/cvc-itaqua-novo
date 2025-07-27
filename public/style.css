@@ -429,3 +429,129 @@ section, .output-section {
 .flex { display: flex; }
 .justify-between { justify-content: space-between; }
 .align-center { align-items: center; }
+
+/* Adicionar estas regras ao final do style.css existente */
+
+/* 🎯 Botão gerar dicas */
+.gerar-dicas {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.gerar-dicas:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.gerar-dicas:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 👶 Container idades crianças */
+#containerIdadesCriancas {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #ffc107;
+}
+
+#camposIdadesCriancas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#camposIdadesCriancas div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#camposIdadesCriancas input {
+  width: 80px !important;
+  flex-shrink: 0;
+}
+
+/* 📝 Campo observações melhorado */
+#observacoes {
+  min-height: 200px !important;
+  max-height: 400px;
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.4;
+  padding: 1rem;
+}
+
+#observacoes::placeholder {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* 💡 Dica pequena */
+small {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* 🎯 Estilos responsivos */
+@media (max-width: 768px) {
+  .gerar-dicas {
+    margin-left: 0;
+    margin-top: 0.5rem;
+    width: auto;
+  }
+  
+  #camposIdadesCriancas div {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  #camposIdadesCriancas input {
+    width: 100px !important;
+  }
+}
+
+/* 🔧 Melhorias gerais */
+.output-section h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.output-section h3 .copiar {
+  flex-shrink: 0;
+}
+
+/* 📋 Pré visualização melhorada */
+#previewArea {
+  min-height: 60px;
+  border: 1px dashed #dee2e6;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+#previewArea:empty::before {
+  content: "Nenhum conteúdo colado ainda...";
+}
+
+#previewArea img {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
