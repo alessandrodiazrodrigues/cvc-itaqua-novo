@@ -170,6 +170,9 @@ function enviarComDebugCompleto(prompt, tipo) {
     const callback = 'debug' + Date.now() + Math.random().toString(36).substr(2, 3);
     console.log("📝 Callback único:", callback);
     
+    // Criar script PRIMEIRO
+    const script = document.createElement('script');
+    
     // Timeout maior
     const timeout = setTimeout(() => {
       console.error("❌ === TIMEOUT COMPLETO ===");
@@ -182,7 +185,7 @@ function enviarComDebugCompleto(prompt, tipo) {
         delete window[callback];
         console.log("🧹 Callback limpo");
       }
-      if (script.parentNode) {
+      if (script && script.parentNode) {
         script.parentNode.removeChild(script);
         console.log("🧹 Script removido");
       }
@@ -244,9 +247,7 @@ function enviarComDebugCompleto(prompt, tipo) {
       script.src = fullURL;
     }
     
-    // Criar script com handlers detalhados
-    const script = document.createElement('script');
-    
+    // Configurar handlers DEPOIS de criar o script
     script.onerror = function(event) {
       console.error("❌ === ERRO DETALHADO NO SCRIPT ===");
       console.error("- Event type:", event.type);
