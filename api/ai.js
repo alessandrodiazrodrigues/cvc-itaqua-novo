@@ -155,7 +155,7 @@ async function chamarIA(prompt, temImagem, arquivo) {
   }
 }
 
-// 🔵 OpenAI API
+// 🔵 OpenAI API - CORRIGIDO PARA SEMPRE USAR GPT-4o
 async function chamarOpenAI(prompt, temImagem, arquivo) {
   let messages;
   
@@ -188,7 +188,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: temImagem ? 'gpt-4o' : 'gpt-4',
+      model: 'gpt-4o',  // ✅ SEMPRE USA GPT-4o (processa imagens)
       messages,
       max_tokens: 1500,
       temperature: 0.7
