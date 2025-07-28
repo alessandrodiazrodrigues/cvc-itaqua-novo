@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Debug API - CVC Itaqua</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { 
+            color: #003399; 
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 { 
+            color: #0056b3; 
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 10px;
+        }
+        h3 { 
+            color: #333; 
+            margin-top: 20px;
+        }
+        button {
+            background: #003399;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover { 
+            background: #0056b3; 
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error { 
+            background: #f8d7da; 
+            border: 1px solid #dc3545; 
+            padding: 15px; 
+            border-radius: 8px; 
+            color: #721c24;
+            margin: 10px 0;
+        }
+        .success { 
+            background: #d4edda; 
+            border: 1px solid #28a745; 
+            padding: 15px; 
+            border-radius: 8px; 
+            color: #155724;
+            margin: 10px 0;
+        }
+        .info { 
+            background: #d1ecf1; 
+            border: 1px solid #17a2b8; 
+            padding: 15px; 
+            border-radius: 8px; 
+            color: #0c5460;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            color: #856404;
+            margin: 10px 0;
+        }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            border: 1px solid #e9ecef;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loading { 
+            opacity: 0.6; 
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug API - CVC Itaqua</h1>
+        <p style="text-align: center; color: #666;">
+            Ferramenta para diagnosticar problemas na API de orçamentos
+        </p>
+        
+        <div class="grid">
+            <button onclick="testarConexaoBasica()" id="btn1">🧪 1. Teste Básico</button>
+            <button onclick="testarOPTIONS()" id="btn2">⚙️ 2. Teste CORS</button>
+            <button onclick="testarComDados()" id="btn3">📝 3. Teste POST</button>
+            <button onclick="verificarURL()" id="btn4">🌐 4. Info Sistema</button>
+        </div>
+        
+        <div class="grid">
+            <button onclick="testarDeteccao()" id="btn5">🔍 5. Teste Detecção</button>
+            <button onclick="limparResultados()" style="background: #6c757d;">🗑️ Limpar</button>
+        </div>
+        
+        <div id="resultado"></div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Informações do Sistema</h2>
+        <div id="infoSistema"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Teste de Detecção de Múltiplas Opções</h2>
+        <textarea id="textoTeste" placeholder="Cole aqui o texto para testar a detecção..." style="width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;"></textarea>
+        <br><br>
+        <button onclick="testarTextoLocal()">🔍 Testar Detecção Local</button>
+        <div id="resultadoDeteccao"></div>
+    </div>
+
+    <script>
+        // 🔄 Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Debug Tool carregado');
+            mostrarInfoSistema();
+            
+            // Auto-executar teste básico após 1 segundo
+            setTimeout(() => {
+                console.log('🚀 Executando teste automático...');
+                testarConexaoBasica();
+            }, 1000);
+        });
+
+        // 📊 Mostrar informações do sistema
+        function mostrarInfoSistema() {
+            const info = `
+<div class="info">
+<strong>🌐 Ambiente:</strong><br>
+URL: ${window.location.href}<br>
+Protocolo: ${window.location.protocol}<br>
+Host: ${window.location.host}<br>
+Path: ${window.location.pathname}<br><br>
+
+<strong>🎯 API Target:</strong><br>
+API URL: ${window.location.origin}/api/ai<br>
+Método: POST<br>
+Content-Type: application/json<br><br>
+
+<strong>💻 Cliente:</strong><br>
+User Agent: ${navigator.userAgent.substring(0, 100)}...<br>
+Timestamp: ${new Date().toISOString()}<br>
+</div>
+            `;
+            document.getElementById('infoSistema').innerHTML = info;
+        }
+
+        // 🎯 Mostrar resultado
+        function mostrarResultado(titulo, conteudo, tipo = 'info') {
+            const tipoClass = tipo === 'error' ? 'error' : tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'info';
+            
+            document.getElementById('resultado').innerHTML = `
+                <h3>${titulo}</h3>
+                <div class="${tipoClass}">${conteudo}</div>
+            `;
+            
+            // Scroll para o resultado
+            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ⏳ Mostrar loading
+        function mostrarLoading(mensagem, botaoId) {
+            const botao = document.getElementById(botaoId);
+            if (botao) {
+                botao.disabled = true;
+                botao.classList.add('loading');
+            }
+            
+            document.getElementById('resultado').innerHTML = `
+                <h3>🔄 ${mensagem}</h3>
+                <div class="info loading">Processando... aguarde</div>
+            `;
+        }
+
+        // ✅ Limpar loading
+        function limparLoading() {
+            ['btn1', 'btn2', 'btn3', 'btn4', 'btn5'].forEach(id => {
+                const botao = document.getElementById(id);
+                if (botao) {
+                    botao.disabled = false;
+                    botao.classList.remove('loading');
+                }
+            });
+        }
+
+        // 🧪 1. TESTE BÁSICO DE CONEXÃO
+        async function testarConexaoBasica() {
+            mostrarLoading('Testando conexão básica com a API...', 'btn1');
+            
+            try {
+                console.log('🧪 Iniciando teste básico...');
+                
+                const response = await fetch('/api/ai', {
+                    method: 'GET'
+                });
+                
+                console.log('📊 Response recebida:', response.status);
+                
+                const responseText = await response.text();
+                console.log('📊 Response text:', responseText.substring(0, 200));
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                let resultado = `
+                    <strong>Status HTTP:</strong> <span class="${response.ok ? 'status-ok' : 'status-error'}">${response.status} ${response.statusText}</span><br><br>
+                    
+                    <strong>Headers de Resposta:</strong><br>
+                    <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    
+                    <strong>Response Body (primeiros 500 chars):</strong><br>
+                    <pre>${responseText.substring(0, 500)}</pre>
+                `;
+                
+                // Tentar parsear como JSON
+                if (responseText) {
+                    try {
+                        const jsonData = JSON.parse(responseText);
+                        resultado += `<br><strong>✅ JSON Válido:</strong><br><pre>${JSON.stringify(jsonData, null, 2)}</pre>`;
+                    } catch (jsonError) {
+                        resultado += `<br><strong>❌ Não é JSON:</strong> ${jsonError.message}`;
+                    }
+                }
+                
+                mostrarResultado(
+                    '🧪 Resultado do Teste Básico', 
+                    resultado,
+                    response.ok ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                console.error('❌ Erro no teste básico:', error);
+                mostrarResultado('❌ Erro no Teste Básico', `
+                    <strong>Erro:</strong> ${error.message}<br><br>
+                    <strong>Possíveis causas:</strong><br>
+                    • API não deployada no Vercel<br>
+                    • Erro de sintaxe no arquivo api/ai.js<br>
+                    • Problema de rede<br>
+                    • Rota não configurada corretamente<br><br>
+                    <strong>Stack:</strong><br>
+                    <pre>${error.stack}</pre>
+                `, 'error');
+            } finally {
+                limparLoading();
+            }
+        }
+
+        // ⚙️ 2. TESTE CORS (OPTIONS)
+        async function testarOPTIONS() {
+            mostrarLoading('Testando CORS (OPTIONS)...', 'btn2');
+            
+            try {
+                console.log('⚙️ Testando OPTIONS...');
+                
+                const response = await fetch('/api/ai', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type',
+                        'Origin': window.location.origin
+                    }
+                });
+                
+                const responseText = await response.text();
+                
+                const corsHeaders = {};
+                response.headers.forEach((value, key) => {
+                    if (key.toLowerCase().includes('access-control')) {
+                        corsHeaders[key] = value;
+                    }
+                });
+                
+                mostrarResultado('⚙️ Resultado do Teste CORS', `
+                    <strong>Status:</strong> <span class="${response.ok ? 'status-ok' : 'status-error'}">${response.status} ${response.statusText}</span><br><br>
+                    
+                    <strong>CORS Headers Encontrados:</strong><br>
+                    <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+                    
+                    <strong>Response Body:</strong><br>
+                    <pre>${responseText}</pre>
+                    
+                    <strong>Análise:</strong><br>
+                    ${Object.keys(corsHeaders).length > 0 ? 
+                        '<span class="status-ok">✅ Headers CORS presentes</span>' : 
+                        '<span class="status-error">❌ Headers CORS ausentes</span>'}
+                `, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                console.error('❌ Erro no teste CORS:', error);
+                mostrarResultado('❌ Erro no Teste CORS', `
+                    <strong>Erro:</strong> ${error.message}<br><br>
+                    <strong>Stack:</strong><br>
+                    <pre>${error.stack}</pre>
+                `, 'error');
+            } finally {
+                limparLoading();
+            }
+        }
+
+        // 📝 3. TESTE POST COM DADOS
+        async function testarComDados() {
+            mostrarLoading('Testando POST com dados reais...', 'btn3');
+            
+            try {
+                console.log('📝 Testando POST...');
+                
+                const testData = {
+                    prompt: 'teste de debug - múltiplas opções:\n\nGol 30/07 R$ 1.722,96 Total (2 adultos)\nLatam 29/07 R$ 4.600,68 Total (2 adultos)',
+                    tipo: 'orcamento',
+                    destino: 'Ribeirão Preto',
+                    tipos: ['Aéreo Facial'],
+                    temImagem: false
+                };
+                
+                console.log('📤 Enviando dados:', testData);
+                
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                console.log('📊 Response status:', response.status);
+                
+                const responseText = await response.text();
+                console.log('📊 Response text:', responseText.substring(0, 300));
+                
+                let resultado = `
+                    <strong>Status:</strong> <span class="${response.ok ? 'status-ok' : 'status-error'}">${response.status} ${response.statusText}</span><br><br>
+                    
+                    <strong>Request Enviado:</strong><br>
+                    <pre>${JSON.stringify(testData, null, 2)}</pre>
+                    
+                    <strong>Response Recebida (primeiros 1000 chars):</strong><br>
+                    <pre>${responseText.substring(0, 1000)}</pre>
+                `;
+                
+                // Tentar parsear resposta
+                try {
+                    const jsonData = JSON.parse(responseText);
+                    resultado += `<br><strong>✅ JSON Válido - Estrutura da Resposta:</strong><br><pre>${JSON.stringify(jsonData, null, 2)}</pre>`;
+                    
+                    // Verificar se tem o formato esperado
+                    if (jsonData.success && jsonData.choices?.[0]?.message?.content) {
+                        resultado += `<br><strong>✅ Estrutura Correta:</strong> API funcionando!<br>`;
+                        resultado += `<strong>Conteúdo Recebido:</strong><br><pre>${jsonData.choices[0].message.content}</pre>`;
+                    } else if (jsonData.error) {
+                        resultado += `<br><strong>❌ API retornou erro:</strong> ${jsonData.error}`;
+                    } else {
+                        resultado += `<br><strong>⚠️ Estrutura inesperada</strong> na resposta JSON`;
+                    }
+                    
+                } catch (jsonError) {
+                    resultado += `<br><strong>❌ Response não é JSON válido:</strong> ${jsonError.message}`;
+                    
+                    // Detectar tipos de erro comuns
+                    if (responseText.includes('<html>') || responseText.includes('<!DOCTYPE')) {
+                        resultado += `<br><br><strong>🔍 Diagnóstico:</strong> <span class="status-error">API retornando HTML ao invés de JSON</span><br>`;
+                        resultado += `<strong>Causa provável:</strong> Erro no servidor (sintaxe, import, etc.)`;
+                    } else if (responseText.startsWith('A server error') || responseText.includes('500')) {
+                        resultado += `<br><br><strong>🔍 Diagnóstico:</strong> <span class="status-error">Erro interno do servidor</span><br>`;
+                        resultado += `<strong>Causa provável:</strong> Problema no código da API`;
+                    }
+                }
+                
+                mostrarResultado(
+                    '📝 Resultado do Teste POST', 
+                    resultado,
+                    response.ok ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                console.error('❌ Erro no teste POST:', error);
+                mostrarResultado('❌ Erro no Teste POST', `
+                    <strong>Erro:</strong> ${error.message}<br><br>
+                    <strong>Stack:</strong><br>
+                    <pre>${error.stack}</pre>
+                `, 'error');
+            } finally {
+                limparLoading();
+            }
+        }
+
+        // 🌐 4. VERIFICAR INFO DO SISTEMA
+        async function verificarURL() {
+            mostrarLoading('Coletando informações do sistema...', 'btn4');
+            
+            try {
+                const apiUrl = '/api/ai';
+                const fullUrl = window.location.origin + apiUrl;
+                
+                // Teste múltiplos métodos
+                const metodos = ['HEAD', 'GET', 'OPTIONS'];
+                let resultados = [];
+                
+                for (const metodo of metodos) {
+                    try {
+                        const resp = await fetch(apiUrl, { method: metodo });
+                        resultados.push(`${metodo}: ${resp.status} ${resp.statusText}`);
+                    } catch (err) {
+                        resultados.push(`${metodo}: ERRO - ${err.message}`);
+                    }
+                }
+                
+                mostrarResultado('🌐 Informações do Sistema', `
+                    <strong>URLs:</strong><br>
+                    API Relativa: ${apiUrl}<br>
+                    API Completa: ${fullUrl}<br><br>
+                    
+                    <strong>Testes de Métodos HTTP:</strong><br>
+                    <pre>${resultados.join('\n')}</pre>
+                    
+                    <strong>Configuração do Cliente:</strong><br>
+                    Timestamp: ${new Date().toISOString()}<br>
+                    Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}<br>
+                    Language: ${navigator.language}<br>
+                    Platform: ${navigator.platform}<br>
+                    
+                    <strong>Local Storage:</strong><br>
+                    Disponível: ${typeof(Storage) !== "undefined" ? 'Sim' : 'Não'}<br>
+                    
+                    <strong>Fetch API:</strong><br>
+                    Disponível: ${typeof(fetch) !== "undefined" ? 'Sim' : 'Não'}<br>
+                `, 'info');
+                
+            } catch (error) {
+                console.error('❌ Erro na verificação:', error);
+                mostrarResultado('❌ Erro na Verificação', `
+                    <strong>Erro:</strong> ${error.message}
+                `, 'error');
+            } finally {
+                limparLoading();
+            }
+        }
+
+        // 🔍 5. TESTE DE DETECÇÃO LOCAL
+        function testarDeteccao() {
+            const texto = document.getElementById('textoTeste').value || `
+30 de jul - 01 de ago (3 dias e 2 noites) São Paulo - Ribeirão Preto Gol
+Ida qua, 30 de julho - Classe Econômica 08:05 CGH 1h 5min Voo direto 09:10 RAO
+Volta sex, 01 de agosto - Classe Econômica 18:40 RAO 1h Voo direto 19:40 CGH
+Tarifa facial Não reembolsável Total (2 Adultos) R$ 1.722,96
+
+29 de jul - 01 de ago (4 dias e 3 noites) São Paulo - Ribeirão Preto Latam
+Ida ter, 29 de julho 17:50 CGH 1h 5min Voo direto 18:55 RAO
+Volta sex, 01 de agosto 19:40 RAO 1h Voo direto 20:40 CGH
+Tarifa facial Não reembolsável Total (2 Adultos) R$ 4.600,68`;
+            
+            document.getElementById('textoTeste').value = texto;
+            testarTextoLocal();
+        }
+
+        // 🔍 Função de detecção local (igual ao backend)
+        function testarTextoLocal() {
+            const texto = document.getElementById('textoTeste').value;
+            
+            if (!texto.trim()) {
+                document.getElementById('resultadoDeteccao').innerHTML = '<div class="warning">Digite algum texto para testar!</div>';
+                return;
+            }
+            
+            // Mesma lógica do backend
+            const textoLower = texto.toLowerCase();
+            
+            const indicadores = [
+                { nome: 'Totais Adultos', regex: /total.*\d+.*adult/gi },
+                { nome: 'Preços R$', regex: /r\$.*\d{1,3}[\.,]\d{3}/gi },
+                { nome: 'Companhias', regex: /(gol|latam|azul|avianca|tap|american|united|delta)/gi },
+                { nome: 'Horários', regex: /\d{2}:\d{2}/g },
+                { nome: 'Datas Ida/Volta', regex: /(ida|volta).*\d{2} de \w+/gi },
+                { nome: 'Links CVC', regex: /https:\/\/www\.cvc\.com\.br\/carrinho-dinamico/gi },
+                { nome: 'Classe Econômica', regex: /classe.*econômica/gi },
+                { nome: 'Voo Direto', regex: /voo direto/gi }
+            ];
+            
+            let contadores = {};
+            let detalhes = {};
+            
+            indicadores.forEach((ind, index) => {
+                const matches = (textoLower.match(ind.regex) || []);
+                contadores[ind.nome] = matches.length;
+                detalhes[ind.nome] = matches;
+            });
+            
+            const multiplosPrecos = contadores['Preços R$'] >= 2;
+            const multiplasCias = contadores['Companhias'] >= 2;
+            const multiplosHorarios = contadores['Horários'] >= 4;
+            const multiplasDatas = contadores['Datas Ida/Volta'] >= 2;
+            const multiplosLinks = contadores['Links CVC'] >= 2;
+            const multiplosTotais = contadores['Totais Adultos'] >= 2;
+            
+            const detectado = multiplosPrecos || multiplasCias || multiplosHorarios || 
+                             multiplasDatas || multiplosLinks || multiplosTotais;
+            
+            let resultado = `
+                <strong>🔍 Resultado da Detecção:</strong><br>
+                <span class="${detectado ? 'status-ok' : 'status-error'}">
+                    ${detectado ? '✅ MÚLTIPLAS OPÇÕES DETECTADAS' : '❌ OPÇÃO ÚNICA DETECTADA'}
+                </span><br><br>
+                
+                <strong>📊 Contadores por Indicador:</strong><br>
+                <pre>${Object.entries(contadores).map(([k,v]) => `${k}: ${v} ocorrências`).join('\n')}</pre>
+                
+                <strong>🎯 Critérios Atendidos:</strong><br>
+                Múltiplos Preços (≥2): ${multiplosPrecos ? '✅' : '❌'}<br>
+                Múltiplas Companhias (≥2): ${multiplasCias ? '✅' : '❌'}<br>
+                Múltiplos Horários (≥4): ${multiplosHorarios ? '✅' : '❌'}<br>
+                Múltiplas Datas (≥2): ${multiplasDatas ? '✅' : '❌'}<br>
+                Múltiplos Links (≥2): ${multiplosLinks ? '✅' : '❌'}<br>
+                Múltiplos Totais (≥2): ${multiplosTotais ? '✅' : '❌'}<br><br>
+                
+                <strong>🔍 Matches Encontrados:</strong><br>
+                <pre>${JSON.stringify(detalhes, null, 2)}</pre>
+            `;
+            
+            document.getElementById('resultadoDeteccao').innerHTML = `<div class="${detectado ? 'success' : 'info'}">${resultado}</div>`;
+        }
+
+        // 🗑️ Limpar resultados
+        function limparResultados() {
+            document.getElementById('resultado').innerHTML = '<div class="info">Resultados limpos. Execute um teste acima.</div>';
+            document.getElementById('resultadoDeteccao').innerHTML = '';
+            document.getElementById('textoTeste').value = '';
+            limparLoading();
+        }
+    </script>
+</body>
+</html>
