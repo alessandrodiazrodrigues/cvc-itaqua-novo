@@ -1,13 +1,13 @@
-// public/ai.js - Frontend melhorado para detecção de múltiplas opções
+// public/ai.js - Frontend com tratamento robusto de erros JSON
 
 const API_URL = '/api/ai';
 
-console.log("⚡ CVC ITAQUA - SISTEMA VERCEL ATIVO (v2.0)");
+console.log("⚡ CVC ITAQUA - SISTEMA v2.1 (Error Handling)");
 
 let formElements = {};
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema melhorado...");
+  console.log("🔄 Iniciando sistema com debug robusto...");
   
   formElements = {
     form: document.getElementById("orcamentoForm"),
@@ -19,51 +19,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (formElements.form) {
     formElements.form.addEventListener("submit", handleOrcamentoSubmit);
-    console.log("✅ Formulário de orçamento conectado");
+    console.log("✅ Formulário conectado");
   }
   
   if (formElements.arquivo) {
     formElements.arquivo.addEventListener("change", handleFileUpload);
-    console.log("✅ Upload de arquivo conectado");
+    console.log("✅ Upload conectado");
   }
 
   if (formElements.pdfUpload) {
     window.analisarPDF = handlePDFAnalysis;
-    console.log("✅ Análise de PDF conectada");
+    console.log("✅ PDF análise conectada");
   }
 
   setupPasteArea();
   testarConexaoAPI();
 });
 
-// 🧪 Teste de conexão
+// 🧪 TESTE DE CONEXÃO MELHORADO
 async function testarConexaoAPI() {
   try {
-    console.log("🧪 Testando conexão com API melhorada...");
+    console.log("🧪 Testando conexão API...");
     
+    // Primeiro teste: GET simples
     const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: 'teste de conexão v2.0',
-        tipo: 'teste'
-      })
+      method: 'GET',
     });
     
+    console.log("📊 Response status:", response.status);
+    console.log("📊 Response headers:", Array.from(response.headers.entries()));
+    
+    const responseText = await response.text();
+    console.log("📊 Response text (primeiros 200 chars):", responseText.substring(0, 200));
+    
     if (response.ok) {
-      console.log("✅ API Vercel v2.0 conectada!");
+      try {
+        const data = JSON.parse(responseText);
+        console.log("✅ API Online - JSON válido:", data);
+      } catch (jsonError) {
+        console.warn("⚠️ API respondeu mas não é JSON:", jsonError.message);
+        console.warn("Response completa:", responseText);
+      }
     } else {
-      console.warn("⚠️ API status:", response.status);
+      console.warn("⚠️ API status não OK:", response.status, responseText);
     }
+    
   } catch (error) {
     console.error("❌ Erro na conexão:", error);
+    console.error("Possíveis causas:");
+    console.error("- API não deployada");  
+    console.error("- Erro de sintaxe no api/ai.js");
+    console.error("- Problema no Vercel");
   }
 }
 
-// 🎯 FUNÇÃO PRINCIPAL melhorada
+// 🎯 FUNÇÃO PRINCIPAL com tratamento robusto
 async function handleOrcamentoSubmit(e) {
   e.preventDefault();
-  console.log("📝 Processando formulário (v2.0)...");
+  console.log("📝 Processando formulário...");
   
   showLoading();
   
@@ -71,42 +84,36 @@ async function handleOrcamentoSubmit(e) {
     const formData = extractFormData(e.target);
     console.log("📊 Dados extraídos:", formData);
     
-    // Validação melhorada
     if (!formData.tipos || formData.tipos.length === 0) {
       throw new Error("Selecione pelo menos um tipo de serviço");
     }
     
-    // PRÉ-ANÁLISE do texto para debug
-    const temMultiplasOpcoes = analisarTextoParaMultiplasOpcoes(formData.observacoes + ' ' + formData.textoColado);
-    console.log("🔍 Pré-análise múltiplas opções:", temMultiplasOpcoes);
+    // Análise local para debug
+    const analiseLocal = analisarTextoParaMultiplasOpcoes(formData.observacoes + ' ' + formData.textoColado);
+    console.log("🔍 Análise local:", analiseLocal);
     
-    // Feedback visual para o usuário
-    if (temMultiplasOpcoes.detectado) {
-      updateElement("orcamentoIA", "🔍 Múltiplas opções detectadas! Processando com template especial...");
+    if (analiseLocal.detectado) {
+      updateElement("orcamentoIA", "🔍 Múltiplas opções detectadas! Processando...");
     }
     
-    // Gerar orçamento principal
     await generateOrcamento(formData);
-    
-    // Habilitar botão de gerar dicas
     habilitarBotaoDicas();
     
-    // Gerar ranking de hotéis se necessário
     if (formData.tipos.includes("Hotel")) {
       await generateRankingHoteis(formData.destino);
     }
     
-    console.log("✅ Orçamento gerado com sucesso!");
+    console.log("✅ Processamento concluído!");
     
   } catch (error) {
-    console.error("❌ Erro ao processar:", error);
-    showError("Erro ao processar: " + error.message);
+    console.error("❌ Erro no processamento:", error);
+    showError("Erro: " + error.message);
   } finally {
     hideLoading();
   }
 }
 
-// 📊 Extração de dados melhorada
+// 📊 Extração de dados (mantida igual)
 function extractFormData(form) {
   const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
   
@@ -120,7 +127,7 @@ function extractFormData(form) {
     }
   }
   
-  const formData = {
+  return {
     destino: form.destino.value || "(Destino não informado)",
     adultos: form.adultos.value || "2",
     criancas: form.criancas.value || "0",
@@ -131,19 +138,14 @@ function extractFormData(form) {
     arquivoBase64: formElements.previewArea?.dataset.fileData || "",
     temImagem: !!(formElements.previewArea?.dataset.fileData)
   };
-  
-  console.log("✅ Dados extraídos - Tipos:", tipos, "| Tem imagem:", formData.temImagem);
-  
-  return formData;
 }
 
-// 🔍 ANÁLISE LOCAL de múltiplas opções (para debug)
+// 🔍 Análise local (mantida igual)
 function analisarTextoParaMultiplasOpcoes(texto) {
   if (!texto) return { detectado: false, motivo: "Texto vazio" };
   
   const textoLower = texto.toLowerCase();
   
-  // Contadores
   const precos = (textoLower.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
   const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
   const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
@@ -158,9 +160,9 @@ function analisarTextoParaMultiplasOpcoes(texto) {
   };
 }
 
-// 🤖 Gerar orçamento com logging melhorado
+// 🤖 GERAR ORÇAMENTO com tratamento robusto
 async function generateOrcamento(data) {
-  console.log("🤖 Gerando orçamento principal...");
+  console.log("🤖 Gerando orçamento...");
   
   const textoCompleto = `${data.observacoes} ${data.textoColado}`.trim();
   const analise = analisarTextoParaMultiplasOpcoes(textoCompleto);
@@ -185,10 +187,9 @@ ${analise.detectado ?
     const response = await callAI(prompt, 'orcamento', data);
     updateElement("orcamentoIA", response);
     
-    // Log de sucesso com detalhes
     console.log("✅ Orçamento gerado:");
-    console.log("- Múltiplas opções detectadas:", analise.detectado);
-    console.log("- Tamanho da resposta:", response.length, "caracteres");
+    console.log("- Múltiplas opções:", analise.detectado);
+    console.log("- Tamanho resposta:", response.length, "chars");
     
   } catch (error) {
     console.error("❌ Erro na geração:", error);
@@ -196,9 +197,9 @@ ${analise.detectado ?
   }
 }
 
-// 🏨 Gerar ranking de hotéis
+// 🏨 Gerar ranking (mantido igual)
 async function generateRankingHoteis(destino) {
-  console.log("🏨 Gerando ranking de hotéis para:", destino);
+  console.log("🏨 Gerando ranking de hotéis...");
   
   const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
 
@@ -208,7 +209,7 @@ Formato:
 💰 Faixa de preço aproximada
 ⭐ Principais diferenciais
 
-Use informações realistas e atuais.`;
+Use informações realistas.`;
 
   try {
     const response = await callAI(prompt, 'ranking', { destino });
@@ -219,7 +220,7 @@ Use informações realistas e atuais.`;
   }
 }
 
-// 📄 Análise de PDF
+// 📄 Análise PDF (mantida igual)
 async function handlePDFAnalysis() {
   const file = formElements.pdfUpload.files[0];
   if (!file) {
@@ -239,7 +240,7 @@ async function handlePDFAnalysis() {
 3. 🏆 Produtos mais vendidos
 4. 💡 Recomendações práticas
 
-Formato executivo, claro e acionável para a filial 6220.`;
+Formato executivo para a filial 6220.`;
 
     const response = await callAI(prompt, 'analise', { 
       temImagem: true, 
@@ -255,18 +256,18 @@ Formato executivo, claro e acionável para a filial 6220.`;
     
   } catch (error) {
     console.error("❌ Erro na análise:", error);
-    updateElement("analiseIA", "❌ Erro ao analisar arquivo: " + error.message);
+    updateElement("analiseIA", "❌ Erro: " + error.message);
   } finally {
     hideLoading("analiseIA");
   }
 }
 
-// 📁 Upload de arquivo (mantido igual)
+// 📁 Upload arquivo (mantido igual)
 async function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  console.log("📁 Arquivo selecionado:", file.name);
+  console.log("📁 Arquivo:", file.name);
 
   try {
     const base64 = await fileToBase64(file);
@@ -284,12 +285,12 @@ async function handleFileUpload(e) {
     }
     
   } catch (error) {
-    console.error("❌ Erro no upload:", error);
+    console.error("❌ Erro upload:", error);
     formElements.previewArea.innerHTML = `<p>❌ Erro: ${file.name}</p>`;
   }
 }
 
-// 📋 Setup área de paste (mantido igual)
+// 📋 Setup paste (mantido igual)
 function setupPasteArea() {
   if (!formElements.pasteArea) return;
   
@@ -327,10 +328,10 @@ function setupPasteArea() {
   });
 }
 
-// 🔧 Chamar API melhorada
+// 🔧 CHAMAR API COM TRATAMENTO ROBUSTO DE ERROS
 async function callAI(prompt, tipo, extraData = {}) {
   try {
-    console.log("🔄 Enviando para API v2.0:", { tipo, temImagem: extraData.temImagem });
+    console.log("🔄 Enviando para API:", { tipo, temImagem: extraData.temImagem });
     
     const requestData = {
       prompt,
@@ -341,7 +342,7 @@ async function callAI(prompt, tipo, extraData = {}) {
       arquivo: extraData.arquivo
     };
     
-    console.log("📤 Dados enviados:", {
+    console.log("📤 Request data:", {
       prompt: prompt.substring(0, 100) + "...",
       tipo,
       destino: extraData.destino,
@@ -354,29 +355,71 @@ async function callAI(prompt, tipo, extraData = {}) {
       body: JSON.stringify(requestData)
     });
 
+    console.log("📊 Response status:", response.status);
+    console.log("📊 Response headers:", Array.from(response.headers.entries()));
+
+    // 🔍 LER RESPOSTA COMO TEXTO PRIMEIRO
+    const responseText = await response.text();
+    console.log("📊 Response text (primeiros 200 chars):", responseText.substring(0, 200));
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("❌ Erro da API:", errorData);
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      console.error("❌ Response não OK:", response.status, responseText);
+      
+      // Tentar parsear erro como JSON
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      } catch (jsonError) {
+        // Se não for JSON, usar texto direto
+        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
+      }
     }
     
-    const data = await response.json();
-    console.log("✅ Resposta recebida, tamanho:", JSON.stringify(data).length);
+    // 🔍 TENTAR PARSEAR RESPOSTA COMO JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log("✅ JSON parseado com sucesso");
+    } catch (jsonError) {
+      console.error("❌ Erro ao parsear JSON:", jsonError.message);
+      console.error("❌ Response text completo:", responseText);
+      
+      // Se a resposta parece ser HTML de erro do Vercel
+      if (responseText.includes('<html>') || responseText.includes('<!DOCTYPE')) {
+        throw new Error("API retornou HTML ao invés de JSON. Possível erro no servidor.");
+      }
+      
+      // Se começa com texto de erro
+      if (responseText.startsWith('A server error') || responseText.startsWith('Error:')) {
+        throw new Error(`Erro do servidor: ${responseText.substring(0, 200)}`);
+      }
+      
+      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
+    }
     
+    // 🔍 VALIDAR ESTRUTURA DA RESPOSTA
     if (data.success && data.choices?.[0]?.message?.content) {
+      console.log("✅ Resposta válida recebida");
       return data.choices[0].message.content;
     } else {
-      console.error("❌ Formato inválido:", data);
-      throw new Error("Resposta inválida da API");
+      console.error("❌ Estrutura de resposta inválida:", data);
+      
+      // Se tem erro na resposta
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      throw new Error("Estrutura de resposta inválida da API");
     }
     
   } catch (error) {
-    console.error("❌ Erro na API:", error);
+    console.error("❌ Erro completo na API:", error);
+    console.error("❌ Stack:", error.stack);
     throw error;
   }
 }
 
-// 🎯 Habilitar botão de dicas
+// 🎯 Funções auxiliares (mantidas iguais)
 function habilitarBotaoDicas() {
   const btnGerar = document.getElementById('btnGerarDicas');
   if (btnGerar) {
@@ -385,7 +428,6 @@ function habilitarBotaoDicas() {
   }
 }
 
-// 🔧 Funções auxiliares (mantidas iguais)
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -399,7 +441,7 @@ function updateElement(id, content) {
   const element = document.getElementById(id);
   if (element) {
     element.innerText = content;
-    console.log("📝 Elemento atualizado:", id, "tamanho:", content.length);
+    console.log("📝 Elemento atualizado:", id, "length:", content.length);
   } else {
     console.warn("⚠️ Elemento não encontrado:", id);
   }
@@ -417,7 +459,7 @@ function showError(message) {
   updateElement("orcamentoIA", "❌ " + message);
 }
 
-// 📋 Função copiar (mantida robusta)
+// 📋 Função copiar (mantida robusta anterior)
 function copiarTexto(id) {
   const elemento = document.getElementById(id);
   if (!elemento) {
@@ -433,7 +475,7 @@ function copiarTexto(id) {
       console.log("✅ Texto copiado:", id);
       mostrarFeedbackCopia(event.target, "✅ Copiado!");
     }).catch(err => {
-      console.warn("❌ Clipboard falhou, tentando alternativo...");
+      console.warn("❌ Clipboard falhou:", err);
       tentarCopiaAlternativa(texto, event.target);
     });
   } else {
@@ -492,37 +534,7 @@ function mostrarInstrucoesManuais(button) {
     }, 3000);
   }
   
-  const modal = document.createElement('div');
-  modal.innerHTML = `
-    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                background: rgba(0,0,0,0.7); z-index: 10000; display: flex; 
-                align-items: center; justify-content: center;">
-      <div style="background: white; padding: 2rem; border-radius: 12px; 
-                  max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <h3 style="color: #003399; margin-bottom: 1rem;">📋 Cópia Manual</h3>
-        <p style="margin-bottom: 1rem; line-height: 1.5;">
-          A cópia automática falhou.<br><br>
-          <strong>Para copiar:</strong><br>
-          1. Selecione todo o texto<br>
-          2. Pressione Ctrl+C<br>
-          3. Cole com Ctrl+V
-        </p>
-        <button onclick="this.parentElement.parentElement.remove()" 
-                style="background: #003399; color: white; border: none; 
-                       padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
-          OK
-        </button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  setTimeout(() => {
-    if (modal.parentElement) {
-      modal.remove();
-    }
-  }, 10000);
+  alert("Cópia automática falhou. Selecione o texto manualmente e pressione Ctrl+C para copiar.");
 }
 
-console.log("🚀 Sistema CVC Itaqua v2.0 carregado!");
+console.log("🚀 Sistema CVC Itaqua v2.1 (Robust Error Handling) carregado!");
