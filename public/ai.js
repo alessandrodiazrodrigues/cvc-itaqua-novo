@@ -1,26 +1,22 @@
-/// public/ai.js - Frontend com função copiar ROBUSTA
+// public/ai.js - Frontend melhorado para detecção de múltiplas opções
 
-// URL da API (automaticamente detecta o domínio)
 const API_URL = '/api/ai';
 
-console.log("⚡ CVC ITAQUA - SISTEMA VERCEL ATIVO");
+console.log("⚡ CVC ITAQUA - SISTEMA VERCEL ATIVO (v2.0)");
 
-// Variáveis globais
 let formElements = {};
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema...");
+  console.log("🔄 Iniciando sistema melhorado...");
   
-  // Cache elementos DOM
   formElements = {
     form: document.getElementById("orcamentoForm"),
     pasteArea: document.getElementById("pasteArea"),
     previewArea: document.getElementById("previewArea"),
     arquivo: document.getElementById("arquivo"),
-    pdfUpload: document.getElementById("pdfUpload") // Para index.html
+    pdfUpload: document.getElementById("pdfUpload")
   };
 
-  // Event Listeners
   if (formElements.form) {
     formElements.form.addEventListener("submit", handleOrcamentoSubmit);
     console.log("✅ Formulário de orçamento conectado");
@@ -31,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("✅ Upload de arquivo conectado");
   }
 
-  // Para index.html - análise de PDF
   if (formElements.pdfUpload) {
     window.analisarPDF = handlePDFAnalysis;
     console.log("✅ Análise de PDF conectada");
@@ -41,39 +36,34 @@ document.addEventListener("DOMContentLoaded", function () {
   testarConexaoAPI();
 });
 
-// 🧪 TESTAR CONEXÃO COM API
+// 🧪 Teste de conexão
 async function testarConexaoAPI() {
   try {
-    console.log("🧪 Testando conexão com API...");
+    console.log("🧪 Testando conexão com API melhorada...");
     
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: 'teste de conexão',
+        prompt: 'teste de conexão v2.0',
         tipo: 'teste'
       })
     });
     
     if (response.ok) {
-      console.log("✅ API Vercel conectada com sucesso!");
+      console.log("✅ API Vercel v2.0 conectada!");
     } else {
-      console.warn("⚠️ API retornou status:", response.status);
-      const errorData = await response.json();
-      console.warn("Detalhes:", errorData);
+      console.warn("⚠️ API status:", response.status);
     }
   } catch (error) {
-    console.error("❌ Erro na conexão com API:", error);
-    console.error("Verifique se o deploy foi feito corretamente");
+    console.error("❌ Erro na conexão:", error);
   }
 }
 
-// 🎯 FUNÇÃO PRINCIPAL: Gerar Orçamento
+// 🎯 FUNÇÃO PRINCIPAL melhorada
 async function handleOrcamentoSubmit(e) {
   e.preventDefault();
-  console.log("📝 Processando formulário...");
+  console.log("📝 Processando formulário (v2.0)...");
   
   showLoading();
   
@@ -81,18 +71,27 @@ async function handleOrcamentoSubmit(e) {
     const formData = extractFormData(e.target);
     console.log("📊 Dados extraídos:", formData);
     
-    // Validação básica
+    // Validação melhorada
     if (!formData.tipos || formData.tipos.length === 0) {
       throw new Error("Selecione pelo menos um tipo de serviço");
+    }
+    
+    // PRÉ-ANÁLISE do texto para debug
+    const temMultiplasOpcoes = analisarTextoParaMultiplasOpcoes(formData.observacoes + ' ' + formData.textoColado);
+    console.log("🔍 Pré-análise múltiplas opções:", temMultiplasOpcoes);
+    
+    // Feedback visual para o usuário
+    if (temMultiplasOpcoes.detectado) {
+      updateElement("orcamentoIA", "🔍 Múltiplas opções detectadas! Processando com template especial...");
     }
     
     // Gerar orçamento principal
     await generateOrcamento(formData);
     
-    // Habilitar botão de gerar dicas do destino
+    // Habilitar botão de gerar dicas
     habilitarBotaoDicas();
     
-    // Gerar ranking de hotéis (se for tipo Hotel)
+    // Gerar ranking de hotéis se necessário
     if (formData.tipos.includes("Hotel")) {
       await generateRankingHoteis(formData.destino);
     }
@@ -101,17 +100,16 @@ async function handleOrcamentoSubmit(e) {
     
   } catch (error) {
     console.error("❌ Erro ao processar:", error);
-    showError("Erro ao processar solicitação: " + error.message);
+    showError("Erro ao processar: " + error.message);
   } finally {
     hideLoading();
   }
 }
 
-// 📊 Extrair dados do formulário (MELHORADO)
+// 📊 Extração de dados melhorada
 function extractFormData(form) {
   const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
   
-  // Coletar idades das crianças individualmente
   const qtdeCriancas = parseInt(form.criancas.value) || 0;
   let idadesCriancas = [];
   
@@ -126,7 +124,7 @@ function extractFormData(form) {
     destino: form.destino.value || "(Destino não informado)",
     adultos: form.adultos.value || "2",
     criancas: form.criancas.value || "0",
-    idades: idadesCriancas.join(', '), // Idades individuais
+    idades: idadesCriancas.join(', '),
     observacoes: form.observacoes.value || "",
     tipos: tipos,
     textoColado: formElements.pasteArea?.innerText || '',
@@ -134,47 +132,94 @@ function extractFormData(form) {
     temImagem: !!(formElements.previewArea?.dataset.fileData)
   };
   
-  console.log("Tipos selecionados:", tipos);
-  console.log("Idades das crianças:", idadesCriancas);
-  console.log("Tem imagem:", formData.temImagem);
+  console.log("✅ Dados extraídos - Tipos:", tipos, "| Tem imagem:", formData.temImagem);
   
   return formData;
 }
 
-// 🤖 Gerar orçamento principal
+// 🔍 ANÁLISE LOCAL de múltiplas opções (para debug)
+function analisarTextoParaMultiplasOpcoes(texto) {
+  if (!texto) return { detectado: false, motivo: "Texto vazio" };
+  
+  const textoLower = texto.toLowerCase();
+  
+  // Contadores
+  const precos = (textoLower.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
+  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
+  const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
+  const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
+  
+  const detectado = precos >= 2 || companhias >= 2 || horarios >= 4 || totais >= 2;
+  
+  return {
+    detectado,
+    contadores: { precos, companhias, horarios, totais },
+    motivo: detectado ? "Múltiplas opções detectadas" : "Apenas uma opção encontrada"
+  };
+}
+
+// 🤖 Gerar orçamento com logging melhorado
 async function generateOrcamento(data) {
   console.log("🤖 Gerando orçamento principal...");
+  
+  const textoCompleto = `${data.observacoes} ${data.textoColado}`.trim();
+  const analise = analisarTextoParaMultiplasOpcoes(textoCompleto);
+  
+  console.log("📝 Análise local:", analise);
   
   const prompt = `Dados do orçamento:
 Destino: ${data.destino}
 Adultos: ${data.adultos}
 Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades} anos)` : ''}
-Observações e dados específicos: ${data.observacoes}
-Texto adicional enviado: ${data.textoColado}`;
+Tipos selecionados: ${data.tipos.join(', ')}
 
-  const response = await callAI(prompt, 'orcamento', data);
-  updateElement("orcamentoIA", response);
+DADOS ESPECÍFICOS DA VIAGEM:
+${textoCompleto}
+
+${analise.detectado ? 
+  'IMPORTANTE: Este texto contém múltiplas opções de passagens. Formate TODAS as opções encontradas.' : 
+  'IMPORTANTE: Este texto contém uma única opção. Formate de forma simples e clara.'
+}`;
+
+  try {
+    const response = await callAI(prompt, 'orcamento', data);
+    updateElement("orcamentoIA", response);
+    
+    // Log de sucesso com detalhes
+    console.log("✅ Orçamento gerado:");
+    console.log("- Múltiplas opções detectadas:", analise.detectado);
+    console.log("- Tamanho da resposta:", response.length, "caracteres");
+    
+  } catch (error) {
+    console.error("❌ Erro na geração:", error);
+    throw error;
+  }
 }
 
 // 🏨 Gerar ranking de hotéis
 async function generateRankingHoteis(destino) {
   console.log("🏨 Gerando ranking de hotéis para:", destino);
   
-  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias com crianças.
+  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
 
 Formato:
-🏆 1. Nome do Hotel - Estrelas
-📍 Localização  
-💰 Faixa de preço
-⭐ Destaques
+🏆 1. Nome do Hotel - ⭐⭐⭐⭐
+📍 Região/Localização
+💰 Faixa de preço aproximada
+⭐ Principais diferenciais
 
-Seja realista e informativo.`;
+Use informações realistas e atuais.`;
 
-  const response = await callAI(prompt, 'ranking', { destino });
-  updateElement("rankingIA", response);
+  try {
+    const response = await callAI(prompt, 'ranking', { destino });
+    updateElement("rankingIA", response);
+  } catch (error) {
+    console.error("❌ Erro no ranking:", error);
+    updateElement("rankingIA", "❌ Erro ao gerar ranking: " + error.message);
+  }
 }
 
-// 📄 Análise de PDF (para index.html)
+// 📄 Análise de PDF
 async function handlePDFAnalysis() {
   const file = formElements.pdfUpload.files[0];
   if (!file) {
@@ -189,12 +234,12 @@ async function handlePDFAnalysis() {
     const base64 = await fileToBase64(file);
     const prompt = `Analise este relatório da CVC e extraia:
     
-1. Principais métricas de vendas
-2. Metas vs realizado  
-3. Produtos mais vendidos
-4. Recomendações de ação
+1. 📊 Principais métricas de vendas
+2. 🎯 Metas vs realizado
+3. 🏆 Produtos mais vendidos
+4. 💡 Recomendações práticas
 
-Formato executivo, objetivo e prático.`;
+Formato executivo, claro e acionável para a filial 6220.`;
 
     const response = await callAI(prompt, 'analise', { 
       temImagem: true, 
@@ -203,7 +248,6 @@ Formato executivo, objetivo e prático.`;
     
     updateElement("analiseIA", response);
     
-    // Mostrar container de resultado
     const container = document.getElementById('analiseContainer');
     if (container) {
       container.style.display = 'block';
@@ -217,7 +261,7 @@ Formato executivo, objetivo e prático.`;
   }
 }
 
-// 📁 Upload de arquivo
+// 📁 Upload de arquivo (mantido igual)
 async function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -233,24 +277,21 @@ async function handleFileUpload(e) {
       img.src = base64;
       img.style.maxWidth = '100%';
       img.style.borderRadius = '8px';
-      formElements.previewArea.innerHTML = '<p>✅ Imagem carregada com sucesso</p>';
+      formElements.previewArea.innerHTML = '<p>✅ Imagem carregada</p>';
       formElements.previewArea.appendChild(img);
     } else {
-      formElements.previewArea.innerHTML = `<p>📄 ${file.name} carregado com sucesso</p>`;
+      formElements.previewArea.innerHTML = `<p>📄 ${file.name} carregado</p>`;
     }
     
-    console.log("✅ Arquivo processado");
   } catch (error) {
     console.error("❌ Erro no upload:", error);
-    formElements.previewArea.innerHTML = `<p>❌ Erro ao carregar: ${file.name}</p>`;
+    formElements.previewArea.innerHTML = `<p>❌ Erro: ${file.name}</p>`;
   }
 }
 
-// 📋 Configurar área de paste
+// 📋 Setup área de paste (mantido igual)
 function setupPasteArea() {
   if (!formElements.pasteArea) return;
-  
-  console.log("📋 Configurando área de paste...");
   
   formElements.pasteArea.addEventListener('paste', function (e) {
     console.log("📋 Conteúdo colado");
@@ -261,8 +302,6 @@ function setupPasteArea() {
       const item = items[i];
 
       if (item.type.indexOf('image') !== -1) {
-        console.log("🖼️ Imagem detectada no paste");
-        
         const blob = item.getAsFile();
         const reader = new FileReader();
         
@@ -271,11 +310,9 @@ function setupPasteArea() {
           img.src = event.target.result;
           img.style.maxWidth = '100%';
           img.style.borderRadius = '8px';
-          formElements.previewArea.innerHTML = '<p>✅ Imagem colada com sucesso</p>';
+          formElements.previewArea.innerHTML = '<p>✅ Imagem colada</p>';
           formElements.previewArea.appendChild(img);
           formElements.previewArea.dataset.fileData = event.target.result;
-          
-          console.log("✅ Imagem salva no preview");
         };
         
         reader.readAsDataURL(blob);
@@ -283,18 +320,17 @@ function setupPasteArea() {
         
       } else if (item.type === 'text/plain') {
         item.getAsString(function (text) {
-          formElements.previewArea.innerHTML = '<p>📝 Texto colado: ' + text.substring(0, 100) + '...</p>';
-          console.log("📝 Texto colado:", text.length, "caracteres");
+          formElements.previewArea.innerHTML = '<p>📝 Texto: ' + text.substring(0, 100) + '...</p>';
         });
       }
     }
   });
 }
 
-// 🔧 FUNÇÃO PRINCIPAL: Chamar API
+// 🔧 Chamar API melhorada
 async function callAI(prompt, tipo, extraData = {}) {
   try {
-    console.log("🔄 Enviando para API:", { tipo, temImagem: extraData.temImagem });
+    console.log("🔄 Enviando para API v2.0:", { tipo, temImagem: extraData.temImagem });
     
     const requestData = {
       prompt,
@@ -305,11 +341,16 @@ async function callAI(prompt, tipo, extraData = {}) {
       arquivo: extraData.arquivo
     };
     
+    console.log("📤 Dados enviados:", {
+      prompt: prompt.substring(0, 100) + "...",
+      tipo,
+      destino: extraData.destino,
+      tipos: extraData.tipos
+    });
+    
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestData)
     });
 
@@ -320,31 +361,31 @@ async function callAI(prompt, tipo, extraData = {}) {
     }
     
     const data = await response.json();
-    console.log("✅ Resposta da API recebida");
+    console.log("✅ Resposta recebida, tamanho:", JSON.stringify(data).length);
     
     if (data.success && data.choices?.[0]?.message?.content) {
       return data.choices[0].message.content;
     } else {
-      console.error("❌ Formato de resposta inválido:", data);
+      console.error("❌ Formato inválido:", data);
       throw new Error("Resposta inválida da API");
     }
     
   } catch (error) {
-    console.error("❌ Erro na chamada da API:", error);
+    console.error("❌ Erro na API:", error);
     throw error;
   }
 }
 
-// 🎯 Habilitar botão de gerar dicas (NOVA FUNÇÃO)
+// 🎯 Habilitar botão de dicas
 function habilitarBotaoDicas() {
   const btnGerar = document.getElementById('btnGerarDicas');
   if (btnGerar) {
     btnGerar.disabled = false;
-    console.log("✅ Botão de gerar dicas habilitado");
+    console.log("✅ Botão dicas habilitado");
   }
 }
 
-// 🔧 Funções auxiliares
+// 🔧 Funções auxiliares (mantidas iguais)
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -358,7 +399,7 @@ function updateElement(id, content) {
   const element = document.getElementById(id);
   if (element) {
     element.innerText = content;
-    console.log("📝 Elemento atualizado:", id);
+    console.log("📝 Elemento atualizado:", id, "tamanho:", content.length);
   } else {
     console.warn("⚠️ Elemento não encontrado:", id);
   }
@@ -368,15 +409,15 @@ function showLoading(elementId = "orcamentoIA") {
   updateElement(elementId, "🤖 Processando com IA...");
 }
 
-function hideLoading(elementId = "orcamentoIA") {
-  // Loading será substituído pelo conteúdo real
+function hideLoading() {
+  // Loading será substituído pelo conteúdo
 }
 
 function showError(message) {
   updateElement("orcamentoIA", "❌ " + message);
 }
 
-// 📋 FUNÇÃO COPIAR TEXTO ROBUSTA (CORRIGIDA)
+// 📋 Função copiar (mantida robusta)
 function copiarTexto(id) {
   const elemento = document.getElementById(id);
   if (!elemento) {
@@ -387,25 +428,21 @@ function copiarTexto(id) {
   
   const texto = elemento.innerText;
   
-  // Método 1: Tentar Clipboard API (moderno)
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(texto).then(() => {
-      console.log("✅ Texto copiado via Clipboard API:", id);
+      console.log("✅ Texto copiado:", id);
       mostrarFeedbackCopia(event.target, "✅ Copiado!");
     }).catch(err => {
-      console.warn("❌ Clipboard API falhou, tentando método alternativo...");
+      console.warn("❌ Clipboard falhou, tentando alternativo...");
       tentarCopiaAlternativa(texto, event.target);
     });
   } else {
-    // Método 2: Fallback para navegadores mais antigos
     tentarCopiaAlternativa(texto, event.target);
   }
 }
 
-// Método alternativo de cópia (mais compatível)
 function tentarCopiaAlternativa(texto, button) {
   try {
-    // Criar elemento temporário
     const textArea = document.createElement('textarea');
     textArea.value = texto;
     textArea.style.position = 'fixed';
@@ -413,7 +450,6 @@ function tentarCopiaAlternativa(texto, button) {
     textArea.style.top = '-999999px';
     document.body.appendChild(textArea);
     
-    // Selecionar e copiar
     textArea.focus();
     textArea.select();
     
@@ -421,18 +457,17 @@ function tentarCopiaAlternativa(texto, button) {
     document.body.removeChild(textArea);
     
     if (successful) {
-      console.log("✅ Texto copiado via execCommand");
+      console.log("✅ Copiado via execCommand");
       mostrarFeedbackCopia(button, "✅ Copiado!");
     } else {
       throw new Error("execCommand falhou");
     }
   } catch (err) {
-    console.error("❌ Todos os métodos de cópia falharam:", err);
+    console.error("❌ Cópia falhou:", err);
     mostrarInstrucoesManuais(button);
   }
 }
 
-// Mostrar feedback visual de sucesso
 function mostrarFeedbackCopia(button, texto) {
   if (!button) return;
   
@@ -446,7 +481,6 @@ function mostrarFeedbackCopia(button, texto) {
   }, 2000);
 }
 
-// Mostrar instruções manuais se todos os métodos falharem
 function mostrarInstrucoesManuais(button) {
   if (button) {
     button.innerText = "❌ Erro";
@@ -458,7 +492,6 @@ function mostrarInstrucoesManuais(button) {
     }, 3000);
   }
   
-  // Modal com instruções
   const modal = document.createElement('div');
   modal.innerHTML = `
     <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -466,18 +499,18 @@ function mostrarInstrucoesManuais(button) {
                 align-items: center; justify-content: center;">
       <div style="background: white; padding: 2rem; border-radius: 12px; 
                   max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <h3 style="color: #003399; margin-bottom: 1rem;">📋 Como copiar manualmente</h3>
+        <h3 style="color: #003399; margin-bottom: 1rem;">📋 Cópia Manual</h3>
         <p style="margin-bottom: 1rem; line-height: 1.5;">
-          Por questões de segurança do navegador, a cópia automática falhou.<br><br>
+          A cópia automática falhou.<br><br>
           <strong>Para copiar:</strong><br>
-          1. Selecione todo o texto com o mouse<br>
-          2. Pressione <kbd style="background: #f1f1f1; padding: 2px 6px; border-radius: 3px;">Ctrl+C</kbd><br>
-          3. Cole onde precisar com <kbd style="background: #f1f1f1; padding: 2px 6px; border-radius: 3px;">Ctrl+V</kbd>
+          1. Selecione todo o texto<br>
+          2. Pressione Ctrl+C<br>
+          3. Cole com Ctrl+V
         </p>
         <button onclick="this.parentElement.parentElement.remove()" 
                 style="background: #003399; color: white; border: none; 
                        padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
-          OK, Entendi
+          OK
         </button>
       </div>
     </div>
@@ -485,7 +518,6 @@ function mostrarInstrucoesManuais(button) {
   
   document.body.appendChild(modal);
   
-  // Remover modal automaticamente após 10 segundos
   setTimeout(() => {
     if (modal.parentElement) {
       modal.remove();
@@ -493,4 +525,4 @@ function mostrarInstrucoesManuais(button) {
   }, 10000);
 }
 
-console.log("🚀 Sistema CVC Itaqua carregado com sucesso!");
+console.log("🚀 Sistema CVC Itaqua v2.0 carregado!");
