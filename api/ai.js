@@ -1,6 +1,6 @@
-// /api/ai.js - Versão SEM import para testar
+// /api/ai.js - Versão completa com templates inline (sem import)
 
-// 📋 TEMPLATES INLINE (temporário para testar)
+// 📋 TEMPLATES INLINE - Todos os templates do sistema
 const templates = {
   'Aéreo Múltiplas Opções': `*Passagens Aéreas - Opções Disponíveis*
 
@@ -16,6 +16,12 @@ const templates = {
 ✈️ Volta: [DATA_VOLTA_2] - [AEROPORTO_DESTINO_VOLTA_2] [HORA_SAIDA_VOLTA_2] / [AEROPORTO_ORIGEM_VOLTA_2] [HORA_CHEGADA_VOLTA_2]
 💰 R$ [VALOR_TOTAL_2] para [COMPOSICAO_PASSAGEIROS_2]
 
+📋 *OPÇÃO 3: [COMPANHIA_3]*
+🗓️ [DATA_IDA_3] a [DATA_VOLTA_3] ([DURACAO_3])
+✈️ Ida: [DATA_IDA_3] - [AEROPORTO_ORIGEM_3] [HORA_IDA_3] / [AEROPORTO_DESTINO_3] [HORA_CHEGADA_3]
+✈️ Volta: [DATA_VOLTA_3] - [AEROPORTO_DESTINO_VOLTA_3] [HORA_SAIDA_VOLTA_3] / [AEROPORTO_ORIGEM_VOLTA_3] [HORA_CHEGADA_VOLTA_3]
+💰 R$ [VALOR_TOTAL_3] para [COMPOSICAO_PASSAGEIROS_3]
+
 ⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.
 
 📞 Dúvidas? Estamos aqui para ajudar você a escolher a melhor opção!`,
@@ -28,155 +34,454 @@ const templates = {
 💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
 💳 Pagamento em até [QTDE_PARCELAS]x de R$ [VALOR_PARCELA] s/ juros
 
-⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.`
+⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.`,
+
+  'Aéreo VBI/Fácil': `*Passagem Aérea VBI - Venda Bem Informada*
+[COMPANHIA_AEREA]
+[DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_SAIDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA]
+[DATA_VOLTA] - [AEROPORTO_DESTINO_VOLTA] [HORA_SAIDA_VOLTA] / [AEROPORTO_ORIGEM_VOLTA] [HORA_CHEGADA_VOLTA]
+
+✅ *O que inclui:*
+• Taxas de embarque
+• Bagagem de mão [PESO_BAGAGEM_MAO]kg
+• Item pessoal
+• [OUTROS_INCLUSOS]
+
+💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
+💳 Parcelamento: até [QTDE_PARCELAS]x no cartão de crédito
+
+📋 *Documentação necessária:*
+• RG ou CNH dentro da validade
+• [DOCUMENTOS_ADICIONAIS]
+
+⚠️ Preços sujeitos à disponibilidade. Garantimos o valor apenas na finalização da compra.`,
+
+  'Hotel': `*Hospedagem*
+🏨 [NOME_HOTEL] - [CATEGORIA_ESTRELAS]⭐
+📍 [LOCALIZACAO_HOTEL]
+🗓️ [DATA_CHECK_IN] a [DATA_CHECK_OUT] ([QTDE_NOITES] noites)
+👥 [QTDE_ADULTOS] adultos[QTDE_CRIANCAS_TEXTO]
+
+🏠 *Acomodação:*
+[TIPO_QUARTO] com [REGIME_ALIMENTACAO]
+
+✅ *Inclui:*
+• [TIPO_CAFE]
+• [WIFI_INCLUSO]
+• [SERVICOS_INCLUSOS]
+
+💰 R$ [VALOR_TOTAL_HOSPEDAGEM] para toda a estadia
+💳 Parcelamento: [QTDE_PARCELAS]x de R$ [VALOR_PARCELA_HOTEL]
+
+🌟 *Destaques do hotel:*
+• [DESTAQUE_1]
+• [DESTAQUE_2]
+• [DESTAQUE_3]
+
+⚠️ Tarifas sujeitas à disponibilidade no momento da reserva.`,
+
+  'default': `*Orçamento CVC Itaqua*
+📍 Destino: [DESTINO]
+🗓️ Período: [PERIODO_VIAGEM]
+👥 Passageiros: [PASSAGEIROS]
+
+💰 Valor: R$ [VALOR_ORCAMENTO]
+💳 Formas de pagamento: [OPCOES_PAGAMENTO]
+
+📋 *Serviços inclusos:*
+[SERVICOS_DETALHADOS]
+
+⚠️ Valores sujeitos a alteração conforme disponibilidade no momento da reserva.
+
+📞 CVC Itaqua - Filial 6220
+Estamos aqui para ajudar você a realizar essa viagem!`
 };
 
 export default async function handler(req, res) {
   try {
-    console.log('🚀 [TEST] API iniciada - versão sem import');
-    console.log('🚀 [TEST] Método:', req.method);
+    console.log('🚀 [CVC] API iniciada - versão inline templates');
+    console.log('🚀 [CVC] Método:', req.method);
+    console.log('🚀 [CVC] URL:', req.url);
     
-    // Headers CORS
+    // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     
     // OPTIONS
     if (req.method === 'OPTIONS') {
-      console.log('✅ [TEST] OPTIONS funcionando');
-      return res.status(200).json({ message: 'CORS OK - sem import' });
-    }
-
-    // GET de teste
-    if (req.method === 'GET') {
-      console.log('✅ [TEST] GET funcionando');
+      console.log('✅ [CVC] CORS OK');
       return res.status(200).json({ 
-        message: 'API funcionando SEM import',
-        version: 'test-no-import',
-        timestamp: new Date().toISOString(),
-        templates_loaded: Object.keys(templates).length
+        message: 'CORS OK - templates inline',
+        timestamp: new Date().toISOString()
       });
     }
 
-    // POST
+    // GET
+    if (req.method === 'GET') {
+      console.log('✅ [CVC] GET test');
+      return res.status(200).json({ 
+        message: 'CVC Itaqua API Online - Templates Inline',
+        version: '2.1.1-inline',
+        timestamp: new Date().toISOString(),
+        templates_available: Object.keys(templates),
+        status: 'operational'
+      });
+    }
+
+    // Apenas POST
     if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Método não permitido' });
+      return res.status(405).json({ 
+        error: 'Método não permitido',
+        allowedMethods: ['GET', 'POST', 'OPTIONS']
+      });
     }
 
-    console.log('📥 [TEST] POST recebido');
-    
-    if (!req.body || !req.body.prompt) {
-      return res.status(400).json({ error: 'Prompt obrigatório' });
+    // Validar body
+    if (!req.body) {
+      return res.status(400).json({ error: 'Body da requisição é obrigatório' });
     }
-
-    const { prompt, tipos } = req.body;
-    console.log('📊 [TEST] Prompt length:', prompt.length);
-    console.log('📊 [TEST] Tipos:', tipos);
-
-    // Detecção simples
-    const temMultiplasOpcoes = detectarMultiplasOpcoes(prompt);
-    console.log('🔍 [TEST] Múltiplas opções:', temMultiplasOpcoes);
-
-    // Selecionar template
-    let template = templates['Aéreo Facial']; // Padrão
     
-    if (temMultiplasOpcoes && tipos?.includes('Aéreo Facial')) {
-      template = templates['Aéreo Múltiplas Opções'];
-      console.log('✅ [TEST] Usando template múltiplas opções');
-    } else {
-      console.log('✅ [TEST] Usando template simples');
+    const { prompt, tipo, destino, tipos, temImagem, arquivo } = req.body;
+    
+    // Validar prompt
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Prompt é obrigatório e deve ser uma string não vazia',
+        received: { prompt: typeof prompt, length: prompt?.length || 0 }
+      });
     }
-
-    // Simular resposta da IA (SEM chamar APIs externas)
-    const respostaSimulada = simularIA(prompt, template, temMultiplasOpcoes);
     
-    console.log('✅ [TEST] Resposta gerada, length:', respostaSimulada.length);
+    console.log('✅ [CVC] Dados válidos');
+    console.log('📊 [CVC] Prompt length:', prompt.length);
+    console.log('📊 [CVC] Tipos:', tipos);
+    console.log('📊 [CVC] Tem imagem:', temImagem);
 
+    // Seleção de template
+    const template = selecionarTemplate(tipos, tipo, prompt);
+    console.log('📝 [CVC] Template selecionado');
+    
+    // Construir prompt
+    const promptFinal = construirPrompt(prompt, template, { destino, tipos, temImagem, tipo });
+    console.log('🏗️ [CVC] Prompt construído, length:', promptFinal.length);
+    
+    // Chamar IA
+    const responseIA = await chamarIA(promptFinal, temImagem, arquivo);
+    console.log('✅ [CVC] IA respondeu, length:', responseIA.length);
+    
+    // Resposta final
     return res.status(200).json({
       success: true,
       choices: [{
         message: {
-          content: respostaSimulada
+          content: responseIA
         }
       }],
-      debug: {
-        template_usado: temMultiplasOpcoes ? 'múltiplas' : 'simples',
-        prompt_length: prompt.length,
-        response_length: respostaSimulada.length,
-        timestamp: new Date().toISOString()
+      metadata: {
+        timestamp: new Date().toISOString(),
+        promptLength: prompt.length,
+        responseLength: responseIA.length,
+        templateUsed: template.substring(0, 50) + '...',
+        tipos: tipos || [],
+        temImagem: !!temImagem
       }
     });
 
   } catch (error) {
-    console.error('💥 [TEST] Erro:', error);
+    console.error('💥 [CVC] Erro capturado:', error);
     
-    return res.status(500).json({
+    const errorResponse = {
       success: false,
-      error: error.message,
+      error: {
+        message: error.message || 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      },
       debug: {
         name: error.name,
-        stack: error.stack?.split('\n').slice(0, 3),
-        timestamp: new Date().toISOString()
+        stack: error.stack?.split('\n').slice(0, 5),
+        method: req.method,
+        hasBody: !!req.body
       }
-    });
-  }
-}
-
-// 🔍 Detecção simples
-function detectarMultiplasOpcoes(prompt) {
-  if (!prompt) return false;
-  
-  const texto = prompt.toLowerCase();
-  
-  // Contadores básicos
-  const precos = (texto.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
-  const companhias = (texto.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
-  const totais = (texto.match(/total.*\d+.*adult/gi) || []).length;
-  
-  console.log('🔍 [DETECÇÃO] Preços:', precos, 'Companhias:', companhias, 'Totais:', totais);
-  
-  return precos >= 2 || companhias >= 2 || totais >= 2;
-}
-
-// 🤖 Simular IA (sem chamar APIs externas)
-function simularIA(prompt, template, isMultiple) {
-  console.log('🤖 [SIMULAÇÃO] Gerando resposta...');
-  
-  if (isMultiple) {
-    // Tentar extrair dados do seu exemplo
-    if (prompt.includes('Gol') && prompt.includes('Latam')) {
-      return `*Passagens Aéreas - Opções Disponíveis*
-
-📋 *OPÇÃO 1: Gol*
-🗓️ 30 de jul a 01 de ago (3 dias e 2 noites)
-✈️ Ida: 30/07 - CGH 08:05 / RAO 09:10
-✈️ Volta: 01/08 - RAO 18:40 / CGH 19:40
-💰 R$ 1.722,96 para 2 adultos
-
-📋 *OPÇÃO 2: Latam*
-🗓️ 29 de jul a 01 de ago (4 dias e 3 noites)
-✈️ Ida: 29/07 - CGH 17:50 / RAO 18:55
-✈️ Volta: 01/08 - RAO 19:40 / CGH 20:40
-💰 R$ 4.600,68 para 2 adultos
-
-⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.
-
-📞 Dúvidas? Estamos aqui para ajudar você a escolher a melhor opção!`;
+    };
+    
+    try {
+      return res.status(500).json(errorResponse);
+    } catch (jsonError) {
+      console.error('💥 [CVC] Erro crítico JSON:', jsonError);
+      res.setHeader('Content-Type', 'text/plain');
+      return res.status(500).send(`ERRO: ${error.message}`);
     }
   }
-  
-  // Resposta simples padrão
-  return `*Passagem Aérea*
-Companhia detectada no texto
-Datas e horários extraídos dos dados fornecidos
-
-💰 Valor conforme informado
-💳 Pagamento em até 10x no cartão
-
-⚠️ Valores sujeitos a alteração e disponibilidade!
-
-📞 CVC Itaqua - Filial 6220`;
 }
 
-console.log('✅ [TEST] Módulo carregado - versão sem import');
+// 🎯 Seleção de template
+function selecionarTemplate(tipos, tipoEspecifico, prompt) {
+  console.log('🔍 [TEMPLATE] Selecionando...');
+  
+  try {
+    const temMultiplasOpcoes = detectarMultiplasOpcoes(prompt);
+    
+    if (temMultiplasOpcoes && (tipos?.includes('Aéreo Facial') || tipos?.includes('Aéreo VBI/Fácil'))) {
+      console.log('✅ [TEMPLATE] Múltiplas opções');
+      return templates['Aéreo Múltiplas Opções'];
+    }
+    
+    if (tipoEspecifico && templates[tipoEspecifico]) {
+      console.log('✅ [TEMPLATE] Específico:', tipoEspecifico);
+      return templates[tipoEspecifico];
+    }
+    
+    if (tipos && Array.isArray(tipos) && tipos.length > 0) {
+      for (const tipo of tipos) {
+        if (templates[tipo]) {
+          console.log('✅ [TEMPLATE] Encontrado:', tipo);
+          return templates[tipo];
+        }
+      }
+    }
+    
+    console.log('⚠️ [TEMPLATE] Usando padrão');
+    return templates['Aéreo Facial'] || templates.default;
+    
+  } catch (error) {
+    console.error('❌ [TEMPLATE] Erro:', error);
+    return templates.default;
+  }
+}
+
+// 🔍 Detecção de múltiplas opções
+function detectarMultiplasOpcoes(prompt) {
+  if (!prompt || typeof prompt !== 'string') return false;
+  
+  try {
+    const texto = prompt.toLowerCase();
+    
+    const indicadores = [
+      { nome: 'totais_adultos', regex: /total.*\d+.*adult/gi, minimo: 2 },
+      { nome: 'precos_reais', regex: /r\$.*\d{1,3}[\.,]\d{3}/gi, minimo: 2 },
+      { nome: 'companhias', regex: /(gol|latam|azul|avianca|tap|american)/gi, minimo: 2 },
+      { nome: 'horarios', regex: /\d{2}:\d{2}/g, minimo: 4 },
+      { nome: 'datas_viagem', regex: /(ida|volta).*\d{2} de \w+/gi, minimo: 2 }
+    ];
+    
+    let criteriosAtendidos = 0;
+    let detalhes = {};
+    
+    indicadores.forEach(ind => {
+      const matches = (texto.match(ind.regex) || []);
+      detalhes[ind.nome] = matches.length;
+      
+      if (matches.length >= ind.minimo) {
+        criteriosAtendidos++;
+      }
+    });
+    
+    const resultado = criteriosAtendidos > 0;
+    
+    console.log('🔍 [DETECÇÃO]', {
+      detectado: resultado,
+      criterios: criteriosAtendidos,
+      detalhes
+    });
+    
+    return resultado;
+    
+  } catch (error) {
+    console.error('❌ [DETECÇÃO] Erro:', error);
+    return false;
+  }
+}
+
+// 🏗️ Construir prompt
+function construirPrompt(promptBase, template, context) {
+  try {
+    const { destino, tipos, temImagem, tipo } = context;
+    
+    if (tipo === 'analise') {
+      return `Você é um analista da CVC Itaqua. ${promptBase}`;
+    }
+    
+    if (tipo === 'destino' || tipo === 'ranking') {
+      return promptBase;
+    }
+    
+    const isMultipleTemplate = template.includes('*OPÇÃO 1:*');
+    
+    return `Você é uma atendente da CVC Itaqua (filial 6220). 
+
+Formate o orçamento usando EXATAMENTE este template:
+
+=== TEMPLATE ===
+${template}
+=== FIM TEMPLATE ===
+
+DADOS FORNECIDOS:
+${promptBase}
+
+INSTRUÇÕES:
+1. Use EXATAMENTE o formato do template
+2. Substitua valores [ENTRE_COLCHETES] pelos dados reais
+3. Mantenha emojis e formatação
+4. Valores em Real (R$)
+5. Pronto para WhatsApp
+6. Sem explicações extras
+
+${isMultipleTemplate ? `
+MÚLTIPLAS OPÇÕES:
+- Identifique TODAS as opções no texto
+- Preencha cada OPÇÃO com dados específicos
+- Use valores TOTAIS de cada opção
+- Remova seções vazias se houver menos de 3 opções
+` : `
+OPÇÃO ÚNICA:
+- Use a melhor opção disponível
+- Calcule valores corretamente
+`}
+
+${temImagem ? 'ATENÇÃO: Extraia dados da imagem anexada.' : ''}
+
+Contexto: ${destino || 'N/A'} | Tipos: ${tipos?.join(', ') || 'N/A'}`;
+    
+  } catch (error) {
+    console.error('❌ [PROMPT] Erro:', error);
+    return `Formate este orçamento: ${promptBase}`;
+  }
+}
+
+// 🤖 Chamar IA
+async function chamarIA(prompt, temImagem, arquivo) {
+  console.log('🤖 [IA] Iniciando...');
+  
+  try {
+    const temOpenAI = !!process.env.OPENAI_API_KEY;
+    const temClaude = !!process.env.ANTHROPIC_API_KEY;
+    
+    console.log('🤖 [IA] APIs - OpenAI:', temOpenAI, 'Claude:', temClaude);
+    
+    if (!temOpenAI && !temClaude) {
+      throw new Error('Nenhuma API Key configurada (OPENAI_API_KEY ou ANTHROPIC_API_KEY)');
+    }
+    
+    if (temOpenAI) {
+      console.log('🔵 [IA] Usando OpenAI');
+      return await chamarOpenAI(prompt, temImagem, arquivo);
+    } else {
+      console.log('🟠 [IA] Usando Claude');
+      return await chamarClaude(prompt, temImagem, arquivo);
+    }
+    
+  } catch (error) {
+    console.error('❌ [IA] Erro:', error);
+    throw new Error(`Erro na IA: ${error.message}`);
+  }
+}
+
+// 🔵 OpenAI
+async function chamarOpenAI(prompt, temImagem, arquivo) {
+  try {
+    let messages;
+    
+    if (temImagem && arquivo) {
+      messages = [{
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: { url: arquivo, detail: "high" } }
+        ]
+      }];
+    } else {
+      messages = [{ role: "user", content: prompt }];
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages,
+        max_tokens: 2500,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI Error ${response.status}: ${errorText.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('OpenAI resposta inválida');
+    }
+
+    return data.choices[0].message.content;
+    
+  } catch (error) {
+    console.error('❌ [OPENAI] Erro:', error);
+    throw error;
+  }
+}
+
+// 🟠 Claude  
+async function chamarClaude(prompt, temImagem, arquivo) {
+  try {
+    let content;
+    
+    if (temImagem && arquivo) {
+      const base64Match = arquivo.match(/data:image\/[^;]+;base64,(.+)/);
+      if (!base64Match) {
+        throw new Error('Formato de imagem inválido');
+      }
+      
+      const base64Data = base64Match[1];
+      const mimeType = arquivo.match(/data:(image\/[^;]+)/)?.[1] || 'image/jpeg';
+      
+      content = [
+        { type: "text", text: prompt },
+        { type: "image", source: { type: "base64", media_type: mimeType, data: base64Data } }
+      ];
+    } else {
+      content = prompt;
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 2500,
+        temperature: 0.3,
+        messages: [{ role: 'user', content: content }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Claude Error ${response.status}: ${errorText.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.content?.[0]?.text) {
+      throw new Error('Claude resposta inválida');
+    }
+
+    return data.content[0].text;
+    
+  } catch (error) {
+    console.error('❌ [CLAUDE] Erro:', error);
+    throw error;
+  }
+}
+
+console.log('✅ [CVC] Módulo carregado - templates inline');
