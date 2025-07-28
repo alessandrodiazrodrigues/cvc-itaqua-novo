@@ -100,34 +100,58 @@ function selecionarTemplate(tipos, tipoEspecifico, prompt) {
   return templates['Aéreo Facial'] || templates.default;
 }
 
-// 🔍 Detectar se há múltiplas opções de passagem no texto
+// 🔍 DETECÇÃO CORRIGIDA - Detectar múltiplas opções de passagem no texto
 function detectarMultiplasOpcoes(prompt) {
   if (!prompt) return false;
   
   const texto = prompt.toLowerCase();
   
-  // Contar ocorrências de indicadores de múltiplas opções
+  // ✅ INDICADORES MELHORADOS COM REGEX
   const indicadores = [
-    'total (2 adultos)',
-    'r$ ',
-    'guarulhos - porto',
-    'tap portugal',
-    'https://www.cvc.com.br/carrinho-dinamico/'
+    /total.*\d+.*adult/gi,  // "Total (2 Adultos)" "Total 2 adultos" etc
+    /r\$.*\d{1,3}[\.,]\d{3}/gi,  // Preços brasileiros R$ 1.234,56
+    /(gol|latam|azul|avianca|tap|american|united|delta)/gi,  // Companhias aéreas
+    /\d{2}:\d{2}/g,  // Horários 08:05, 19:40 etc
+    /(ida|volta).*\d{2} de \w+/gi,  // "ida 30 de julho" "volta 01 de agosto"
+    /https:\/\/www\.cvc\.com\.br\/carrinho-dinamico/gi,  // Links CVC
+    /classe.*econômica/gi,  // Classe de voo
+    /voo direto/gi  // Tipo de voo
   ];
   
   let contadores = {};
-  indicadores.forEach(indicador => {
-    const matches = (texto.match(new RegExp(indicador, 'g')) || []).length;
-    contadores[indicador] = matches;
+  let detalhes = {};
+  
+  indicadores.forEach((regex, index) => {
+    const matches = (texto.match(regex) || []);
+    contadores[`indicador_${index}`] = matches.length;
+    detalhes[`indicador_${index}`] = matches;
   });
   
-  // Se há mais de 2 ocorrências de preços ou links, provável múltiplas opções
-  const temMultiplosPrecos = contadores['r$ '] >= 3;
-  const temMultiplosLinks = contadores['https://www.cvc.com.br/carrinho-dinamico/'] >= 2;
-  const temMultiplosTotais = contadores['total (2 adultos)'] >= 2;
+  // ✅ CRITÉRIOS MELHORADOS
+  const temMultiplosPrecos = contadores.indicador_1 >= 2;  // 2+ preços
+  const temMultiplasCias = contadores.indicador_2 >= 2;    // 2+ companhias
+  const temMultiplosHorarios = contadores.indicador_3 >= 4; // 4+ horários (ida+volta = 2 opções)
+  const temMultiplasDatas = contadores.indicador_4 >= 2;   // 2+ datas ida/volta
+  const temMultiplosLinks = contadores.indicador_5 >= 2;   // 2+ links CVC
+  const temMultiplosTotais = contadores.indicador_0 >= 2;  // 2+ totais
   
-  console.log('🔍 Detecção múltiplas opções:', contadores);
-  return temMultiplosPrecos || temMultiplosLinks || temMultiplosTotais;
+  const resultado = temMultiplosPrecos || temMultiplasCias || temMultiplosHorarios || 
+                   temMultiplasDatas || temMultiplosLinks || temMultiplosTotais;
+  
+  console.log('🔍 Detecção múltiplas opções MELHORADA:', {
+    resultado,
+    contadores,
+    criterios: {
+      multiplosPrecos: temMultiplosPrecos,
+      multiplasCias: temMultiplasCias, 
+      multiplosHorarios: temMultiplosHorarios,
+      multiplasDatas: temMultiplasDatas,
+      multiplosLinks: temMultiplosLinks,
+      multiplosTotais: temMultiplosTotais
+    }
+  });
+  
+  return resultado;
 }
 
 // 🏗️ Construir prompt final
@@ -171,19 +195,20 @@ INSTRUÇÕES GERAIS:
 4. Use valores em Real (R$) sempre
 5. O resultado deve estar pronto para copiar e colar no WhatsApp
 6. Não adicione explicações, apenas o orçamento formatado
+7. NÃO inclua as marcações de template (=== TEMPLATE ===, etc)
 
 ${isMultipleTemplate ? `
 INSTRUÇÕES ESPECÍFICAS PARA MÚLTIPLAS OPÇÕES:
-7. IMPORTANTE: Identifique TODAS as opções de passagens disponíveis no texto
-8. Preencha TODAS as opções encontradas (OPÇÃO 1, OPÇÃO 2, OPÇÃO 3, etc.)
-9. Para cada opção, extraia: datas, horários, valores TOTAIS e links específicos
-10. VALORES: Use sempre o valor TOTAL (ex: R$ 11.839,44 total) e calcule o valor por pessoa dividindo pelo número de adultos
-11. Se houver menos de 3 opções, remova as seções vazias do template
-12. Cada opção deve ter seu próprio link da CVC (carrinho-dinamico)
+8. IMPORTANTE: Identifique TODAS as opções de passagens disponíveis no texto
+9. Preencha TODAS as opções encontradas (OPÇÃO 1, OPÇÃO 2, OPÇÃO 3, etc.)
+10. Para cada opção, extraia: datas, horários, valores TOTAIS e companhias específicas
+11. VALORES: Use sempre o valor TOTAL informado para cada opção
+12. Se houver menos de 3 opções, remova as seções vazias do template
+13. Cada opção deve mostrar a companhia aérea correspondente
 ` : `
 INSTRUÇÕES ESPECÍFICAS PARA OPÇÃO ÚNICA:
-7. Se encontrar múltiplas opções no texto, use apenas a primeira/melhor opção
-8. Calcule corretamente o valor por pessoa baseado no total informado
+8. Se encontrar múltiplas opções no texto, use apenas a primeira/melhor opção
+9. Calcule corretamente o valor por pessoa baseado no total informado
 `}
 
 ${temImagem ? 'ATENÇÃO: Há uma imagem anexada. Extraia informações específicas (preços, datas, companhias, horários) da imagem para preencher o template.' : ''}
@@ -245,7 +270,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo) {
       model: 'gpt-4o',  // ✅ SEMPRE USA GPT-4o
       messages,
       max_tokens: 2000,  // Aumentado para múltiplas opções
-      temperature: 0.7
+      temperature: 0.5   // ✅ REDUZIDO para mais consistência
     })
   });
 
