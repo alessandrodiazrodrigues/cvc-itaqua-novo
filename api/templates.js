@@ -1,60 +1,53 @@
-// /api/templates.js - Templates para diferentes tipos de orçamento CVC
+// /api/templates.js - Templates corrigidos
 
 export const templates = {
   
-  // ✈️ AÉREO FACIAL
-  'Aéreo Facial': `*Passagem Aérea*
-[COMPANHIA_AEREA] 
-[DATA_IDA] - [CIDADE_ORIGEM] [HORA_SAIDA] / [CIDADE_DESTINO] [HORA_CHEGADA]
-[DATA_VOLTA] - [CIDADE_DESTINO] [HORA_SAIDA_VOLTA] / [CIDADE_ORIGEM] [HORA_CHEGADA_VOLTA]
-
-💰 R$ [VALOR_POR_PESSOA] por pessoa, taxas inclusas
-💳 Pagamento em até [QTDE_PARCELAS]x de R$ [VALOR_PARCELA] s/ juros
-🔗 [LINK_COMPRA]
-
-⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra. Pode usar o link que enviamos mesmo, é bem simples e seguro, ou pode chamar a gente que te ajudamos com a compra.`,
-
-
-// Adicionar ao templates.js
-
-// ✈️ AÉREO MÚLTIPLAS OPÇÕES
-'Aéreo Múltiplas Opções': `*Passagens Aéreas - Opções Disponíveis*
-🇵🇹 [COMPANHIA_AEREA]
+  // ✈️ AÉREO MÚLTIPLAS OPÇÕES (CORRIGIDO)
+  'Aéreo Múltiplas Opções': `*Passagens Aéreas - Opções Disponíveis*
+[COMPANHIA_AEREA]
 
 📋 *OPÇÃO 1:*
 🗓️ [DATA_IDA_1] a [DATA_VOLTA_1] ([DURACAO_1])
-✈️ Ida: [DATA_IDA_1] - [ORIGEM] [HORA_IDA_1] / [DESTINO] [HORA_CHEGADA_1]
-✈️ Volta: [DATA_VOLTA_1] - [DESTINO] [HORA_SAIDA_VOLTA_1] / [ORIGEM] [HORA_CHEGADA_VOLTA_1]
-💰 R$ [VALOR_TOTAL_1] para [QTDE_PASSAGEIROS] pessoas
-💳 [VALOR_POR_PESSOA_1] por pessoa
+✈️ Ida: [DATA_IDA_1] - [AEROPORTO_ORIGEM_1] [HORA_IDA_1] / [AEROPORTO_DESTINO_1] [HORA_CHEGADA_1]
+✈️ Volta: [DATA_VOLTA_1] - [AEROPORTO_DESTINO_VOLTA_1] [HORA_SAIDA_VOLTA_1] / [AEROPORTO_ORIGEM_VOLTA_1] [HORA_CHEGADA_VOLTA_1]
+💰 R$ [VALOR_TOTAL_1] para [COMPOSICAO_PASSAGEIROS_1]
 🔗 [LINK_1]
 
 📋 *OPÇÃO 2:*
 🗓️ [DATA_IDA_2] a [DATA_VOLTA_2] ([DURACAO_2])
-✈️ Ida: [DATA_IDA_2] - [ORIGEM] [HORA_IDA_2] / [DESTINO] [HORA_CHEGADA_2]
-✈️ Volta: [DATA_VOLTA_2] - [DESTINO] [HORA_SAIDA_VOLTA_2] / [ORIGEM] [HORA_CHEGADA_VOLTA_2]
-💰 R$ [VALOR_TOTAL_2] para [QTDE_PASSAGEIROS] pessoas
-💳 [VALOR_POR_PESSOA_2] por pessoa
+✈️ Ida: [DATA_IDA_2] - [AEROPORTO_ORIGEM_2] [HORA_IDA_2] / [AEROPORTO_DESTINO_2] [HORA_CHEGADA_2]
+✈️ Volta: [DATA_VOLTA_2] - [AEROPORTO_DESTINO_VOLTA_2] [HORA_SAIDA_VOLTA_2] / [AEROPORTO_ORIGEM_VOLTA_2] [HORA_CHEGADA_VOLTA_2]
+💰 R$ [VALOR_TOTAL_2] para [COMPOSICAO_PASSAGEIROS_2]
 🔗 [LINK_2]
 
 📋 *OPÇÃO 3:*
 🗓️ [DATA_IDA_3] a [DATA_VOLTA_3] ([DURACAO_3])
-✈️ Ida: [DATA_IDA_3] - [ORIGEM] [HORA_IDA_3] / [DESTINO] [HORA_CHEGADA_3]
-✈️ Volta: [DATA_VOLTA_3] - [DESTINO] [HORA_SAIDA_VOLTA_3] / [ORIGEM] [HORA_CHEGADA_VOLTA_3]
-💰 R$ [VALOR_TOTAL_3] para [QTDE_PASSAGEIROS] pessoas
-💳 [VALOR_POR_PESSOA_3] por pessoa
+✈️ Ida: [DATA_IDA_3] - [AEROPORTO_ORIGEM_3] [HORA_IDA_3] / [AEROPORTO_DESTINO_3] [HORA_CHEGADA_3]
+✈️ Volta: [DATA_VOLTA_3] - [AEROPORTO_DESTINO_VOLTA_3] [HORA_SAIDA_VOLTA_3] / [AEROPORTO_ORIGEM_VOLTA_3] [HORA_CHEGADA_VOLTA_3]
+💰 R$ [VALOR_TOTAL_3] para [COMPOSICAO_PASSAGEIROS_3]
 🔗 [LINK_3]
 
 ⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra. Pode usar qualquer link que enviamos, é bem simples e seguro, ou pode chamar a gente que te ajudamos com a compra.
 
 📞 Dúvidas? Estamos aqui para ajudar você a escolher a melhor opção!`,
 
-  
-  // ✈️ AÉREO VBI/FÁCIL  
+  // ✈️ AÉREO FACIAL (SINGLE - CORRIGIDO)
+  'Aéreo Facial': `*Passagem Aérea*
+[COMPANHIA_AEREA] 
+[DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_SAIDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA]
+[DATA_VOLTA] - [AEROPORTO_DESTINO_VOLTA] [HORA_SAIDA_VOLTA] / [AEROPORTO_ORIGEM_VOLTA] [HORA_CHEGADA_VOLTA]
+
+💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
+💳 Pagamento em até [QTDE_PARCELAS]x de R$ [VALOR_PARCELA] s/ juros
+🔗 [LINK_COMPRA]
+
+⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra. Pode usar o link que enviamos mesmo, é bem simples e seguro, ou pode chamar a gente que te ajudamos com a compra.`,
+
+  // ✈️ AÉREO VBI/FÁCIL (CORRIGIDO)
   'Aéreo VBI/Fácil': `*Passagem Aérea VBI - Venda Bem Informada*
 [COMPANHIA_AEREA]
-[DATA_IDA] - [CIDADE_ORIGEM] [HORA_SAIDA] / [CIDADE_DESTINO] [HORA_CHEGADA]
-[DATA_VOLTA] - [CIDADE_DESTINO] [HORA_SAIDA_VOLTA] / [CIDADE_ORIGEM] [HORA_CHEGADA_VOLTA]
+[DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_SAIDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA]
+[DATA_VOLTA] - [AEROPORTO_DESTINO_VOLTA] [HORA_SAIDA_VOLTA] / [AEROPORTO_ORIGEM_VOLTA] [HORA_CHEGADA_VOLTA]
 
 ✅ *O que inclui:*
 • Taxas de embarque
@@ -62,7 +55,7 @@ export const templates = {
 • Item pessoal
 • [OUTROS_INCLUSOS]
 
-💰 R$ [VALOR_TOTAL] para [QTDE_PASSAGEIROS] passageiros
+💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
 💳 Parcelamento: até [QTDE_PARCELAS]x no cartão de crédito
 
 📋 *Documentação necessária:*
@@ -290,6 +283,3 @@ Volta: [HORARIO_VOLTA_TRASLADO]
 📞 CVC Itaqua - Filial 6220
 Estamos aqui para ajudar você a realizar essa viagem!`
 };
-
-
-
