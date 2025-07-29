@@ -1,4 +1,4 @@
-// /api/ai.js - Versão completa otimizada com GPT-4o-mini + medidor de custo + imagens corrigidas
+// /api/ai.js - Versão completa otimizada com GPT-4o-mini + medidor de custo + imagens CORRIGIDAS
 
 // 📋 TEMPLATES INLINE (CORRIGIDOS)
 const templates = {
@@ -167,15 +167,16 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       return res.status(200).json({ 
         message: 'CVC Itaqua API Otimizada',
-        version: '3.0.0-optimized',
+        version: '3.0.1-image-fixed',
         timestamp: new Date().toISOString(),
         features: [
           'GPT-4o-mini para texto (92% economia)',
-          'GPT-4o para imagens',
+          'GPT-4o para imagens (prompt corrigido)',
           'Medidor de custo em tempo real',
           'Templates múltiplas opções',
           'Aeroportos por extenso',
-          'Links CVC corrigidos'
+          'Links CVC corrigidos',
+          'Processamento texto + imagem juntos'
         ],
         models: {
           text_only: 'gpt-4o-mini',
@@ -277,7 +278,7 @@ export default async function handler(req, res) {
       metricas: metricas,
       metadata: {
         timestamp: new Date().toISOString(),
-        version: '3.0.0-optimized',
+        version: '3.0.1-image-fixed',
         template_usado: template.substring(0, 50) + '...',
         tipos: tipos || [],
         temImagem: !!temImagem
@@ -355,7 +356,7 @@ function detectarMultiplasOpcoes(prompt) {
   }
 }
 
-// 🏗️ PROMPT OTIMIZADO - CORRIGIDO PARA LINKS
+// 🏗️ PROMPT OTIMIZADO - CORRIGIDO PARA IMAGENS
 function construirPromptOtimizado(promptBase, template, context) {
   try {
     const { destino, tipos, temImagem, tipo } = context;
@@ -370,46 +371,70 @@ function construirPromptOtimizado(promptBase, template, context) {
     
     const isMultipleTemplate = template.includes('*OPÇÃO 1:*');
     
-    // 🖼️ PROMPT ESPECIAL PARA IMAGENS (CORRIGIDO)
+    // 🖼️ PROMPT ESPECÍFICO E ASSERTIVO PARA IMAGENS - CORRIGIDO
     if (temImagem) {
-      return `Você é uma atendente especializada da CVC Itaqua (filial 6220) com expertise em análise de orçamentos visuais.
+      return `VOCÊ É UM ESPECIALISTA EM ANÁLISE DE ORÇAMENTOS VISUAIS DA CVC ITAQUA.
 
-TAREFA: Analise a imagem fornecida e extraia TODAS as informações de passagens aéreas para formatar no padrão WhatsApp.
+TAREFA OBRIGATÓRIA: Analise esta imagem de orçamento de passagens aéreas e extraia TODAS as informações para criar um orçamento formatado para WhatsApp.
 
-FORMATO EXATO A SEGUIR:
+VOCÊ TEM CAPACIDADE DE VISÃO E DEVE ANALISAR A IMAGEM FORNECIDA.
+
+FORMATO EXATO OBRIGATÓRIO:
 ${template}
 
-DADOS ADICIONAIS DO CLIENTE:
+DADOS COMPLEMENTARES DO FORMULÁRIO:
 ${promptBase}
 
-INSTRUÇÕES CRÍTICAS PARA LINKS:
-1. LINKS CVC: Substitua [LINK_CVC] pelo link DIRETO da CVC
-2. Use APENAS o URL completo: https://www.cvc.com.br/carrinho-dinamico/...
-3. NÃO use formato markdown [texto](url) - apenas o link puro
-4. Exemplo correto: 🔗 https://www.cvc.com.br/carrinho-dinamico/68881aa2f563526f4e7599dd
+INSTRUÇÕES ESPECÍFICAS PARA ANÁLISE DA IMAGEM:
 
-INSTRUÇÕES DE ANÁLISE:
-5. Examine CUIDADOSAMENTE toda a imagem
-6. Identifique TODAS as opções de passagens mostradas
-7. Extraia: companhias, datas, horários, aeroportos, valores, formas de pagamento
-8. Use nomes COMPLETOS dos aeroportos (CGH=Congonhas, GRU=Guarulhos, BPS=Porto Seguro)
-9. Mantenha valores exatos em Real (R$)
+1. 🔗 LINKS: Substitua [LINK_CVC] pelo link COMPLETO encontrado na imagem
+   - Use APENAS: https://www.cvc.com.br/carrinho-dinamico/...
+   - NUNCA use formato: [texto](url)
+
+2. 📋 EXTRAÇÃO DE DADOS DA IMAGEM:
+   - Leia TODOS os textos visíveis na imagem
+   - Identifique: companhia aérea, destino, datas, horários, valores
+   - Extraia: aeroportos de origem e destino 
+   - Copie: formas de pagamento exatas
+   - Localize: links da CVC se visíveis
+
+3. ✈️ CONVERSÃO DE AEROPORTOS:
+   - CGH = Congonhas
+   - GRU = Guarulhos  
+   - BPS = Porto Seguro
+   - RAO = Ribeirão Preto
+   - SDU = Santos Dumont
+   - IOS = Ilhéus
+
+4. 💰 VALORES: Use os valores EXATOS mostrados na imagem
+
+5. 📝 COMBINAÇÃO COM TEXTO: Se há dados complementares no formulário, combine com as informações da imagem
 
 ${isMultipleTemplate ? `
-MÚLTIPLAS OPÇÕES NA IMAGEM:
-- Identifique CADA opção separadamente
-- Preencha OPÇÃO 1, OPÇÃO 2, etc. com dados específicos
-- Use valores TOTAIS de cada opção
-- Remova seções vazias se houver menos de 3 opções
+6. 📊 MÚLTIPLAS OPÇÕES (se aplicável):
+   - Se a imagem mostra várias opções de passagens
+   - Crie uma seção para cada opção (OPÇÃO 1, OPÇÃO 2, etc.)
+   - Use dados específicos de cada opção
 ` : ''}
 
-CONVERSÃO DE AEROPORTOS:
-CGH=Congonhas, GRU=Guarulhos, BPS=Porto Seguro, RAO=Ribeirão Preto, SDU=Santos Dumont
+EXEMPLO DO RESULTADO ESPERADO:
+*Passagem Aérea*
+Gol
+30 de outubro - Guarulhos 16:00 / Porto Seguro 17:55
+05 de novembro - Porto Seguro 18:25 / Guarulhos 20:30
 
-RESULTADO: Formate APENAS o orçamento final, pronto para WhatsApp, sem explicações.`;
+💰 R$ 1.969,50 para 1 Adulto e 1 Criança
+💳 5x de R$ 393,90 s/ juros no cartão de crédito
+🔗 https://www.cvc.com.br/carrinho-dinamico/68881aa2f563526f4e7599dd
+
+⚠️ Valores sujeitos a alteração e disponibilidade!
+
+IMPORTANTE: VOCÊ DEVE ANALISAR A IMAGEM E EXTRAIR OS DADOS. NÃO diga que não pode analisar imagens - essa é sua função principal.
+
+RESULTADO: Formate APENAS o orçamento final baseado na análise da imagem.`;
     }
     
-    // 📝 PROMPT PARA TEXTO (CORRIGIDO)
+    // 📝 PROMPT PARA TEXTO (mantido igual)
     return `Você é uma atendente experiente da CVC Itaqua (filial 6220).
 
 Formate este orçamento seguindo EXATAMENTE o modelo:
@@ -553,7 +578,7 @@ async function chamarOpenAIOtimizada(prompt, temImagem, arquivo, modelo) {
         model: modelo,  // gpt-4o para imagens, gpt-4o-mini para texto
         messages,
         max_tokens: 2500,
-        temperature: 0.2
+        temperature: 0.1  // Reduzido para maior consistência
       })
     });
 
@@ -578,7 +603,7 @@ async function chamarOpenAIOtimizada(prompt, temImagem, arquivo, modelo) {
               model: 'gpt-4-vision-preview',
               messages,
               max_tokens: 2500,
-              temperature: 0.2
+              temperature: 0.1
             })
           });
           
@@ -650,7 +675,7 @@ async function chamarClaude(prompt, temImagem, arquivo) {
       body: JSON.stringify({
         model: 'claude-3-sonnet-20240229',
         max_tokens: 2500,
-        temperature: 0.2,
+        temperature: 0.1,
         messages: [{ role: 'user', content: content }]
       })
     });
@@ -707,4 +732,4 @@ function processarResposta(response) {
   }
 }
 
-console.log('✅ [CVC] API Otimizada carregada - GPT-4o-mini + Medidor + Imagens + Links Corrigidos');
+console.log('✅ [CVC] API Otimizada carregada - GPT-4o-mini + Medidor + Imagens CORRIGIDAS + Links + Texto+Imagem');
