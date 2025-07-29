@@ -1,1040 +1,806 @@
-// public/ai.js - Frontend completo com medidor de custo integrado + imagens corrigidas
+// ================================================================================
+// 🏆 CVC ITAQUA - API HÍBRIDA COMPLETA (Claude + GPT-4o-mini)
+// ================================================================================
+// Versão: 4.0.0-hybrid
+// Autor: Sistema CVC Itaqua
+// Última atualização: 2025
+// ================================================================================
 
-const API_URL = '/api/ai';
+/*
+📋 ÍNDICE DO CÓDIGO:
 
-console.log("⚡ CVC ITAQUA - SISTEMA v3.0 (Otimizado + Medidor de Custo + Imagens Corrigidas)");
+🔧 SEÇÃO 1: CONFIGURAÇÕES E TEMPLATES (Linhas 30-120)
+   ├── 1.1 Templates de Formatação de Orçamentos
+   ├── 1.2 Mapeamento de Aeroportos  
+   ├── 1.3 Configurações de Preços e Modelos
+   └── 1.4 Constantes do Sistema
 
-let formElements = {};
-let custoMeter = {
-  orcamentosHoje: 0,
-  custoTotalHoje: 0,
-  economiaHoje: 0,
-  ultimaAtualizacao: new Date().toDateString()
+🎯 SEÇÃO 2: HANDLER PRINCIPAL (Linhas 130-200)
+   ├── 2.1 Configuração de CORS e Headers
+   ├── 2.2 Validação de Requests
+   ├── 2.3 Processamento Principal
+   └── 2.4 Retorno de Resposta com Métricas
+
+🤖 SEÇÃO 3: SISTEMA HÍBRIDO DE IA (Linhas 210-280)
+   ├── 3.1 Seleção Inteligente de Modelos
+   ├── 3.2 Estratégia Híbrida (Claude + GPT-4o-mini)
+   ├── 3.3 Sistema de Fallback
+   └── 3.4 Logs e Debugging
+
+🏗️ SEÇÃO 4: PROMPTS OTIMIZADOS (Linhas 290-400)
+   ├── 4.1 Prompt para Claude (Imagens)
+   ├── 4.2 Prompt para GPT-4o-mini (Texto)
+   ├── 4.3 Prompts Especiais (Análise, Destino, Ranking)
+   └── 4.4 Template Selection Logic
+
+🟠 SEÇÃO 5: CLAUDE SONNET (Linhas 410-480)
+   ├── 5.1 Processamento de Imagens Base64
+   ├── 5.2 Validações Específicas do Claude
+   ├── 5.3 Chamada da API Anthropic
+   └── 5.4 Tratamento de Respostas
+
+🔵 SEÇÃO 6: OPENAI GPT-4o-mini (Linhas 490-570)
+   ├── 6.1 Processamento de Texto
+   ├── 6.2 Fallback para GPT-4o quando necessário
+   ├── 6.3 Validações e Logs
+   └── 6.4 Tratamento de Erros
+
+🔧 SEÇÃO 7: UTILITÁRIOS E PROCESSAMENTO (Linhas 580-650)
+   ├── 7.1 Detecção de Múltiplas Opções
+   ├── 7.2 Seleção de Templates
+   ├── 7.3 Processamento de Respostas
+   └── 7.4 Conversão de Aeroportos
+
+💰 SEÇÃO 8: SISTEMA DE CUSTOS HÍBRIDO (Linhas 660-720)
+   ├── 8.1 Cálculo de Custos por Modelo
+   ├── 8.2 Comparação de Economia
+   ├── 8.3 Métricas Detalhadas
+   └── 8.4 Relatórios de Performance
+
+📊 SEÇÃO 9: LOGS E DEBUGGING (Linhas 730-750)
+   ├── 9.1 Sistema de Logs Estruturados
+   ├── 9.2 Debug de Modelos
+   └── 9.3 Monitoramento de Performance
+*/
+
+// ================================================================================
+// 🔧 SEÇÃO 1: CONFIGURAÇÕES E TEMPLATES
+// ================================================================================
+
+// 1.1 TEMPLATES DE FORMATAÇÃO DE ORÇAMENTOS
+const templates = {
+  'Aéreo Múltiplas Opções': `*Passagens Aéreas - Opções Disponíveis*
+
+📋 *OPÇÃO 1: [COMPANHIA_1]*
+🗓️ [DATA_IDA_1] a [DATA_VOLTA_1] ([DURACAO_1])
+✈️ Ida: [DATA_IDA_1] - [AEROPORTO_ORIGEM_1] [HORA_IDA_1] / [AEROPORTO_DESTINO_1] [HORA_CHEGADA_1]
+✈️ Volta: [DATA_VOLTA_1] - [AEROPORTO_DESTINO_VOLTA_1] [HORA_SAIDA_VOLTA_1] / [AEROPORTO_ORIGEM_VOLTA_1] [HORA_CHEGADA_VOLTA_1]
+💰 R$ [VALOR_TOTAL_1] para [COMPOSICAO_PASSAGEIROS_1]
+💳 [FORMA_PAGAMENTO_1]
+🔗 [LINK_CVC_1]
+
+📋 *OPÇÃO 2: [COMPANHIA_2]*
+🗓️ [DATA_IDA_2] a [DATA_VOLTA_2] ([DURACAO_2])
+✈️ Ida: [DATA_IDA_2] - [AEROPORTO_ORIGEM_2] [HORA_IDA_2] / [AEROPORTO_DESTINO_2] [HORA_CHEGADA_2]
+✈️ Volta: [DATA_VOLTA_2] - [AEROPORTO_DESTINO_VOLTA_2] [HORA_SAIDA_VOLTA_2] / [AEROPORTO_ORIGEM_VOLTA_2] [HORA_CHEGADA_VOLTA_2]
+💰 R$ [VALOR_TOTAL_2] para [COMPOSICAO_PASSAGEIROS_2]
+💳 [FORMA_PAGAMENTO_2]
+🔗 [LINK_CVC_2]
+
+⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.
+
+📞 Dúvidas? Estamos aqui para ajudar você a escolher a melhor opção!`,
+
+  'Aéreo Facial': `*Passagem Aérea*
+[COMPANHIA_AEREA] 
+[DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_SAIDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA]
+[DATA_VOLTA] - [AEROPORTO_DESTINO_VOLTA] [HORA_SAIDA_VOLTA] / [AEROPORTO_ORIGEM_VOLTA] [HORA_CHEGADA_VOLTA]
+
+💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
+💳 [FORMA_PAGAMENTO]
+🔗 [LINK_CVC]
+
+⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.`,
+
+  'Hotel': `*Hospedagem*
+🏨 [NOME_HOTEL] - [CATEGORIA_ESTRELAS]⭐
+📍 [LOCALIZACAO_HOTEL]
+🗓️ [DATA_CHECK_IN] a [DATA_CHECK_OUT] ([QTDE_NOITES] noites)
+👥 [QTDE_ADULTOS] adultos[QTDE_CRIANCAS_TEXTO]
+
+🏠 *Acomodação:*
+[TIPO_QUARTO] com [REGIME_ALIMENTACAO]
+
+✅ *Inclui:*
+• [TIPO_CAFE]
+• [WIFI_INCLUSO]
+• [SERVICOS_INCLUSOS]
+
+💰 R$ [VALOR_TOTAL_HOSPEDAGEM] para toda a estadia
+💳 Parcelamento: [QTDE_PARCELAS]x de R$ [VALOR_PARCELA_HOTEL]
+
+⚠️ Tarifas sujeitas à disponibilidade no momento da reserva.`
 };
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema otimizado...");
+// 1.2 MAPEAMENTO DE AEROPORTOS BRASILEIROS
+const aeroportos = {
+  'CGH': 'Congonhas', 'GRU': 'Guarulhos', 'VCP': 'Viracopos',
+  'SDU': 'Santos Dumont', 'GIG': 'Galeão',
+  'RAO': 'Ribeirão Preto', 'BPS': 'Porto Seguro', 'SSA': 'Salvador', 'IOS': 'Ilhéus',
+  'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'CWB': 'Afonso Pena',
+  'IGU': 'Foz do Iguaçu', 'REC': 'Recife', 'FOR': 'Fortaleza', 'MAO': 'Manaus',
+  'BEL': 'Belém', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande', 'AJU': 'Aracaju',
+  'MCZ': 'Maceió', 'JPA': 'João Pessoa', 'NAT': 'Natal', 'THE': 'Teresina',
+  'SLZ': 'São Luís', 'VIX': 'Vitória', 'FLN': 'Florianópolis', 'POA': 'Porto Alegre'
+};
+
+// 1.3 CONFIGURAÇÕES DE PREÇOS (USD por 1K tokens)
+const PRECOS_MODELOS = {
+  // OpenAI
+  'gpt-4o': { input: 0.005, output: 0.015 },
+  'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
+  'gpt-4-vision-preview': { input: 0.01, output: 0.03 },
   
-  formElements = {
-    form: document.getElementById("orcamentoForm"),
-    pasteArea: document.getElementById("pasteArea"),
-    previewArea: document.getElementById("previewArea"),
-    arquivo: document.getElementById("arquivo"),
-    pdfUpload: document.getElementById("pdfUpload")
-  };
+  // Claude (aproximado)
+  'claude-3-sonnet': { input: 0.003, output: 0.015 }
+};
 
-  if (formElements.form) {
-    formElements.form.addEventListener("submit", handleOrcamentoSubmit);
-    console.log("✅ Formulário conectado");
-  }
-  
-  if (formElements.arquivo) {
-    formElements.arquivo.addEventListener("change", handleFileUpload);
-    console.log("✅ Upload conectado");
-  }
+// 1.4 CONSTANTES DO SISTEMA
+const USD_TO_BRL = 5.2;
+const MAX_TOKENS = 2500;
+const CLAUDE_MAX_IMAGE_SIZE_MB = 5;
+const OPENAI_MAX_IMAGE_SIZE_MB = 20;
 
-  if (formElements.pdfUpload) {
-    window.analisarPDF = handlePDFAnalysis;
-    console.log("✅ PDF análise conectada");
-  }
+// ================================================================================
+// 🎯 SEÇÃO 2: HANDLER PRINCIPAL
+// ================================================================================
 
-  setupPasteArea();
-  inicializarMedidorCusto();
-  testarConexaoAPI();
-});
-
-// 💰 INICIALIZAR MEDIDOR DE CUSTO
-function inicializarMedidorCusto() {
+export default async function handler(req, res) {
   try {
-    // Carregar dados salvos do localStorage
-    const dadosSalvos = localStorage.getItem('cvc_custo_meter');
-    if (dadosSalvos) {
-      const dados = JSON.parse(dadosSalvos);
-      
-      // Verificar se é do mesmo dia
-      if (dados.ultimaAtualizacao === new Date().toDateString()) {
-        custoMeter = dados;
-        console.log("💰 [CUSTO] Dados carregados:", custoMeter);
-      } else {
-        console.log("💰 [CUSTO] Novo dia, resetando contador");
-        resetarContadorDiario();
+    // 2.1 CONFIGURAÇÃO DE CORS E HEADERS
+    console.log('🚀 [CVC HÍBRIDO] API iniciada');
+    console.log('🚀 [CVC HÍBRIDO] Método:', req.method);
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    
+    // 2.2 TRATAMENTO DE REQUESTS ESPECIAIS
+    if (req.method === 'OPTIONS') {
+      return res.status(200).json({ message: 'CORS OK' });
+    }
+
+    if (req.method === 'GET') {
+      return res.status(200).json({ 
+        message: 'CVC Itaqua API Híbrida',
+        version: '4.0.0-hybrid',
+        timestamp: new Date().toISOString(),
+        sistema: 'Claude (imagens) + GPT-4o-mini (texto)',
+        features: [
+          'Claude Sonnet 3 para análise visual',
+          'GPT-4o-mini para processamento de texto',
+          'Sistema híbrido de fallback',
+          'Medidor de custo em tempo real',
+          'Templates múltiplas opções',
+          'Links CVC corrigidos'
+        ],
+        modelos: {
+          texto: 'gpt-4o-mini',
+          imagem: 'claude-3-sonnet',
+          fallback: 'gpt-4-vision-preview'
+        }
+      });
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Método não permitido' });
+    }
+
+    // 2.3 VALIDAÇÃO DE DADOS
+    if (!req.body) {
+      return res.status(400).json({ error: 'Body obrigatório' });
+    }
+    
+    const { prompt, tipo, destino, tipos, temImagem, arquivo } = req.body;
+    
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Prompt obrigatório',
+        received: { prompt: typeof prompt, length: prompt?.length || 0 }
+      });
+    }
+    
+    console.log('✅ [CVC HÍBRIDO] Dados válidos - Prompt:', prompt.length, 'chars | Imagem:', !!temImagem);
+
+    // 2.4 PROCESSAMENTO PRINCIPAL COM SISTEMA HÍBRIDO
+    const startTime = Date.now();
+    
+    // Estimativa de tokens
+    const tokensInput = Math.ceil(prompt.length / 4);
+    const tokensEstimadosOutput = 800;
+    
+    // Seleção inteligente de modelo
+    const { modelo, estrategia } = selecionarModeloHibrido(temImagem);
+    console.log('🎯 [CVC HÍBRIDO] Estratégia:', estrategia);
+    
+    // Seleção de template
+    const template = selecionarTemplate(tipos, tipo, prompt);
+    
+    // Construir prompt otimizado por modelo
+    const promptFinal = construirPromptOtimizado(prompt, template, { destino, tipos, temImagem, tipo });
+    
+    // Chamar IA híbrida
+    const resultado = await chamarIAHibrida(promptFinal, temImagem, arquivo, modelo);
+    
+    // Processar resposta
+    const responseProcessada = processarResposta(resultado.content);
+    
+    // Calcular métricas finais
+    const metricas = calcularMetricasHibridas(resultado, temImagem, startTime, estrategia);
+    
+    console.log('✅ [CVC HÍBRIDO] Processamento concluído em', Date.now() - startTime, 'ms');
+
+    // 2.5 RETORNO DE RESPOSTA COM MÉTRICAS
+    return res.status(200).json({
+      success: true,
+      choices: [{
+        message: { content: responseProcessada }
+      }],
+      metricas: metricas,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        version: '4.0.0-hybrid',
+        estrategia: estrategia,
+        template_usado: template.substring(0, 50) + '...',
+        tipos: tipos || [],
+        temImagem: !!temImagem,
+        processamento_ms: Date.now() - startTime
       }
-    }
-    
-    // Criar widget de custo no header
-    criarWidgetCusto();
-    atualizarWidgetCusto();
-    
-  } catch (error) {
-    console.error("❌ [CUSTO] Erro ao inicializar:", error);
-    resetarContadorDiario();
-  }
-}
-
-// 🎨 CRIAR WIDGET DE CUSTO
-function criarWidgetCusto() {
-  const header = document.querySelector('header h1');
-  if (!header) return;
-  
-  const widget = document.createElement('div');
-  widget.id = 'custoWidget';
-  widget.style.cssText = `
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    z-index: 1000;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255,255,255,0.2);
-  `;
-  
-  widget.addEventListener('mouseenter', function() {
-    this.style.transform = 'scale(1.05)';
-    this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
-  });
-  
-  widget.addEventListener('mouseleave', function() {
-    this.style.transform = 'scale(1)';
-    this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-  });
-  
-  widget.addEventListener('click', mostrarDetalhamentoCompleto);
-  
-  document.body.appendChild(widget);
-  console.log("✅ [CUSTO] Widget criado");
-}
-
-// 📊 ATUALIZAR WIDGET DE CUSTO
-function atualizarWidgetCusto() {
-  const widget = document.getElementById('custoWidget');
-  if (!widget) return;
-  
-  const economiaTexto = custoMeter.economiaHoje > 0 ? 
-    ` | 💰 Economia: R$ ${custoMeter.economiaHoje.toFixed(2)}` : '';
-  
-  widget.innerHTML = `
-    <div style="text-align: center;">
-      <div>💰 Hoje: R$ ${custoMeter.custoTotalHoje.toFixed(3)}</div>
-      <div style="font-size: 10px; opacity: 0.9;">
-        📊 ${custoMeter.orcamentosHoje} orçamentos${economiaTexto}
-      </div>
-    </div>
-  `;
-}
-
-// 📈 MOSTRAR DETALHAMENTO COMPLETO
-function mostrarDetalhamentoCompleto() {
-  const custoMedio = custoMeter.orcamentosHoje > 0 ? 
-    custoMeter.custoTotalHoje / custoMeter.orcamentosHoje : 0;
-  
-  const projecaoMensal = custoMeter.custoTotalHoje * 30; // Estimativa simples
-  
-  const modal = document.createElement('div');
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-  
-  modal.innerHTML = `
-    <div style="background: white; padding: 2rem; border-radius: 12px; 
-                max-width: 500px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-      <h3 style="color: #003399; margin-bottom: 1.5rem;">📊 Dashboard de Custos IA</h3>
-      
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-        
-        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #1976d2;">
-            R$ ${custoMeter.custoTotalHoje.toFixed(3)}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Custo Hoje</div>
-        </div>
-        
-        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #388e3c;">
-            ${custoMeter.orcamentosHoje}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Orçamentos</div>
-        </div>
-        
-        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #f57c00;">
-            R$ ${custoMedio.toFixed(4)}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Custo Médio</div>
-        </div>
-        
-        <div style="background: #fce4ec; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #c2185b;">
-            R$ ${custoMeter.economiaHoje.toFixed(2)}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Economia Hoje</div>
-        </div>
-        
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <h4 style="color: #003399; margin-bottom: 0.5rem;">📈 Projeções</h4>
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-          <span>Projeção Mensal:</span>
-          <strong>R$ ${projecaoMensal.toFixed(2)}</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-          <span>Economia Mensal:</span>
-          <strong style="color: #28a745;">R$ ${(custoMeter.economiaHoje * 30).toFixed(2)}</strong>
-        </div>
-      </div>
-      
-      <div style="margin-bottom: 1rem;">
-        <h4 style="color: #003399; margin-bottom: 0.5rem;">🤖 Otimização Inteligente</h4>
-        <div style="font-size: 0.9rem; color: #666; line-height: 1.4;">
-          • <strong>Texto:</strong> GPT-4o-mini (92% economia)<br>
-          • <strong>Imagens:</strong> GPT-4o (quando necessário)<br>
-          • <strong>Seleção automática</strong> do modelo ideal
-        </div>
-      </div>
-      
-      <button onclick="this.parentElement.parentElement.remove()" 
-              style="background: #003399; color: white; border: none; 
-                     padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer;">
-        Fechar
-      </button>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  // Remover ao clicar fora
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
-      modal.remove();
-    }
-  });
-}
-
-// 💾 SALVAR DADOS DO MEDIDOR
-function salvarMedidorCusto() {
-  try {
-    localStorage.setItem('cvc_custo_meter', JSON.stringify(custoMeter));
-    console.log("💾 [CUSTO] Dados salvos");
-  } catch (error) {
-    console.error("❌ [CUSTO] Erro ao salvar:", error);
-  }
-}
-
-// 🔄 RESETAR CONTADOR DIÁRIO
-function resetarContadorDiario() {
-  custoMeter = {
-    orcamentosHoje: 0,
-    custoTotalHoje: 0,
-    economiaHoje: 0,
-    ultimaAtualizacao: new Date().toDateString()
-  };
-  salvarMedidorCusto();
-  console.log("🔄 [CUSTO] Contador resetado");
-}
-
-// 📊 ATUALIZAR MÉTRICAS com dados da API
-function atualizarMetricas(metricas) {
-  try {
-    // Verificar se mudou o dia
-    const hoje = new Date().toDateString();
-    if (custoMeter.ultimaAtualizacao !== hoje) {
-      resetarContadorDiario();
-    }
-    
-    // Atualizar contadores
-    custoMeter.orcamentosHoje++;
-    custoMeter.custoTotalHoje += metricas.custo.brl;
-    custoMeter.economiaHoje += metricas.economia.vs_gpt4o || 0;
-    custoMeter.ultimaAtualizacao = hoje;
-    
-    // Salvar e atualizar UI
-    salvarMedidorCusto();
-    atualizarWidgetCusto();
-    
-    console.log("📊 [MÉTRICAS] Atualizadas:", {
-      modelo: metricas.modelo_usado,
-      custo: `R$ ${metricas.custo.brl.toFixed(4)}`,
-      economia: `R$ ${(metricas.economia.vs_gpt4o || 0).toFixed(4)}`,
-      total_hoje: `R$ ${custoMeter.custoTotalHoje.toFixed(3)}`
     });
-    
+
   } catch (error) {
-    console.error("❌ [MÉTRICAS] Erro ao atualizar:", error);
-  }
-}
-
-// 🧪 Teste de conexão
-async function testarConexaoAPI() {
-  try {
-    console.log("🧪 Testando API otimizada...");
+    console.error('💥 [CVC HÍBRIDO] Erro:', error);
     
-    const response = await fetch(API_URL, { method: 'GET' });
-    const data = await response.json();
-    
-    if (response.ok) {
-      console.log("✅ API Otimizada Online:", data);
-      console.log("🤖 Modelos disponíveis:", data.models);
-    } else {
-      console.warn("⚠️ API status:", response.status);
-    }
-  } catch (error) {
-    console.error("❌ Erro na conexão:", error);
-  }
-}
-
-// 🎯 FUNÇÃO PRINCIPAL (atualizada para métricas)
-async function handleOrcamentoSubmit(e) {
-  e.preventDefault();
-  console.log("📝 Processando orçamento otimizado...");
-  
-  showLoading();
-  
-  try {
-    const formData = extractFormData(e.target);
-    console.log("📊 Dados extraídos:", formData);
-    
-    if (!formData.tipos || formData.tipos.length === 0) {
-      throw new Error("Selecione pelo menos um tipo de serviço");
-    }
-    
-    // Análise local para debug
-    const analiseLocal = analisarTextoParaMultiplasOpcoes(formData.observacoes + ' ' + formData.textoColado);
-    console.log("🔍 Análise local:", analiseLocal);
-    
-    if (analiseLocal.detectado) {
-      updateElement("orcamentoIA", "🔍 Múltiplas opções detectadas! Processando...");
-    }
-    
-    // Mostrar modelo que será usado
-    const modeloEsperado = formData.temImagem ? 'GPT-4o' : 'GPT-4o-mini';
-    updateElement("orcamentoIA", `🤖 Processando com ${modeloEsperado}...`);
-    
-    const response = await generateOrcamento(formData);
-    
-    // 📊 PROCESSAR MÉTRICAS DA RESPOSTA
-    if (response.metricas) {
-      atualizarMetricas(response.metricas);
-      
-      // Mostrar feedback de custo no resultado
-      mostrarFeedbackCusto(response.metricas);
-    }
-    
-    habilitarBotaoDicas();
-    
-    if (formData.tipos.includes("Hotel")) {
-      await generateRankingHoteis(formData.destino);
-    }
-    
-    console.log("✅ Orçamento gerado com sucesso!");
-    
-  } catch (error) {
-    console.error("❌ Erro no processamento:", error);
-    showError("Erro: " + error.message);
-  } finally {
-    hideLoading();
-  }
-}
-
-// 💰 MOSTRAR FEEDBACK DE CUSTO
-function mostrarFeedbackCusto(metricas) {
-  const feedbackElement = document.getElementById('custoFeedback');
-  
-  // Criar elemento se não existir
-  if (!feedbackElement) {
-    const feedback = document.createElement('div');
-    feedback.id = 'custoFeedback';
-    feedback.style.cssText = `
-      background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-      border: 1px solid #4caf50;
-      border-radius: 8px;
-      padding: 0.8rem;
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: #2e7d32;
-    `;
-    
-    const orcamentoSection = document.querySelector('.output-section');
-    if (orcamentoSection) {
-      orcamentoSection.appendChild(feedback);
-    }
-  }
-  
-  const feedback = document.getElementById('custoFeedback');
-  if (feedback) {
-    const economiaTexto = metricas.economia.vs_gpt4o > 0 ? 
-      ` | 💰 Economia: R$ ${metricas.economia.vs_gpt4o.toFixed(4)}` : '';
-    
-    feedback.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span>
-          🤖 <strong>${metricas.modelo_usado}</strong> | 
-          💰 Custo: <strong>R$ ${metricas.custo.brl.toFixed(4)}</strong>${economiaTexto}
-        </span>
-        <span style="font-size: 0.75rem; opacity: 0.8;">
-          📊 ${metricas.tokens.total} tokens
-        </span>
-      </div>
-    `;
-  }
-}
-
-// 🤖 GERAR ORÇAMENTO (atualizada para retornar resposta completa)
-async function generateOrcamento(data) {
-  console.log("🤖 Gerando orçamento...");
-  
-  const textoCompleto = `${data.observacoes} ${data.textoColado}`.trim();
-  const analise = analisarTextoParaMultiplasOpcoes(textoCompleto);
-  
-  const prompt = `Dados do orçamento:
-Destino: ${data.destino}
-Adultos: ${data.adultos}
-Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades} anos)` : ''}
-Tipos selecionados: ${data.tipos.join(', ')}
-
-DADOS ESPECÍFICOS DA VIAGEM:
-${textoCompleto}
-
-${analise.detectado ? 
-  'IMPORTANTE: Este texto contém múltiplas opções de passagens. Formate TODAS as opções encontradas.' : 
-  'IMPORTANTE: Este texto contém uma única opção. Formate de forma simples e clara.'
-}`;
-
-  try {
-    const response = await callAI(prompt, 'orcamento', data);
-    updateElement("orcamentoIA", response.choices[0].message.content);
-    
-    console.log("✅ Orçamento gerado:");
-    console.log("- Múltiplas opções:", analise.detectado);
-    console.log("- Modelo usado:", response.metricas?.modelo_usado);
-    console.log("- Custo:", response.metricas?.custo.brl);
-    
-    return response; // Retornar resposta completa com métricas
-    
-  } catch (error) {
-    console.error("❌ Erro na geração:", error);
-    throw error;
-  }
-}
-
-// 🏨 Gerar ranking de hotéis
-async function generateRankingHoteis(destino) {
-  console.log("🏨 Gerando ranking de hotéis...");
-  
-  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
-
-Formato:
-🏆 1. Nome do Hotel - ⭐⭐⭐⭐
-📍 Região/Localização
-💰 Faixa de preço aproximada
-⭐ Principais diferenciais
-
-Use informações realistas.`;
-
-  try {
-    const response = await callAI(prompt, 'ranking', { destino });
-    updateElement("rankingIA", response.choices[0].message.content);
-  } catch (error) {
-    console.error("❌ Erro no ranking:", error);
-    updateElement("rankingIA", "❌ Erro ao gerar ranking: " + error.message);
-  }
-}
-
-// 📄 Análise PDF
-async function handlePDFAnalysis() {
-  const file = formElements.pdfUpload.files[0];
-  if (!file) {
-    alert("Selecione um arquivo primeiro!");
-    return;
-  }
-
-  console.log("📄 Analisando arquivo:", file.name);
-  showLoading("analiseIA");
-  
-  try {
-    const base64 = await fileToBase64(file);
-    const prompt = `Analise este relatório da CVC e extraia:
-    
-1. 📊 Principais métricas de vendas
-2. 🎯 Metas vs realizado
-3. 🏆 Produtos mais vendidos
-4. 💡 Recomendações práticas
-
-Formato executivo para a filial 6220.`;
-
-    const response = await callAI(prompt, 'analise', { 
-      temImagem: true, 
-      arquivo: base64 
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: error.message,
+        timestamp: new Date().toISOString(),
+        version: '4.0.0-hybrid'
+      },
+      debug: {
+        name: error.name,
+        stack: error.stack?.split('\n').slice(0, 5)
+      }
     });
-    
-    updateElement("analiseIA", response.choices[0].message.content);
-    
-    const container = document.getElementById('analiseContainer');
-    if (container) {
-      container.style.display = 'block';
-    }
-    
-  } catch (error) {
-    console.error("❌ Erro na análise:", error);
-    updateElement("analiseIA", "❌ Erro: " + error.message);
-  } finally {
-    hideLoading("analiseIA");
   }
 }
 
-// ✅ VALIDAR IMAGEM BASE64 (NOVA FUNÇÃO)
-function validarImagemBase64(base64String) {
-  try {
-    if (!base64String || typeof base64String !== 'string') {
-      return { valido: false, erro: 'String base64 inválida' };
-    }
-    
-    if (!base64String.startsWith('data:image/')) {
-      return { valido: false, erro: 'Não é uma imagem base64 válida' };
-    }
-    
-    if (!base64String.includes('base64,')) {
-      return { valido: false, erro: 'Formato base64 incorreto' };
-    }
-    
-    const [header, base64Data] = base64String.split('base64,');
-    
-    if (!base64Data || base64Data.length < 100) {
-      return { valido: false, erro: 'Dados base64 muito pequenos' };
-    }
-    
-    // Verificar se é base64 válido (regex simples)
-    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-    if (!base64Regex.test(base64Data.substring(0, 100))) {
-      return { valido: false, erro: 'Dados base64 inválidos' };
-    }
-    
-    const mimeType = header.match(/data:(image\/[^;]+)/)?.[1];
-    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    
-    if (mimeType && !supportedTypes.includes(mimeType)) {
-      return { valido: false, erro: `Tipo ${mimeType} não suportado` };
-    }
-    
-    const sizeInBytes = base64Data.length * 0.75;
-    const sizeInMB = sizeInBytes / (1024 * 1024);
-    
-    if (sizeInMB > 20) {
-      return { valido: false, erro: `Arquivo muito grande: ${sizeInMB.toFixed(2)}MB` };
-    }
-    
-    return { 
-      valido: true, 
-      mimeType, 
-      tamanhoMB: sizeInMB.toFixed(2),
-      tamanhoBase64: base64Data.length 
-    };
-    
-  } catch (error) {
-    return { valido: false, erro: `Erro na validação: ${error.message}` };
-  }
-}
+// ================================================================================
+// 🤖 SEÇÃO 3: SISTEMA HÍBRIDO DE IA
+// ================================================================================
 
-// 📊 Extração de dados (MELHORADA COM VALIDAÇÃO DE IMAGEM)
-function extractFormData(form) {
-  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
-  
-  const qtdeCriancas = parseInt(form.criancas.value) || 0;
-  let idadesCriancas = [];
-  
-  for (let i = 1; i <= qtdeCriancas; i++) {
-    const idadeInput = document.getElementById(`idade_crianca_${i}`);
-    if (idadeInput && idadeInput.value) {
-      idadesCriancas.push(idadeInput.value);
-    }
-  }
-  
-  // MELHORAR detecção de imagem
-  const arquivoBase64 = formElements.previewArea?.dataset.fileData || "";
-  const temImagem = !!(arquivoBase64 && arquivoBase64.startsWith('data:image/'));
-  
-  console.log('📊 [FORM] Tem imagem:', temImagem);
-  console.log('📊 [FORM] Arquivo tamanho:', arquivoBase64.length);
-  
-  // ✅ VALIDAR IMAGEM ANTES DE ENVIAR
+// 3.1 SELEÇÃO INTELIGENTE DE MODELOS
+function selecionarModeloHibrido(temImagem) {
   if (temImagem) {
-    const validacao = validarImagemBase64(arquivoBase64);
-    
-    if (!validacao.valido) {
-      alert(`❌ Erro na imagem: ${validacao.erro}`);
-      throw new Error(`Imagem inválida: ${validacao.erro}`);
-    }
-    
-    console.log('✅ [VALIDAÇÃO] Imagem válida:', {
-      mimeType: validacao.mimeType,
-      tamanho: validacao.tamanhoMB + 'MB',
-      base64Length: validacao.tamanhoBase64
-    });
-    
-    // Mostrar feedback de validação
-    const feedback = document.createElement('div');
-    feedback.style.cssText = 'background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0; font-size: 12px; color: #155724;';
-    feedback.innerHTML = `✅ Imagem válida: ${validacao.mimeType} (${validacao.tamanhoMB}MB)`;
-    
-    if (formElements.previewArea && !formElements.previewArea.querySelector('.validacao-feedback')) {
-      feedback.className = 'validacao-feedback';
-      formElements.previewArea.appendChild(feedback);
-    }
-    
-    console.log('🖼️ [FORM] Imagem detectada - usando GPT-4o');
+    return {
+      modelo: 'claude-3-sonnet',
+      estrategia: 'Claude Sonnet para análise visual (alta qualidade)',
+      fallback: 'gpt-4-vision-preview',
+      economia_vs_gpt4o: 60
+    };
   } else {
-    console.log('📝 [FORM] Somente texto - usando GPT-4o-mini');
+    return {
+      modelo: 'gpt-4o-mini',
+      estrategia: 'GPT-4o-mini para texto (máxima economia)',
+      fallback: 'gpt-4o',
+      economia_vs_gpt4o: 92
+    };
   }
-  
-  return {
-    destino: form.destino.value || "(Destino não informado)",
-    adultos: form.adultos.value || "2",
-    criancas: form.criancas.value || "0",
-    idades: idadesCriancas.join(', '),
-    observacoes: form.observacoes.value || "",
-    tipos: tipos,
-    textoColado: formElements.pasteArea?.innerText || '',
-    arquivoBase64: arquivoBase64,
-    temImagem: temImagem
-  };
 }
 
-// 🔍 Análise local (mantida igual)
-function analisarTextoParaMultiplasOpcoes(texto) {
-  if (!texto) return { detectado: false, motivo: "Texto vazio" };
-  
-  const textoLower = texto.toLowerCase();
-  
-  const precos = (textoLower.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
-  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
-  const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
-  const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
-  
-  const detectado = precos >= 2 || companhias >= 2 || horarios >= 4 || totais >= 2;
-  
-  return {
-    detectado,
-    contadores: { precos, companhias, horarios, totais },
-    motivo: detectado ? "Múltiplas opções detectadas" : "Apenas uma opção encontrada"
-  };
-}
-
-// 📁 Upload arquivo (MELHORADO)
-async function handleFileUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  console.log("📁 Arquivo selecionado:", file.name, "Tamanho:", file.size);
-
-  // Verificar tipo de arquivo
-  if (!file.type.startsWith('image/')) {
-    alert('Por favor, selecione apenas arquivos de imagem (PNG, JPG, JPEG)');
-    formElements.previewArea.innerHTML = '<p>❌ Apenas imagens são aceitas</p>';
-    return;
-  }
-
-  // Verificar tamanho (máximo 20MB)
-  if (file.size > 20 * 1024 * 1024) {
-    alert('Arquivo muito grande. Máximo 20MB.');
-    formElements.previewArea.innerHTML = '<p>❌ Arquivo muito grande (máx: 20MB)</p>';
-    return;
-  }
-
+// 3.2 CHAMADA IA HÍBRIDA PRINCIPAL
+async function chamarIAHibrida(prompt, temImagem, arquivo, modelo) {
   try {
-    const base64 = await fileToBase64(file);
+    console.log('🤖 [IA HÍBRIDA] Iniciando com modelo:', modelo);
     
-    // Verificar se base64 foi gerado corretamente
-    if (!base64 || !base64.startsWith('data:image/')) {
-      throw new Error('Erro ao processar imagem');
+    // Estratégia híbrida
+    if (temImagem) {
+      console.log('🟠 [IA HÍBRIDA] Rota: Claude Sonnet para imagem');
+      return await chamarClaudeOtimizado(prompt, temImagem, arquivo);
+    } else {
+      console.log('🔵 [IA HÍBRIDA] Rota: GPT-4o-mini para texto');
+      return await chamarOpenAIOtimizada(prompt, false, null, 'gpt-4o-mini');
     }
-    
-    formElements.previewArea.dataset.fileData = base64;
-    
-    // Criar preview da imagem
-    const img = document.createElement('img');
-    img.src = base64;
-    img.style.maxWidth = '100%';
-    img.style.borderRadius = '8px';
-    img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-    
-    formElements.previewArea.innerHTML = '<p>✅ Imagem carregada e pronta para análise</p>';
-    formElements.previewArea.appendChild(img);
-    
-    console.log('✅ Imagem processada:', base64.length, 'caracteres');
     
   } catch (error) {
-    console.error("❌ Erro no upload:", error);
-    formElements.previewArea.innerHTML = `<p>❌ Erro ao processar: ${error.message}</p>`;
-    alert('Erro ao processar imagem: ' + error.message);
+    console.error('❌ [IA HÍBRIDA] Erro no modelo principal:', error.message);
+    
+    // 3.3 SISTEMA DE FALLBACK INTELIGENTE
+    console.log('🔄 [IA HÍBRIDA] Iniciando fallback...');
+    
+    if (temImagem) {
+      console.log('🔄 [IA HÍBRIDA] Fallback: GPT-4 Vision Preview');
+      try {
+        return await chamarOpenAIOtimizada(prompt, temImagem, arquivo, 'gpt-4-vision-preview');
+      } catch (fallbackError) {
+        console.error('❌ [IA HÍBRIDA] Fallback também falhou:', fallbackError.message);
+        throw new Error(`Ambos os modelos de imagem falharam: Claude (${error.message}) | GPT-4 Vision (${fallbackError.message})`);
+      }
+    } else {
+      console.log('🔄 [IA HÍBRIDA] Fallback: GPT-4o');
+      return await chamarOpenAIOtimizada(prompt, false, null, 'gpt-4o');
+    }
   }
 }
 
-// 📋 Setup paste (MELHORADO)
-function setupPasteArea() {
-  if (!formElements.pasteArea) return;
-  
-  formElements.pasteArea.addEventListener('paste', function (e) {
-    console.log("📋 Conteúdo sendo colado...");
-    
-    e.preventDefault(); // Prevenir comportamento padrão
-    
-    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-    
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+// ================================================================================
+// 🏗️ SEÇÃO 4: PROMPTS OTIMIZADOS
+// ================================================================================
 
-      if (item.type.indexOf('image') !== -1) {
-        console.log("🖼️ Imagem detectada no paste");
-        
-        const blob = item.getAsFile();
-        const reader = new FileReader();
-        
-        reader.onload = function (event) {
-          const base64Data = event.target.result;
-          
-          // Validar base64
-          if (!base64Data || !base64Data.startsWith('data:image/')) {
-            console.error('❌ Dados de imagem inválidos');
-            formElements.previewArea.innerHTML = '<p>❌ Erro ao processar imagem colada</p>';
-            return;
-          }
-          
-          // Criar preview
-          const img = document.createElement('img');
-          img.src = base64Data;
-          img.style.maxWidth = '100%';
-          img.style.borderRadius = '8px';
-          img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-          
-          formElements.previewArea.innerHTML = '<p>✅ Imagem colada e pronta para análise</p>';
-          formElements.previewArea.appendChild(img);
-          formElements.previewArea.dataset.fileData = base64Data;
-          
-          console.log('✅ Imagem colada:', base64Data.length, 'caracteres');
-        };
-        
-        reader.onerror = function() {
-          console.error('❌ Erro ao ler imagem');
-          formElements.previewArea.innerHTML = '<p>❌ Erro ao processar imagem</p>';
-        };
-        
-        reader.readAsDataURL(blob);
-        break;
-        
-      } else if (item.type === 'text/plain') {
-        item.getAsString(function (text) {
-          formElements.previewArea.innerHTML = '<p>📝 Texto colado: ' + text.substring(0, 100) + '...</p>';
-          console.log('📝 Texto colado:', text.length, 'caracteres');
-        });
-      }
-    }
-  });
-  
-  // Melhorar feedback visual
-  formElements.pasteArea.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    this.style.borderColor = '#003399';
-    this.style.backgroundColor = '#e9ecef';
-    this.textContent = '📎 Solte a imagem aqui...';
-  });
-
-  formElements.pasteArea.addEventListener('dragleave', function(e) {
-    this.style.borderColor = '#007bff';
-    this.style.backgroundColor = '#f8f9fa';
-    this.textContent = '📌 Clique aqui ou pressione Ctrl+V para colar conteúdo';
-  });
-
-  formElements.pasteArea.addEventListener('drop', function(e) {
-    e.preventDefault();
-    console.log('📎 Arquivo dropado');
+// 4.1 CONSTRUÇÃO DE PROMPTS OTIMIZADOS POR MODELO
+function construirPromptOtimizado(promptBase, template, context) {
+  try {
+    const { destino, tipos, temImagem, tipo } = context;
     
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      const file = files[0];
-      
-      // Simular event de file input
-      const mockEvent = { target: { files: [file] } };
-      handleFileUpload(mockEvent);
+    // 4.2 PROMPTS ESPECIAIS
+    if (tipo === 'analise') {
+      return `Você é um analista da CVC Itaqua. ${promptBase}`;
     }
     
-    // Resetar visual
-    this.style.borderColor = '#007bff';
-    this.style.backgroundColor = '#f8f9fa';
-    this.textContent = '📌 Clique aqui ou pressione Ctrl+V para colar conteúdo';
-  });
+    if (tipo === 'destino' || tipo === 'ranking') {
+      return promptBase;
+    }
+    
+    const isMultipleTemplate = template.includes('*OPÇÃO 1:*');
+    
+    // 4.3 PROMPT ESPECÍFICO PARA CLAUDE (IMAGENS)
+    if (temImagem) {
+      return construirPromptClaude(promptBase, template, context, isMultipleTemplate);
+    }
+    
+    // 4.4 PROMPT ESPECÍFICO PARA GPT-4o-mini (TEXTO)
+    return construirPromptGPTMini(promptBase, template, context, isMultipleTemplate);
+    
+  } catch (error) {
+    console.error('❌ [PROMPT] Erro na construção:', error);
+    return `Formate este orçamento: ${promptBase}`;
+  }
 }
 
-// 🔧 CHAMAR API (atualizada para retornar resposta completa)
-async function callAI(prompt, tipo, extraData = {}) {
+// 4.5 PROMPT OTIMIZADO PARA CLAUDE
+function construirPromptClaude(promptBase, template, context, isMultiple) {
+  return `Você é um especialista em análise de orçamentos de viagem da CVC Itaqua.
+
+TAREFA: Analise esta imagem de orçamento de passagem aérea e extraia todas as informações para criar um orçamento formatado.
+
+FORMATO OBRIGATÓRIO:
+${template}
+
+INFORMAÇÕES DO FORMULÁRIO:
+${promptBase}
+
+INSTRUÇÕES PARA ANÁLISE DA IMAGEM:
+
+1. 📋 EXTRAIR DA IMAGEM:
+   - Companhia aérea (Latam, Gol, Azul, Avianca, etc.)
+   - Rota: origem ↔ destino  
+   - Datas de ida e volta
+   - Horários dos voos
+   - Valor total em Reais (R$)
+   - Quantidade de passageiros
+   - Forma de pagamento (se visível)
+
+2. ✈️ AEROPORTOS - Converter códigos para nomes:
+   - CGH = Congonhas | GRU = Guarulhos | IOS = Ilhéus
+   - BPS = Porto Seguro | RAO = Ribeirão Preto
+
+3. 🔗 LINKS: Se houver link da CVC na imagem, copie exatamente como está
+
+4. 💰 VALORES: Use os valores exatos mostrados na imagem
+
+${isMultiple ? `
+5. 📊 MÚLTIPLAS OPÇÕES: Se a imagem mostra várias opções:
+   - Crie seções separadas (OPÇÃO 1, OPÇÃO 2, etc.)
+   - Use dados específicos de cada opção
+` : ''}
+
+EXEMPLO DO RESULTADO:
+*Passagem Aérea*
+Latam
+30 de agosto - São Paulo/Guarulhos 07:20 / Ilhéus 09:20
+30 de agosto - Ilhéus 17:30 / São Paulo/Guarulhos 19:40
+
+💰 R$ 1.439,42 para 1 Adulto
+💳 [Forma de pagamento da imagem]
+
+⚠️ Valores sujeitos a alteração e disponibilidade!
+
+RESULTADO: Formate apenas o orçamento final baseado na análise da imagem.`;
+}
+
+// 4.6 PROMPT OTIMIZADO PARA GPT-4o-mini
+function construirPromptGPTMini(promptBase, template, context, isMultiple) {
+  return `Você é uma atendente experiente da CVC Itaqua (filial 6220).
+
+Formate este orçamento seguindo EXATAMENTE o modelo:
+
+${template}
+
+DADOS DO CLIENTE:
+${promptBase}
+
+REGRAS IMPORTANTES:
+1. Links CVC: Use apenas o URL direto, sem formatação markdown
+2. Exemplo: 🔗 https://www.cvc.com.br/carrinho-dinamico/...
+3. Aeroportos por extenso: CGH=Congonhas, GRU=Guarulhos
+4. Formato pronto para WhatsApp
+5. Valores exatos em Real (R$)
+
+${isMultiple ? `
+MÚLTIPLAS OPÇÕES: Se há várias opções no texto:
+- Identifique TODAS as opções
+- Crie seções separadas para cada uma
+- Use dados específicos por opção
+` : ''}
+
+Gere apenas o orçamento formatado, sem explicações.`;
+}
+
+// ================================================================================
+// 🟠 SEÇÃO 5: CLAUDE SONNET (PROCESSAMENTO DE IMAGENS)
+// ================================================================================
+
+// 5.1 CHAMADA CLAUDE OTIMIZADA
+async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
   try {
-    console.log("🔄 Enviando para API otimizada:", { tipo, temImagem: extraData.temImagem });
+    console.log('🟠 [CLAUDE] Iniciando processamento de imagem...');
     
-    const requestData = {
-      prompt,
-      tipo,
-      destino: extraData.destino,
-      tipos: extraData.tipos,
-      temImagem: extraData.temImagem,
-      arquivo: extraData.arquivo
-    };
+    // 5.2 VALIDAÇÕES ESPECÍFICAS DO CLAUDE
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('Chave da Anthropic não configurada. Configure ANTHROPIC_API_KEY.');
+    }
     
-    const response = await fetch(API_URL, {
+    let content;
+    
+    if (temImagem && arquivo) {
+      // Processar base64
+      const base64Match = arquivo.match(/data:image\/[^;]+;base64,(.+)/);
+      if (!base64Match) {
+        throw new Error('Formato de imagem inválido para Claude');
+      }
+      
+      const base64Data = base64Match[1];
+      const mimeType = arquivo.match(/data:(image\/[^;]+)/)?.[1] || 'image/jpeg';
+      
+      console.log('🟠 [CLAUDE] MIME Type:', mimeType);
+      console.log('🟠 [CLAUDE] Base64 length:', base64Data.length);
+      
+      // Verificar tamanho (Claude tem limite menor que OpenAI)
+      const sizeInMB = (base64Data.length * 0.75) / (1024 * 1024);
+      console.log('🟠 [CLAUDE] Tamanho:', sizeInMB.toFixed(2), 'MB');
+      
+      if (sizeInMB > CLAUDE_MAX_IMAGE_SIZE_MB) {
+        throw new Error(`Imagem muito grande para Claude: ${sizeInMB.toFixed(2)}MB. Máximo: ${CLAUDE_MAX_IMAGE_SIZE_MB}MB`);
+      }
+      
+      content = [
+        { type: "text", text: prompt },
+        { 
+          type: "image", 
+          source: { 
+            type: "base64", 
+            media_type: mimeType, 
+            data: base64Data 
+          } 
+        }
+      ];
+      
+    } else {
+      content = prompt;
+    }
+
+    // 5.3 CHAMADA DA API ANTHROPIC
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData)
+      headers: {
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: MAX_TOKENS,
+        temperature: 0.1,
+        messages: [{ role: 'user', content: content }]
+      })
     });
-
-    console.log("📊 Response status:", response.status);
-
-    const responseText = await response.text();
-    console.log("📊 Response preview:", responseText.substring(0, 200));
 
     if (!response.ok) {
-      console.error("❌ Response não OK:", response.status, responseText);
-      try {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      } catch (jsonError) {
-        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
-      }
+      const errorText = await response.text();
+      console.error('❌ [CLAUDE] Error:', response.status, errorText);
+      throw new Error(`Claude Error ${response.status}: ${errorText.substring(0, 200)}`);
     }
+
+    const data = await response.json();
     
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log("✅ JSON parseado com sucesso");
-    } catch (jsonError) {
-      console.error("❌ Erro JSON:", jsonError.message);
-      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
+    // 5.4 TRATAMENTO DE RESPOSTAS
+    if (!data.content?.[0]?.text) {
+      console.error('❌ [CLAUDE] Resposta inválida:', JSON.stringify(data, null, 2));
+      throw new Error('Claude resposta sem conteúdo');
     }
-    
-    if (data.success && data.choices?.[0]?.message?.content) {
-      console.log("✅ Resposta válida recebida");
-      return data; // Retornar objeto completo com métricas
-    } else {
-      console.error("❌ Estrutura inválida:", data);
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      throw new Error("Estrutura de resposta inválida");
-    }
+
+    console.log('✅ [CLAUDE] Sucesso! Resposta:', data.content[0].text.length, 'caracteres');
+    console.log('💰 [CLAUDE] Tokens:', (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0));
+
+    // Normalizar resposta para compatibilidade
+    return {
+      content: data.content[0].text,
+      usage: {
+        prompt_tokens: data.usage?.input_tokens || 0,
+        completion_tokens: data.usage?.output_tokens || 0,
+        total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+      },
+      modelo_usado: 'claude-3-sonnet'
+    };
     
   } catch (error) {
-    console.error("❌ Erro na API:", error);
+    console.error('❌ [CLAUDE] Erro final:', error.message);
     throw error;
   }
 }
 
-// 🎯 Funções auxiliares
-function habilitarBotaoDicas() {
-  const btnGerar = document.getElementById('btnGerarDicas');
-  if (btnGerar) {
-    btnGerar.disabled = false;
-    console.log("✅ Botão dicas habilitado");
-  }
-}
+// ================================================================================
+// 🔵 SEÇÃO 6: OPENAI GPT-4o-mini (PROCESSAMENTO DE TEXTO)
+// ================================================================================
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
-    reader.readAsDataURL(file);
-  });
-}
-
-function updateElement(id, content) {
-  const element = document.getElementById(id);
-  if (element) {
-    element.innerText = content;
-    console.log("📝 Elemento atualizado:", id, "length:", content.length);
-  } else {
-    console.warn("⚠️ Elemento não encontrado:", id);
-  }
-}
-
-function showLoading(elementId = "orcamentoIA") {
-  updateElement(elementId, "🤖 Processando com IA...");
-}
-
-function hideLoading() {
-  // Loading será substituído pelo conteúdo
-}
-
-function showError(message) {
-  updateElement("orcamentoIA", "❌ " + message);
-}
-
-// 📋 Função copiar (mantida robusta)
-function copiarTexto(id) {
-  const elemento = document.getElementById(id);
-  if (!elemento) {
-    console.error("❌ Elemento não encontrado:", id);
-    alert("Elemento não encontrado!");
-    return;
-  }
-  
-  const texto = elemento.innerText;
-  
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(texto).then(() => {
-      console.log("✅ Texto copiado:", id);
-      mostrarFeedbackCopia(event.target, "✅ Copiado!");
-    }).catch(err => {
-      console.warn("❌ Clipboard falhou:", err);
-      tentarCopiaAlternativa(texto, event.target);
-    });
-  } else {
-    tentarCopiaAlternativa(texto, event.target);
-  }
-}
-
-function tentarCopiaAlternativa(texto, button) {
+// 6.1 CHAMADA OPENAI OTIMIZADA
+async function chamarOpenAIOtimizada(prompt, temImagem, arquivo, modelo) {
   try {
-    const textArea = document.createElement('textarea');
-    textArea.value = texto;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
+    console.log('🔵 [OPENAI] Iniciando com modelo:', modelo);
     
-    textArea.focus();
-    textArea.select();
+    // 6.2 VALIDAÇÕES
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('Chave da OpenAI não configurada. Configure OPENAI_API_KEY.');
+    }
     
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
+    let messages;
     
-    if (successful) {
-      console.log("✅ Copiado via execCommand");
-      mostrarFeedbackCopia(button, "✅ Copiado!");
+    if (temImagem && arquivo) {
+      // Processamento de imagem (fallback)
+      console.log('🔵 [OPENAI] Processando imagem com', modelo);
+      
+      if (!arquivo.startsWith('data:image/') || !arquivo.includes('base64,')) {
+        throw new Error('Formato de imagem inválido para OpenAI');
+      }
+      
+      const sizeInMB = (arquivo.split('base64,')[1]?.length || 0) * 0.75 / (1024 * 1024);
+      
+      if (sizeInMB > OPENAI_MAX_IMAGE_SIZE_MB) {
+        throw new Error(`Imagem muito grande: ${sizeInMB.toFixed(2)}MB. Máximo: ${OPENAI_MAX_IMAGE_SIZE_MB}MB`);
+      }
+
+      messages = [{
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          { 
+            type: "image_url", 
+            image_url: { 
+              url: arquivo,
+              detail: "high"
+            } 
+          }
+        ]
+      }];
+      
     } else {
-      throw new Error("execCommand falhou");
+      // Processamento de texto
+      console.log('🔵 [OPENAI] Processando texto com', modelo);
+      messages = [{ role: "user", content: prompt }];
     }
-  } catch (err) {
-    console.error("❌ Cópia falhou:", err);
-    mostrarInstrucoesManuais(button);
-  }
-}
 
-function mostrarFeedbackCopia(button, texto) {
-  if (!button) return;
-  
-  const originalText = button.innerText;
-  button.innerText = texto;
-  button.style.background = '#28a745';
-  
-  setTimeout(() => {
-    button.innerText = originalText;
-    button.style.background = '';
-  }, 2000);
-}
+    // 6.3 CHAMADA DA API OPENAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelo,
+        messages,
+        max_tokens: MAX_TOKENS,
+        temperature: 0.1
+      })
+    });
 
-function mostrarInstrucoesManuais(button) {
-  if (button) {
-    button.innerText = "❌ Erro";
-    button.style.background = '#dc3545';
-    
-    setTimeout(() => {
-      button.innerText = "📋 Copiar";
-      button.style.background = '';
-    }, 3000);
-  }
-  
-  alert("Cópia automática falhou. Selecione o texto manualmente e pressione Ctrl+C para copiar.");
-}
-
-// Função para atualizar campos de idades das crianças
-function atualizarIdadesCriancas() {
-  const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
-  const container = document.getElementById('containerIdadesCriancas');
-  const camposContainer = document.getElementById('camposIdadesCriancas');
-  
-  if (qtdeCriancas > 0) {
-    container.style.display = 'block';
-    camposContainer.innerHTML = '';
-    
-    for (let i = 1; i <= qtdeCriancas; i++) {
-      const div = document.createElement('div');
-      div.style.marginBottom = '0.5rem';
-      div.innerHTML = `
-        <label for="idade_crianca_${i}" style="display: inline-block; width: 120px;">Criança ${i}:</label>
-        <input type="number" id="idade_crianca_${i}" name="idade_crianca_${i}" 
-               min="0" max="17" placeholder="Idade" 
-               style="width: 80px; margin-right: 10px;">
-        <small style="color: #666;">anos</small>
-      `;
-      camposContainer.appendChild(div);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ [OPENAI] Error:', response.status, errorText);
+      throw new Error(`OpenAI Error ${response.status}: ${errorText.substring(0, 200)}`);
     }
-  } else {
-    container.style.display = 'none';
-    camposContainer.innerHTML = '';
-  }
-}
 
-// Função para gerar dicas do destino (chamada manual)
-async function gerarDicasDestino() {
-  const destino = document.getElementById('destino').value;
-  const orcamentoTexto = document.getElementById('orcamentoIA').innerText;
-  
-  if (!destino) {
-    alert('Informe um destino primeiro!');
-    return;
-  }
-  
-  const btnGerar = document.getElementById('btnGerarDicas');
-  const btnCopiar = document.getElementById('btnCopiarDicas');
-  
-  btnGerar.disabled = true;
-  btnGerar.innerText = '🤖 Gerando...';
-  
-  try {
-    // Extrair datas do orçamento se disponível
-    let contextoData = '';
-    if (orcamentoTexto && orcamentoTexto !== 'Preencha o formulário acima para gerar o orçamento...') {
-      contextoData = `\n\nCONTEXTO DA VIAGEM:\n${orcamentoTexto.substring(0, 300)}...`;
+    const data = await response.json();
+    
+    // 6.4 TRATAMENTO DE RESPOSTAS
+    if (!data.choices?.[0]?.message?.content) {
+      console.error('❌ [OPENAI] Resposta inválida:', JSON.stringify(data, null, 2));
+      throw new Error('OpenAI resposta sem conteúdo');
     }
-    
-    const prompt = `Crie dicas personalizadas sobre ${destino} para WhatsApp da CVC.${contextoData}
-    
-Inclua:
-- Principais atrações e pontos turísticos
-- Melhor época para visitar (considerando a época da viagem se informada)
-- Dicas de clima e o que levar
-- Informações práticas (moeda, documentação, fuso horário)
-- Tom vendedor mas informativo
-- Máximo 250 palavras
-- Use emojis para deixar atrativo
 
-Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
+    console.log('✅ [OPENAI] Sucesso! Resposta:', data.choices[0].message.content.length, 'caracteres');
+    console.log('💰 [OPENAI] Tokens:', data.usage?.total_tokens || 'N/A');
 
-    const response = await callAI(prompt, 'destino', { destino });
-    document.getElementById('destinoIA').innerText = response.choices[0].message.content;
-    
-    btnCopiar.style.display = 'inline-block';
-    console.log("✅ Dicas do destino geradas!");
+    return {
+      content: data.choices[0].message.content,
+      usage: data.usage,
+      modelo_usado: modelo
+    };
     
   } catch (error) {
-    console.error("❌ Erro ao gerar dicas:", error);
-    document.getElementById('destinoIA').innerText = "❌ Erro ao gerar dicas: " + error.message;
-  } finally {
-    btnGerar.disabled = false;
-    btnGerar.innerText = '🎯 Gerar Dicas';
+    console.error('❌ [OPENAI] Erro final:', error.message);
+    throw error;
   }
 }
 
-console.log("🚀 Sistema CVC Itaqua v3.0 (Otimizado + Medidor + Imagens Corrigidas) carregado!");
+// ================================================================================
+// 🔧 SEÇÃO 7: UTILITÁRIOS E PROCESSAMENTO
+// ================================================================================
+
+// 7.1 DETECÇÃO DE MÚLTIPLAS OPÇÕES
+function detectarMultiplasOpcoes(prompt) {
+  if (!prompt || typeof prompt !== 'string') return false;
+  
+  try {
+    const texto = prompt.toLowerCase();
+    const indicadores = [
+      { regex: /total.*\d+.*adult/gi, minimo: 2 },
+      { regex: /r\$.*\d{1,3}[\.,]\d{3}/gi, minimo: 2 },
+      { regex: /(gol|latam|azul|avianca|tap)/gi, minimo: 2 },
+      { regex: /\d{2}:\d{2}/g, minimo: 4 }
+    ];
+    
+    return indicadores.some(ind => (texto.match(ind.regex) || []).length >= ind.minimo);
+  } catch (error) {
+    return false;
+  }
+}
+
+// 7.2 SELEÇÃO DE TEMPLATES
+function selecionarTemplate(tipos, tipoEspecifico, prompt) {
+  try {
+    const temMultiplasOpcoes = detectarMultiplasOpcoes(prompt);
+    
+    if (temMultiplasOpcoes && (tipos?.includes('Aéreo Facial') || tipos?.includes('Aéreo VBI/Fácil'))) {
+      return templates['Aéreo Múltiplas Opções'];
+    }
+    
+    if (tipoEspecifico && templates[tipoEspecifico]) {
+      return templates[tipoEspecifico];
+    }
+    
+    if (tipos && Array.isArray(tipos) && tipos.length > 0) {
+      for (const tipo of tipos) {
+        if (templates[tipo]) return templates[tipo];
+      }
+    }
+    
+    return templates['Aéreo Facial'] || templates.default;
+  } catch (error) {
+    console.error('❌ [TEMPLATE]:', error);
+    return templates['Aéreo Facial'];
+  }
+}
+
+// 7.3 PROCESSAMENTO DE RESPOSTAS
+function processarResposta(response) {
+  try {
+    let processada = response;
+    
+    // Remover marcações desnecessárias
+    processada = processada.replace(/=== TEMPLATE ===/g, '');
+    processada = processada.replace(/=== FIM TEMPLATE ===/g, '');
+    
+    // Corrigir formatação
+    processada = processada.replace(/^\*([^*])/gm, '$1');
+    processada = processada.replace(/([^*])\*$/gm, '$1');
+    
+    // 7.4 CONVERSÃO DE AEROPORTOS
+    Object.entries(aeroportos).forEach(([sigla, nome]) => {
+      const regex = new RegExp(`\\b${sigla}\\b`, 'gi');
+      processada = processada.replace(regex, nome);
+    });
+    
+    // Limpar espaços extras
+    processada = processada.replace(/\n\s*\n\s*\n/g, '\n\n');
+    processada = processada.trim();
+    
+    return processada;
+  } catch (error) {
+    console.error('❌ [PROCESSAMENTO]:', error);
+    return response;
+  }
+}
+
+// ================================================================================
+// 💰 SEÇÃO 8: SISTEMA DE CUSTOS HÍBRIDO
+// ================================================================================
+
+// 8.1 CÁLCULO DE MÉTRICAS HÍBRIDAS
+function calcularMetricasHibridas(resultado, temImagem, startTime, estrategia) {
+  const tokensInput = resultado.usage?.prompt_tokens || 0;
+  const tokensOutput = resultado.usage?.completion_tokens || 0;
+  const tokensTotal = resultado.usage?.total_tokens || tokensInput + tokensOutput;
+  
+  // 8.2 CÁLCULO DE CUSTOS POR MODELO
+  let custoUSD, economiaUSD, percentualEconomia;
+  
+  if (temImagem) {
+    // Claude Sonnet
+    custoUSD = (tokensInput / 1000) * PRECOS_MODELOS['claude-3-sonnet'].input + 
+               (tokensOutput / 1000) * PRECOS_MODELOS['claude-3-sonnet'].output;
+    
+    // Economia vs GPT-4o
+    const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
+                       (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
+    economiaUSD = custoGPT4o - custoUSD;
+    percentualEconomia = ((economiaUSD / custoGPT4o) * 100).toFixed(1);
+    
+  } else {
+    // GPT-4o-mini
+    custoUSD = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o-mini'].input + 
+               (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o-mini'].output;
+    
+    // Economia vs GPT-4o
+    const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
+                       (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
+    economiaUSD = custoGPT4o - custoUSD;
+    percentualEconomia = ((economiaUSD / custoGPT4o) * 100).toFixed(1);
+  }
+
+  // 8.3 CONVERSÃO PARA BRL
+  const custoBRL = custoUSD * USD_TO_BRL;
+  const economiaBRL = economiaUSD * USD_TO_BRL;
+  
+  // 8.4 MÉTRICAS DETALHADAS
+  return {
+    modelo_usado: resultado.modelo_usado || (temImagem ? 'claude-3-sonnet' : 'gpt-4o-mini'),
+    estrategia: estrategia,
+    tipo_processamento: temImagem ? 'imagem' : 'texto',
+    tokens: {
+      input: tokensInput,
+      output: tokensOutput,
+      total: tokensTotal
+    },
+    custo: {
+      usd: custoUSD,
+      brl: custoBRL,
+      input_usd: (tokensInput / 1000) * (temImagem ? PRECOS_MODELOS['claude-3-sonnet'].input : PRECOS_MODELOS['gpt-4o-mini'].input),
+      output_usd: (tokensOutput / 1000) * (temImagem ? PRECOS_MODELOS['claude-3-sonnet'].output : PRECOS_MODELOS['gpt-4o-mini'].output)
+    },
+    economia: {
+      vs_gpt4o_usd: economiaUSD,
+      vs_gpt4o_brl: economiaBRL,
+      percentual: parseFloat(percentualEconomia)
+    },
+    performance: {
+      tempo_processamento_ms: Date.now() - startTime,
+      tokens_por_segundo: Math.round(tokensTotal / ((Date.now() - startTime) / 1000))
+    },
+    timestamp: new Date().toISOString()
+  };
+}
+
+// ================================================================================
+// 📊 SEÇÃO 9: LOGS E DEBUGGING
+// ================================================================================
+
+// 9.1 LOG DE INICIALIZAÇÃO
+console.log('✅ [CVC HÍBRIDO] Sistema carregado com sucesso!');
+console.log('🎯 [CVC HÍBRIDO] Estratégia: Claude (imagens) + GPT-4o-mini (texto)');
+console.log('💰 [CVC HÍBRIDO] Economia esperada: 60-92% vs GPT-4o puro');
+console.log('🔄 [CVC HÍBRIDO] Fallback automático configurado');
+console.log('📈 [CVC HÍBRIDO] Versão: 4.0.0-hybrid');
