@@ -1,13 +1,19 @@
-// public/ai.js - Frontend com tratamento robusto de erros JSON
+// public/ai.js - Frontend com medidor de custo integrado
 
 const API_URL = '/api/ai';
 
-console.log("⚡ CVC ITAQUA - SISTEMA v2.1 (Error Handling)");
+console.log("⚡ CVC ITAQUA - SISTEMA v3.0 (Otimizado + Medidor de Custo)");
 
 let formElements = {};
+let custoMeter = {
+  orcamentosHoje: 0,
+  custoTotalHoje: 0,
+  economiaHoje: 0,
+  ultimaAtualizacao: new Date().toDateString()
+};
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema com debug robusto...");
+  console.log("🔄 Iniciando sistema otimizado...");
   
   formElements = {
     form: document.getElementById("orcamentoForm"),
@@ -33,50 +39,269 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   setupPasteArea();
+  inicializarMedidorCusto();
   testarConexaoAPI();
 });
 
-// 🧪 TESTE DE CONEXÃO MELHORADO
-async function testarConexaoAPI() {
+// 💰 INICIALIZAR MEDIDOR DE CUSTO
+function inicializarMedidorCusto() {
   try {
-    console.log("🧪 Testando conexão API...");
-    
-    // Primeiro teste: GET simples
-    const response = await fetch(API_URL, {
-      method: 'GET',
-    });
-    
-    console.log("📊 Response status:", response.status);
-    console.log("📊 Response headers:", Array.from(response.headers.entries()));
-    
-    const responseText = await response.text();
-    console.log("📊 Response text (primeiros 200 chars):", responseText.substring(0, 200));
-    
-    if (response.ok) {
-      try {
-        const data = JSON.parse(responseText);
-        console.log("✅ API Online - JSON válido:", data);
-      } catch (jsonError) {
-        console.warn("⚠️ API respondeu mas não é JSON:", jsonError.message);
-        console.warn("Response completa:", responseText);
+    // Carregar dados salvos do localStorage
+    const dadosSalvos = localStorage.getItem('cvc_custo_meter');
+    if (dadosSalvos) {
+      const dados = JSON.parse(dadosSalvos);
+      
+      // Verificar se é do mesmo dia
+      if (dados.ultimaAtualizacao === new Date().toDateString()) {
+        custoMeter = dados;
+        console.log("💰 [CUSTO] Dados carregados:", custoMeter);
+      } else {
+        console.log("💰 [CUSTO] Novo dia, resetando contador");
+        resetarContadorDiario();
       }
-    } else {
-      console.warn("⚠️ API status não OK:", response.status, responseText);
     }
     
+    // Criar widget de custo no header
+    criarWidgetCusto();
+    atualizarWidgetCusto();
+    
   } catch (error) {
-    console.error("❌ Erro na conexão:", error);
-    console.error("Possíveis causas:");
-    console.error("- API não deployada");  
-    console.error("- Erro de sintaxe no api/ai.js");
-    console.error("- Problema no Vercel");
+    console.error("❌ [CUSTO] Erro ao inicializar:", error);
+    resetarContadorDiario();
   }
 }
 
-// 🎯 FUNÇÃO PRINCIPAL com tratamento robusto
+// 🎨 CRIAR WIDGET DE CUSTO
+function criarWidgetCusto() {
+  const header = document.querySelector('header h1');
+  if (!header) return;
+  
+  const widget = document.createElement('div');
+  widget.id = 'custoWidget';
+  widget.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.2);
+  `;
+  
+  widget.addEventListener('mouseenter', function() {
+    this.style.transform = 'scale(1.05)';
+    this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+  });
+  
+  widget.addEventListener('mouseleave', function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+  });
+  
+  widget.addEventListener('click', mostrarDetalhamentoCompleto);
+  
+  document.body.appendChild(widget);
+  console.log("✅ [CUSTO] Widget criado");
+}
+
+// 📊 ATUALIZAR WIDGET DE CUSTO
+function atualizarWidgetCusto() {
+  const widget = document.getElementById('custoWidget');
+  if (!widget) return;
+  
+  const economiaTexto = custoMeter.economiaHoje > 0 ? 
+    ` | 💰 Economia: R$ ${custoMeter.economiaHoje.toFixed(2)}` : '';
+  
+  widget.innerHTML = `
+    <div style="text-align: center;">
+      <div>💰 Hoje: R$ ${custoMeter.custoTotalHoje.toFixed(3)}</div>
+      <div style="font-size: 10px; opacity: 0.9;">
+        📊 ${custoMeter.orcamentosHoje} orçamentos${economiaTexto}
+      </div>
+    </div>
+  `;
+}
+
+// 📈 MOSTRAR DETALHAMENTO COMPLETO
+function mostrarDetalhamentoCompleto() {
+  const custoMedio = custoMeter.orcamentosHoje > 0 ? 
+    custoMeter.custoTotalHoje / custoMeter.orcamentosHoje : 0;
+  
+  const projecaoMensal = custoMeter.custoTotalHoje * 30; // Estimativa simples
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  
+  modal.innerHTML = `
+    <div style="background: white; padding: 2rem; border-radius: 12px; 
+                max-width: 500px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+      <h3 style="color: #003399; margin-bottom: 1.5rem;">📊 Dashboard de Custos IA</h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #1976d2;">
+            R$ ${custoMeter.custoTotalHoje.toFixed(3)}
+          </div>
+          <div style="font-size: 0.9rem; color: #666;">Custo Hoje</div>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #388e3c;">
+            ${custoMeter.orcamentosHoje}
+          </div>
+          <div style="font-size: 0.9rem; color: #666;">Orçamentos</div>
+        </div>
+        
+        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #f57c00;">
+            R$ ${custoMedio.toFixed(4)}
+          </div>
+          <div style="font-size: 0.9rem; color: #666;">Custo Médio</div>
+        </div>
+        
+        <div style="background: #fce4ec; padding: 1rem; border-radius: 8px;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #c2185b;">
+            R$ ${custoMeter.economiaHoje.toFixed(2)}
+          </div>
+          <div style="font-size: 0.9rem; color: #666;">Economia Hoje</div>
+        </div>
+        
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <h4 style="color: #003399; margin-bottom: 0.5rem;">📈 Projeções</h4>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+          <span>Projeção Mensal:</span>
+          <strong>R$ ${projecaoMensal.toFixed(2)}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+          <span>Economia Mensal:</span>
+          <strong style="color: #28a745;">R$ ${(custoMeter.economiaHoje * 30).toFixed(2)}</strong>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 1rem;">
+        <h4 style="color: #003399; margin-bottom: 0.5rem;">🤖 Otimização Inteligente</h4>
+        <div style="font-size: 0.9rem; color: #666; line-height: 1.4;">
+          • <strong>Texto:</strong> GPT-4o-mini (92% economia)<br>
+          • <strong>Imagens:</strong> GPT-4o (quando necessário)<br>
+          • <strong>Seleção automática</strong> do modelo ideal
+        </div>
+      </div>
+      
+      <button onclick="this.parentElement.parentElement.remove()" 
+              style="background: #003399; color: white; border: none; 
+                     padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer;">
+        Fechar
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Remover ao clicar fora
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+// 💾 SALVAR DADOS DO MEDIDOR
+function salvarMedidorCusto() {
+  try {
+    localStorage.setItem('cvc_custo_meter', JSON.stringify(custoMeter));
+    console.log("💾 [CUSTO] Dados salvos");
+  } catch (error) {
+    console.error("❌ [CUSTO] Erro ao salvar:", error);
+  }
+}
+
+// 🔄 RESETAR CONTADOR DIÁRIO
+function resetarContadorDiario() {
+  custoMeter = {
+    orcamentosHoje: 0,
+    custoTotalHoje: 0,
+    economiaHoje: 0,
+    ultimaAtualizacao: new Date().toDateString()
+  };
+  salvarMedidorCusto();
+  console.log("🔄 [CUSTO] Contador resetado");
+}
+
+// 📊 ATUALIZAR MÉTRICAS com dados da API
+function atualizarMetricas(metricas) {
+  try {
+    // Verificar se mudou o dia
+    const hoje = new Date().toDateString();
+    if (custoMeter.ultimaAtualizacao !== hoje) {
+      resetarContadorDiario();
+    }
+    
+    // Atualizar contadores
+    custoMeter.orcamentosHoje++;
+    custoMeter.custoTotalHoje += metricas.custo.brl;
+    custoMeter.economiaHoje += metricas.economia.vs_gpt4o || 0;
+    custoMeter.ultimaAtualizacao = hoje;
+    
+    // Salvar e atualizar UI
+    salvarMedidorCusto();
+    atualizarWidgetCusto();
+    
+    console.log("📊 [MÉTRICAS] Atualizadas:", {
+      modelo: metricas.modelo_usado,
+      custo: `R$ ${metricas.custo.brl.toFixed(4)}`,
+      economia: `R$ ${(metricas.economia.vs_gpt4o || 0).toFixed(4)}`,
+      total_hoje: `R$ ${custoMeter.custoTotalHoje.toFixed(3)}`
+    });
+    
+  } catch (error) {
+    console.error("❌ [MÉTRICAS] Erro ao atualizar:", error);
+  }
+}
+
+// 🧪 Teste de conexão (mantido igual)
+async function testarConexaoAPI() {
+  try {
+    console.log("🧪 Testando API otimizada...");
+    
+    const response = await fetch(API_URL, { method: 'GET' });
+    const data = await response.json();
+    
+    if (response.ok) {
+      console.log("✅ API Otimizada Online:", data);
+      console.log("🤖 Modelos disponíveis:", data.models);
+    } else {
+      console.warn("⚠️ API status:", response.status);
+    }
+  } catch (error) {
+    console.error("❌ Erro na conexão:", error);
+  }
+}
+
+// 🎯 FUNÇÃO PRINCIPAL (atualizada para métricas)
 async function handleOrcamentoSubmit(e) {
   e.preventDefault();
-  console.log("📝 Processando formulário...");
+  console.log("📝 Processando orçamento otimizado...");
   
   showLoading();
   
@@ -96,20 +321,178 @@ async function handleOrcamentoSubmit(e) {
       updateElement("orcamentoIA", "🔍 Múltiplas opções detectadas! Processando...");
     }
     
-    await generateOrcamento(formData);
+    // Mostrar modelo que será usado
+    const modeloEsperado = formData.temImagem ? 'GPT-4o' : 'GPT-4o-mini';
+    updateElement("orcamentoIA", `🤖 Processando com ${modeloEsperado}...`);
+    
+    const response = await generateOrcamento(formData);
+    
+    // 📊 PROCESSAR MÉTRICAS DA RESPOSTA
+    if (response.metricas) {
+      atualizarMetricas(response.metricas);
+      
+      // Mostrar feedback de custo no resultado
+      mostrarFeedbackCusto(response.metricas);
+    }
+    
     habilitarBotaoDicas();
     
     if (formData.tipos.includes("Hotel")) {
       await generateRankingHoteis(formData.destino);
     }
     
-    console.log("✅ Processamento concluído!");
+    console.log("✅ Orçamento gerado com sucesso!");
     
   } catch (error) {
     console.error("❌ Erro no processamento:", error);
     showError("Erro: " + error.message);
   } finally {
     hideLoading();
+  }
+}
+
+// 💰 MOSTRAR FEEDBACK DE CUSTO
+function mostrarFeedbackCusto(metricas) {
+  const feedbackElement = document.getElementById('custoFeedback');
+  
+  // Criar elemento se não existir
+  if (!feedbackElement) {
+    const feedback = document.createElement('div');
+    feedback.id = 'custoFeedback';
+    feedback.style.cssText = `
+      background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+      border: 1px solid #4caf50;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #2e7d32;
+    `;
+    
+    const orcamentoSection = document.querySelector('.output-section');
+    if (orcamentoSection) {
+      orcamentoSection.appendChild(feedback);
+    }
+  }
+  
+  const feedback = document.getElementById('custoFeedback');
+  if (feedback) {
+    const economiaTexto = metricas.economia.vs_gpt4o > 0 ? 
+      ` | 💰 Economia: R$ ${metricas.economia.vs_gpt4o.toFixed(4)}` : '';
+    
+    feedback.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span>
+          🤖 <strong>${metricas.modelo_usado}</strong> | 
+          💰 Custo: <strong>R$ ${metricas.custo.brl.toFixed(4)}</strong>${economiaTexto}
+        </span>
+        <span style="font-size: 0.75rem; opacity: 0.8;">
+          📊 ${metricas.tokens.total} tokens
+        </span>
+      </div>
+    `;
+  }
+}
+
+// 🤖 GERAR ORÇAMENTO (atualizada para retornar resposta completa)
+async function generateOrcamento(data) {
+  console.log("🤖 Gerando orçamento...");
+  
+  const textoCompleto = `${data.observacoes} ${data.textoColado}`.trim();
+  const analise = analisarTextoParaMultiplasOpcoes(textoCompleto);
+  
+  const prompt = `Dados do orçamento:
+Destino: ${data.destino}
+Adultos: ${data.adultos}
+Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades} anos)` : ''}
+Tipos selecionados: ${data.tipos.join(', ')}
+
+DADOS ESPECÍFICOS DA VIAGEM:
+${textoCompleto}
+
+${analise.detectado ? 
+  'IMPORTANTE: Este texto contém múltiplas opções de passagens. Formate TODAS as opções encontradas.' : 
+  'IMPORTANTE: Este texto contém uma única opção. Formate de forma simples e clara.'
+}`;
+
+  try {
+    const response = await callAI(prompt, 'orcamento', data);
+    updateElement("orcamentoIA", response.choices[0].message.content);
+    
+    console.log("✅ Orçamento gerado:");
+    console.log("- Múltiplas opções:", analise.detectado);
+    console.log("- Modelo usado:", response.metricas?.modelo_usado);
+    console.log("- Custo:", response.metricas?.custo.brl);
+    
+    return response; // Retornar resposta completa com métricas
+    
+  } catch (error) {
+    console.error("❌ Erro na geração:", error);
+    throw error;
+  }
+}
+
+// Todas as outras funções mantidas iguais (generateRankingHoteis, handlePDFAnalysis, etc.)
+// ... [resto do código igual ao anterior] ...
+
+// 🔧 CHAMAR API (atualizada para retornar resposta completa)
+async function callAI(prompt, tipo, extraData = {}) {
+  try {
+    console.log("🔄 Enviando para API otimizada:", { tipo, temImagem: extraData.temImagem });
+    
+    const requestData = {
+      prompt,
+      tipo,
+      destino: extraData.destino,
+      tipos: extraData.tipos,
+      temImagem: extraData.temImagem,
+      arquivo: extraData.arquivo
+    };
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData)
+    });
+
+    console.log("📊 Response status:", response.status);
+
+    const responseText = await response.text();
+    console.log("📊 Response preview:", responseText.substring(0, 200));
+
+    if (!response.ok) {
+      console.error("❌ Response não OK:", response.status, responseText);
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
+      }
+    }
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log("✅ JSON parseado com sucesso");
+    } catch (jsonError) {
+      console.error("❌ Erro JSON:", jsonError.message);
+      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
+    }
+    
+    if (data.success && data.choices?.[0]?.message?.content) {
+      console.log("✅ Resposta válida recebida");
+      return data; // Retornar objeto completo com métricas
+    } else {
+      console.error("❌ Estrutura inválida:", data);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      throw new Error("Estrutura de resposta inválida");
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro na API:", error);
+    throw error;
   }
 }
 
@@ -160,44 +543,7 @@ function analisarTextoParaMultiplasOpcoes(texto) {
   };
 }
 
-// 🤖 GERAR ORÇAMENTO com tratamento robusto
-async function generateOrcamento(data) {
-  console.log("🤖 Gerando orçamento...");
-  
-  const textoCompleto = `${data.observacoes} ${data.textoColado}`.trim();
-  const analise = analisarTextoParaMultiplasOpcoes(textoCompleto);
-  
-  console.log("📝 Análise local:", analise);
-  
-  const prompt = `Dados do orçamento:
-Destino: ${data.destino}
-Adultos: ${data.adultos}
-Crianças: ${data.criancas}${data.idades ? ` (idades: ${data.idades} anos)` : ''}
-Tipos selecionados: ${data.tipos.join(', ')}
-
-DADOS ESPECÍFICOS DA VIAGEM:
-${textoCompleto}
-
-${analise.detectado ? 
-  'IMPORTANTE: Este texto contém múltiplas opções de passagens. Formate TODAS as opções encontradas.' : 
-  'IMPORTANTE: Este texto contém uma única opção. Formate de forma simples e clara.'
-}`;
-
-  try {
-    const response = await callAI(prompt, 'orcamento', data);
-    updateElement("orcamentoIA", response);
-    
-    console.log("✅ Orçamento gerado:");
-    console.log("- Múltiplas opções:", analise.detectado);
-    console.log("- Tamanho resposta:", response.length, "chars");
-    
-  } catch (error) {
-    console.error("❌ Erro na geração:", error);
-    throw error;
-  }
-}
-
-// 🏨 Gerar ranking (mantido igual)
+// 🏨 Gerar ranking de hotéis
 async function generateRankingHoteis(destino) {
   console.log("🏨 Gerando ranking de hotéis...");
   
@@ -213,14 +559,14 @@ Use informações realistas.`;
 
   try {
     const response = await callAI(prompt, 'ranking', { destino });
-    updateElement("rankingIA", response);
+    updateElement("rankingIA", response.choices[0].message.content);
   } catch (error) {
     console.error("❌ Erro no ranking:", error);
     updateElement("rankingIA", "❌ Erro ao gerar ranking: " + error.message);
   }
 }
 
-// 📄 Análise PDF (mantida igual)
+// 📄 Análise PDF
 async function handlePDFAnalysis() {
   const file = formElements.pdfUpload.files[0];
   if (!file) {
@@ -247,7 +593,7 @@ Formato executivo para a filial 6220.`;
       arquivo: base64 
     });
     
-    updateElement("analiseIA", response);
+    updateElement("analiseIA", response.choices[0].message.content);
     
     const container = document.getElementById('analiseContainer');
     if (container) {
@@ -262,7 +608,7 @@ Formato executivo para a filial 6220.`;
   }
 }
 
-// 📁 Upload arquivo (mantido igual)
+// 📁 Upload arquivo
 async function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -290,7 +636,7 @@ async function handleFileUpload(e) {
   }
 }
 
-// 📋 Setup paste (mantido igual)
+// 📋 Setup paste
 function setupPasteArea() {
   if (!formElements.pasteArea) return;
   
@@ -328,98 +674,7 @@ function setupPasteArea() {
   });
 }
 
-// 🔧 CHAMAR API COM TRATAMENTO ROBUSTO DE ERROS
-async function callAI(prompt, tipo, extraData = {}) {
-  try {
-    console.log("🔄 Enviando para API:", { tipo, temImagem: extraData.temImagem });
-    
-    const requestData = {
-      prompt,
-      tipo,
-      destino: extraData.destino,
-      tipos: extraData.tipos,
-      temImagem: extraData.temImagem,
-      arquivo: extraData.arquivo
-    };
-    
-    console.log("📤 Request data:", {
-      prompt: prompt.substring(0, 100) + "...",
-      tipo,
-      destino: extraData.destino,
-      tipos: extraData.tipos
-    });
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData)
-    });
-
-    console.log("📊 Response status:", response.status);
-    console.log("📊 Response headers:", Array.from(response.headers.entries()));
-
-    // 🔍 LER RESPOSTA COMO TEXTO PRIMEIRO
-    const responseText = await response.text();
-    console.log("📊 Response text (primeiros 200 chars):", responseText.substring(0, 200));
-
-    if (!response.ok) {
-      console.error("❌ Response não OK:", response.status, responseText);
-      
-      // Tentar parsear erro como JSON
-      try {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      } catch (jsonError) {
-        // Se não for JSON, usar texto direto
-        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
-      }
-    }
-    
-    // 🔍 TENTAR PARSEAR RESPOSTA COMO JSON
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log("✅ JSON parseado com sucesso");
-    } catch (jsonError) {
-      console.error("❌ Erro ao parsear JSON:", jsonError.message);
-      console.error("❌ Response text completo:", responseText);
-      
-      // Se a resposta parece ser HTML de erro do Vercel
-      if (responseText.includes('<html>') || responseText.includes('<!DOCTYPE')) {
-        throw new Error("API retornou HTML ao invés de JSON. Possível erro no servidor.");
-      }
-      
-      // Se começa com texto de erro
-      if (responseText.startsWith('A server error') || responseText.startsWith('Error:')) {
-        throw new Error(`Erro do servidor: ${responseText.substring(0, 200)}`);
-      }
-      
-      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
-    }
-    
-    // 🔍 VALIDAR ESTRUTURA DA RESPOSTA
-    if (data.success && data.choices?.[0]?.message?.content) {
-      console.log("✅ Resposta válida recebida");
-      return data.choices[0].message.content;
-    } else {
-      console.error("❌ Estrutura de resposta inválida:", data);
-      
-      // Se tem erro na resposta
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      throw new Error("Estrutura de resposta inválida da API");
-    }
-    
-  } catch (error) {
-    console.error("❌ Erro completo na API:", error);
-    console.error("❌ Stack:", error.stack);
-    throw error;
-  }
-}
-
-// 🎯 Funções auxiliares (mantidas iguais)
+// 🎯 Funções auxiliares
 function habilitarBotaoDicas() {
   const btnGerar = document.getElementById('btnGerarDicas');
   if (btnGerar) {
@@ -459,7 +714,7 @@ function showError(message) {
   updateElement("orcamentoIA", "❌ " + message);
 }
 
-// 📋 Função copiar (mantida robusta anterior)
+// 📋 Função copiar (mantida robusta)
 function copiarTexto(id) {
   const elemento = document.getElementById(id);
   if (!elemento) {
@@ -537,4 +792,4 @@ function mostrarInstrucoesManuais(button) {
   alert("Cópia automática falhou. Selecione o texto manualmente e pressione Ctrl+C para copiar.");
 }
 
-console.log("🚀 Sistema CVC Itaqua v2.1 (Robust Error Handling) carregado!");
+console.log("🚀 Sistema CVC Itaqua v3.0 (Otimizado + Medidor) carregado!");
