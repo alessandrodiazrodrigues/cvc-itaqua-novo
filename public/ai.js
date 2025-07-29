@@ -1,8 +1,8 @@
-// public/ai.js - Frontend com medidor de custo integrado
+// public/ai.js - Frontend completo com medidor de custo integrado + imagens corrigidas
 
 const API_URL = '/api/ai';
 
-console.log("⚡ CVC ITAQUA - SISTEMA v3.0 (Otimizado + Medidor de Custo)");
+console.log("⚡ CVC ITAQUA - SISTEMA v3.0 (Otimizado + Medidor de Custo + Imagens Corrigidas)");
 
 let formElements = {};
 let custoMeter = {
@@ -279,7 +279,7 @@ function atualizarMetricas(metricas) {
   }
 }
 
-// 🧪 Teste de conexão (mantido igual)
+// 🧪 Teste de conexão
 async function testarConexaoAPI() {
   try {
     console.log("🧪 Testando API otimizada...");
@@ -432,117 +432,6 @@ ${analise.detectado ?
   }
 }
 
-// Todas as outras funções mantidas iguais (generateRankingHoteis, handlePDFAnalysis, etc.)
-// ... [resto do código igual ao anterior] ...
-
-// 🔧 CHAMAR API (atualizada para retornar resposta completa)
-async function callAI(prompt, tipo, extraData = {}) {
-  try {
-    console.log("🔄 Enviando para API otimizada:", { tipo, temImagem: extraData.temImagem });
-    
-    const requestData = {
-      prompt,
-      tipo,
-      destino: extraData.destino,
-      tipos: extraData.tipos,
-      temImagem: extraData.temImagem,
-      arquivo: extraData.arquivo
-    };
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData)
-    });
-
-    console.log("📊 Response status:", response.status);
-
-    const responseText = await response.text();
-    console.log("📊 Response preview:", responseText.substring(0, 200));
-
-    if (!response.ok) {
-      console.error("❌ Response não OK:", response.status, responseText);
-      try {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      } catch (jsonError) {
-        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
-      }
-    }
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log("✅ JSON parseado com sucesso");
-    } catch (jsonError) {
-      console.error("❌ Erro JSON:", jsonError.message);
-      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
-    }
-    
-    if (data.success && data.choices?.[0]?.message?.content) {
-      console.log("✅ Resposta válida recebida");
-      return data; // Retornar objeto completo com métricas
-    } else {
-      console.error("❌ Estrutura inválida:", data);
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      throw new Error("Estrutura de resposta inválida");
-    }
-    
-  } catch (error) {
-    console.error("❌ Erro na API:", error);
-    throw error;
-  }
-}
-
-// 📊 Extração de dados (mantida igual)
-function extractFormData(form) {
-  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
-  
-  const qtdeCriancas = parseInt(form.criancas.value) || 0;
-  let idadesCriancas = [];
-  
-  for (let i = 1; i <= qtdeCriancas; i++) {
-    const idadeInput = document.getElementById(`idade_crianca_${i}`);
-    if (idadeInput && idadeInput.value) {
-      idadesCriancas.push(idadeInput.value);
-    }
-  }
-  
-  return {
-    destino: form.destino.value || "(Destino não informado)",
-    adultos: form.adultos.value || "2",
-    criancas: form.criancas.value || "0",
-    idades: idadesCriancas.join(', '),
-    observacoes: form.observacoes.value || "",
-    tipos: tipos,
-    textoColado: formElements.pasteArea?.innerText || '',
-    arquivoBase64: formElements.previewArea?.dataset.fileData || "",
-    temImagem: !!(formElements.previewArea?.dataset.fileData)
-  };
-}
-
-// 🔍 Análise local (mantida igual)
-function analisarTextoParaMultiplasOpcoes(texto) {
-  if (!texto) return { detectado: false, motivo: "Texto vazio" };
-  
-  const textoLower = texto.toLowerCase();
-  
-  const precos = (textoLower.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
-  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
-  const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
-  const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
-  
-  const detectado = precos >= 2 || companhias >= 2 || horarios >= 4 || totais >= 2;
-  
-  return {
-    detectado,
-    contadores: { precos, companhias, horarios, totais },
-    motivo: detectado ? "Múltiplas opções detectadas" : "Apenas uma opção encontrada"
-  };
-}
-
 // 🏨 Gerar ranking de hotéis
 async function generateRankingHoteis(destino) {
   console.log("🏨 Gerando ranking de hotéis...");
@@ -608,40 +497,201 @@ Formato executivo para a filial 6220.`;
   }
 }
 
-// 📁 Upload arquivo
+// ✅ VALIDAR IMAGEM BASE64 (NOVA FUNÇÃO)
+function validarImagemBase64(base64String) {
+  try {
+    if (!base64String || typeof base64String !== 'string') {
+      return { valido: false, erro: 'String base64 inválida' };
+    }
+    
+    if (!base64String.startsWith('data:image/')) {
+      return { valido: false, erro: 'Não é uma imagem base64 válida' };
+    }
+    
+    if (!base64String.includes('base64,')) {
+      return { valido: false, erro: 'Formato base64 incorreto' };
+    }
+    
+    const [header, base64Data] = base64String.split('base64,');
+    
+    if (!base64Data || base64Data.length < 100) {
+      return { valido: false, erro: 'Dados base64 muito pequenos' };
+    }
+    
+    // Verificar se é base64 válido (regex simples)
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    if (!base64Regex.test(base64Data.substring(0, 100))) {
+      return { valido: false, erro: 'Dados base64 inválidos' };
+    }
+    
+    const mimeType = header.match(/data:(image\/[^;]+)/)?.[1];
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    
+    if (mimeType && !supportedTypes.includes(mimeType)) {
+      return { valido: false, erro: `Tipo ${mimeType} não suportado` };
+    }
+    
+    const sizeInBytes = base64Data.length * 0.75;
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+    
+    if (sizeInMB > 20) {
+      return { valido: false, erro: `Arquivo muito grande: ${sizeInMB.toFixed(2)}MB` };
+    }
+    
+    return { 
+      valido: true, 
+      mimeType, 
+      tamanhoMB: sizeInMB.toFixed(2),
+      tamanhoBase64: base64Data.length 
+    };
+    
+  } catch (error) {
+    return { valido: false, erro: `Erro na validação: ${error.message}` };
+  }
+}
+
+// 📊 Extração de dados (MELHORADA COM VALIDAÇÃO DE IMAGEM)
+function extractFormData(form) {
+  const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
+  
+  const qtdeCriancas = parseInt(form.criancas.value) || 0;
+  let idadesCriancas = [];
+  
+  for (let i = 1; i <= qtdeCriancas; i++) {
+    const idadeInput = document.getElementById(`idade_crianca_${i}`);
+    if (idadeInput && idadeInput.value) {
+      idadesCriancas.push(idadeInput.value);
+    }
+  }
+  
+  // MELHORAR detecção de imagem
+  const arquivoBase64 = formElements.previewArea?.dataset.fileData || "";
+  const temImagem = !!(arquivoBase64 && arquivoBase64.startsWith('data:image/'));
+  
+  console.log('📊 [FORM] Tem imagem:', temImagem);
+  console.log('📊 [FORM] Arquivo tamanho:', arquivoBase64.length);
+  
+  // ✅ VALIDAR IMAGEM ANTES DE ENVIAR
+  if (temImagem) {
+    const validacao = validarImagemBase64(arquivoBase64);
+    
+    if (!validacao.valido) {
+      alert(`❌ Erro na imagem: ${validacao.erro}`);
+      throw new Error(`Imagem inválida: ${validacao.erro}`);
+    }
+    
+    console.log('✅ [VALIDAÇÃO] Imagem válida:', {
+      mimeType: validacao.mimeType,
+      tamanho: validacao.tamanhoMB + 'MB',
+      base64Length: validacao.tamanhoBase64
+    });
+    
+    // Mostrar feedback de validação
+    const feedback = document.createElement('div');
+    feedback.style.cssText = 'background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0; font-size: 12px; color: #155724;';
+    feedback.innerHTML = `✅ Imagem válida: ${validacao.mimeType} (${validacao.tamanhoMB}MB)`;
+    
+    if (formElements.previewArea && !formElements.previewArea.querySelector('.validacao-feedback')) {
+      feedback.className = 'validacao-feedback';
+      formElements.previewArea.appendChild(feedback);
+    }
+    
+    console.log('🖼️ [FORM] Imagem detectada - usando GPT-4o');
+  } else {
+    console.log('📝 [FORM] Somente texto - usando GPT-4o-mini');
+  }
+  
+  return {
+    destino: form.destino.value || "(Destino não informado)",
+    adultos: form.adultos.value || "2",
+    criancas: form.criancas.value || "0",
+    idades: idadesCriancas.join(', '),
+    observacoes: form.observacoes.value || "",
+    tipos: tipos,
+    textoColado: formElements.pasteArea?.innerText || '',
+    arquivoBase64: arquivoBase64,
+    temImagem: temImagem
+  };
+}
+
+// 🔍 Análise local (mantida igual)
+function analisarTextoParaMultiplasOpcoes(texto) {
+  if (!texto) return { detectado: false, motivo: "Texto vazio" };
+  
+  const textoLower = texto.toLowerCase();
+  
+  const precos = (textoLower.match(/r\$.*\d{1,3}[\.,]\d{3}/gi) || []).length;
+  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
+  const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
+  const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
+  
+  const detectado = precos >= 2 || companhias >= 2 || horarios >= 4 || totais >= 2;
+  
+  return {
+    detectado,
+    contadores: { precos, companhias, horarios, totais },
+    motivo: detectado ? "Múltiplas opções detectadas" : "Apenas uma opção encontrada"
+  };
+}
+
+// 📁 Upload arquivo (MELHORADO)
 async function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  console.log("📁 Arquivo:", file.name);
+  console.log("📁 Arquivo selecionado:", file.name, "Tamanho:", file.size);
+
+  // Verificar tipo de arquivo
+  if (!file.type.startsWith('image/')) {
+    alert('Por favor, selecione apenas arquivos de imagem (PNG, JPG, JPEG)');
+    formElements.previewArea.innerHTML = '<p>❌ Apenas imagens são aceitas</p>';
+    return;
+  }
+
+  // Verificar tamanho (máximo 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    alert('Arquivo muito grande. Máximo 20MB.');
+    formElements.previewArea.innerHTML = '<p>❌ Arquivo muito grande (máx: 20MB)</p>';
+    return;
+  }
 
   try {
     const base64 = await fileToBase64(file);
-    formElements.previewArea.dataset.fileData = base64;
     
-    if (file.type.startsWith('image/')) {
-      const img = document.createElement('img');
-      img.src = base64;
-      img.style.maxWidth = '100%';
-      img.style.borderRadius = '8px';
-      formElements.previewArea.innerHTML = '<p>✅ Imagem carregada</p>';
-      formElements.previewArea.appendChild(img);
-    } else {
-      formElements.previewArea.innerHTML = `<p>📄 ${file.name} carregado</p>`;
+    // Verificar se base64 foi gerado corretamente
+    if (!base64 || !base64.startsWith('data:image/')) {
+      throw new Error('Erro ao processar imagem');
     }
     
+    formElements.previewArea.dataset.fileData = base64;
+    
+    // Criar preview da imagem
+    const img = document.createElement('img');
+    img.src = base64;
+    img.style.maxWidth = '100%';
+    img.style.borderRadius = '8px';
+    img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+    
+    formElements.previewArea.innerHTML = '<p>✅ Imagem carregada e pronta para análise</p>';
+    formElements.previewArea.appendChild(img);
+    
+    console.log('✅ Imagem processada:', base64.length, 'caracteres');
+    
   } catch (error) {
-    console.error("❌ Erro upload:", error);
-    formElements.previewArea.innerHTML = `<p>❌ Erro: ${file.name}</p>`;
+    console.error("❌ Erro no upload:", error);
+    formElements.previewArea.innerHTML = `<p>❌ Erro ao processar: ${error.message}</p>`;
+    alert('Erro ao processar imagem: ' + error.message);
   }
 }
 
-// 📋 Setup paste
+// 📋 Setup paste (MELHORADO)
 function setupPasteArea() {
   if (!formElements.pasteArea) return;
   
   formElements.pasteArea.addEventListener('paste', function (e) {
-    console.log("📋 Conteúdo colado");
+    console.log("📋 Conteúdo sendo colado...");
+    
+    e.preventDefault(); // Prevenir comportamento padrão
     
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     
@@ -649,17 +699,38 @@ function setupPasteArea() {
       const item = items[i];
 
       if (item.type.indexOf('image') !== -1) {
+        console.log("🖼️ Imagem detectada no paste");
+        
         const blob = item.getAsFile();
         const reader = new FileReader();
         
         reader.onload = function (event) {
+          const base64Data = event.target.result;
+          
+          // Validar base64
+          if (!base64Data || !base64Data.startsWith('data:image/')) {
+            console.error('❌ Dados de imagem inválidos');
+            formElements.previewArea.innerHTML = '<p>❌ Erro ao processar imagem colada</p>';
+            return;
+          }
+          
+          // Criar preview
           const img = document.createElement('img');
-          img.src = event.target.result;
+          img.src = base64Data;
           img.style.maxWidth = '100%';
           img.style.borderRadius = '8px';
-          formElements.previewArea.innerHTML = '<p>✅ Imagem colada</p>';
+          img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+          
+          formElements.previewArea.innerHTML = '<p>✅ Imagem colada e pronta para análise</p>';
           formElements.previewArea.appendChild(img);
-          formElements.previewArea.dataset.fileData = event.target.result;
+          formElements.previewArea.dataset.fileData = base64Data;
+          
+          console.log('✅ Imagem colada:', base64Data.length, 'caracteres');
+        };
+        
+        reader.onerror = function() {
+          console.error('❌ Erro ao ler imagem');
+          formElements.previewArea.innerHTML = '<p>❌ Erro ao processar imagem</p>';
         };
         
         reader.readAsDataURL(blob);
@@ -667,11 +738,106 @@ function setupPasteArea() {
         
       } else if (item.type === 'text/plain') {
         item.getAsString(function (text) {
-          formElements.previewArea.innerHTML = '<p>📝 Texto: ' + text.substring(0, 100) + '...</p>';
+          formElements.previewArea.innerHTML = '<p>📝 Texto colado: ' + text.substring(0, 100) + '...</p>';
+          console.log('📝 Texto colado:', text.length, 'caracteres');
         });
       }
     }
   });
+  
+  // Melhorar feedback visual
+  formElements.pasteArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#003399';
+    this.style.backgroundColor = '#e9ecef';
+    this.textContent = '📎 Solte a imagem aqui...';
+  });
+
+  formElements.pasteArea.addEventListener('dragleave', function(e) {
+    this.style.borderColor = '#007bff';
+    this.style.backgroundColor = '#f8f9fa';
+    this.textContent = '📌 Clique aqui ou pressione Ctrl+V para colar conteúdo';
+  });
+
+  formElements.pasteArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    console.log('📎 Arquivo dropado');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      
+      // Simular event de file input
+      const mockEvent = { target: { files: [file] } };
+      handleFileUpload(mockEvent);
+    }
+    
+    // Resetar visual
+    this.style.borderColor = '#007bff';
+    this.style.backgroundColor = '#f8f9fa';
+    this.textContent = '📌 Clique aqui ou pressione Ctrl+V para colar conteúdo';
+  });
+}
+
+// 🔧 CHAMAR API (atualizada para retornar resposta completa)
+async function callAI(prompt, tipo, extraData = {}) {
+  try {
+    console.log("🔄 Enviando para API otimizada:", { tipo, temImagem: extraData.temImagem });
+    
+    const requestData = {
+      prompt,
+      tipo,
+      destino: extraData.destino,
+      tipos: extraData.tipos,
+      temImagem: extraData.temImagem,
+      arquivo: extraData.arquivo
+    };
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData)
+    });
+
+    console.log("📊 Response status:", response.status);
+
+    const responseText = await response.text();
+    console.log("📊 Response preview:", responseText.substring(0, 200));
+
+    if (!response.ok) {
+      console.error("❌ Response não OK:", response.status, responseText);
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`API Error ${response.status}: ${responseText.substring(0, 100)}`);
+      }
+    }
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log("✅ JSON parseado com sucesso");
+    } catch (jsonError) {
+      console.error("❌ Erro JSON:", jsonError.message);
+      throw new Error(`Resposta não é JSON válido: ${jsonError.message}`);
+    }
+    
+    if (data.success && data.choices?.[0]?.message?.content) {
+      console.log("✅ Resposta válida recebida");
+      return data; // Retornar objeto completo com métricas
+    } else {
+      console.error("❌ Estrutura inválida:", data);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      throw new Error("Estrutura de resposta inválida");
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro na API:", error);
+    throw error;
+  }
 }
 
 // 🎯 Funções auxiliares
@@ -792,4 +958,83 @@ function mostrarInstrucoesManuais(button) {
   alert("Cópia automática falhou. Selecione o texto manualmente e pressione Ctrl+C para copiar.");
 }
 
-console.log("🚀 Sistema CVC Itaqua v3.0 (Otimizado + Medidor) carregado!");
+// Função para atualizar campos de idades das crianças
+function atualizarIdadesCriancas() {
+  const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
+  const container = document.getElementById('containerIdadesCriancas');
+  const camposContainer = document.getElementById('camposIdadesCriancas');
+  
+  if (qtdeCriancas > 0) {
+    container.style.display = 'block';
+    camposContainer.innerHTML = '';
+    
+    for (let i = 1; i <= qtdeCriancas; i++) {
+      const div = document.createElement('div');
+      div.style.marginBottom = '0.5rem';
+      div.innerHTML = `
+        <label for="idade_crianca_${i}" style="display: inline-block; width: 120px;">Criança ${i}:</label>
+        <input type="number" id="idade_crianca_${i}" name="idade_crianca_${i}" 
+               min="0" max="17" placeholder="Idade" 
+               style="width: 80px; margin-right: 10px;">
+        <small style="color: #666;">anos</small>
+      `;
+      camposContainer.appendChild(div);
+    }
+  } else {
+    container.style.display = 'none';
+    camposContainer.innerHTML = '';
+  }
+}
+
+// Função para gerar dicas do destino (chamada manual)
+async function gerarDicasDestino() {
+  const destino = document.getElementById('destino').value;
+  const orcamentoTexto = document.getElementById('orcamentoIA').innerText;
+  
+  if (!destino) {
+    alert('Informe um destino primeiro!');
+    return;
+  }
+  
+  const btnGerar = document.getElementById('btnGerarDicas');
+  const btnCopiar = document.getElementById('btnCopiarDicas');
+  
+  btnGerar.disabled = true;
+  btnGerar.innerText = '🤖 Gerando...';
+  
+  try {
+    // Extrair datas do orçamento se disponível
+    let contextoData = '';
+    if (orcamentoTexto && orcamentoTexto !== 'Preencha o formulário acima para gerar o orçamento...') {
+      contextoData = `\n\nCONTEXTO DA VIAGEM:\n${orcamentoTexto.substring(0, 300)}...`;
+    }
+    
+    const prompt = `Crie dicas personalizadas sobre ${destino} para WhatsApp da CVC.${contextoData}
+    
+Inclua:
+- Principais atrações e pontos turísticos
+- Melhor época para visitar (considerando a época da viagem se informada)
+- Dicas de clima e o que levar
+- Informações práticas (moeda, documentação, fuso horário)
+- Tom vendedor mas informativo
+- Máximo 250 palavras
+- Use emojis para deixar atrativo
+
+Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
+
+    const response = await callAI(prompt, 'destino', { destino });
+    document.getElementById('destinoIA').innerText = response.choices[0].message.content;
+    
+    btnCopiar.style.display = 'inline-block';
+    console.log("✅ Dicas do destino geradas!");
+    
+  } catch (error) {
+    console.error("❌ Erro ao gerar dicas:", error);
+    document.getElementById('destinoIA').innerText = "❌ Erro ao gerar dicas: " + error.message;
+  } finally {
+    btnGerar.disabled = false;
+    btnGerar.innerText = '🎯 Gerar Dicas';
+  }
+}
+
+console.log("🚀 Sistema CVC Itaqua v3.0 (Otimizado + Medidor + Imagens Corrigidas) carregado!");
