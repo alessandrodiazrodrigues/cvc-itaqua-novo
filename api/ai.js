@@ -1,9 +1,9 @@
 // ================================================================================
 // 🏆 CVC ITAQUA - API HÍBRIDA COMPLETA (Claude + GPT-4o-mini)
 // ================================================================================
-// Versão: 4.0.0-hybrid
+// Versão: 4.1.0-hotfix
 // Autor: Sistema CVC Itaqua
-// Última atualização: 2025
+// Última atualização: 2025-07-29
 // ================================================================================
 
 /*
@@ -139,10 +139,11 @@ const PRECOS_MODELOS = {
   // OpenAI
   'gpt-4o': { input: 0.005, output: 0.015 },
   'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-  'gpt-4-vision-preview': { input: 0.01, output: 0.03 },
+  'gpt-4-vision-preview': { input: 0.01, output: 0.03 }, // Mantido para cálculo histórico
   
   // Claude (aproximado)
-  'claude-3-sonnet': { input: 0.003, output: 0.015 }
+  'claude-3-sonnet-20240229': { input: 0.003, output: 0.015 }, // Mantido para cálculo histórico
+  'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 } // Novo modelo
 };
 
 // 1.4 CONSTANTES DO SISTEMA
@@ -175,21 +176,21 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       return res.status(200).json({ 
         message: 'CVC Itaqua API Híbrida',
-        version: '4.0.0-hybrid',
+        version: '4.1.0-hotfix',
         timestamp: new Date().toISOString(),
         sistema: 'Claude (imagens) + GPT-4o-mini (texto)',
         features: [
-          'Claude Sonnet 3 para análise visual',
+          'Claude 3.5 Sonnet para análise visual',
           'GPT-4o-mini para processamento de texto',
-          'Sistema híbrido de fallback',
+          'Sistema híbrido de fallback com GPT-4o',
           'Medidor de custo em tempo real',
           'Templates múltiplas opções',
           'Links CVC corrigidos'
         ],
         modelos: {
           texto: 'gpt-4o-mini',
-          imagem: 'claude-3-sonnet',
-          fallback: 'gpt-4-vision-preview'
+          imagem: 'claude-3-5-sonnet-20240620', // <-- ALTERADO
+          fallback: 'gpt-4o' // <-- ALTERADO
         }
       });
     }
@@ -217,12 +218,8 @@ export default async function handler(req, res) {
     // 2.4 PROCESSAMENTO PRINCIPAL COM SISTEMA HÍBRIDO
     const startTime = Date.now();
     
-    // Estimativa de tokens
-    const tokensInput = Math.ceil(prompt.length / 4);
-    const tokensEstimadosOutput = 800;
-    
     // Seleção inteligente de modelo
-    const { modelo, estrategia } = selecionarModeloHibrido(temImagem);
+    const { modelo, estrategia, fallback } = selecionarModeloHibrido(temImagem);
     console.log('🎯 [CVC HÍBRIDO] Estratégia:', estrategia);
     
     // Seleção de template
@@ -232,7 +229,7 @@ export default async function handler(req, res) {
     const promptFinal = construirPromptOtimizado(prompt, template, { destino, tipos, temImagem, tipo });
     
     // Chamar IA híbrida
-    const resultado = await chamarIAHibrida(promptFinal, temImagem, arquivo, modelo);
+    const resultado = await chamarIAHibrida(promptFinal, temImagem, arquivo, modelo, fallback);
     
     // Processar resposta
     const responseProcessada = processarResposta(resultado.content);
@@ -251,7 +248,7 @@ export default async function handler(req, res) {
       metricas: metricas,
       metadata: {
         timestamp: new Date().toISOString(),
-        version: '4.0.0-hybrid',
+        version: '4.1.0-hotfix',
         estrategia: estrategia,
         template_usado: template.substring(0, 50) + '...',
         tipos: tipos || [],
@@ -268,7 +265,7 @@ export default async function handler(req, res) {
       error: {
         message: error.message,
         timestamp: new Date().toISOString(),
-        version: '4.0.0-hybrid'
+        version: '4.1.0-hotfix'
       },
       debug: {
         name: error.name,
@@ -286,52 +283,50 @@ export default async function handler(req, res) {
 function selecionarModeloHibrido(temImagem) {
   if (temImagem) {
     return {
-      modelo: 'claude-3-sonnet',
-      estrategia: 'Claude Sonnet para análise visual (alta qualidade)',
-      fallback: 'gpt-4-vision-preview',
-      economia_vs_gpt4o: 60
+      modelo: 'claude-3-5-sonnet-20240620', // <-- ALTERADO para o modelo mais recente
+      estrategia: 'Claude 3.5 Sonnet para análise visual (alta qualidade)',
+      fallback: 'gpt-4o', // <-- ALTERADO para o fallback correto
     };
   } else {
     return {
       modelo: 'gpt-4o-mini',
       estrategia: 'GPT-4o-mini para texto (máxima economia)',
       fallback: 'gpt-4o',
-      economia_vs_gpt4o: 92
     };
   }
 }
 
 // 3.2 CHAMADA IA HÍBRIDA PRINCIPAL
-async function chamarIAHibrida(prompt, temImagem, arquivo, modelo) {
+async function chamarIAHibrida(prompt, temImagem, arquivo, modelo, fallbackModelo) {
   try {
     console.log('🤖 [IA HÍBRIDA] Iniciando com modelo:', modelo);
     
     // Estratégia híbrida
     if (temImagem) {
       console.log('🟠 [IA HÍBRIDA] Rota: Claude Sonnet para imagem');
-      return await chamarClaudeOtimizado(prompt, temImagem, arquivo);
+      return await chamarClaudeOtimizado(prompt, temImagem, arquivo, modelo);
     } else {
       console.log('🔵 [IA HÍBRIDA] Rota: GPT-4o-mini para texto');
       return await chamarOpenAIOtimizada(prompt, false, null, 'gpt-4o-mini');
     }
     
   } catch (error) {
-    console.error('❌ [IA HÍBRIDA] Erro no modelo principal:', error.message);
+    console.error(`❌ [IA HÍBRIDA] Erro no modelo principal (${modelo}):`, error.message);
     
     // 3.3 SISTEMA DE FALLBACK INTELIGENTE
-    console.log('🔄 [IA HÍBRIDA] Iniciando fallback...');
+    console.log(`🔄 [IA HÍBRIDA] Iniciando fallback para ${fallbackModelo}...`);
     
-    if (temImagem) {
-      console.log('🔄 [IA HÍBRIDA] Fallback: GPT-4 Vision Preview');
-      try {
-        return await chamarOpenAIOtimizada(prompt, temImagem, arquivo, 'gpt-4-vision-preview');
-      } catch (fallbackError) {
-        console.error('❌ [IA HÍBRIDA] Fallback também falhou:', fallbackError.message);
-        throw new Error(`Ambos os modelos de imagem falharam: Claude (${error.message}) | GPT-4 Vision (${fallbackError.message})`);
-      }
-    } else {
-      console.log('🔄 [IA HÍBRIDA] Fallback: GPT-4o');
-      return await chamarOpenAIOtimizada(prompt, false, null, 'gpt-4o');
+    try {
+        if (temImagem) {
+            console.log('🔄 [IA HÍBRIDA] Fallback para imagem com:', fallbackModelo);
+            return await chamarOpenAIOtimizada(prompt, temImagem, arquivo, fallbackModelo);
+        } else {
+            console.log('🔄 [IA HÍBRIDA] Fallback para texto com:', fallbackModelo);
+            return await chamarOpenAIOtimizada(prompt, false, null, fallbackModelo);
+        }
+    } catch (fallbackError) {
+        console.error(`❌ [IA HÍBRIDA] Fallback (${fallbackModelo}) também falhou:`, fallbackError.message);
+        throw new Error(`Ambos os modelos falharam: Principal (${modelo}: ${error.message}) | Fallback (${fallbackModelo}: ${fallbackError.message})`);
     }
   }
 }
@@ -454,9 +449,9 @@ Gere apenas o orçamento formatado, sem explicações.`;
 // ================================================================================
 
 // 5.1 CHAMADA CLAUDE OTIMIZADA
-async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
+async function chamarClaudeOtimizado(prompt, temImagem, arquivo, modelo) {
   try {
-    console.log('🟠 [CLAUDE] Iniciando processamento de imagem...');
+    console.log('🟠 [CLAUDE] Iniciando processamento de imagem com o modelo:', modelo);
     
     // 5.2 VALIDAÇÕES ESPECÍFICAS DO CLAUDE
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -476,12 +471,8 @@ async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
       const mimeType = arquivo.match(/data:(image\/[^;]+)/)?.[1] || 'image/jpeg';
       
       console.log('🟠 [CLAUDE] MIME Type:', mimeType);
-      console.log('🟠 [CLAUDE] Base64 length:', base64Data.length);
       
-      // Verificar tamanho (Claude tem limite menor que OpenAI)
       const sizeInMB = (base64Data.length * 0.75) / (1024 * 1024);
-      console.log('🟠 [CLAUDE] Tamanho:', sizeInMB.toFixed(2), 'MB');
-      
       if (sizeInMB > CLAUDE_MAX_IMAGE_SIZE_MB) {
         throw new Error(`Imagem muito grande para Claude: ${sizeInMB.toFixed(2)}MB. Máximo: ${CLAUDE_MAX_IMAGE_SIZE_MB}MB`);
       }
@@ -490,11 +481,7 @@ async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
         { type: "text", text: prompt },
         { 
           type: "image", 
-          source: { 
-            type: "base64", 
-            media_type: mimeType, 
-            data: base64Data 
-          } 
+          source: { type: "base64", media_type: mimeType, data: base64Data } 
         }
       ];
       
@@ -511,7 +498,7 @@ async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-sonnet-20240229',
+        model: modelo, // <-- USA O MODELO CORRIGIDO
         max_tokens: MAX_TOKENS,
         temperature: 0.1,
         messages: [{ role: 'user', content: content }]
@@ -543,7 +530,7 @@ async function chamarClaudeOtimizado(prompt, temImagem, arquivo) {
         completion_tokens: data.usage?.output_tokens || 0,
         total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
       },
-      modelo_usado: 'claude-3-sonnet'
+      modelo_usado: modelo
     };
     
   } catch (error) {
@@ -735,39 +722,23 @@ function calcularMetricasHibridas(resultado, temImagem, startTime, estrategia) {
   const tokensOutput = resultado.usage?.completion_tokens || 0;
   const tokensTotal = resultado.usage?.total_tokens || tokensInput + tokensOutput;
   
-  // 8.2 CÁLCULO DE CUSTOS POR MODELO
   let custoUSD, economiaUSD, percentualEconomia;
+  const modeloUsado = resultado.modelo_usado || 'unknown';
+  const precosModelo = PRECOS_MODELOS[modeloUsado] || { input: 0, output: 0 };
   
-  if (temImagem) {
-    // Claude Sonnet
-    custoUSD = (tokensInput / 1000) * PRECOS_MODELOS['claude-3-sonnet'].input + 
-               (tokensOutput / 1000) * PRECOS_MODELOS['claude-3-sonnet'].output;
-    
-    // Economia vs GPT-4o
-    const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
-                       (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
-    economiaUSD = custoGPT4o - custoUSD;
-    percentualEconomia = ((economiaUSD / custoGPT4o) * 100).toFixed(1);
-    
-  } else {
-    // GPT-4o-mini
-    custoUSD = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o-mini'].input + 
-               (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o-mini'].output;
-    
-    // Economia vs GPT-4o
-    const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
-                       (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
-    economiaUSD = custoGPT4o - custoUSD;
-    percentualEconomia = ((economiaUSD / custoGPT4o) * 100).toFixed(1);
-  }
+  custoUSD = (tokensInput / 1000) * precosModelo.input + (tokensOutput / 1000) * precosModelo.output;
 
-  // 8.3 CONVERSÃO PARA BRL
+  // Comparação sempre com GPT-4o
+  const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
+                     (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
+  economiaUSD = custoGPT4o - custoUSD;
+  percentualEconomia = custoGPT4o > 0 ? ((economiaUSD / custoGPT4o) * 100).toFixed(1) : '0.0';
+
   const custoBRL = custoUSD * USD_TO_BRL;
   const economiaBRL = economiaUSD * USD_TO_BRL;
   
-  // 8.4 MÉTRICAS DETALHADAS
   return {
-    modelo_usado: resultado.modelo_usado || (temImagem ? 'claude-3-sonnet' : 'gpt-4o-mini'),
+    modelo_usado: modeloUsado,
     estrategia: estrategia,
     tipo_processamento: temImagem ? 'imagem' : 'texto',
     tokens: {
@@ -778,8 +749,8 @@ function calcularMetricasHibridas(resultado, temImagem, startTime, estrategia) {
     custo: {
       usd: custoUSD,
       brl: custoBRL,
-      input_usd: (tokensInput / 1000) * (temImagem ? PRECOS_MODELOS['claude-3-sonnet'].input : PRECOS_MODELOS['gpt-4o-mini'].input),
-      output_usd: (tokensOutput / 1000) * (temImagem ? PRECOS_MODELOS['claude-3-sonnet'].output : PRECOS_MODELOS['gpt-4o-mini'].output)
+      input_usd: (tokensInput / 1000) * precosModelo.input,
+      output_usd: (tokensOutput / 1000) * precosModelo.output
     },
     economia: {
       vs_gpt4o_usd: economiaUSD,
@@ -794,13 +765,13 @@ function calcularMetricasHibridas(resultado, temImagem, startTime, estrategia) {
   };
 }
 
+
 // ================================================================================
 // 📊 SEÇÃO 9: LOGS E DEBUGGING
 // ================================================================================
 
 // 9.1 LOG DE INICIALIZAÇÃO
-console.log('✅ [CVC HÍBRIDO] Sistema carregado com sucesso!');
-console.log('🎯 [CVC HÍBRIDO] Estratégia: Claude (imagens) + GPT-4o-mini (texto)');
-console.log('💰 [CVC HÍBRIDO] Economia esperada: 60-92% vs GPT-4o puro');
-console.log('🔄 [CVC HÍBRIDO] Fallback automático configurado');
-console.log('📈 [CVC HÍBRIDO] Versão: 4.0.0-hybrid');
+console.log('✅ [CVC HÍBRIDO] Sistema CORRIGIDO carregado com sucesso!');
+console.log('🎯 [CVC HÍBRIDO] Estratégia: Claude 3.5 Sonnet (imagens) + GPT-4o-mini (texto)');
+console.log('🔄 [CVC HÍBRIDO] Fallback automático para GPT-4o configurado');
+console.log('📈 [CVC HÍBRIDO] Versão: 4.1.0-hotfix');
