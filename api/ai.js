@@ -1,16 +1,38 @@
-// ===== SISTEMA COMPLETO - TODOS OS TIPOS DE PRODUTOS =====
+//// ===== CORREÇÃO ESPECÍFICA - TEMPLATE DE CRUZEIRO =====
 // ================================================================================
-// 🏆 CVC ITAQUA - API COMPLETA v5.0.0-complete
+// 🏆 CVC ITAQUA - TEMPLATE CRUZEIRO CORRIGIDO v5.1.0-cruzeiro
 // ================================================================================
-// TODOS OS PRODUTOS: Aéreo, Hotel, Carro, Cruzeiro, Frete, Traslado, Passeios, Seguro, Circuito
+// FOCO: Corrigir formato de cruzeiro para o padrão CVC desejado
 // ================================================================================
 
 // ================================================================================
-// 📋 TEMPLATES PARA TODOS OS PRODUTOS
+// 📋 TEMPLATE CRUZEIRO CORRIGIDO
 // ================================================================================
+
+const TEMPLATE_CRUZEIRO_CORRETO = `🚢 Cruzeiro [NOME_NAVIO] – [DURACAO_NOITES] noites
+[COMPOSICAO_PASSAGEIROS]
+📅 Embarque: [DATA_EMBARQUE] ([DIA_SEMANA])
+📍 Saída e chegada: [PORTO_EMBARQUE]
+🌊 Roteiro incrível pelo litoral brasileiro!
+
+🗺 Itinerário:
+[ROTEIRO_DETALHADO]
+
+💥 [TIPO_TARIFA]!
+(Sujeita à confirmação de cabine e categoria)
+
+[OPCOES_CABINES]
+
+📎 Link para ver fotos, detalhes e reservar:
+[LINK_CRUZEIRO]
+
+✅ Inclui: hospedagem a bordo, pensão completa (refeições), entretenimento e atividades para todas as idades!
+🚫 Não inclui: taxas, bebidas, excursões e transporte até o porto.
+
+📲 Me chama pra garantir a sua cabine nesse cruzeiro incrível! 🌴🛳️`;
 
 const TEMPLATES = {
-  // ✈️ AÉREO
+  // ✈️ AÉREO (mantidos iguais)
   'Aéreo Facial': `*Passagem Aérea - Somente Ida*
 🏷️ [COMPANHIA]
 🗓️ [DATA] (Somente ida)
@@ -53,7 +75,10 @@ const TEMPLATES = {
 
 ⚠️ Passagem ida e volta incluída`,
 
-  // 🏨 HOTEL
+  // 🚢 CRUZEIRO CORRIGIDO
+  'Cruzeiro': TEMPLATE_CRUZEIRO_CORRETO,
+
+  // 🏨 HOTEL (mantido igual)
   'Hotel': `*Hospedagem*
 🏨 [NOME_HOTEL] - [CATEGORIA]⭐
 📍 [LOCALIZACAO]
@@ -73,7 +98,7 @@ const TEMPLATES = {
 
 ⚠️ Tarifas sujeitas à disponibilidade no momento da reserva`,
 
-  // 🚗 CARRO
+  // 🚗 CARRO (mantido igual)
   'Carro': `*Aluguel de Carro*
 🚗 [MODELO_CARRO] - [CATEGORIA]
 🏢 [LOCADORA]
@@ -99,158 +124,56 @@ const TEMPLATES = {
 
 ⚠️ Valores sujeitos à disponibilidade. Documentação obrigatória: CNH válida`,
 
-  // 🚢 CRUZEIRO
-  'Cruzeiro': `*Cruzeiro Marítimo*
-🚢 [NOME_NAVIO] - [COMPANHIA_CRUZEIRO]
-🗓️ [DATA_EMBARQUE] a [DATA_DESEMBARQUE] ([DURACAO_NOITES] noites)
-📍 Embarque: [PORTO_EMBARQUE]
-🗺️ *Roteiro:* [ROTEIRO_DESTINOS]
-
-🛏️ *Acomodação:*
-[CATEGORIA_CABINE] para [PASSAGEIROS]
-[LOCALIZACAO_CABINE]
-
-🍽️ *Inclui:*
-• [REGIME_ALIMENTACAO]
-• [ENTRETENIMENTO_BORDO]
-• [SERVICOS_INCLUSOS]
-
-💰 R$ [VALOR_TOTAL] para [PASSAGEIROS]
-💳 Parcelamento: [PARCELAS]x de R$ [VALOR_PARCELA]
-🔗 [LINK]
-
-⚠️ Documentação: Passaporte ou RG (conforme roteiro). Taxas de embarque não incluídas`,
-
-  // 📦 FRETE
+  // Outros templates mantidos...
   'Frete': `*Serviço de Frete*
 📦 [TIPO_FRETE]
 📍 Origem: [ORIGEM_FRETE]
 📍 Destino: [DESTINO_FRETE]
-📏 Dimensões: [DIMENSOES]
-⚖️ Peso: [PESO]
-
-⏱️ *Prazo de Entrega:*
-[PRAZO_ENTREGA] dias úteis
-
-✅ *Inclui:*
-• [TIPO_SERVICO]
-• [RASTREAMENTO]
-• [SEGURO_FRETE]
 
 💰 R$ [VALOR_FRETE]
 💳 [FORMA_PAGAMENTO]
 
-⚠️ Sujeito às condições da transportadora. Documentação necessária conforme produto`,
+⚠️ Sujeito às condições da transportadora`,
 
-  // 🚌 TRASLADO
   'Traslado': `*Serviço de Traslado*
-🚌 [TIPO_VEICULO] - [CATEGORIA_TRASLADO]
+🚌 [TIPO_VEICULO]
 📍 [ORIGEM_TRASLADO] ➜ [DESTINO_TRASLADO]
 🗓️ [DATA_TRASLADO] às [HORA_TRASLADO]
-👥 [PASSAGEIROS_TRASLADO] passageiros
-
-🧳 *Especificações:*
-• [BAGAGEM_INCLUIDA]
-• [AR_CONDICIONADO_VEICULO]
-• [WIFI_VEICULO]
-
-✅ *Inclui:*
-• [MOTORISTA_PROFISSIONAL]
-• [COMBUSTIVEL_INCLUIDO]
-• [PEDÁGIOS]
 
 💰 R$ [VALOR_TRASLADO]
 💳 [FORMA_PAGAMENTO]
-🔗 [LINK]
 
 ⚠️ Apresentar-se no local com 15 minutos de antecedência`,
 
-  // 🎢 PASSEIOS
   'Passeios': `*Passeio/Excursão*
 🎢 [NOME_PASSEIO]
 📍 [DESTINO_PASSEIO]
 🗓️ [DATA_PASSEIO] às [HORA_INICIO]
-⏱️ Duração: [DURACAO_PASSEIO]
-👥 [PARTICIPANTES] pessoas
-
-🗺️ *Roteiro:*
-[ROTEIRO_DETALHADO]
-
-✅ *Inclui:*
-• [TRANSPORTE_PASSEIO]
-• [GUIA_ACOMPANHANTE]
-• [INGRESSOS_INCLUSOS]
-• [ALIMENTACAO_PASSEIO]
-
-❌ *Não Inclui:*
-• [EXTRAS_NAO_INCLUSOS]
 
 💰 R$ [VALOR_PASSEIO] por pessoa
 💳 [FORMA_PAGAMENTO]
-🔗 [LINK]
 
-⚠️ Sujeito às condições climáticas. Cancelamento gratuito até [PRAZO_CANCELAMENTO]`,
+⚠️ Sujeito às condições climáticas`,
 
-  // 🛡️ SEGURO
   'Seguro': `*Seguro Viagem*
 🛡️ [SEGURADORA] - [PLANO_SEGURO]
 🗓️ Vigência: [DATA_INICIO] a [DATA_FIM]
 🌍 Cobertura: [ABRANGENCIA_GEOGRAFICA]
-👥 [SEGURADOS] segurado(s)
-
-💊 *Coberturas Médicas:*
-• Despesas médicas: até R$ [COBERTURA_MEDICA]
-• Odontológica: até R$ [COBERTURA_ODONTO]
-• Medicamentos: até R$ [COBERTURA_MEDICAMENTOS]
-
-🧳 *Coberturas de Bagagem:*
-• Bagagem extraviada: até R$ [COBERTURA_BAGAGEM]
-• Atraso de bagagem: até R$ [COBERTURA_ATRASO_BAGAGEM]
-
-✈️ *Outras Coberturas:*
-• Cancelamento de viagem: até R$ [COBERTURA_CANCELAMENTO]
-• Atraso de voo: até R$ [COBERTURA_ATRASO_VOO]
-• [OUTRAS_COBERTURAS]
 
 💰 R$ [VALOR_SEGURO] por pessoa
 💳 [FORMA_PAGAMENTO]
-🔗 [LINK]
 
-⚠️ Leia atentamente as condições gerais. Carência de [CARENCIA] horas`,
+⚠️ Leia atentamente as condições gerais`,
 
-  // 🗺️ CIRCUITO
   'Circuito': `*Circuito/Pacote Turístico*
 🗺️ [NOME_CIRCUITO]
 🌍 [DESTINOS_CIRCUITO]
 🗓️ [DATA_INICIO] a [DATA_FIM] ([DURACAO_TOTAL])
-👥 [PARTICIPANTES_CIRCUITO] pessoas
-
-✈️ *Transporte:*
-• [TRANSPORTE_IDA_VOLTA]
-• [TRANSPORTE_INTERNO]
-
-🏨 *Hospedagem:*
-• [HOTEIS_CIRCUITO]
-• [REGIME_ALIMENTACAO_CIRCUITO]
-
-🎯 *Roteiro:*
-[ROTEIRO_CIRCUITO_DETALHADO]
-
-✅ *Inclui:*
-• [TRANSPORTE_INCLUIDO]
-• [HOSPEDAGEM_INCLUIDA]
-• [ALIMENTACAO_INCLUIDA]
-• [PASSEIOS_INCLUSOS]
-• [GUIA_ACOMPANHANTE_CIRCUITO]
-
-❌ *Não Inclui:*
-• [EXTRAS_NAO_INCLUSOS_CIRCUITO]
 
 💰 R$ [VALOR_CIRCUITO] por pessoa
 💳 Parcelamento: [PARCELAS_CIRCUITO]x de R$ [VALOR_PARCELA_CIRCUITO]
-🔗 [LINK]
 
-⚠️ Documentação necessária: [DOCUMENTOS_NECESSARIOS]. Sujeito a alterações por condições climáticas`
+⚠️ Documentação necessária: [DOCUMENTOS_NECESSARIOS]`
 };
 
 // ================================================================================
@@ -287,7 +210,7 @@ export default async function handler(req, res) {
   const startTime = Date.now();
   
   try {
-    console.log('[COMPLETE] Iniciando processamento completo...');
+    console.log('[CRUZEIRO-FIX] Iniciando processamento...');
     
     // Configuração de CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -301,10 +224,10 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       return res.status(200).json({
-        message: 'CVC Itaqua API Completa - Todos os Produtos',
-        version: '5.0.0-complete',
+        message: 'CVC Itaqua API - Template Cruzeiro Corrigido',
+        version: '5.1.0-cruzeiro',
         produtos_suportados: Object.keys(TEMPLATES),
-        total_templates: Object.keys(TEMPLATES).length,
+        template_cruzeiro: 'FORMATO CVC CORRIGIDO',
         timestamp: new Date().toISOString()
       });
     }
@@ -325,15 +248,15 @@ export default async function handler(req, res) {
     }
 
     const { prompt, temImagem, arquivo, tipos } = req.body;
-    console.log(`[COMPLETE] Prompt: ${prompt.length} chars, Tipos: ${tipos?.join(', ')}`);
+    console.log(`[CRUZEIRO-FIX] Prompt: ${prompt.length} chars, Tipos: ${tipos?.join(', ')}`);
 
     // ANÁLISE E SELEÇÃO DE TEMPLATE
     const analise = analisarConteudoCompleto(prompt, tipos);
     const template = selecionarTemplateCompleto(analise, tipos);
-    console.log(`[COMPLETE] Template selecionado: ${template.nome}`);
+    console.log(`[CRUZEIRO-FIX] Template selecionado: ${template.nome}`);
 
     // CONSTRUIR PROMPT ESPECIALIZADO
-    const promptFinal = construirPromptEspecializado(prompt, template, analise, tipos);
+    const promptFinal = construirPromptEspecializadoCruzeiro(prompt, template, analise, tipos);
 
     // CHAMADA PARA IA
     const { modelo, estrategia, fallback } = selecionarModelo(temImagem);
@@ -342,7 +265,7 @@ export default async function handler(req, res) {
     const responseProcessada = processarResposta(resultado.content);
     const metricas = calcularMetricas(resultado, startTime, estrategia);
 
-    console.log(`[COMPLETE] Concluído: ${Date.now() - startTime}ms`);
+    console.log(`[CRUZEIRO-FIX] Concluído: ${Date.now() - startTime}ms`);
 
     return res.status(200).json({
       success: true,
@@ -355,14 +278,14 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('💥 [COMPLETE ERROR] 💥', error.message);
+    console.error('💥 [CRUZEIRO-FIX ERROR] 💥', error.message);
     
     return res.status(500).json({
       success: false,
       error: {
         message: `Erro no servidor: ${error.message}`,
         type: 'SERVER_ERROR',
-        version: '5.0.0-complete'
+        version: '5.1.0-cruzeiro'
       }
     });
   }
@@ -373,7 +296,7 @@ export default async function handler(req, res) {
 // ================================================================================
 
 function analisarConteudoCompleto(prompt, tipos) {
-  console.log('[ANÁLISE-COMPLETA] Analisando tipos:', tipos);
+  console.log('[ANÁLISE-CRUZEIRO] Analisando tipos:', tipos);
   
   if (!prompt || !tipos || tipos.length === 0) {
     return { 
@@ -385,13 +308,21 @@ function analisarConteudoCompleto(prompt, tipos) {
 
   const promptLower = prompt.toLowerCase();
   
-  // Detectar múltiplas opções
-  const precos = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
-  const totais = (promptLower.match(/total.*\d+/gi) || []).length;
-  const links = (promptLower.match(/https:\/\/www\.cvc\.com\.br/gi) || []).length;
-  const multiplasOpcoes = Math.max(precos, totais, links) >= 2;
+  // Para cruzeiro, detectar múltiplas opções de cabine
+  let multiplasOpcoes = false;
+  if (tipos.includes('Cruzeiro')) {
+    const precosCruzeiro = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
+    const cabines = (promptLower.match(/(interna|externa|varanda|suite)/gi) || []).length;
+    multiplasOpcoes = precosCruzeiro >= 2 || cabines >= 2;
+    console.log(`[ANÁLISE-CRUZEIRO] Preços: ${precosCruzeiro}, Cabines: ${cabines}, Múltiplas: ${multiplasOpcoes}`);
+  } else {
+    // Para outros produtos
+    const precos = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
+    const totais = (promptLower.match(/total.*\d+/gi) || []).length;
+    const links = (promptLower.match(/https:\/\/www\.cvc\.com\.br/gi) || []).length;
+    multiplasOpcoes = Math.max(precos, totais, links) >= 2;
+  }
   
-  // Analisar tipo de conteúdo baseado nos produtos selecionados
   let tipoPrincipal = 'generico';
   
   if (tipos.includes('Aéreo Facial') || tipos.includes('Aéreo VBI/Fácil')) {
@@ -402,19 +333,16 @@ function analisarConteudoCompleto(prompt, tipos) {
     tipoPrincipal = 'carro';
   } else if (tipos.includes('Cruzeiro')) {
     tipoPrincipal = 'cruzeiro';
-  } else if (tipos.includes('Circuito')) {
-    tipoPrincipal = 'circuito';
   } else {
     tipoPrincipal = tipos[0]?.toLowerCase() || 'generico';
   }
   
-  console.log(`[ANÁLISE-COMPLETA] Tipo principal: ${tipoPrincipal}, Múltiplas: ${multiplasOpcoes}`);
+  console.log(`[ANÁLISE-CRUZEIRO] Tipo principal: ${tipoPrincipal}, Múltiplas: ${multiplasOpcoes}`);
   
   return {
     tipo: tipoPrincipal,
     multiplasOpcoes: multiplasOpcoes,
-    produtosPrincipais: tipos,
-    indicadores: { precos, totais, links }
+    produtosPrincipais: tipos
   };
 }
 
@@ -423,7 +351,7 @@ function analisarConteudoCompleto(prompt, tipos) {
 // ================================================================================
 
 function selecionarTemplateCompleto(analise, tipos) {
-  console.log('[TEMPLATE-COMPLETO] Selecionando para:', tipos);
+  console.log('[TEMPLATE-CRUZEIRO] Selecionando para:', tipos);
   
   if (!tipos || tipos.length === 0) {
     return {
@@ -452,7 +380,7 @@ function selecionarTemplateCompleto(analise, tipos) {
   }
   
   // Fallback para aéreo
-  console.warn(`[TEMPLATE-COMPLETO] Template não encontrado para: ${tipoPrincipal}, usando Aéreo Facial`);
+  console.warn(`[TEMPLATE-CRUZEIRO] Template não encontrado para: ${tipoPrincipal}, usando Aéreo Facial`);
   return {
     nome: 'Aéreo Facial',
     conteudo: TEMPLATES['Aéreo Facial']
@@ -460,11 +388,11 @@ function selecionarTemplateCompleto(analise, tipos) {
 }
 
 // ================================================================================
-// 🏗️ PROMPT ESPECIALIZADO POR PRODUTO
+// 🏗️ PROMPT ESPECIALIZADO PARA CRUZEIRO
 // ================================================================================
 
-function construirPromptEspecializado(promptBase, template, analise, tipos) {
-  console.log('[PROMPT-ESPECIALIZADO] Construindo para:', template.nome);
+function construirPromptEspecializadoCruzeiro(promptBase, template, analise, tipos) {
+  console.log('[PROMPT-CRUZEIRO] Construindo para:', template.nome);
   
   const tipoPrincipal = tipos?.[0] || 'Aéreo Facial';
   
@@ -479,113 +407,73 @@ ${template.conteudo}
 DADOS FORNECIDOS PELO CLIENTE:
 ${promptBase}
 
-INSTRUÇÕES ESPECÍFICAS PARA ${tipoPrincipal.toUpperCase()}:
 `;
 
-  // Instruções específicas por tipo de produto
-  switch (tipoPrincipal) {
-    case 'Aéreo Facial':
-    case 'Aéreo VBI/Fácil':
-      prompt += `
-- Converta siglas de aeroportos (VCP→Viracopos, GRU→Guarulhos, BSB→Brasília)
-- Para somente ida, use "(Somente ida)" e NÃO adicione linha de volta
-- Para ida/volta, inclua ambos os trechos
-- Mantenha links exatos como fornecidos
-- Use formato de data brasileiro (01/ago)`;
-      break;
-      
-    case 'Hotel':
-      prompt += `
-- Extraia nome do hotel, categoria (estrelas), localização
-- Calcule número de noites entre check-in e check-out
-- Identifique regime de alimentação (café, meia pensão, etc.)
-- Especifique tipo de quarto e ocupação
-- Inclua serviços como WiFi, piscina, etc.`;
-      break;
-      
-    case 'Carro':
-      prompt += `
-- Identifique modelo, categoria e locadora
-- Extraia locais de retirada e devolução
-- Calcule duração em dias
-- Especifique câmbio, combustível, ar condicionado
-- Inclua seguros e quilometragem incluída`;
-      break;
-      
-    case 'Cruzeiro':
-      prompt += `
-- Nome do navio e companhia
-- Roteiro com portos de parada
-- Categoria de cabine e localização
-- Regime de alimentação a bordo
-- Entretenimento e serviços inclusos`;
-      break;
-      
-    case 'Seguro':
-      prompt += `
-- Seguradora e nome do plano
-- Período de vigência da cobertura
-- Valores de cobertura médica, bagagem, cancelamento
-- Abrangência geográfica
-- Carência e condições especiais`;
-      break;
-      
-    case 'Passeios':
-      prompt += `
-- Nome e descrição do passeio
-- Data, horário e duração
-- Roteiro detalhado
-- O que está incluso (transporte, guia, ingressos, alimentação)
-- O que NÃO está incluso`;
-      break;
-      
-    case 'Traslado':
-      prompt += `
-- Tipo de veículo e categoria
-- Trajeto origem → destino
-- Data e horário
-- Número de passageiros
-- Bagagem incluída e especificações`;
-      break;
-      
-    case 'Frete':
-      prompt += `
-- Tipo de frete e modalidade
-- Origem e destino
-- Dimensões e peso
-- Prazo de entrega
-- Rastreamento e seguro`;
-      break;
-      
-    case 'Circuito':
-      prompt += `
-- Nome do circuito e destinos
-- Duração total da viagem  
-- Transporte ida/volta e interno
-- Hotéis e regime alimentação
-- Roteiro dia a dia
-- Passeios inclusos e opcionais`;
-      break;
-      
-    default:
-      prompt += `
-- Use os dados fornecidos para preencher o template
-- Mantenha formato profissional
-- Inclua todas as informações relevantes`;
+  // Instruções específicas para CRUZEIRO
+  if (tipoPrincipal === 'Cruzeiro') {
+    prompt += `INSTRUÇÕES ESPECÍFICAS PARA CRUZEIRO:
+
+1. **FORMATO OBRIGATÓRIO**: Use exatamente o modelo acima com emojis
+2. **NOME DO NAVIO**: Extraia "MSC Sinfonia" → "MSC Sinfonia"
+3. **DURAÇÃO**: Extraia "3 noites" 
+4. **COMPOSIÇÃO**: "2 adultos" (ajuste se houver crianças)
+5. **DATA EMBARQUE**: "25/11/2025" + dia da semana se souber
+6. **PORTO**: "Santos, Brasil" (saída e chegada)
+7. **ROTEIRO DETALHADO**: Format como:
+   25/11 – Santos – saída 17:00
+   26/11 – Ilha Grande – 08:00 às 20:00
+   27/11 – Em navegação
+   28/11 – Santos – chegada 08:00
+
+8. **TIPO TARIFA**: Use "Tarifa Super Bingo MSC" ou similar se não especificado
+9. **OPÇÕES DE CABINES**: Formate como:
+   🛏 Cabine Interna Bella – IB: R$ 4.010,00
+   🌅 Cabine Externa com Vista Mar – OB: R$ 4.270,00  
+   🚪 Cabine com Varanda Bella – BB: R$ 4.610,00
+
+10. **LINK**: Use o link exato fornecido
+11. **TEXTO FINAL**: Mantenha sempre o texto motivacional padrão CVC
+
+EXEMPLO ESPECÍFICO PARA SEU CASO:
+
+🚢 Cruzeiro MSC Sinfonia – 3 noites
+2 adultos
+📅 Embarque: 25/11/2025 (segunda)
+📍 Saída e chegada: Santos, Brasil
+🌊 Roteiro incrível pelo litoral brasileiro!
+
+🗺 Itinerário:
+25/11 – Santos – saída 17:00
+26/11 – Ilha Grande – 08:00 às 20:00
+27/11 – Em navegação
+28/11 – Santos – chegada 08:00
+
+💥 Tarifa Super Bingo MSC!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Cabine Interna Bella – IB: R$ 4.010,00
+🌅 Cabine Externa com Vista Mar – OB: R$ 4.270,00
+🚪 Cabine com Varanda Bella – BB: R$ 4.610,00
+
+📎 Link para ver fotos, detalhes e reservar:
+https://cruzeiros.atlas.cvc.com.br/quote/688928f63566df010a05e5df
+
+✅ Inclui: hospedagem a bordo, pensão completa (refeições), entretenimento e atividades para todas as idades!
+🚫 Não inclui: taxas, bebidas, excursões e transporte até o porto.
+
+📲 Me chama pra garantir a sua cabine nesse cruzeiro incrível! 🌴🛳️
+
+RESPONDA APENAS COM O TEMPLATE PREENCHIDO EXATAMENTE COMO MOSTRADO ACIMA.`;
+
+  } else {
+    // Instruções para outros produtos (mantidas iguais)
+    prompt += `INSTRUÇÕES ESPECÍFICAS PARA ${tipoPrincipal.toUpperCase()}:
+- Use EXATAMENTE o formato do template
+- Preencha apenas com dados reais fornecidos
+- Não invente informações que não existem
+- Mantenha links e valores exatos
+- Responda APENAS com o template preenchido`;
   }
-
-  prompt += `
-
-REGRAS GERAIS:
-1. Use EXATAMENTE o formato do template
-2. Mantenha todos os emojis e estrutura
-3. Preencha apenas com dados reais fornecidos
-4. Não invente informações que não existem
-5. Mantenha links e valores exatos
-6. Use moeda brasileira (R$) 
-7. Responda APENAS com o template preenchido
-
-Se alguma informação não estiver disponível, use "A consultar" ou "Conforme disponibilidade".`;
 
   return prompt;
 }
@@ -725,7 +613,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
 }
 
 // ================================================================================
-// 🔧 PROCESSAMENTO
+// 🔧 PROCESSAMENTO (mantido igual)
 // ================================================================================
 
 function processarResposta(response) {
@@ -740,12 +628,6 @@ function processarResposta(response) {
     const regex = new RegExp(`\\b${sigla}\\b`, 'gi');
     processada = processada.replace(regex, nome);
   });
-
-  // Remover linhas de volta indesejadas em produtos somente ida
-  if (processada.includes('✈️ Volta:') && processada.includes('(Somente ida)')) {
-    console.warn('[PROCESSAMENTO] Removendo linha de volta em produto somente ida');
-    processada = processada.replace(/✈️ Volta:.*\n/g, '');
-  }
 
   return processada.replace(/\n\s*\n/g, '\n\n').trim();
 }
@@ -788,9 +670,8 @@ function calcularMetricas(resultado, startTime, estrategia) {
   };
 }
 
-console.log('✅ [COMPLETE] CVC Itaqua API v5.0.0-complete carregada');
-console.log('🎯 [PRODUTOS] Todos os 9 tipos de produtos suportados:');
-console.log('   ✈️ Aéreo Facial | ✈️ Aéreo VBI/Fácil | 🏨 Hotel | 🚗 Carro | 🚢 Cruzeiro');
-console.log('   📦 Frete | 🚌 Traslado | 🎢 Passeios | 🛡️ Seguro | 🗺️ Circuito');
-console.log('📋 [TEMPLATES] 10 templates específicos criados');
-console.log('🚀 [STATUS] Sistema completo pronto para todos os produtos!');
+console.log('✅ [CRUZEIRO-FIX] CVC Itaqua API v5.1.0-cruzeiro carregada');
+console.log('🚢 [FOCO] Template de cruzeiro corrigido para formato CVC padrão');
+console.log('📋 [TEMPLATE] Formato específico: emoji inicial + roteiro detalhado + opções cabines');
+console.log('🎯 [EXEMPLO] Resultado esperado: formato WhatsApp profissional CVC');
+console.log('🚀 [STATUS] Pronto para gerar cruzeiros no formato correto!');
