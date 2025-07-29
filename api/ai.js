@@ -1,4 +1,4 @@
-// /api/ai.js - Versão completa com templates inline (sem import)
+// /api/ai.js - Versão final corrigida sem marcações de template
 
 // 📋 TEMPLATES INLINE - Todos os templates do sistema
 const templates = {
@@ -97,11 +97,87 @@ const templates = {
 Estamos aqui para ajudar você a realizar essa viagem!`
 };
 
+// ✈️ MAPEAMENTO DE AEROPORTOS - Siglas para Nomes Completos
+const aeroportos = {
+  // São Paulo
+  'CGH': 'Congonhas',
+  'GRU': 'Guarulhos',
+  'VCP': 'Viracopos',
+  
+  // Rio de Janeiro
+  'SDU': 'Santos Dumont',
+  'GIG': 'Galeão',
+  
+  // Ribeirão Preto e região
+  'RAO': 'Ribeirão Preto',
+  
+  // Principais capitais
+  'BSB': 'Brasília',
+  'CNF': 'Confins',
+  'PLU': 'Pampulha',
+  'CWB': 'Afonso Pena',
+  'IGU': 'Foz do Iguaçu',
+  'SSA': 'Salvador',
+  'REC': 'Recife',
+  'FOR': 'Fortaleza',
+  'MAO': 'Manaus',
+  'BEL': 'Belém',
+  'CGB': 'Cuiabá',
+  'CGR': 'Campo Grande',
+  'AJU': 'Aracaju',
+  'MCZ': 'Maceió',
+  'JPA': 'João Pessoa',
+  'NAT': 'Natal',
+  'THE': 'Teresina',
+  'SLZ': 'São Luís',
+  'PVH': 'Porto Velho',
+  'RBR': 'Rio Branco',
+  'BOA': 'Boa Vista',
+  'MAC': 'Macapá',
+  'VIX': 'Vitória',
+  'FLN': 'Florianópolis',
+  'JOI': 'Joinville',
+  'POA': 'Porto Alegre',
+  'UDI': 'Uberlândia',
+  'MOC': 'Montes Claros',
+  'IOS': 'Ilhéus',
+  'LDB': 'Londrina',
+  'MGF': 'Maringá',
+  
+  // Internacionais comuns
+  'EZE': 'Buenos Aires',
+  'MVD': 'Montevidéu',
+  'SCL': 'Santiago',
+  'LIM': 'Lima',
+  'BOG': 'Bogotá',
+  'UIO': 'Quito',
+  'CCS': 'Caracas',
+  'LIS': 'Lisboa',
+  'MAD': 'Madrid',
+  'FCO': 'Roma',
+  'CDG': 'Paris',
+  'LHR': 'Londres',
+  'FRA': 'Frankfurt',
+  'MIA': 'Miami',
+  'JFK': 'Nova York',
+  'LAX': 'Los Angeles',
+  'ORD': 'Chicago',
+  'MCO': 'Orlando',
+  'LAS': 'Las Vegas',
+  'DXB': 'Dubai',
+  'DOH': 'Doha',
+  'IST': 'Istambul',
+  'NRT': 'Tóquio',
+  'ICN': 'Seul',
+  'PEK': 'Pequim',
+  'SYD': 'Sydney',
+  'MEL': 'Melbourne'
+};
+
 export default async function handler(req, res) {
   try {
-    console.log('🚀 [CVC] API iniciada - versão inline templates');
+    console.log('🚀 [CVC] API iniciada - versão corrigida');
     console.log('🚀 [CVC] Método:', req.method);
-    console.log('🚀 [CVC] URL:', req.url);
     
     // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -114,7 +190,7 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') {
       console.log('✅ [CVC] CORS OK');
       return res.status(200).json({ 
-        message: 'CORS OK - templates inline',
+        message: 'CORS OK - versão corrigida',
         timestamp: new Date().toISOString()
       });
     }
@@ -123,11 +199,17 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       console.log('✅ [CVC] GET test');
       return res.status(200).json({ 
-        message: 'CVC Itaqua API Online - Templates Inline',
-        version: '2.1.1-inline',
+        message: 'CVC Itaqua API Online - Versão Corrigida',
+        version: '2.1.2-fixed',
         timestamp: new Date().toISOString(),
+        features: [
+          'Templates sem marcações',
+          'Aeroportos por nome completo',
+          'Múltiplas opções inteligente',
+          'Formatação WhatsApp'
+        ],
         templates_available: Object.keys(templates),
-        status: 'operational'
+        aeroportos_supported: Object.keys(aeroportos).length
       });
     }
 
@@ -163,29 +245,34 @@ export default async function handler(req, res) {
     const template = selecionarTemplate(tipos, tipo, prompt);
     console.log('📝 [CVC] Template selecionado');
     
-    // Construir prompt
-    const promptFinal = construirPrompt(prompt, template, { destino, tipos, temImagem, tipo });
+    // Construir prompt CORRIGIDO
+    const promptFinal = construirPromptCorrigido(prompt, template, { destino, tipos, temImagem, tipo });
     console.log('🏗️ [CVC] Prompt construído, length:', promptFinal.length);
     
     // Chamar IA
     const responseIA = await chamarIA(promptFinal, temImagem, arquivo);
     console.log('✅ [CVC] IA respondeu, length:', responseIA.length);
     
+    // 🔧 PÓS-PROCESSAMENTO - Limpar resposta e converter aeroportos
+    const responseProcessada = processarResposta(responseIA);
+    console.log('🔧 [CVC] Resposta processada, length:', responseProcessada.length);
+    
     // Resposta final
     return res.status(200).json({
       success: true,
       choices: [{
         message: {
-          content: responseIA
+          content: responseProcessada
         }
       }],
       metadata: {
         timestamp: new Date().toISOString(),
         promptLength: prompt.length,
-        responseLength: responseIA.length,
+        responseLength: responseProcessada.length,
         templateUsed: template.substring(0, 50) + '...',
         tipos: tipos || [],
-        temImagem: !!temImagem
+        temImagem: !!temImagem,
+        processamentos: ['remove_marcacoes', 'converte_aeroportos']
       }
     });
 
@@ -294,8 +381,8 @@ function detectarMultiplasOpcoes(prompt) {
   }
 }
 
-// 🏗️ Construir prompt
-function construirPrompt(promptBase, template, context) {
+// 🏗️ PROMPT CORRIGIDO - SEM marcações que aparecem na resposta
+function construirPromptCorrigido(promptBase, template, context) {
   try {
     const { destino, tipos, temImagem, tipo } = context;
     
@@ -309,44 +396,89 @@ function construirPrompt(promptBase, template, context) {
     
     const isMultipleTemplate = template.includes('*OPÇÃO 1:*');
     
-    return `Você é uma atendente da CVC Itaqua (filial 6220). 
+    // 🚨 PROMPT REFORMULADO - SEM marcações que confundem a IA
+    return `Você é uma atendente experiente da CVC Itaqua (filial 6220).
 
-Formate o orçamento usando EXATAMENTE este template:
+Sua tarefa é formatar um orçamento de viagem para WhatsApp seguindo EXATAMENTE este formato:
 
-=== TEMPLATE ===
 ${template}
-=== FIM TEMPLATE ===
 
-DADOS FORNECIDOS:
+DADOS DO CLIENTE:
 ${promptBase}
 
-INSTRUÇÕES:
-1. Use EXATAMENTE o formato do template
-2. Substitua valores [ENTRE_COLCHETES] pelos dados reais
-3. Mantenha emojis e formatação
-4. Valores em Real (R$)
-5. Pronto para WhatsApp
-6. Sem explicações extras
+REGRAS CRÍTICAS:
+1. Use EXATAMENTE o formato mostrado acima
+2. Substitua os valores entre [COLCHETES] pelos dados reais do cliente
+3. Mantenha TODOS os emojis e formatação original
+4. Use nomes COMPLETOS dos aeroportos (ex: Congonhas ao invés de CGH)
+5. Valores sempre em Real brasileiro (R$)
+6. NUNCA inclua explicações, comentários ou marcações extras
+7. O resultado deve estar pronto para copiar e colar no WhatsApp
 
 ${isMultipleTemplate ? `
-MÚLTIPLAS OPÇÕES:
-- Identifique TODAS as opções no texto
-- Preencha cada OPÇÃO com dados específicos
-- Use valores TOTAIS de cada opção
-- Remova seções vazias se houver menos de 3 opções
+INSTRUÇÕES PARA MÚLTIPLAS OPÇÕES:
+- Identifique TODAS as opções de passagens no texto do cliente
+- Preencha cada OPÇÃO (1, 2, 3...) com os dados específicos
+- Use os valores TOTAIS exatos de cada opção
+- Se houver menos de 3 opções, remova as seções vazias
+- Mantenha a ordem das opções conforme aparecem no texto
 ` : `
-OPÇÃO ÚNICA:
-- Use a melhor opção disponível
+INSTRUÇÕES PARA OPÇÃO ÚNICA:
+- Use os dados da melhor opção disponível
 - Calcule valores corretamente
+- Destaque companhia aérea e horários
 `}
 
-${temImagem ? 'ATENÇÃO: Extraia dados da imagem anexada.' : ''}
+CONVERSÃO DE AEROPORTOS:
+- CGH = Congonhas
+- GRU = Guarulhos  
+- RAO = Ribeirão Preto
+- SDU = Santos Dumont
+- GIG = Galeão
+- Use sempre o nome completo do aeroporto
 
-Contexto: ${destino || 'N/A'} | Tipos: ${tipos?.join(', ') || 'N/A'}`;
+${temImagem ? 'IMPORTANTE: Há uma imagem anexada. Extraia todas as informações visíveis da imagem.' : ''}
+
+CONTEXTO: ${destino || 'N/A'} | Serviços: ${tipos?.join(', ') || 'N/A'}
+
+Gere APENAS o orçamento formatado, sem nenhum texto adicional.`;
     
   } catch (error) {
     console.error('❌ [PROMPT] Erro:', error);
-    return `Formate este orçamento: ${promptBase}`;
+    return `Formate este orçamento para WhatsApp: ${promptBase}`;
+  }
+}
+
+// 🔧 PROCESSAR RESPOSTA - Remover marcações e converter aeroportos
+function processarResposta(response) {
+  try {
+    let processada = response;
+    
+    // 1. Remover marcações de template que a IA pode ter incluído
+    processada = processada.replace(/=== TEMPLATE ===/g, '');
+    processada = processada.replace(/=== FIM TEMPLATE ===/g, '');
+    processada = processada.replace(/=== FIM DO TEMPLATE ===/g, '');
+    processada = processada.replace(/\*\*TEMPLATE:\*\*/g, '');
+    processada = processada.replace(/\*\*FIM TEMPLATE\*\*/g, '');
+    
+    // 2. Converter siglas de aeroportos para nomes completos
+    Object.entries(aeroportos).forEach(([sigla, nome]) => {
+      // Converter sigla quando aparece isolada ou seguida de espaço/pontuação
+      const regex = new RegExp(`\\b${sigla}\\b`, 'gi');
+      processada = processada.replace(regex, nome);
+    });
+    
+    // 3. Limpar espaços extras e quebras desnecessárias
+    processada = processada.replace(/\n\s*\n\s*\n/g, '\n\n'); // Máximo 2 quebras seguidas
+    processada = processada.trim();
+    
+    console.log('🔧 [PROCESSAMENTO] Resposta limpa e aeroportos convertidos');
+    
+    return processada;
+    
+  } catch (error) {
+    console.error('❌ [PROCESSAMENTO] Erro:', error);
+    return response; // Retorna original se der erro
   }
 }
 
@@ -405,7 +537,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo) {
         model: 'gpt-4o',
         messages,
         max_tokens: 2500,
-        temperature: 0.3
+        temperature: 0.2  // Mais determinístico para evitar marcações extras
       })
     });
 
@@ -460,7 +592,7 @@ async function chamarClaude(prompt, temImagem, arquivo) {
       body: JSON.stringify({
         model: 'claude-3-sonnet-20240229',
         max_tokens: 2500,
-        temperature: 0.3,
+        temperature: 0.2,  // Mais determinístico
         messages: [{ role: 'user', content: content }]
       })
     });
@@ -484,4 +616,4 @@ async function chamarClaude(prompt, temImagem, arquivo) {
   }
 }
 
-console.log('✅ [CVC] Módulo carregado - templates inline');
+console.log('✅ [CVC] Módulo carregado - versão corrigida sem marcações');
