@@ -33,7 +33,7 @@
         
         .orbium-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 0.5rem;
         }
@@ -351,6 +351,7 @@
                         <option value="Carol">Carol</option>
                         <option value="Conceição">Conceição</option>
                         <option value="Ilana">Ilana</option>
+                        <option value="Jhuly">Jhuly</option>
                     </select>
                 </div>
                 
@@ -432,6 +433,7 @@
                             <option value="Carol">Carol</option>
                             <option value="Conceição">Conceição</option>
                             <option value="Ilana">Ilana</option>
+                            <option value="Jhuly">Jhuly</option>
                         </select>
                     </div>
 
@@ -489,8 +491,8 @@
     </div>
 
     <script>
-        // URL do Google Apps Script que você precisa criar
-       const ORBIUNS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsD39KeuMfCeRx3yUeFDOD8MJRcvoqOATBWluDcDrDj66Wv-kc_SHaDB1mOh1SCq-L4g/exec';
+        // URL do Google Apps Script - SUBSTITUA PELA SUA URL
+        const ORBIUNS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsD39KeuMfCeRx3yUeFDOD8MJRcvoqOATBWluDcDrDj66Wv-kc_SHaDB1mOh1SCq-L4g/exec';
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -526,92 +528,31 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    orbiunsData = data.orbiuns || [];
+                    orbiunsData = data.data.orbiuns || [];
                     orbiunsFiltrados = [...orbiunsData];
                     renderizarOrbiuns();
                     atualizarEstatisticas();
                 } else {
-                    throw new Error(data.error || 'Erro ao carregar dados');
+                    throw new Error(data.message || 'Erro ao carregar dados');
                 }
                 
             } catch (error) {
                 console.error('Erro ao carregar orbiuns:', error);
                 
-                // Mostrar dados de exemplo em caso de erro
-                mostrarDadosExemplo();
-                
                 listEl.innerHTML = `
                     <div class="alert alert-error">
                         <strong>❌ Erro ao conectar com a planilha:</strong><br>
                         ${error.message}<br><br>
-                        <strong>📋 Instruções:</strong><br>
-                        1. Configure o Google Apps Script<br>
-                        2. Atualize a variável ORBIUNS_SCRIPT_URL<br>
-                        3. Teste a conexão novamente<br><br>
-                        <em>Dados de exemplo carregados para demonstração.</em>
+                        <strong>📋 Verificações:</strong><br>
+                        1. A URL do Google Apps Script está correta?<br>
+                        2. O Web App foi publicado com as permissões corretas?<br>
+                        3. A planilha tem a aba "Dados"?<br><br>
+                        <em>Tente recarregar a página ou contate o administrador.</em>
                     </div>
                 `;
             } finally {
                 loadingEl.style.display = 'none';
             }
-        }
-
-        // Mostrar dados de exemplo
-        function mostrarDadosExemplo() {
-            orbiunsData = [
-                {
-                    status: 'Em atendimento',
-                    orbium: 'ORB001',
-                    data_abertura: '2025-01-29',
-                    departamento: 'Reservas',
-                    vendedor: 'Adriana',
-                    recibo: 'REC123',
-                    reserva: 'RES456',
-                    pedido: 'PED789',
-                    cia: 'GOL',
-                    loc_gds: 'ABC123',
-                    loc_cia: 'DEF456',
-                    observacoes: 'Cliente solicitou alteração de data',
-                    nome_cliente: 'João Silva',
-                    whats_cliente: '11999999999'
-                },
-                {
-                    status: 'Problema',
-                    orbium: 'ORB002',
-                    data_abertura: '2025-01-28',
-                    departamento: 'Financeiro',
-                    vendedor: 'Carol',
-                    recibo: 'REC124',
-                    reserva: 'RES457',
-                    pedido: 'PED790',
-                    cia: 'LATAM',
-                    loc_gds: 'GHI789',
-                    loc_cia: 'JKL012',
-                    observacoes: 'Problema no pagamento - cartão negado',
-                    nome_cliente: 'Maria Santos',
-                    whats_cliente: '11888888888'
-                },
-                {
-                    status: 'Resolvido',
-                    orbium: 'ORB003',
-                    data_abertura: '2025-01-29',
-                    departamento: 'Atendimento',
-                    vendedor: 'Bia',
-                    recibo: 'REC125',
-                    reserva: 'RES458',
-                    pedido: 'PED791',
-                    cia: 'AZUL',
-                    loc_gds: 'MNO345',
-                    loc_cia: 'PQR678',
-                    observacoes: 'Remarcação realizada com sucesso',
-                    nome_cliente: 'Pedro Costa',
-                    whats_cliente: '11777777777'
-                }
-            ];
-            
-            orbiunsFiltrados = [...orbiunsData];
-            renderizarOrbiuns();
-            atualizarEstatisticas();
         }
 
         // Renderizar lista de orbiuns
@@ -778,7 +719,7 @@
                     fecharModal();
                     carregarOrbiuns(); // Recarregar lista
                 } else {
-                    throw new Error(result.error || 'Erro ao cadastrar orbium');
+                    throw new Error(result.message || 'Erro ao cadastrar orbium');
                 }
 
             } catch (error) {
@@ -801,7 +742,7 @@
 
         function formatarWhatsApp(numero) {
             if (!numero) return 'N/A';
-            const numeroLimpo = numero.replace(/\D/g, '');
+            const numeroLimpo = numero.toString().replace(/\D/g, '');
             if (numeroLimpo.length === 11) {
                 return `(${numeroLimpo.slice(0,2)}) ${numeroLimpo.slice(2,7)}-${numeroLimpo.slice(7)}`;
             }
