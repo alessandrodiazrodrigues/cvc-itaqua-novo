@@ -365,14 +365,38 @@ function construirPromptOtimizado(promptBase, template, context) {
   }
 }
 
+// ================================================================================
+// 🚀 INÍCIO DA SEÇÃO CORRIGIDA
+// ================================================================================
+
 // 4.5 PROMPT OTIMIZADO PARA CLAUDE
 function construirPromptClaude(promptBase, template, context, isMultiple) {
-  return `Você é um especialista em análise de orçamentos de viagem da CVC Itaqua.
+  // Versão 2.0 - Mais direta e focada em forçar a análise da imagem.
+  return `Sua tarefa principal e obrigatória é analisar a IMAGEM em anexo. A imagem contém um ou mais orçamentos de voo. Extraia TODAS as informações da imagem e use-as para preencher o formato abaixo.
 
-TAREFA: Analise esta imagem de orçamento de passagem aérea e extraia todas as informações para criar um orçamento formatado.
-
-FORMATO OBRIGATÓRIO:
+**Formato de Saída Obrigatório:**
 ${template}
+
+**Instruções Detalhadas:**
+1.  **Fonte de Dados Primária:** A IMAGEM é a única fonte de verdade para os detalhes do voo (companhia, horários, preços, etc.). Ignore qualquer texto do usuário que conflite com o conteúdo da imagem.
+2.  **Extração da Imagem:** Identifique na imagem:
+    * Companhia(s) aérea(s) (Latam, Gol, Azul).
+    * Rota completa (ida e volta).
+    * Datas e horários exatos dos voos.
+    * Valor total em Reais (R$).
+    * Formas de pagamento e parcelamento, se visível.
+    * Links da CVC, se houver.
+3.  **Múltiplas Opções:** ${isMultiple ? "A imagem parece conter várias opções. Crie uma seção para cada uma (OPÇÃO 1, OPÇÃO 2, etc.), preenchendo os dados específicos de cada uma." : "A imagem parece conter uma única opção. Formate-a de forma clara e direta."}
+4.  **Aeroportos:** Converta siglas para nomes completos (Ex: CGH -> Congonhas, GRU -> Guarulhos, IOS -> Ilhéus).
+5.  **Dados do Formulário (Contexto):** O texto a seguir é apenas para contexto adicional, como número de passageiros. Não o use para os detalhes do voo se eles estiverem na imagem.
+    *Contexto:* ${promptBase}
+
+**Lembre-se:** Não responda que não pode ver a imagem. Sua função é analisá-la. Gere apenas o orçamento formatado com base nos dados visuais.`;
+}
+
+// ================================================================================
+// 🚀 FIM DA SEÇÃO CORRIGIDA
+// ================================================================================
 
 INFORMAÇÕES DO FORMULÁRIO:
 ${promptBase}
