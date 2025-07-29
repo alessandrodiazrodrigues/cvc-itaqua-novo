@@ -1,73 +1,14 @@
+// ===== INÍCIO DO CÓDIGO COMPLETO =====
 // ================================================================================
 // 🏆 CVC ITAQUA - API HÍBRIDA COMPLETA (Claude + GPT-4o-mini)
 // ================================================================================
-// Versão: 4.1.0-hotfix
+// Versão: 4.2.0-stable
 // Autor: Sistema CVC Itaqua
 // Última atualização: 2025-07-29
+// Foco: Estabilidade e prompt reforçado para análise de imagem.
 // ================================================================================
 
-/*
-📋 ÍNDICE DO CÓDIGO:
-
-🔧 SEÇÃO 1: CONFIGURAÇÕES E TEMPLATES (Linhas 30-120)
-   ├── 1.1 Templates de Formatação de Orçamentos
-   ├── 1.2 Mapeamento de Aeroportos  
-   ├── 1.3 Configurações de Preços e Modelos
-   └── 1.4 Constantes do Sistema
-
-🎯 SEÇÃO 2: HANDLER PRINCIPAL (Linhas 130-200)
-   ├── 2.1 Configuração de CORS e Headers
-   ├── 2.2 Validação de Requests
-   ├── 2.3 Processamento Principal
-   └── 2.4 Retorno de Resposta com Métricas
-
-🤖 SEÇÃO 3: SISTEMA HÍBRIDO DE IA (Linhas 210-280)
-   ├── 3.1 Seleção Inteligente de Modelos
-   ├── 3.2 Estratégia Híbrida (Claude + GPT-4o-mini)
-   ├── 3.3 Sistema de Fallback
-   └── 3.4 Logs e Debugging
-
-🏗️ SEÇÃO 4: PROMPTS OTIMIZADOS (Linhas 290-400)
-   ├── 4.1 Prompt para Claude (Imagens)
-   ├── 4.2 Prompt para GPT-4o-mini (Texto)
-   ├── 4.3 Prompts Especiais (Análise, Destino, Ranking)
-   └── 4.4 Template Selection Logic
-
-🟠 SEÇÃO 5: CLAUDE SONNET (Linhas 410-480)
-   ├── 5.1 Processamento de Imagens Base64
-   ├── 5.2 Validações Específicas do Claude
-   ├── 5.3 Chamada da API Anthropic
-   └── 5.4 Tratamento de Respostas
-
-🔵 SEÇÃO 6: OPENAI GPT-4o-mini (Linhas 490-570)
-   ├── 6.1 Processamento de Texto
-   ├── 6.2 Fallback para GPT-4o quando necessário
-   ├── 6.3 Validações e Logs
-   └── 6.4 Tratamento de Erros
-
-🔧 SEÇÃO 7: UTILITÁRIOS E PROCESSAMENTO (Linhas 580-650)
-   ├── 7.1 Detecção de Múltiplas Opções
-   ├── 7.2 Seleção de Templates
-   ├── 7.3 Processamento de Respostas
-   └── 7.4 Conversão de Aeroportos
-
-💰 SEÇÃO 8: SISTEMA DE CUSTOS HÍBRIDO (Linhas 660-720)
-   ├── 8.1 Cálculo de Custos por Modelo
-   ├── 8.2 Comparação de Economia
-   ├── 8.3 Métricas Detalhadas
-   └── 8.4 Relatórios de Performance
-
-📊 SEÇÃO 9: LOGS E DEBUGGING (Linhas 730-750)
-   ├── 9.1 Sistema de Logs Estruturados
-   ├── 9.2 Debug de Modelos
-   └── 9.3 Monitoramento de Performance
-*/
-
-// ================================================================================
-// 🔧 SEÇÃO 1: CONFIGURAÇÕES E TEMPLATES
-// ================================================================================
-
-// 1.1 TEMPLATES DE FORMATAÇÃO DE ORÇAMENTOS
+// SEÇÃO 1: CONFIGURAÇÕES E TEMPLATES
 const templates = {
   'Aéreo Múltiplas Opções': `*Passagens Aéreas - Opções Disponíveis*
 
@@ -90,7 +31,6 @@ const templates = {
 ⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.
 
 📞 Dúvidas? Estamos aqui para ajudar você a escolher a melhor opção!`,
-
   'Aéreo Facial': `*Passagem Aérea*
 [COMPANHIA_AEREA] 
 [DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_SAIDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA]
@@ -101,7 +41,6 @@ const templates = {
 🔗 [LINK_CVC]
 
 ⚠️ Valores sujeitos a alteração e disponibilidade! A melhor forma de garantir o preço é efetuando a compra.`,
-
   'Hotel': `*Hospedagem*
 🏨 [NOME_HOTEL] - [CATEGORIA_ESTRELAS]⭐
 📍 [LOCALIZACAO_HOTEL]
@@ -121,155 +60,95 @@ const templates = {
 
 ⚠️ Tarifas sujeitas à disponibilidade no momento da reserva.`
 };
-
-// 1.2 MAPEAMENTO DE AEROPORTOS BRASILEIROS
-const aeroportos = {
-  'CGH': 'Congonhas', 'GRU': 'Guarulhos', 'VCP': 'Viracopos',
-  'SDU': 'Santos Dumont', 'GIG': 'Galeão',
-  'RAO': 'Ribeirão Preto', 'BPS': 'Porto Seguro', 'SSA': 'Salvador', 'IOS': 'Ilhéus',
-  'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'CWB': 'Afonso Pena',
-  'IGU': 'Foz do Iguaçu', 'REC': 'Recife', 'FOR': 'Fortaleza', 'MAO': 'Manaus',
-  'BEL': 'Belém', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande', 'AJU': 'Aracaju',
-  'MCZ': 'Maceió', 'JPA': 'João Pessoa', 'NAT': 'Natal', 'THE': 'Teresina',
-  'SLZ': 'São Luís', 'VIX': 'Vitória', 'FLN': 'Florianópolis', 'POA': 'Porto Alegre'
-};
-
-// 1.3 CONFIGURAÇÕES DE PREÇOS (USD por 1K tokens)
-const PRECOS_MODELOS = {
-  // OpenAI
-  'gpt-4o': { input: 0.005, output: 0.015 },
-  'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-  'gpt-4-vision-preview': { input: 0.01, output: 0.03 }, // Mantido para cálculo histórico
-  
-  // Claude (aproximado)
-  'claude-3-sonnet-20240229': { input: 0.003, output: 0.015 }, // Mantido para cálculo histórico
-  'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 } // Novo modelo
-};
-
-// 1.4 CONSTANTES DO SISTEMA
+const aeroportos = { 'CGH': 'Congonhas', 'GRU': 'Guarulhos', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont', 'GIG': 'Galeão', 'RAO': 'Ribeirão Preto', 'BPS': 'Porto Seguro', 'SSA': 'Salvador', 'IOS': 'Ilhéus', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'CWB': 'Afonso Pena', 'IGU': 'Foz do Iguaçu', 'REC': 'Recife', 'FOR': 'Fortaleza', 'MAO': 'Manaus', 'BEL': 'Belém', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande', 'AJU': 'Aracaju', 'MCZ': 'Maceió', 'JPA': 'João Pessoa', 'NAT': 'Natal', 'THE': 'Teresina', 'SLZ': 'São Luís', 'VIX': 'Vitória', 'FLN': 'Florianópolis', 'POA': 'Porto Alegre' };
+const PRECOS_MODELOS = { 'gpt-4o': { input: 0.005, output: 0.015 }, 'gpt-4o-mini': { input: 0.00015, output: 0.0006 }, 'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 } };
 const USD_TO_BRL = 5.2;
 const MAX_TOKENS = 2500;
-const CLAUDE_MAX_IMAGE_SIZE_MB = 5;
-const OPENAI_MAX_IMAGE_SIZE_MB = 20;
 
 // ================================================================================
-// 🎯 SEÇÃO 2: HANDLER PRINCIPAL
+// 🎯 SEÇÃO 2: HANDLER PRINCIPAL (com logging aprimorado)
 // ================================================================================
 
 export default async function handler(req, res) {
   try {
-    // 2.1 CONFIGURAÇÃO DE CORS E HEADERS
-    console.log('🚀 [CVC HÍBRIDO] API iniciada');
-    console.log('🚀 [CVC HÍBRIDO] Método:', req.method);
-    
+    console.log('[HANDLER] Iniciando processamento da requisição.');
+    // Configuração de CORS e Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    
-    // 2.2 TRATAMENTO DE REQUESTS ESPECIAIS
+
     if (req.method === 'OPTIONS') {
+      console.log('[HANDLER] Requisição OPTIONS recebida. Respondendo com CORS OK.');
       return res.status(200).json({ message: 'CORS OK' });
     }
-
     if (req.method === 'GET') {
-      return res.status(200).json({ 
-        message: 'CVC Itaqua API Híbrida',
-        version: '4.1.0-hotfix',
-        timestamp: new Date().toISOString(),
-        sistema: 'Claude (imagens) + GPT-4o-mini (texto)',
-        features: [
-          'Claude 3.5 Sonnet para análise visual',
-          'GPT-4o-mini para processamento de texto',
-          'Sistema híbrido de fallback com GPT-4o',
-          'Medidor de custo em tempo real',
-          'Templates múltiplas opções',
-          'Links CVC corrigidos'
-        ],
-        modelos: {
-          texto: 'gpt-4o-mini',
-          imagem: 'claude-3-5-sonnet-20240620', // <-- ALTERADO
-          fallback: 'gpt-4o' // <-- ALTERADO
-        }
-      });
+        console.log('[HANDLER] Requisição GET recebida. Respondendo com status da API.');
+        return res.status(200).json({ 
+            message: 'CVC Itaqua API Híbrida',
+            version: '4.2.0-stable',
+            modelos: {
+              texto: 'gpt-4o-mini',
+              imagem: 'claude-3-5-sonnet-20240620',
+              fallback: 'gpt-4o'
+            }
+        });
     }
-
     if (req.method !== 'POST') {
+      console.error(`[HANDLER] Método não permitido: ${req.method}`);
       return res.status(405).json({ error: 'Método não permitido' });
     }
 
-    // 2.3 VALIDAÇÃO DE DADOS
+    // Validação do corpo da requisição
+    console.log('[HANDLER] Validando corpo da requisição...');
     if (!req.body) {
-      return res.status(400).json({ error: 'Body obrigatório' });
+      console.error('[HANDLER] Erro: Corpo da requisição ausente.');
+      return res.status(400).json({ error: 'Corpo da requisição obrigatório' });
     }
-    
-    const { prompt, tipo, destino, tipos, temImagem, arquivo } = req.body;
-    
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return res.status(400).json({ 
-        error: 'Prompt obrigatório',
-        received: { prompt: typeof prompt, length: prompt?.length || 0 }
-      });
+    const { prompt, temImagem, arquivo } = req.body;
+    if (!prompt || typeof prompt !== 'string') {
+      console.error('[HANDLER] Erro: Prompt ausente ou inválido.');
+      return res.status(400).json({ error: 'Prompt obrigatório' });
     }
-    
-    console.log('✅ [CVC HÍBRIDO] Dados válidos - Prompt:', prompt.length, 'chars | Imagem:', !!temImagem);
+    console.log(`[HANDLER] Dados recebidos: Imagem=${temImagem}, Prompt=${prompt.length} chars`);
 
-    // 2.4 PROCESSAMENTO PRINCIPAL COM SISTEMA HÍBRIDO
+    // Processamento principal
     const startTime = Date.now();
-    
-    // Seleção inteligente de modelo
     const { modelo, estrategia, fallback } = selecionarModeloHibrido(temImagem);
-    console.log('🎯 [CVC HÍBRIDO] Estratégia:', estrategia);
-    
-    // Seleção de template
-    const template = selecionarTemplate(tipos, tipo, prompt);
-    
-    // Construir prompt otimizado por modelo
-    const promptFinal = construirPromptOtimizado(prompt, template, { destino, tipos, temImagem, tipo });
-    
-    // Chamar IA híbrida
-    const resultado = await chamarIAHibrida(promptFinal, temImagem, arquivo, modelo, fallback);
-    
-    // Processar resposta
-    const responseProcessada = processarResposta(resultado.content);
-    
-    // Calcular métricas finais
-    const metricas = calcularMetricasHibridas(resultado, temImagem, startTime, estrategia);
-    
-    console.log('✅ [CVC HÍBRIDO] Processamento concluído em', Date.now() - startTime, 'ms');
+    console.log(`[HANDLER] Estratégia definida: ${estrategia}`);
 
-    // 2.5 RETORNO DE RESPOSTA COM MÉTRICAS
+    const template = selecionarTemplate(req.body);
+    console.log('[HANDLER] Template selecionado.');
+    
+    const isMultiple = detectarMultiplasOpcoes(prompt);
+    const promptFinal = construirPromptOtimizado({ temImagem, promptBase: prompt, template, isMultiple });
+    console.log('[HANDLER] Prompt final construído.');
+
+    const resultado = await chamarIAHibrida(promptFinal, temImagem, arquivo, modelo, fallback);
+    console.log(`[HANDLER] IA respondeu com sucesso usando o modelo: ${resultado.modelo_usado}`);
+
+    const responseProcessada = processarResposta(resultado.content);
+    console.log('[HANDLER] Resposta da IA processada.');
+    
+    const metricas = calcularMetricasHibridas(resultado, startTime, estrategia);
+    console.log(`[HANDLER] Métricas calculadas. Custo: R$ ${metricas.custo.brl.toFixed(4)}`);
+
+    console.log(`[HANDLER] Processamento concluído em ${Date.now() - startTime}ms. Enviando resposta.`);
     return res.status(200).json({
       success: true,
-      choices: [{
-        message: { content: responseProcessada }
-      }],
+      choices: [{ message: { content: responseProcessada } }],
       metricas: metricas,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        version: '4.1.0-hotfix',
-        estrategia: estrategia,
-        template_usado: template.substring(0, 50) + '...',
-        tipos: tipos || [],
-        temImagem: !!temImagem,
-        processamento_ms: Date.now() - startTime
-      }
     });
 
   } catch (error) {
-    console.error('💥 [CVC HÍBRIDO] Erro:', error);
-    
+    console.error('💥 [ERRO FATAL NO HANDLER] 💥', error);
     return res.status(500).json({
       success: false,
       error: {
-        message: error.message,
-        timestamp: new Date().toISOString(),
-        version: '4.1.0-hotfix'
-      },
-      debug: {
-        name: error.name,
-        stack: error.stack?.split('\n').slice(0, 5)
+        message: `Ocorreu um erro inesperado no servidor: ${error.message}`,
+        type: 'SERVER_ERROR',
+        details: error.stack
       }
     });
   }
@@ -279,54 +158,39 @@ export default async function handler(req, res) {
 // 🤖 SEÇÃO 3: SISTEMA HÍBRIDO DE IA
 // ================================================================================
 
-// 3.1 SELEÇÃO INTELIGENTE DE MODELOS
 function selecionarModeloHibrido(temImagem) {
   if (temImagem) {
     return {
-      modelo: 'claude-3-5-sonnet-20240620', // <-- ALTERADO para o modelo mais recente
-      estrategia: 'Claude 3.5 Sonnet para análise visual (alta qualidade)',
-      fallback: 'gpt-4o', // <-- ALTERADO para o fallback correto
+      modelo: 'claude-3-5-sonnet-20240620',
+      estrategia: 'Claude 3.5 Sonnet para análise visual',
+      fallback: 'gpt-4o',
     };
   } else {
     return {
       modelo: 'gpt-4o-mini',
-      estrategia: 'GPT-4o-mini para texto (máxima economia)',
+      estrategia: 'GPT-4o-mini para processamento de texto',
       fallback: 'gpt-4o',
     };
   }
 }
 
-// 3.2 CHAMADA IA HÍBRIDA PRINCIPAL
 async function chamarIAHibrida(prompt, temImagem, arquivo, modelo, fallbackModelo) {
   try {
-    console.log('🤖 [IA HÍBRIDA] Iniciando com modelo:', modelo);
-    
-    // Estratégia híbrida
     if (temImagem) {
-      console.log('🟠 [IA HÍBRIDA] Rota: Claude Sonnet para imagem');
-      return await chamarClaudeOtimizado(prompt, temImagem, arquivo, modelo);
+      console.log(`[IA-HÍBRIDA] Tentando com o modelo principal de imagem: ${modelo}`);
+      return await chamarClaudeOtimizado(prompt, arquivo, modelo);
     } else {
-      console.log('🔵 [IA HÍBRIDA] Rota: GPT-4o-mini para texto');
-      return await chamarOpenAIOtimizada(prompt, false, null, 'gpt-4o-mini');
+      console.log(`[IA-HÍBRIDA] Tentando com o modelo principal de texto: ${modelo}`);
+      return await chamarOpenAIOtimizada(prompt, false, null, modelo);
     }
-    
   } catch (error) {
-    console.error(`❌ [IA HÍBRIDA] Erro no modelo principal (${modelo}):`, error.message);
-    
-    // 3.3 SISTEMA DE FALLBACK INTELIGENTE
-    console.log(`🔄 [IA HÍBRIDA] Iniciando fallback para ${fallbackModelo}...`);
-    
+    console.error(`❌ [IA-HÍBRIDA] Falha no modelo principal (${modelo}): ${error.message}`);
+    console.log(`🔄 [IA-HÍBRIDA] Acionando fallback para o modelo: ${fallbackModelo}`);
     try {
-        if (temImagem) {
-            console.log('🔄 [IA HÍBRIDA] Fallback para imagem com:', fallbackModelo);
-            return await chamarOpenAIOtimizada(prompt, temImagem, arquivo, fallbackModelo);
-        } else {
-            console.log('🔄 [IA HÍBRIDA] Fallback para texto com:', fallbackModelo);
-            return await chamarOpenAIOtimizada(prompt, false, null, fallbackModelo);
-        }
+        return await chamarOpenAIOtimizada(prompt, temImagem, arquivo, fallbackModelo);
     } catch (fallbackError) {
-        console.error(`❌ [IA HÍBRIDA] Fallback (${fallbackModelo}) também falhou:`, fallbackError.message);
-        throw new Error(`Ambos os modelos falharam: Principal (${modelo}: ${error.message}) | Fallback (${fallbackModelo}: ${fallbackError.message})`);
+        console.error(`❌ [IA-HÍBRIDA] Falha também no modelo de fallback (${fallbackModelo}): ${fallbackError.message}`);
+        throw new Error(`Principal falhou: (${error.message}) | Fallback falhou: (${fallbackError.message})`);
     }
   }
 }
@@ -334,468 +198,162 @@ async function chamarIAHibrida(prompt, temImagem, arquivo, modelo, fallbackModel
 // ================================================================================
 // 🏗️ SEÇÃO 4: PROMPTS OTIMIZADOS
 // ================================================================================
-
-// 4.1 CONSTRUÇÃO DE PROMPTS OTIMIZADOS POR MODELO
-function construirPromptOtimizado(promptBase, template, context) {
-  try {
-    const { destino, tipos, temImagem, tipo } = context;
-    
-    // 4.2 PROMPTS ESPECIAIS
-    if (tipo === 'analise') {
-      return `Você é um analista da CVC Itaqua. ${promptBase}`;
-    }
-    
-    if (tipo === 'destino' || tipo === 'ranking') {
-      return promptBase;
-    }
-    
-    const isMultipleTemplate = template.includes('*OPÇÃO 1:*');
-    
-    // 4.3 PROMPT ESPECÍFICO PARA CLAUDE (IMAGENS)
+function construirPromptOtimizado({ temImagem, promptBase, template, isMultiple }) {
     if (temImagem) {
-      return construirPromptClaude(promptBase, template, context, isMultipleTemplate);
+        return construirPromptClaude(promptBase, template, isMultiple);
     }
-    
-    // 4.4 PROMPT ESPECÍFICO PARA GPT-4o-mini (TEXTO)
-    return construirPromptGPTMini(promptBase, template, context, isMultipleTemplate);
-    
-  } catch (error) {
-    console.error('❌ [PROMPT] Erro na construção:', error);
-    return `Formate este orçamento: ${promptBase}`;
-  }
+    return construirPromptGPTMini(promptBase, template, isMultiple);
 }
 
-// ================================================================================
-// 🚀 INÍCIO DA SEÇÃO CORRIGIDA
-// ================================================================================
+function construirPromptClaude(promptBase, template, isMultiple) {
+  return `Você é um assistente de IA especializado em extrair dados de imagens de orçamentos de voos. Sua única tarefa é analisar a imagem fornecida e preencher o template com as informações extraídas. Não converse, não peça a imagem, apenas analise e responda no formato solicitado.
 
-// 4.5 PROMPT OTIMIZADO PARA CLAUDE
-function construirPromptClaude(promptBase, template, context, isMultiple) {
-  // Versão 2.0 - Mais direta e focada em forçar a análise da imagem.
-  return `Sua tarefa principal e obrigatória é analisar a IMAGEM em anexo. A imagem contém um ou mais orçamentos de voo. Extraia TODAS as informações da imagem e use-as para preencher o formato abaixo.
-
-**Formato de Saída Obrigatório:**
+TEMPLATE DE SAÍDA OBRIGATÓRIO:
 ${template}
 
-**Instruções Detalhadas:**
-1.  **Fonte de Dados Primária:** A IMAGEM é a única fonte de verdade para os detalhes do voo (companhia, horários, preços, etc.). Ignore qualquer texto do usuário que conflite com o conteúdo da imagem.
-2.  **Extração da Imagem:** Identifique na imagem:
-    * Companhia(s) aérea(s) (Latam, Gol, Azul).
-    * Rota completa (ida e volta).
-    * Datas e horários exatos dos voos.
-    * Valor total em Reais (R$).
-    * Formas de pagamento e parcelamento, se visível.
-    * Links da CVC, se houver.
-3.  **Múltiplas Opções:** ${isMultiple ? "A imagem parece conter várias opções. Crie uma seção para cada uma (OPÇÃO 1, OPÇÃO 2, etc.), preenchendo os dados específicos de cada uma." : "A imagem parece conter uma única opção. Formate-a de forma clara e direta."}
-4.  **Aeroportos:** Converta siglas para nomes completos (Ex: CGH -> Congonhas, GRU -> Guarulhos, IOS -> Ilhéus).
-5.  **Dados do Formulário (Contexto):** O texto a seguir é apenas para contexto adicional, como número de passageiros. Não o use para os detalhes do voo se eles estiverem na imagem.
-    *Contexto:* ${promptBase}
+INSTRUÇÕES:
+1.  **AÇÃO OBRIGATÓRIA:** Analise a imagem. A imagem é a fonte primária de dados.
+2.  **EXTRAIA DA IMAGEM:**
+    * Companhia(s) Aérea(s).
+    * Datas e horários de ida e volta.
+    * Aeroportos de origem e destino (converta siglas como GRU para Guarulhos).
+    * Valor total em R$.
+    * Qualquer informação sobre parcelamento.
+3.  **MÚLTIPLAS OPÇÕES:** ${isMultiple ? "A imagem contém várias opções. Preencha uma seção para cada uma (OPÇÃO 1, OPÇÃO 2...)." : "A imagem contém uma única opção. Preencha o template para ela."}
+4.  **DADOS DE CONTEXTO:** O texto abaixo é apenas para contexto (ex: número de passageiros). Use-o para complementar, mas os dados da imagem têm prioridade.
+    * Contexto do usuário: ${promptBase}
 
-**Lembre-se:** Não responda que não pode ver a imagem. Sua função é analisá-la. Gere apenas o orçamento formatado com base nos dados visuais.`;
+Responda apenas com o template preenchido.`;
 }
 
-// ================================================================================
-// 🚀 FIM DA SEÇÃO CORRIGIDA
-// ================================================================================
+function construirPromptGPTMini(promptBase, template, isMultiple) {
+    return `Você é um assistente da CVC. Formate o orçamento abaixo usando EXATAMENTE o modelo fornecido.
 
-INFORMAÇÕES DO FORMULÁRIO:
-${promptBase}
-
-INSTRUÇÕES PARA ANÁLISE DA IMAGEM:
-
-1. 📋 EXTRAIR DA IMAGEM:
-   - Companhia aérea (Latam, Gol, Azul, Avianca, etc.)
-   - Rota: origem ↔ destino  
-   - Datas de ida e volta
-   - Horários dos voos
-   - Valor total em Reais (R$)
-   - Quantidade de passageiros
-   - Forma de pagamento (se visível)
-
-2. ✈️ AEROPORTOS - Converter códigos para nomes:
-   - CGH = Congonhas | GRU = Guarulhos | IOS = Ilhéus
-   - BPS = Porto Seguro | RAO = Ribeirão Preto
-
-3. 🔗 LINKS: Se houver link da CVC na imagem, copie exatamente como está
-
-4. 💰 VALORES: Use os valores exatos mostrados na imagem
-
-${isMultiple ? `
-5. 📊 MÚLTIPLAS OPÇÕES: Se a imagem mostra várias opções:
-   - Crie seções separadas (OPÇÃO 1, OPÇÃO 2, etc.)
-   - Use dados específicos de cada opção
-` : ''}
-
-EXEMPLO DO RESULTADO:
-*Passagem Aérea*
-Latam
-30 de agosto - São Paulo/Guarulhos 07:20 / Ilhéus 09:20
-30 de agosto - Ilhéus 17:30 / São Paulo/Guarulhos 19:40
-
-💰 R$ 1.439,42 para 1 Adulto
-💳 [Forma de pagamento da imagem]
-
-⚠️ Valores sujeitos a alteração e disponibilidade!
-
-RESULTADO: Formate apenas o orçamento final baseado na análise da imagem.`;
-}
-
-// 4.6 PROMPT OTIMIZADO PARA GPT-4o-mini
-function construirPromptGPTMini(promptBase, template, context, isMultiple) {
-  return `Você é uma atendente experiente da CVC Itaqua (filial 6220).
-
-Formate este orçamento seguindo EXATAMENTE o modelo:
-
+MODELO:
 ${template}
 
 DADOS DO CLIENTE:
 ${promptBase}
 
-REGRAS IMPORTANTES:
-1. Links CVC: Use apenas o URL direto, sem formatação markdown
-2. Exemplo: 🔗 https://www.cvc.com.br/carrinho-dinamico/...
-3. Aeroportos por extenso: CGH=Congonhas, GRU=Guarulhos
-4. Formato pronto para WhatsApp
-5. Valores exatos em Real (R$)
-
-${isMultiple ? `
-MÚLTIPLAS OPÇÕES: Se há várias opções no texto:
-- Identifique TODAS as opções
-- Crie seções separadas para cada uma
-- Use dados específicos por opção
-` : ''}
-
-Gere apenas o orçamento formatado, sem explicações.`;
+REGRAS:
+- Use os dados para preencher os campos como [COMPANHIA_AEREA], [VALOR_TOTAL], etc.
+- ${isMultiple ? "O texto contém múltiplas opções. Formate todas elas." : "O texto contém uma única opção."}
+- Converta siglas de aeroportos para nomes completos (ex: GRU para Guarulhos).
+- O resultado deve ser apenas o texto formatado, pronto para copiar e colar.`;
 }
 
-// ================================================================================
-// 🟠 SEÇÃO 5: CLAUDE SONNET (PROCESSAMENTO DE IMAGENS)
-// ================================================================================
-
-// 5.1 CHAMADA CLAUDE OTIMIZADA
-async function chamarClaudeOtimizado(prompt, temImagem, arquivo, modelo) {
-  try {
-    console.log('🟠 [CLAUDE] Iniciando processamento de imagem com o modelo:', modelo);
-    
-    // 5.2 VALIDAÇÕES ESPECÍFICAS DO CLAUDE
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('Chave da Anthropic não configurada. Configure ANTHROPIC_API_KEY.');
-    }
-    
-    let content;
-    
-    if (temImagem && arquivo) {
-      // Processar base64
-      const base64Match = arquivo.match(/data:image\/[^;]+;base64,(.+)/);
-      if (!base64Match) {
-        throw new Error('Formato de imagem inválido para Claude');
-      }
-      
-      const base64Data = base64Match[1];
-      const mimeType = arquivo.match(/data:(image\/[^;]+)/)?.[1] || 'image/jpeg';
-      
-      console.log('🟠 [CLAUDE] MIME Type:', mimeType);
-      
-      const sizeInMB = (base64Data.length * 0.75) / (1024 * 1024);
-      if (sizeInMB > CLAUDE_MAX_IMAGE_SIZE_MB) {
-        throw new Error(`Imagem muito grande para Claude: ${sizeInMB.toFixed(2)}MB. Máximo: ${CLAUDE_MAX_IMAGE_SIZE_MB}MB`);
-      }
-      
-      content = [
-        { type: "text", text: prompt },
-        { 
-          type: "image", 
-          source: { type: "base64", media_type: mimeType, data: base64Data } 
-        }
-      ];
-      
-    } else {
-      content = prompt;
-    }
-
-    // 5.3 CHAMADA DA API ANTHROPIC
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: modelo, // <-- USA O MODELO CORRIGIDO
-        max_tokens: MAX_TOKENS,
-        temperature: 0.1,
-        messages: [{ role: 'user', content: content }]
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [CLAUDE] Error:', response.status, errorText);
-      throw new Error(`Claude Error ${response.status}: ${errorText.substring(0, 200)}`);
-    }
-
-    const data = await response.json();
-    
-    // 5.4 TRATAMENTO DE RESPOSTAS
-    if (!data.content?.[0]?.text) {
-      console.error('❌ [CLAUDE] Resposta inválida:', JSON.stringify(data, null, 2));
-      throw new Error('Claude resposta sem conteúdo');
-    }
-
-    console.log('✅ [CLAUDE] Sucesso! Resposta:', data.content[0].text.length, 'caracteres');
-    console.log('💰 [CLAUDE] Tokens:', (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0));
-
-    // Normalizar resposta para compatibilidade
-    return {
-      content: data.content[0].text,
-      usage: {
-        prompt_tokens: data.usage?.input_tokens || 0,
-        completion_tokens: data.usage?.output_tokens || 0,
-        total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
-      },
-      modelo_usado: modelo
-    };
-    
-  } catch (error) {
-    console.error('❌ [CLAUDE] Erro final:', error.message);
-    throw error;
-  }
-}
-
-// ================================================================================
-// 🔵 SEÇÃO 6: OPENAI GPT-4o-mini (PROCESSAMENTO DE TEXTO)
-// ================================================================================
-
-// 6.1 CHAMADA OPENAI OTIMIZADA
-async function chamarOpenAIOtimizada(prompt, temImagem, arquivo, modelo) {
-  try {
-    console.log('🔵 [OPENAI] Iniciando com modelo:', modelo);
-    
-    // 6.2 VALIDAÇÕES
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('Chave da OpenAI não configurada. Configure OPENAI_API_KEY.');
-    }
-    
-    let messages;
-    
-    if (temImagem && arquivo) {
-      // Processamento de imagem (fallback)
-      console.log('🔵 [OPENAI] Processando imagem com', modelo);
-      
-      if (!arquivo.startsWith('data:image/') || !arquivo.includes('base64,')) {
-        throw new Error('Formato de imagem inválido para OpenAI');
-      }
-      
-      const sizeInMB = (arquivo.split('base64,')[1]?.length || 0) * 0.75 / (1024 * 1024);
-      
-      if (sizeInMB > OPENAI_MAX_IMAGE_SIZE_MB) {
-        throw new Error(`Imagem muito grande: ${sizeInMB.toFixed(2)}MB. Máximo: ${OPENAI_MAX_IMAGE_SIZE_MB}MB`);
-      }
-
-      messages = [{
-        role: "user",
-        content: [
-          { type: "text", text: prompt },
-          { 
-            type: "image_url", 
-            image_url: { 
-              url: arquivo,
-              detail: "high"
-            } 
-          }
-        ]
-      }];
-      
-    } else {
-      // Processamento de texto
-      console.log('🔵 [OPENAI] Processando texto com', modelo);
-      messages = [{ role: "user", content: prompt }];
-    }
-
-    // 6.3 CHAMADA DA API OPENAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: modelo,
-        messages,
-        max_tokens: MAX_TOKENS,
-        temperature: 0.1
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [OPENAI] Error:', response.status, errorText);
-      throw new Error(`OpenAI Error ${response.status}: ${errorText.substring(0, 200)}`);
-    }
-
-    const data = await response.json();
-    
-    // 6.4 TRATAMENTO DE RESPOSTAS
-    if (!data.choices?.[0]?.message?.content) {
-      console.error('❌ [OPENAI] Resposta inválida:', JSON.stringify(data, null, 2));
-      throw new Error('OpenAI resposta sem conteúdo');
-    }
-
-    console.log('✅ [OPENAI] Sucesso! Resposta:', data.choices[0].message.content.length, 'caracteres');
-    console.log('💰 [OPENAI] Tokens:', data.usage?.total_tokens || 'N/A');
-
-    return {
-      content: data.choices[0].message.content,
-      usage: data.usage,
-      modelo_usado: modelo
-    };
-    
-  } catch (error) {
-    console.error('❌ [OPENAI] Erro final:', error.message);
-    throw error;
-  }
-}
-
-// ================================================================================
-// 🔧 SEÇÃO 7: UTILITÁRIOS E PROCESSAMENTO
-// ================================================================================
-
-// 7.1 DETECÇÃO DE MÚLTIPLAS OPÇÕES
 function detectarMultiplasOpcoes(prompt) {
-  if (!prompt || typeof prompt !== 'string') return false;
-  
-  try {
+    if (!prompt) return false;
     const texto = prompt.toLowerCase();
-    const indicadores = [
-      { regex: /total.*\d+.*adult/gi, minimo: 2 },
-      { regex: /r\$.*\d{1,3}[\.,]\d{3}/gi, minimo: 2 },
-      { regex: /(gol|latam|azul|avianca|tap)/gi, minimo: 2 },
-      { regex: /\d{2}:\d{2}/g, minimo: 4 }
-    ];
-    
-    return indicadores.some(ind => (texto.match(ind.regex) || []).length >= ind.minimo);
-  } catch (error) {
-    return false;
-  }
+    const precos = (texto.match(/r\$.*\d/g) || []).length;
+    const cias = (texto.match(/(gol|latam|azul)/gi) || []).length;
+    return precos >= 2 || cias >= 2;
 }
 
-// 7.2 SELEÇÃO DE TEMPLATES
-function selecionarTemplate(tipos, tipoEspecifico, prompt) {
-  try {
-    const temMultiplasOpcoes = detectarMultiplasOpcoes(prompt);
-    
-    if (temMultiplasOpcoes && (tipos?.includes('Aéreo Facial') || tipos?.includes('Aéreo VBI/Fácil'))) {
-      return templates['Aéreo Múltiplas Opções'];
+function selecionarTemplate({ tipos, prompt }) {
+    if (detectarMultiplasOpcoes(prompt) && tipos?.includes('Aéreo Facial')) {
+        return templates['Aéreo Múltiplas Opções'];
     }
-    
-    if (tipoEspecifico && templates[tipoEspecifico]) {
-      return templates[tipoEspecifico];
-    }
-    
-    if (tipos && Array.isArray(tipos) && tipos.length > 0) {
-      for (const tipo of tipos) {
-        if (templates[tipo]) return templates[tipo];
-      }
-    }
-    
-    return templates['Aéreo Facial'] || templates.default;
-  } catch (error) {
-    console.error('❌ [TEMPLATE]:', error);
-    return templates['Aéreo Facial'];
-  }
+    return templates[tipos?.[0]] || templates['Aéreo Facial'];
 }
 
-// 7.3 PROCESSAMENTO DE RESPOSTAS
+
+// ================================================================================
+// 🟠/🔵 SEÇÕES 5 e 6: CHAMADAS ÀS APIS
+// ================================================================================
+
+async function chamarClaudeOtimizado(prompt, arquivo, modelo) {
+    console.log(`[CLAUDE] Preparando chamada para o modelo ${modelo}...`);
+    if (!process.env.ANTHROPIC_API_KEY) throw new Error('Chave da API da Anthropic não encontrada.');
+    
+    const base64Match = arquivo.match(/data:image\/[^;]+;base64,(.+)/);
+    if (!base64Match) throw new Error('Formato de imagem Base64 inválido para Claude.');
+    
+    const content = [{ type: "text", text: prompt }, { type: "image", source: { type: "base64", media_type: arquivo.match(/data:(image\/[^;]+)/)[1], data: base64Match[1] } }];
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: modelo, max_tokens: MAX_TOKENS, messages: [{ role: 'user', content }] })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[CLAUDE] Erro na API: ${response.status}`, errorText);
+        throw new Error(`Erro na API Claude (${response.status}): ${errorText.substring(0, 150)}`);
+    }
+
+    const data = await response.json();
+    if (!data.content?.[0]?.text) throw new Error('Resposta da API Claude veio em formato inesperado.');
+    
+    console.log(`[CLAUDE] Chamada bem-sucedida. Tokens usados: ${data.usage?.output_tokens || 'N/A'}`);
+    return { content: data.content[0].text, usage: data.usage, modelo_usado: modelo };
+}
+
+async function chamarOpenAIOtimizada(prompt, temImagem, arquivo, modelo) {
+    console.log(`[OPENAI] Preparando chamada para o modelo ${modelo}...`);
+    if (!process.env.OPENAI_API_KEY) throw new Error('Chave da API da OpenAI não encontrada.');
+
+    let messages;
+    if (temImagem) {
+        if (!arquivo || !arquivo.startsWith('data:image')) throw new Error('Arquivo de imagem inválido para OpenAI.');
+        messages = [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: arquivo } }] }];
+    } else {
+        messages = [{ role: "user", content: prompt }];
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: modelo, messages, max_tokens: MAX_TOKENS })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[OPENAI] Erro na API: ${response.status}`, errorText);
+        throw new Error(`Erro na API OpenAI (${response.status}): ${errorText.substring(0, 150)}`);
+    }
+
+    const data = await response.json();
+    if (!data.choices?.[0]?.message?.content) throw new Error('Resposta da API OpenAI veio em formato inesperado.');
+
+    console.log(`[OPENAI] Chamada bem-sucedida. Tokens usados: ${data.usage?.total_tokens || 'N/A'}`);
+    return { content: data.choices[0].message.content, usage: data.usage, modelo_usado: modelo };
+}
+
+// ================================================================================
+// 🔧/💰 SEÇÕES 7 e 8: UTILITÁRIOS E PROCESSAMENTO
+// ================================================================================
 function processarResposta(response) {
-  try {
-    let processada = response;
-    
-    // Remover marcações desnecessárias
-    processada = processada.replace(/=== TEMPLATE ===/g, '');
-    processada = processada.replace(/=== FIM TEMPLATE ===/g, '');
-    
-    // Corrigir formatação
-    processada = processada.replace(/^\*([^*])/gm, '$1');
-    processada = processada.replace(/([^*])\*$/gm, '$1');
-    
-    // 7.4 CONVERSÃO DE AEROPORTOS
+    let processada = response.replace(/TEMPLAT. DE SAÍDA OBRIGATÓRIO:/g, '').trim();
     Object.entries(aeroportos).forEach(([sigla, nome]) => {
       const regex = new RegExp(`\\b${sigla}\\b`, 'gi');
       processada = processada.replace(regex, nome);
     });
-    
-    // Limpar espaços extras
-    processada = processada.replace(/\n\s*\n\s*\n/g, '\n\n');
-    processada = processada.trim();
-    
-    return processada;
-  } catch (error) {
-    console.error('❌ [PROCESSAMENTO]:', error);
-    return response;
-  }
+    return processada.replace(/\n\s*\n/g, '\n\n').trim();
 }
 
-// ================================================================================
-// 💰 SEÇÃO 8: SISTEMA DE CUSTOS HÍBRIDO
-// ================================================================================
-
-// 8.1 CÁLCULO DE MÉTRICAS HÍBRIDAS
-function calcularMetricasHibridas(resultado, temImagem, startTime, estrategia) {
-  const tokensInput = resultado.usage?.prompt_tokens || 0;
-  const tokensOutput = resultado.usage?.completion_tokens || 0;
-  const tokensTotal = resultado.usage?.total_tokens || tokensInput + tokensOutput;
+function calcularMetricasHibridas(resultado, startTime, estrategia) {
+  const tokensInput = resultado.usage?.prompt_tokens || resultado.usage?.input_tokens || 0;
+  const tokensOutput = resultado.usage?.completion_tokens || resultado.usage?.output_tokens || 0;
   
-  let custoUSD, economiaUSD, percentualEconomia;
-  const modeloUsado = resultado.modelo_usado || 'unknown';
+  const modeloUsado = resultado.modelo_usado;
   const precosModelo = PRECOS_MODELOS[modeloUsado] || { input: 0, output: 0 };
   
-  custoUSD = (tokensInput / 1000) * precosModelo.input + (tokensOutput / 1000) * precosModelo.output;
+  const custoUSD = (tokensInput / 1000) * precosModelo.input + (tokensOutput / 1000) * precosModelo.output;
+  const custoBRL = custoUSD * USD_TO_BRL;
 
-  // Comparação sempre com GPT-4o
   const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
                      (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
-  economiaUSD = custoGPT4o - custoUSD;
-  percentualEconomia = custoGPT4o > 0 ? ((economiaUSD / custoGPT4o) * 100).toFixed(1) : '0.0';
-
-  const custoBRL = custoUSD * USD_TO_BRL;
-  const economiaBRL = economiaUSD * USD_TO_BRL;
+  const economiaBRL = (custoGPT4o * USD_TO_BRL) - custoBRL;
   
   return {
     modelo_usado: modeloUsado,
     estrategia: estrategia,
-    tipo_processamento: temImagem ? 'imagem' : 'texto',
-    tokens: {
-      input: tokensInput,
-      output: tokensOutput,
-      total: tokensTotal
-    },
-    custo: {
-      usd: custoUSD,
-      brl: custoBRL,
-      input_usd: (tokensInput / 1000) * precosModelo.input,
-      output_usd: (tokensOutput / 1000) * precosModelo.output
-    },
-    economia: {
-      vs_gpt4o_usd: economiaUSD,
-      vs_gpt4o_brl: economiaBRL,
-      percentual: parseFloat(percentualEconomia)
-    },
-    performance: {
-      tempo_processamento_ms: Date.now() - startTime,
-      tokens_por_segundo: Math.round(tokensTotal / ((Date.now() - startTime) / 1000))
-    },
-    timestamp: new Date().toISOString()
+    tokens: { input: tokensInput, output: tokensOutput, total: tokensInput + tokensOutput },
+    custo: { usd: custoUSD, brl: custoBRL },
+    economia: { vs_gpt4o_brl: economiaBRL },
+    performance: { tempo_processamento_ms: Date.now() - startTime }
   };
 }
-
-
-// ================================================================================
-// 📊 SEÇÃO 9: LOGS E DEBUGGING
-// ================================================================================
-
-// 9.1 LOG DE INICIALIZAÇÃO
-console.log('✅ [CVC HÍBRIDO] Sistema CORRIGIDO carregado com sucesso!');
-console.log('🎯 [CVC HÍBRIDO] Estratégia: Claude 3.5 Sonnet (imagens) + GPT-4o-mini (texto)');
-console.log('🔄 [CVC HÍBRIDO] Fallback automático para GPT-4o configurado');
-console.log('📈 [CVC HÍBRIDO] Versão: 4.1.0-hotfix');
+// ===== FIM DO CÓDIGO COMPLETO =====
