@@ -1,8 +1,8 @@
-// ===== CORREÇÃO FINAL - DETECÇÃO PRECISA DE VOOS SOMENTE IDA =====
+// ===== CORREÇÃO ULTRA ESPECÍFICA - ANTI-INVENÇÃO DE VOLTA =====
 // ================================================================================
-// 🏆 CVC ITAQUA - API CORRIGIDA v4.4.0-final
+// 🏆 CVC ITAQUA - API ULTRA CORRIGIDA v4.5.0-ultra
 // ================================================================================
-// FOCO: Resolver problema específico de voos somente ida sendo tratados como ida/volta
+// FOCO ABSOLUTO: Impedir que a IA invente horários de volta para voos somente ida
 // ================================================================================
 
 const templates = {
@@ -34,59 +34,7 @@ const templates = {
 🔗 [LINK_CVC_2]
 
 ⚠️ Todas as opções são SOMENTE IDA - sem retorno incluído
-📞 Dúvidas? Estamos aqui para ajudar!`,
-
-  'Aéreo Ida e Volta': `*Passagem Aérea - Ida e Volta*
-🏷️ [COMPANHIA_AEREA]
-🗓️ [DATA_IDA] a [DATA_VOLTA] ([DURACAO])
-✈️ Ida: [DATA_IDA] - [AEROPORTO_ORIGEM] [HORA_IDA] / [AEROPORTO_DESTINO] [HORA_CHEGADA_IDA]
-✈️ Volta: [DATA_VOLTA] - [AEROPORTO_ORIGEM_VOLTA] [HORA_SAIDA_VOLTA] / [AEROPORTO_DESTINO_VOLTA] [HORA_CHEGADA_VOLTA]
-
-💰 R$ [VALOR_TOTAL] para [COMPOSICAO_PASSAGEIROS]
-💳 [FORMA_PAGAMENTO]
-🔗 [LINK_CVC]
-
-⚠️ Ida e volta incluídos no valor`,
-
-  'Aéreo Múltiplas Ida e Volta': `*Passagens Aéreas - Opções Ida e Volta*
-
-📋 *OPÇÃO 1: [COMPANHIA_1]*
-🗓️ [DATA_IDA_1] a [DATA_VOLTA_1] ([DURACAO_1])
-✈️ Ida: [DATA_IDA_1] - [AEROPORTO_ORIGEM_1] [HORA_IDA_1] / [AEROPORTO_DESTINO_1] [HORA_CHEGADA_1]
-✈️ Volta: [DATA_VOLTA_1] - [AEROPORTO_ORIGEM_VOLTA_1] [HORA_SAIDA_VOLTA_1] / [AEROPORTO_DESTINO_VOLTA_1] [HORA_CHEGADA_VOLTA_1]
-💰 R$ [VALOR_TOTAL_1] para [COMPOSICAO_PASSAGEIROS_1]
-💳 [FORMA_PAGAMENTO_1]
-🔗 [LINK_CVC_1]
-
-📋 *OPÇÃO 2: [COMPANHIA_2]*
-🗓️ [DATA_IDA_2] a [DATA_VOLTA_2] ([DURACAO_2])
-✈️ Ida: [DATA_IDA_2] - [AEROPORTO_ORIGEM_2] [HORA_IDA_2] / [AEROPORTO_DESTINO_2] [HORA_CHEGADA_2]
-✈️ Volta: [DATA_VOLTA_2] - [AEROPORTO_ORIGEM_VOLTA_2] [HORA_SAIDA_VOLTA_2] / [AEROPORTO_DESTINO_VOLTA_2] [HORA_CHEGADA_VOLTA_2]
-💰 R$ [VALOR_TOTAL_2] para [COMPOSICAO_PASSAGEIROS_2]
-💳 [FORMA_PAGAMENTO_2]
-🔗 [LINK_CVC_2]
-
-⚠️ Valores sujeitos a alteração e disponibilidade!
-📞 Dúvidas? Estamos aqui para ajudar!`,
-
-  'Hotel': `*Hospedagem*
-🏨 [NOME_HOTEL] - [CATEGORIA_ESTRELAS]⭐
-📍 [LOCALIZACAO_HOTEL]
-🗓️ [DATA_CHECK_IN] a [DATA_CHECK_OUT] ([QTDE_NOITES] noites)
-👥 [QTDE_ADULTOS] adultos[QTDE_CRIANCAS_TEXTO]
-
-🏠 *Acomodação:*
-[TIPO_QUARTO] com [REGIME_ALIMENTACAO]
-
-✅ *Inclui:*
-• [TIPO_CAFE]
-• [WIFI_INCLUSO]
-• [SERVICOS_INCLUSOS]
-
-💰 R$ [VALOR_TOTAL_HOSPEDAGEM] para toda a estadia
-💳 Parcelamento: [QTDE_PARCELAS]x de R$ [VALOR_PARCELA_HOTEL]
-
-⚠️ Tarifas sujeitas à disponibilidade.`
+📞 Dúvidas? Estamos aqui para ajudar!`
 };
 
 const aeroportos = {
@@ -119,14 +67,13 @@ export default async function handler(req, res) {
   const startTime = Date.now();
   
   try {
-    console.log('[HANDLER-FINAL] Iniciando processamento...');
+    console.log('[ULTRA-FIX] Iniciando processamento...');
     
     // Configuração de CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     if (req.method === 'OPTIONS') {
       return res.status(200).json({ message: 'CORS OK' });
@@ -134,10 +81,9 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       return res.status(200).json({
-        message: 'CVC Itaqua API Híbrida (Correção Final)',
-        version: '4.4.0-final',
-        status: 'online',
-        focus: 'Detecção precisa de voos somente ida',
+        message: 'CVC Itaqua API Ultra Corrigida',
+        version: '4.5.0-ultra',
+        status: 'ANTI-INVENÇÃO DE VOLTA ATIVO',
         timestamp: new Date().toISOString()
       });
     }
@@ -149,48 +95,36 @@ export default async function handler(req, res) {
       });
     }
 
-    // VALIDAÇÃO RIGOROSA
-    if (!req.body || typeof req.body !== 'object') {
-      return res.status(400).json({
-        success: false,
-        error: 'Corpo da requisição obrigatório'
-      });
-    }
-
-    const { prompt, temImagem, arquivo } = req.body;
-
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    // VALIDAÇÃO
+    if (!req.body?.prompt) {
       return res.status(400).json({
         success: false,
         error: 'Prompt obrigatório'
       });
     }
 
-    console.log(`[HANDLER-FINAL] Dados: Prompt=${prompt.length} chars, TemImagem=${temImagem}`);
+    const { prompt, temImagem, arquivo } = req.body;
+    console.log(`[ULTRA-FIX] Prompt recebido: ${prompt.length} chars`);
 
-    // ANÁLISE ESPECÍFICA DO CONTEÚDO
-    const analiseDetalhada = analisarVooDetalhadamente(prompt);
-    console.log('[HANDLER-FINAL] Análise detalhada:', analiseDetalhada);
+    // ANÁLISE ULTRA RIGOROSA
+    const analise = analisarVooUltraRigoroso(prompt);
+    console.log('[ULTRA-FIX] Análise:', analise);
 
-    // SELEÇÃO DE MODELO E TEMPLATE
-    const { modelo, estrategia, fallback } = selecionarModeloHibrido(temImagem);
-    const template = selecionarTemplateEspecifico(analiseDetalhada);
-    const promptFinal = construirPromptEspecifico(prompt, template, analiseDetalhada);
+    // SELEÇÃO FORÇADA DO TEMPLATE CORRETO
+    const template = selecionarTemplateForcado(analise);
+    console.log(`[ULTRA-FIX] Template forçado: ${template.nome}`);
 
-    console.log(`[HANDLER-FINAL] Template selecionado: ${template.nome}`);
-    console.log(`[HANDLER-FINAL] Estratégia: ${estrategia}`);
+    // PROMPT ULTRA ESPECÍFICO
+    const promptFinal = construirPromptUltraEspecifico(prompt, template, analise);
 
     // CHAMADA PARA IA
+    const { modelo, estrategia, fallback } = selecionarModeloHibrido(temImagem);
     const resultado = await chamarIASegura(promptFinal, temImagem, arquivo, modelo, fallback);
     
-    if (!resultado || !resultado.content) {
-      throw new Error('Resposta da IA está vazia');
-    }
-
     const responseProcessada = processarResposta(resultado.content);
     const metricas = calcularMetricas(resultado, startTime, estrategia);
 
-    console.log(`[HANDLER-FINAL] Processamento concluído: ${Date.now() - startTime}ms`);
+    console.log(`[ULTRA-FIX] Concluído: ${Date.now() - startTime}ms`);
 
     return res.status(200).json({
       success: true,
@@ -203,163 +137,127 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('💥 [ERRO FINAL] 💥', error.message);
+    console.error('💥 [ULTRA-FIX ERROR] 💥', error.message);
     
     return res.status(500).json({
       success: false,
       error: {
         message: `Erro no servidor: ${error.message}`,
         type: 'SERVER_ERROR',
-        version: '4.4.0-final'
+        version: '4.5.0-ultra'
       }
     });
   }
 }
 
 // ================================================================================
-// 🔍 ANÁLISE DETALHADA DE VOOS - FOCO EM SOMENTE IDA
+// 🔍 ANÁLISE ULTRA RIGOROSA
 // ================================================================================
 
-function analisarVooDetalhadamente(texto) {
-  console.log('[ANÁLISE] Iniciando análise detalhada...');
+function analisarVooUltraRigoroso(texto) {
+  console.log('[ULTRA-ANÁLISE] Iniciando análise ultra rigorosa...');
   
   if (!texto) {
-    return { tipo: 'desconhecido', multiplasOpcoes: false, confianca: 0 };
+    return { tipo: 'somente_ida', multiplasOpcoes: false, confianca: 0 };
   }
 
   const textoLower = texto.toLowerCase();
   
-  // CONTADORES BÁSICOS
+  // DETECTAR MÚLTIPLAS OPÇÕES
   const precos = (textoLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
   const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
   const links = (textoLower.match(/https:\/\/www\.cvc\.com\.br\/carrinho/gi) || []).length;
-  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
   
-  console.log('[ANÁLISE] Contadores:', { precos, totais, links, companhias });
-  
-  // DETECÇÃO DE MÚLTIPLAS OPÇÕES
   const multiplasOpcoes = Math.max(precos, totais, links) >= 2;
   const quantidadeOpcoes = multiplasOpcoes ? Math.max(precos, totais, links) : 1;
   
-  console.log('[ANÁLISE] Múltiplas opções:', multiplasOpcoes, 'Quantidade:', quantidadeOpcoes);
+  console.log(`[ULTRA-ANÁLISE] Múltiplas opções: ${multiplasOpcoes} (${quantidadeOpcoes})`);
 
-  // ANÁLISE CRÍTICA: SOMENTE IDA vs IDA E VOLTA
-  const indicadoresSomenteIda = [
-    // Não há menção explícita de volta
-    !(textoLower.includes('volta') || textoLower.includes('retorno')),
-    // Não há múltiplas datas diferentes
-    !temMultiplasDatasDistintas(texto),
-    // Não há horários de volta explícitos
-    !temHorariosVolta(texto),
-    // Padrão típico de somente ida: origem-destino sem volta
-    temPadraoSomenteIda(texto)
+  // ANÁLISE ULTRA ESPECÍFICA PARA SOMENTE IDA
+  const indicadoresVolta = [
+    // Buscar por palavras explícitas de volta
+    textoLower.includes('volta'),
+    textoLower.includes('retorno'),
+    textoLower.includes('return'),
+    // Buscar por padrões de horários de volta
+    /volta.*\d{2}:\d{2}/gi.test(textoLower),
+    // Buscar por múltiplas datas DIFERENTES (não repetidas)
+    temDatasRealmenteDistintas(texto),
+    // Buscar por menção de duração de viagem
+    /\d+ dias.*\d+ noites/gi.test(textoLower)
   ];
   
-  const pontuacaoSomenteIda = indicadoresSomenteIda.filter(Boolean).length;
+  const contemVolta = indicadoresVolta.some(Boolean);
   
-  // DECISÃO FINAL
-  let tipoViagem = 'somente_ida';
-  let confianca = pontuacaoSomenteIda;
+  console.log('[ULTRA-ANÁLISE] Indicadores de volta:', indicadoresVolta);
+  console.log(`[ULTRA-ANÁLISE] Contém volta: ${contemVolta}`);
   
-  // Se há indicadores explícitos de volta, mudar para ida_volta
-  if (textoLower.includes('volta') && temMultiplasDatasDistintas(texto)) {
-    tipoViagem = 'ida_volta';
-    confianca = 4 - pontuacaoSomenteIda;
-  }
+  // DECISÃO ULTRA CONSERVADORA
+  // Se NÃO há indicadores claros de volta, é SOMENTE IDA
+  const tipoViagem = contemVolta ? 'ida_volta' : 'somente_ida';
+  const confianca = contemVolta ? 2 : 4; // Alta confiança para somente ida
   
-  console.log('[ANÁLISE] Resultado final:', {
-    tipo: tipoViagem,
-    confianca: confianca,
-    indicadores: indicadoresSomenteIda,
-    pontuacao: pontuacaoSomenteIda
-  });
+  console.log(`[ULTRA-ANÁLISE] DECISÃO FINAL: ${tipoViagem.toUpperCase()}`);
 
   return {
     tipo: tipoViagem,
     multiplasOpcoes: multiplasOpcoes,
     quantidadeOpcoes: quantidadeOpcoes,
     confianca: confianca,
+    contemVolta: contemVolta,
     indicadores: {
-      precos: precos,
-      totais: totais,
-      links: links,
-      companhias: companhias,
-      somenteIda: indicadoresSomenteIda
+      precos, totais, links,
+      volta: indicadoresVolta
     }
   };
 }
 
-function temMultiplasDatasDistintas(texto) {
-  const datas = texto.match(/\d{2}\/\d{2}|\d{2} de \w+/gi) || [];
-  const datasUnicas = [...new Set(datas)];
+function temDatasRealmenteDistintas(texto) {
+  // Extrair todas as datas do texto
+  const datasCompletas = texto.match(/\d{2} de \w+|\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}/gi) || [];
   
-  console.log('[ANÁLISE] Datas encontradas:', datas, 'Únicas:', datasUnicas);
+  // Normalizar as datas para comparação
+  const datasNormalizadas = datasCompletas.map(data => {
+    return data.toLowerCase().replace(/\s+/g, ' ').trim();
+  });
   
+  // Contar datas únicas
+  const datasUnicas = [...new Set(datasNormalizadas)];
+  
+  console.log('[ULTRA-ANÁLISE] Datas encontradas:', datasCompletas);
+  console.log('[ULTRA-ANÁLISE] Datas únicas:', datasUnicas);
+  
+  // Só considera múltiplas datas se há REALMENTE datas diferentes
   return datasUnicas.length >= 2;
 }
 
-function temHorariosVolta(texto) {
-  const textoLower = texto.toLowerCase();
-  
-  // Procurar por padrões explícitos de volta
-  const padraoVolta = /volta.*\d{2}:\d{2}/gi;
-  const temVolta = padraoVolta.test(textoLower);
-  
-  console.log('[ANÁLISE] Tem horários de volta:', temVolta);
-  
-  return temVolta;
-}
-
-function temPadraoSomenteIda(texto) {
-  const textoLower = texto.toLowerCase();
-  
-  // Padrões típicos de somente ida:
-  // - São Paulo - Brasília (origem-destino)
-  // - Ida sex, 01 de agosto (sem menção de volta)
-  // - Total (X Adulto) (sem duração de viagem)
-  
-  const padroes = [
-    /\w+ - \w+.*ida.*\d{2}:\d{2}/i, // origem-destino ida horário
-    /ida.*\d{2} de \w+/i, // ida + data
-    /total.*\d+.*adult.*r\$/i // total adulto preço (sem duração)
-  ];
-  
-  const matches = padroes.filter(padrao => padrao.test(textoLower)).length;
-  
-  console.log('[ANÁLISE] Padrões somente ida encontrados:', matches);
-  
-  return matches >= 2;
-}
-
 // ================================================================================
-// 🎯 SELEÇÃO DE TEMPLATE ESPECÍFICO
+// 🎯 SELEÇÃO FORÇADA DE TEMPLATE
 // ================================================================================
 
-function selecionarTemplateEspecifico(analise) {
-  console.log('[TEMPLATE] Selecionando template para:', analise);
+function selecionarTemplateForcado(analise) {
+  console.log('[TEMPLATE-FORÇADO] Selecionando template...');
   
   let templateNome = '';
   let template = '';
   
-  if (analise.multiplasOpcoes) {
-    if (analise.tipo === 'somente_ida') {
+  // FORÇAR TEMPLATE BASEADO NA ANÁLISE ULTRA RIGOROSA
+  if (analise.tipo === 'somente_ida') {
+    if (analise.multiplasOpcoes) {
       templateNome = 'Aéreo Múltiplas Somente Ida';
       template = templates['Aéreo Múltiplas Somente Ida'];
     } else {
-      templateNome = 'Aéreo Múltiplas Ida e Volta';
-      template = templates['Aéreo Múltiplas Ida e Volta'];
-    }
-  } else {
-    if (analise.tipo === 'somente_ida') {
       templateNome = 'Aéreo Somente Ida';
       template = templates['Aéreo Somente Ida'];
-    } else {
-      templateNome = 'Aéreo Ida e Volta';
-      template = templates['Aéreo Ida e Volta'];
     }
+  } else {
+    // Para ida/volta, usar templates padrão (não definidos aqui pois foco é somente ida)
+    templateNome = 'Aéreo Ida e Volta';
+    template = `*Passagem Aérea - Ida e Volta*
+[DADOS_IDA_VOLTA]`;
   }
   
-  console.log(`[TEMPLATE] Selecionado: ${templateNome}`);
+  console.log(`[TEMPLATE-FORÇADO] Selecionado: ${templateNome}`);
   
   return {
     nome: templateNome,
@@ -368,87 +266,84 @@ function selecionarTemplateEspecifico(analise) {
 }
 
 // ================================================================================
-// 🏗️ CONSTRUÇÃO DE PROMPT ESPECÍFICO
+// 🏗️ PROMPT ULTRA ESPECÍFICO - ANTI-INVENÇÃO
 // ================================================================================
 
-function construirPromptEspecifico(promptBase, template, analise) {
-  console.log('[PROMPT] Construindo prompt específico...');
+function construirPromptUltraEspecifico(promptBase, template, analise) {
+  console.log('[PROMPT-ULTRA] Construindo prompt anti-invenção...');
   
-  let prompt = `Você é um assistente especializado em formatar orçamentos de viagem da CVC.
+  let prompt = `VOCÊ É UM ASSISTENTE ESPECIALIZADO EM ORÇAMENTOS DE VIAGEM.
 
-ANÁLISE PRÉVIA REALIZADA:
+🚨 INSTRUÇÃO CRÍTICA ABSOLUTA:
+${analise.tipo === 'somente_ida' ? 
+  `ESTE É UM VOO SOMENTE IDA! NÃO INVENTE INFORMAÇÕES DE VOLTA!` : 
+  `Este é um voo ida e volta com dados de retorno.`}
+
+ANÁLISE REALIZADA:
 - Tipo detectado: ${analise.tipo.toUpperCase()}
 - Múltiplas opções: ${analise.multiplasOpcoes ? 'SIM' : 'NÃO'}
-- Quantidade de opções: ${analise.quantidadeOpcoes}
-- Confiança na análise: ${analise.confianca}/4
+- Quantidade: ${analise.quantidadeOpcoes}
+- Contém volta: ${analise.contemVolta ? 'SIM' : 'NÃO'}
 
-TEMPLATE OBRIGATÓRIO:
+TEMPLATE OBRIGATÓRIO (USE EXATAMENTE ESTE FORMATO):
 ${template.conteudo}
 
-DADOS DO CLIENTE:
+DADOS FORNECIDOS PELO CLIENTE:
 ${promptBase}
 
-INSTRUÇÕES CRÍTICAS:
 `;
 
   if (analise.tipo === 'somente_ida') {
     prompt += `
-🚨 ATENÇÃO: Este é um voo SOMENTE IDA!
-- NÃO inclua informações de volta
-- NÃO invente horários de retorno
-- Use "(Somente ida)" na descrição da data
-- NÃO adicione linha "✈️ Volta:" 
-- Deixe claro que é passagem sem retorno
-`;
-  } else {
-    prompt += `
-✈️ Este é um voo IDA E VOLTA:
-- Inclua informações completas de ida e volta
-- Use formato "(X dias e Y noites)" quando possível
-- Adicione linhas separadas para ida e volta
-`;
-  }
+🚨🚨🚨 REGRAS ABSOLUTAS PARA SOMENTE IDA 🚨🚨🚨:
 
-  if (analise.multiplasOpcoes) {
-    prompt += `
-📊 MÚLTIPLAS OPÇÕES DETECTADAS:
-- Formate TODAS as ${analise.quantidadeOpcoes} opções encontradas
-- Use seções numeradas (OPÇÃO 1, OPÇÃO 2, etc.)
-- Cada opção deve ter dados distintos e completos
-`;
-  } else {
-    prompt += `
-📋 OPÇÃO ÚNICA:
-- Formate apenas uma opção de forma clara
-- Use todos os dados disponíveis
-`;
-  }
+1. NÃO ADICIONE linha "✈️ Volta:" - PROIBIDO!
+2. NÃO INVENTE horários de retorno - PROIBIDO!
+3. USE apenas "(Somente ida)" na data - OBRIGATÓRIO!
+4. NÃO CALCULE duração em dias/noites - PROIBIDO!
+5. USE apenas os dados de IDA fornecidos - OBRIGATÓRIO!
 
-  prompt += `
-🔧 REGRAS FINAIS:
-- Converta siglas de aeroportos (VCP→Viracopos, BSB→Brasília)
-- Use dados reais do texto fornecido
-- NÃO invente informações que não existem
-- Seja preciso com horários e datas
-- Responda APENAS com o template preenchido
+EXEMPLO CORRETO PARA MÚLTIPLAS OPÇÕES SOMENTE IDA:
 
-EXEMPLO CORRETO PARA SOMENTE IDA:
-*Passagem Aérea - Somente Ida*
-🏷️ Gol
+*Passagens Aéreas - Opções Somente Ida*
+
+📋 *OPÇÃO 1: Gol*
 🗓️ 01 de agosto (Somente ida)
 ✈️ 01/ago - Viracopos 17:55 / Brasília 19:30
 💰 R$ 373,06 para 1 Adulto
 💳 Tarifa facial - Não reembolsável
-⚠️ Passagem somente de ida - sem retorno incluído
-`;
+🔗 https://www.cvc.com.br/carrinho-dinamico/6888fd4866fac5c6de086f77
 
-  console.log('[PROMPT] Prompt construído, tamanho:', prompt.length);
+📋 *OPÇÃO 2: Gol*
+🗓️ 01 de agosto (Somente ida)
+✈️ 01/ago - Guarulhos 06:00 / Brasília 07:45
+💰 R$ 489,48 para 1 Adulto
+💳 Tarifa facial - Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/6888fd59790b60759b7d4300
+
+⚠️ Todas as opções são SOMENTE IDA - sem retorno incluído
+📞 Dúvidas? Estamos aqui para ajudar!
+
+NUNCA ADICIONE INFORMAÇÕES DE VOLTA QUE NÃO EXISTEM!
+`;
+  }
+
+  prompt += `
+INSTRUÇÕES FINAIS:
+- Converta siglas: VCP → Viracopos, BSB → Brasília, GRU → Guarulhos
+- Use APENAS dados reais do texto fornecido
+- Mantenha links exatos como fornecidos
+- Responda APENAS com o template preenchido
+- NÃO adicione comentários ou explicações extras`;
+
+  console.log('[PROMPT-ULTRA] Prompt construído, tamanho:', prompt.length);
+  console.log('[PROMPT-ULTRA] Tipo foco:', analise.tipo);
   
   return prompt;
 }
 
 // ================================================================================
-// 🤖 SISTEMA HÍBRIDO DE IA
+// 🤖 SISTEMA HÍBRIDO (simplificado)
 // ================================================================================
 
 function selecionarModeloHibrido(temImagem) {
@@ -468,7 +363,7 @@ function selecionarModeloHibrido(temImagem) {
 }
 
 async function chamarIASegura(prompt, temImagem, arquivo, modelo, fallbackModelo) {
-  console.log(`[IA] Tentando modelo principal: ${modelo}`);
+  console.log(`[IA-ULTRA] Chamando modelo: ${modelo}`);
   
   try {
     if (temImagem === true) {
@@ -477,20 +372,20 @@ async function chamarIASegura(prompt, temImagem, arquivo, modelo, fallbackModelo
       return await chamarOpenAI(prompt, false, null, modelo);
     }
   } catch (erro1) {
-    console.error(`❌ [IA] Falha no modelo principal: ${erro1.message}`);
+    console.error(`❌ [IA-ULTRA] Falha no modelo principal: ${erro1.message}`);
     
     try {
-      console.log(`🔄 [IA] Tentando fallback: ${fallbackModelo}`);
+      console.log(`🔄 [IA-ULTRA] Fallback: ${fallbackModelo}`);
       return await chamarOpenAI(prompt, temImagem, arquivo, fallbackModelo);
     } catch (erro2) {
-      console.error(`❌ [IA] Falha no fallback: ${erro2.message}`);
+      console.error(`❌ [IA-ULTRA] Falha no fallback: ${erro2.message}`);
       throw new Error(`Ambos modelos falharam. Principal: ${erro1.message}. Fallback: ${erro2.message}`);
     }
   }
 }
 
 // ================================================================================
-// 🟠 CHAMADA CLAUDE
+// 🟠/🔵 CHAMADAS DE API (mantidas iguais)
 // ================================================================================
 
 async function chamarClaude(prompt, arquivo, modelo) {
@@ -503,17 +398,14 @@ async function chamarClaude(prompt, arquivo, modelo) {
     throw new Error('Formato de imagem base64 inválido');
   }
 
-  const mimeType = base64Match[1];
-  const base64Data = base64Match[2];
-
   const content = [
     { type: "text", text: prompt },
     {
       type: "image",
       source: {
         type: "base64",
-        media_type: mimeType,
-        data: base64Data
+        media_type: base64Match[1],
+        data: base64Match[2]
       }
     }
   ];
@@ -550,10 +442,6 @@ async function chamarClaude(prompt, arquivo, modelo) {
   };
 }
 
-// ================================================================================
-// 🔵 CHAMADA OPENAI
-// ================================================================================
-
 async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY não encontrada');
@@ -584,7 +472,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
       model: modelo,
       messages: messages,
       max_tokens: MAX_TOKENS,
-      temperature: 0.1
+      temperature: 0.0 // Temperatura zero para máxima precisão
     })
   });
 
@@ -664,8 +552,8 @@ function calcularMetricas(resultado, startTime, estrategia) {
   };
 }
 
-console.log('✅ [SISTEMA-FINAL] CVC Itaqua API v4.4.0-final carregada');
-console.log('🎯 [FOCO] Detecção precisa de voos somente ida vs ida/volta');
-console.log('🔧 [CORREÇÃO] Análise crítica implementada para evitar invenção de volta');
-console.log('📋 [TEMPLATES] 4 templates específicos criados');
-console.log('🚀 [STATUS] Pronto para uso!');
+console.log('✅ [ULTRA-FIX] CVC Itaqua API v4.5.0-ultra carregada');
+console.log('🚨 [MODO] ANTI-INVENÇÃO DE VOLTA ATIVO');
+console.log('🎯 [FOCO] Detecção ultra rigorosa + Prompt extremamente específico');
+console.log('🔧 [TEMPERATURA] 0.0 para máxima precisão');
+console.log('🚀 [STATUS] Pronto para eliminar invenções!')
