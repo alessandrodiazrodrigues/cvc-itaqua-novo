@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug - Detecção de Voos Somente Ida</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { 
+            color: #003399; 
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 { 
+            color: #0056b3; 
+            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        button {
+            background: #003399;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        .resultado {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .sucesso { 
+            background: #d4edda; 
+            border-color: #28a745; 
+            color: #155724;
+        }
+        .erro { 
+            background: #f8d7da; 
+            border-color: #dc3545; 
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .exemplo {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .exemplo h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .botao-exemplo {
+            background: #28a745;
+            font-size: 12px;
+            padding: 5px 10px;
+            margin: 2px;
+        }
+        .botao-exemplo:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - Detecção de Voos Somente Ida vs Ida/Volta</h1>
+        <p style="text-align: center; color: #666;">
+            Ferramenta para testar a detecção correta de tipos de viagem
+        </p>
+    </div>
+
+    <div class="grid">
+        <div class="container">
+            <h2>📝 Teste Manual</h2>
+            <textarea id="textoTeste" placeholder="Cole aqui o texto do orçamento para testar a detecção..."></textarea>
+            <br>
+            <button onclick="analisarTexto()">🔍 Analisar Texto</button>
+            <button onclick="limparTeste()">🗑️ Limpar</button>
+            
+            <div id="resultadoAnalise"></div>
+        </div>
+
+        <div class="container">
+            <h2>📋 Exemplos de Teste</h2>
+            
+            <div class="exemplo">
+                <h4>✅ Somente Ida - Exemplo 1</h4>
+                <button class="botao-exemplo" onclick="carregarExemplo(exemplo1)">Carregar</button>
+                <small style="display: block; margin-top: 5px;">Voo único São Paulo → Brasília</small>
+            </div>
+
+            <div class="exemplo">
+                <h4>✅ Múltiplas Somente Ida - Exemplo 2</h4>
+                <button class="botao-exemplo" onclick="carregarExemplo(exemplo2)">Carregar</button>
+                <small style="display: block; margin-top: 5px;">2 opções somente ida</small>
+            </div>
+
+            <div class="exemplo">
+                <h4>✈️ Ida e Volta - Exemplo 3</h4>
+                <button class="botao-exemplo" onclick="carregarExemplo(exemplo3)">Carregar</button>
+                <small style="display: block; margin-top: 5px;">Viagem completa com retorno</small>
+            </div>
+
+            <div class="exemplo">
+                <h4>🔬 Caso Problemático</h4>
+                <button class="botao-exemplo" onclick="carregarExemplo(exemploProblema)">Carregar</button>
+                <small style="display: block; margin-top: 5px;">Caso que estava falhando</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Teste de API</h2>
+        <button onclick="testarAPI()">📡 Testar Conexão com API</button>
+        <button onclick="testarAPICompleta()">🚀 Teste Completo com Exemplo</button>
+        
+        <div id="resultadoAPI"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Logs de Debug</h2>
+        <div id="logsDebug" class="resultado" style="height: 300px; overflow-y: auto;"></div>
+        <button onclick="limparLogs()">🗑️ Limpar Logs</button>
+    </div>
+
+    <script>
+        // Exemplos de teste
+        const exemplo1 = `01 de ago
+São Paulo - Brasília
+GolIda
+sex, 01 de agosto - Classe Econômica
+17:55
+VCP
+1h 35min
+Voo direto
+19:30
+BSB
+Tarifa facial
+Não reembolsável
+Total (1 Adulto)
+R$ 373,06`;
+
+        const exemplo2 = `01 de ago São Paulo - Brasília GolIda sex, 01 de agosto - Classe Econômica 17:55 VCP 1h 35min Voo direto 19:30 BSB Tarifa facial Não reembolsável Total (1 Adulto) R$ 373,06 Olá, Stefany! Para conferir os produtos para sua viagem, acesse: https://www.cvc.com.br/carrinho-dinamico/6888fd4866fac5c6de086f77 01 de ago São Paulo - Brasília GolIda sex, 01 de agosto - Classe Econômica 06:00 GRU 1h 45min Voo direto 07:45 BSB Tarifa facial Não reembolsável Total (1 Adulto) R$ 489,48 Olá, Stefany! Para conferir os produtos para sua viagem, acesse: https://www.cvc.com.br/carrinho-dinamico/6888fd59790b60759b7d4300`;
+
+        const exemplo3 = `05 de mar - 15 de mar
+Orlando - Flórida
+Avianca
+Ida: 05/03 - Guarulhos 01:50 / Orlando 12:15
+Volta: 15/03 - Orlando 14:55 / Guarulhos 05:50
+11 dias e 10 noites
+2 adultos + 2 crianças
+Total: R$ 14.069,19`;
+
+        const exemploProblema = `01 de ago São Paulo - Brasília GolIda sex, 01 de agosto - Classe Econômica 17:55 VCP 1h 35min Voo direto 19:30 BSB Tarifa facial Não reembolsável Total (1 Adulto) R$ 373,06 Olá, Stefany! Para conferir os produtos para sua viagem, acesse: https://www.cvc.com.br/carrinho-dinamico/6888fd4866fac5c6de086f77 01 de ago São Paulo - Brasília GolIda sex, 01 de agosto - Classe Econômica 06:00 GRU 1h 45min Voo direto 07:45 BSB Tarifa facial Não reembolsável Total (1 Adulto) R$ 489,48 Olá, Stefany! Para conferir os produtos para sua viagem, acesse: https://www.cvc.com.br/carrinho-dinamico/6888fd59790b60759b7d4300`;
+
+        function log(mensagem, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logsDiv = document.getElementById('logsDebug');
+            const cor = tipo === 'error' ? '#dc3545' : tipo === 'success' ? '#28a745' : tipo === 'warning' ? '#ffc107' : '#6c757d';
+            
+            logsDiv.innerHTML += `<div style="color: ${cor};">[${timestamp}] ${mensagem}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function carregarExemplo(texto) {
+            document.getElementById('textoTeste').value = texto;
+            log(`Exemplo carregado: ${texto.substring(0, 50)}...`, 'info');
+        }
+
+        function limparTeste() {
+            document.getElementById('textoTeste').value = '';
+            document.getElementById('resultadoAnalise').innerHTML = '';
+            log('Teste limpo', 'info');
+        }
+
+        function limparLogs() {
+            document.getElementById('logsDebug').innerHTML = '';
+        }
+
+        // Replicar a lógica de análise do backend
+        function analisarVooDetalhadamente(texto) {
+            log('Iniciando análise detalhada...', 'info');
+            
+            if (!texto) {
+                log('Texto vazio fornecido', 'warning');
+                return { tipo: 'desconhecido', multiplasOpcoes: false, confianca: 0 };
+            }
+
+            const textoLower = texto.toLowerCase();
+            
+            // CONTADORES BÁSICOS
+            const precos = (textoLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
+            const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
+            const links = (textoLower.match(/https:\/\/www\.cvc\.com\.br\/carrinho/gi) || []).length;
+            const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
+            
+            log(`Contadores - Preços: ${precos}, Totais: ${totais}, Links: ${links}, Companhias: ${companhias}`, 'info');
+            
+            // DETECÇÃO DE MÚLTIPLAS OPÇÕES
+            const multiplasOpcoes = Math.max(precos, totais, links) >= 2;
+            const quantidadeOpcoes = multiplasOpcoes ? Math.max(precos, totais, links) : 1;
+            
+            log(`Múltiplas opções: ${multiplasOpcoes}, Quantidade: ${quantidadeOpcoes}`, multiplasOpcoes ? 'success' : 'info');
+
+            // ANÁLISE CRÍTICA: SOMENTE IDA vs IDA E VOLTA
+            const indicadoresSomenteIda = [
+                // Não há menção explícita de volta
+                !(textoLower.includes('volta') || textoLower.includes('retorno')),
+                // Não há múltiplas datas diferentes
+                !temMultiplasDatasDistintas(texto),
+                // Não há horários de volta explícitos
+                !temHorariosVolta(texto),
+                // Padrão típico de somente ida: origem-destino sem volta
+                temPadraoSomenteIda(texto)
+            ];
+            
+            const pontuacaoSomenteIda = indicadoresSomenteIda.filter(Boolean).length;
+            
+            log(`Indicadores somente ida: [${indicadoresSomenteIda.map(x => x ? '✓' : '✗').join(', ')}], Pontuação: ${pontuacaoSomenteIda}/4`, 'info');
+            
+            // DECISÃO FINAL
+            let tipoViagem = 'somente_ida';
+            let confianca = pontuacaoSomenteIda;
+            
+            // Se há indicadores explícitos de volta, mudar para ida_volta
+            if (textoLower.includes('volta') && temMultiplasDatasDistintas(texto)) {
+                tipoViagem = 'ida_volta';
+                confianca = 4 - pontuacaoSomenteIda;
+                log('Detectado como IDA E VOLTA por ter "volta" + múltiplas datas', 'warning');
+            } else {
+                log('Detectado como SOMENTE IDA', 'success');
+            }
+
+            return {
+                tipo: tipoViagem,
+                multiplasOpcoes: multiplasOpcoes,
+                quantidadeOpcoes: quantidadeOpcoes,
+                confianca: confianca,
+                indicadores: {
+                    precos: precos,
+                    totais: totais,
+                    links: links,
+                    companhias: companhias,
+                    somenteIda: indicadoresSomenteIda,
+                    pontuacaoSomenteIda: pontuacaoSomenteIda
+                }
+            };
+        }
+
+        function temMultiplasDatasDistintas(texto) {
+            const datas = texto.match(/\d{2}\/\d{2}|\d{2} de \w+/gi) || [];
+            const datasUnicas = [...new Set(datas)];
+            
+            log(`Datas encontradas: [${datas.join(', ')}] → Únicas: [${datasUnicas.join(', ')}]`, 'info');
+            
+            return datasUnicas.length >= 2;
+        }
+
+        function temHorariosVolta(texto) {
+            const textoLower = texto.toLowerCase();
+            
+            // Procurar por padrões explícitos de volta
+            const padraoVolta = /volta.*\d{2}:\d{2}/gi;
+            const temVolta = padraoVolta.test(textoLower);
+            
+            log(`Padrão de volta encontrado: ${temVolta}`, temVolta ? 'warning' : 'success');
+            
+            return temVolta;
+        }
+
+        function temPadraoSomenteIda(texto) {
+            const textoLower = texto.toLowerCase();
+            
+            // Padrões típicos de somente ida
+            const padroes = [
+                { nome: 'origem-destino ida horário', regex: /\w+ - \w+.*ida.*\d{2}:\d{2}/i },
+                { nome: 'ida + data', regex: /ida.*\d{2} de \w+/i },
+                { nome: 'total adulto preço', regex: /total.*\d+.*adult.*r\$/i }
+            ];
+            
+            let matches = 0;
+            padroes.forEach(padrao => {
+                if (padrao.regex.test(textoLower)) {
+                    matches++;
+                    log(`✓ Padrão somente ida encontrado: ${padrao.nome}`, 'success');
+                } else {
+                    log(`✗ Padrão não encontrado: ${padrao.nome}`, 'info');
+                }
+            });
+            
+            log(`Total de padrões somente ida: ${matches}/3`, matches >= 2 ? 'success' : 'warning');
+            
+            return matches >= 2;
+        }
+
+        function analisarTexto() {
+            const texto = document.getElementById('textoTeste').value;
+            const resultadoDiv = document.getElementById('resultadoAnalise');
+            
+            if (!texto.trim()) {
+                resultadoDiv.innerHTML = '<div class="erro">Digite algum texto para analisar!</div>';
+                return;
+            }
+            
+            log('=== INICIANDO NOVA ANÁLISE ===', 'info');
+            
+            const resultado = analisarVooDetalhadamente(texto);
+            
+            let classe = resultado.tipo === 'somente_ida' ? 'sucesso' : 'warning';
+            
+            const html = `
+                <div class="${classe}">
+                    <h3>🔍 Resultado da Análise</h3>
+                    <strong>Tipo detectado:</strong> ${resultado.tipo.toUpperCase()}<br>
+                    <strong>Múltiplas opções:</strong> ${resultado.multiplasOpcoes ? 'SIM' : 'NÃO'} (${resultado.quantidadeOpcoes} opções)<br>
+                    <strong>Confiança:</strong> ${resultado.confianca}/4<br><br>
+                    
+                    <strong>📊 Indicadores:</strong><br>
+                    • Preços R$: ${resultado.indicadores.precos}<br>
+                    • Totais: ${resultado.indicadores.totais}<br>
+                    • Links CVC: ${resultado.indicadores.links}<br>
+                    • Companhias: ${resultado.indicadores.companhias}<br><br>
+                    
+                    <strong>🎯 Análise Somente Ida:</strong><br>
+                    • Sem volta/retorno: ${resultado.indicadores.somenteIda[0] ? '✅' : '❌'}<br>
+                    • Sem múltiplas datas: ${resultado.indicadores.somenteIda[1] ? '✅' : '❌'}<br>
+                    • Sem horários volta: ${resultado.indicadores.somenteIda[2] ? '✅' : '❌'}<br>
+                    • Padrão somente ida: ${resultado.indicadores.somenteIda[3] ? '✅' : '❌'}<br>
+                    • Pontuação: ${resultado.indicadores.pontuacaoSomenteIda}/4
+                </div>
+            `;
+            
+            resultadoDiv.innerHTML = html;
+            log(`=== ANÁLISE CONCLUÍDA: ${resultado.tipo.toUpperCase()} ===`, 'success');
+        }
+
+        async function testarAPI() {
+            const resultadoDiv = document.getElementById('resultadoAPI');
+            resultadoDiv.innerHTML = '<div class="resultado">🧪 Testando conexão...</div>';
+            
+            try {
+                const response = await fetch('/api/ai', { method: 'GET' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultadoDiv.innerHTML = `
+                        <div class="sucesso">
+                            <h4>✅ API Online</h4>
+                            <strong>Versão:</strong> ${data.version}<br>
+                            <strong>Status:</strong> ${data.status}<br>
+                            <strong>Foco:</strong> ${data.focus || 'N/A'}<br>
+                            <strong>Timestamp:</strong> ${data.timestamp}
+                        </div>
+                    `;
+                    log('API está online e respondendo', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `
+                    <div class="erro">
+                        <h4>❌ Erro na API</h4>
+                        <strong>Erro:</strong> ${error.message}
+                    </div>
+                `;
+                log(`Erro na API: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarAPICompleta() {
+            const resultadoDiv = document.getElementById('resultadoAPI');
+            resultadoDiv.innerHTML = '<div class="resultado">🚀 Testando processamento completo...</div>';
+            
+            const textoTeste = exemploProblema;
+            
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: textoTeste,
+                        tipo: 'orcamento',
+                        destino: 'Brasília',
+                        tipos: ['Aéreo Facial'],
+                        temImagem: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultadoDiv.innerHTML = `
+                        <div class="sucesso">
+                            <h4>✅ Teste Completo Bem-sucedido</h4>
+                            <strong>Modelo usado:</strong> ${data.metricas?.modelo_usado}<br>
+                            <strong>Estratégia:</strong> ${data.metricas?.estrategia}<br>
+                            <strong>Tokens:</strong> ${data.metricas?.tokens?.total}<br>
+                            <strong>Custo:</strong> R$ ${data.metricas?.custo?.brl?.toFixed(4)}<br><br>
+                            
+                            <strong>📋 Resultado:</strong><br>
+                            <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px; max-height: 300px; overflow-y: auto;">${data.choices[0].message.content}</pre>
+                        </div>
+                    `;
+                    log('Teste completo da API bem-sucedido', 'success');
+                } else {
+                    throw new Error(data.error?.message || 'Resposta inválida');
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `
+                    <div class="erro">
+                        <h4>❌ Erro no Teste Completo</h4>
+                        <strong>Erro:</strong> ${error.message}
+                    </div>
+                `;
+                log(`Erro no teste completo: ${error.message}`, 'error');
+            }
+        }
+
+        // Log inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔍 Debug Tool carregado - Pronto para testar detecção', 'success');
+        });
+    </script>
+</body>
+</html>
