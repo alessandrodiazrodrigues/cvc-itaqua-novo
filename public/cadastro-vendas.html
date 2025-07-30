@@ -3,59 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📈 Cadastro de Vendas - CVC Itaqua</title>
+    <title>📈 Sistema de Vendas - CVC Itaqua</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         .vendas-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-        }
-
-        .stats-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border-left: 4px solid;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(0,0,0,0.12);
-        }
-
-        .stat-card.vendas { border-left-color: #28a745; }
-        .stat-card.meta { border-left-color: #007bff; }
-        .stat-card.comissao { border-left-color: #ffc107; }
-        .stat-card.performance { border-left-color: #dc3545; }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #2c3e50;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-period {
-            font-size: 0.75rem;
-            color: #999;
-            font-style: italic;
+            font-family: 'Nunito', sans-serif;
         }
 
         .form-vendas {
@@ -123,10 +79,6 @@
             transform: translateY(-1px);
         }
 
-        .form-group input[type="number"] {
-            text-align: right;
-        }
-
         .checkbox-group {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -155,6 +107,133 @@
             transform: scale(1.2);
         }
 
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-item:hover {
+            border-color: #003399;
+            background: rgba(0,51,153,0.05);
+        }
+
+        .radio-item input {
+            margin-right: 0.5rem;
+        }
+
+        .radio-item.selected {
+            border-color: #003399;
+            background: rgba(0,51,153,0.1);
+        }
+
+        .recibo-container {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #28a745;
+            position: relative;
+        }
+
+        .recibo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .recibo-number {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .btn-remove-recibo {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove-recibo:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .extra-fields {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            border-left: 3px solid #ffc107;
+            display: none;
+        }
+
+        .multi-datas {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            border-left: 3px solid #17a2b8;
+            display: none;
+        }
+
+        .datas-extras {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .btn-add {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn-add:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0.5rem;
+        }
+
         .btn-submit {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
@@ -166,7 +245,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
-            margin-top: 1rem;
+            margin-top: 2rem;
             box-shadow: 0 4px 15px rgba(40,167,69,0.3);
         }
 
@@ -181,70 +260,11 @@
             transform: none;
         }
 
-        .calculadora-meta {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            border-left: 4px solid #2196f3;
-        }
-
-        .calculadora-meta h4 {
-            color: #1976d2;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .calculo-result {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
+        .bagagem-assento {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
             margin-top: 1rem;
-            font-weight: 600;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .progress-bar {
-            background: #e9ecef;
-            border-radius: 10px;
-            height: 20px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
-
-        .progress-fill {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            height: 100%;
-            transition: width 0.5s ease;
-            border-radius: 10px;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            border-left: 4px solid;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border-color: #28a745;
-            color: #155724;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            border-color: #ffc107;
-            color: #856404;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
         }
 
         .loading-spinner {
@@ -263,89 +283,29 @@
             100% { transform: rotate(360deg); }
         }
 
-        .historico-vendas {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-top: 2rem;
-        }
-
-        .venda-item {
-            background: #f8f9fa;
-            border-radius: 8px;
+        .alert {
             padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #28a745;
-            transition: all 0.3s ease;
-        }
-
-        .venda-item:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .venda-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .venda-valor {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #28a745;
-        }
-
-        .venda-data {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-action {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-action:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
-        }
-
-        .senha-container {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border: 2px solid #ffc107;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .senha-input {
-            font-size: 1.2rem;
-            padding: 1rem;
-            border: 2px solid #ffc107;
             border-radius: 8px;
-            margin: 1rem;
-            text-align: center;
-            font-family: monospace;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
         }
 
         @media (max-width: 768px) {
@@ -357,25 +317,24 @@
                 grid-template-columns: 1fr;
             }
             
-            .stats-dashboard {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+            .radio-group {
+                flex-direction: column;
             }
             
-            .header-actions {
-                flex-direction: column;
+            .bagagem-assento {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>📈 Cadastro de Vendas - CVC Itaqua</h1>
+        <h1>📈 Sistema de Vendas - CVC Itaqua</h1>
         <nav>
             <ul>
                 <li><a href="index.html">📊 Dashboard</a></li>
                 <li><a href="orcamentos.html">💰 Orçamentos</a></li>
-                <li><a href="cadastro-vendas.html" class="active">📈 Vendas</a></li>
+                <li><a href="vendas.html" class="active">📈 Vendas</a></li>
                 <li><a href="embarques.html">✈️ Embarques</a></li>
                 <li><a href="orbiuns.html">📋 Orbiuns</a></li>
             </ul>
@@ -383,433 +342,519 @@
     </header>
 
     <main class="vendas-container">
-        <!-- Sistema de Senha -->
-        <div id="senhaContainer" class="senha-container">
-            <h2>🔐 Acesso Restrito</h2>
-            <p>Digite a senha para acessar o sistema de vendas:</p>
-            <input type="password" id="senhaInput" class="senha-input" placeholder="••••••••" maxlength="8">
-            <br>
-            <button onclick="verificarSenha()" class="btn-action">🔑 Entrar</button>
-            <div class="alert alert-warning" style="margin-top: 1rem;">
-                <strong>⚠️ Atenção:</strong> Acesso apenas para vendedores autorizados da CVC Itaqua.
-            </div>
-        </div>
-
-        <!-- Conteúdo Principal (inicialmente oculto) -->
-        <div id="sistemaVendas" style="display: none;">
+        <div class="form-vendas">
+            <h2>📋 Cadastro Completo de Venda</h2>
             
-            <!-- Dashboard de Performance -->
-            <section>
-                <div class="header-actions">
-                    <button onclick="carregarDashboard()" class="btn-action">
-                        🔄 Atualizar Dashboard
-                    </button>
-                    <button onclick="exportarRelatorio()" class="btn-action">
-                        📊 Exportar Relatório
-                    </button>
-                    <button onclick="abrirGoogleSheets()" class="btn-action">
-                        📋 Ver Planilha
-                    </button>
+            <form id="formVendaCompleta">
+                <!-- Informações Gerais -->
+                <div class="form-section">
+                    <h3>📋 Informações Gerais</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nInforme">📄 Nº do Informe</label>
+                            <input type="number" id="nInforme" name="nInforme" placeholder="Deixe em branco para gerar automático">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>🏢 Filial</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" name="filial" value="6220" id="filial6220" required>
+                                    <label for="filial6220">6220 - Itaquaquecetuba</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" name="filial" value="6223" id="filial6223">
+                                    <label for="filial6223">6223</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📦 Tipo de Pacote</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="pacote" value="Nacional" id="pacoteNacional">
+                                <label for="pacoteNacional">🇧🇷 Nacional</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="pacote" value="Internacional" id="pacoteInternacional">
+                                <label for="pacoteInternacional">🌍 Internacional</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="pacote" value="Marítimo" id="pacoteMaritimo">
+                                <label for="pacoteMaritimo">🚢 Marítimo</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vendedor">👤 Vendedor</label>
+                            <select id="vendedor" name="vendedor" required>
+                                <option value="">Selecione...</option>
+                                <option value="Alessandro">Alessandro</option>
+                                <option value="Ana Paula">Ana Paula</option>
+                                <option value="Adriana">Adriana</option>
+                                <option value="Adrielly">Adrielly</option>
+                                <option value="Bia">Bia</option>
+                                <option value="Conceição">Conceição</option>
+                                <option value="Jhully">Jhully</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="stats-dashboard">
-                    <div class="stat-card vendas">
-                        <div class="stat-number" id="totalVendasMes">R$ 0</div>
-                        <div class="stat-label">Vendas do Mês</div>
-                        <div class="stat-period">Janeiro 2025</div>
-                    </div>
+                <!-- Dados do Cliente -->
+                <div class="form-section">
+                    <h3>👥 Dados do Cliente</h3>
                     
-                    <div class="stat-card meta">
-                        <div class="stat-number" id="metaMensal">R$ 50.000</div>
-                        <div class="stat-label">Meta Mensal</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressoMeta" style="width: 0%"></div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cpfCliente">📄 CPF</label>
+                            <input type="text" id="cpfCliente" name="cpfCliente" required 
+                                   placeholder="000.000.000-00" maxlength="14">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nomeCliente">📝 Nome Completo</label>
+                            <input type="text" id="nomeCliente" name="nomeCliente" required>
                         </div>
                     </div>
-                    
-                    <div class="stat-card comissao">
-                        <div class="stat-number" id="comissaoMes">R$ 0</div>
-                        <div class="stat-label">Comissão Estimada</div>
-                        <div class="stat-period">Base: 3.5%</div>
-                    </div>
-                    
-                    <div class="stat-card performance">
-                        <div class="stat-number" id="percentualMeta">0%</div>
-                        <div class="stat-label">Performance</div>
-                        <div class="stat-period" id="statusMeta">Abaixo da Meta</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="whatsappCliente">📞 WhatsApp</label>
+                            <input type="text" id="whatsappCliente" name="whatsappCliente" 
+                                   placeholder="(11) 99999-9999" maxlength="15">
+                        </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Formulário de Nova Venda -->
-            <section>
-                <div class="form-vendas">
-                    <h2>💰 Registrar Nova Venda</h2>
+                <!-- Recibos -->
+                <div class="form-section">
+                    <h3>🧾 Recibos e Serviços</h3>
                     
-                    <form id="formVenda">
-                        <!-- Dados da Venda -->
-                        <div class="form-section">
-                            <h3>📋 Informações da Venda</h3>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="vendedor">👤 Vendedor</label>
-                                    <select id="vendedor" name="vendedor" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="Adriana">Adriana</option>
-                                        <option value="Adrielly">Adrielly</option>
-                                        <option value="Alessandro">Alessandro</option>
-                                        <option value="Ana Paula">Ana Paula</option>
-                                        <option value="Bia">Bia</option>
-                                        <option value="Conceição">Conceição</option>
-                                        <option value="Jhully">Jhully</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="dataVenda">📅 Data da Venda</label>
-                                    <input type="date" id="dataVenda" name="dataVenda" required>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="valorVenda">💵 Valor da Venda</label>
-                                    <input type="number" id="valorVenda" name="valorVenda" step="0.01" min="0" 
-                                           placeholder="0,00" required oninput="calcularComissao()">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="comissaoVenda">💰 Comissão (%)</label>
-                                    <select id="comissaoVenda" name="comissaoVenda" onchange="calcularComissao()">
-                                        <option value="3.5">3.5% (Padrão)</option>
-                                        <option value="4.0">4.0% (Meta Atingida)</option>
-                                        <option value="4.5">4.5% (Performance Alta)</option>
-                                        <option value="5.0">5.0% (Excepcional)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Dados do Cliente -->
-                        <div class="form-section">
-                            <h3>👥 Dados do Cliente</h3>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="nomeCliente">📝 Nome do Cliente</label>
-                                    <input type="text" id="nomeCliente" name="nomeCliente" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="telefoneCliente">📞 Telefone/WhatsApp</label>
-                                    <input type="tel" id="telefoneCliente" name="telefoneCliente" 
-                                           placeholder="(11) 99999-9999">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="emailCliente">📧 E-mail</label>
-                                    <input type="email" id="emailCliente" name="emailCliente">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="cidadeCliente">🏙️ Cidade</label>
-                                    <input type="text" id="cidadeCliente" name="cidadeCliente" 
-                                           placeholder="Ex: São Paulo, SP">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Detalhes do Produto -->
-                        <div class="form-section">
-                            <h3>🎯 Produto Vendido</h3>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="tipoViagem">✈️ Tipo de Viagem</label>
-                                    <select id="tipoViagem" name="tipoViagem" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="Pacote Nacional">📍 Pacote Nacional</option>
-                                        <option value="Pacote Internacional">🌍 Pacote Internacional</option>
-                                        <option value="Aéreo Nacional">✈️ Aéreo Nacional</option>
-                                        <option value="Aéreo Internacional">🌎 Aéreo Internacional</option>
-                                        <option value="Hotel Nacional">🏨 Hotel Nacional</option>
-                                        <option value="Hotel Internacional">🏩 Hotel Internacional</option>
-                                        <option value="Cruzeiro">🚢 Cruzeiro</option>
-                                        <option value="Seguro Viagem">🛡️ Seguro Viagem</option>
-                                        <option value="Outros">📦 Outros</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="destino">🗺️ Destino</label>
-                                    <input type="text" id="destino" name="destino" 
-                                           placeholder="Ex: Orlando, Paris, Rio de Janeiro">
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="dataViagem">🗓️ Data da Viagem</label>
-                                    <input type="date" id="dataViagem" name="dataViagem">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="passageiros">👥 Nº de Passageiros</label>
-                                    <input type="number" id="passageiros" name="passageiros" min="1" max="20" value="2">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Observações -->
-                        <div class="form-section">
-                            <h3>📝 Observações</h3>
-                            <div class="form-group">
-                                <label for="observacoes">💬 Observações da Venda</label>
-                                <textarea id="observacoes" name="observacoes" rows="3" 
-                                          placeholder="Detalhes adicionais, forma de pagamento, etc..."></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Calculadora de Meta -->
-                        <div class="calculadora-meta">
-                            <h4>🎯 Calculadora de Performance</h4>
-                            <div class="calculo-result" id="resultadoCalculo">
-                                <div>💰 Comissão desta venda: <span id="comissaoCalculada">R$ 0,00</span></div>
-                                <div>📈 Progresso na meta: <span id="progressoCalculado">0%</span></div>
-                                <div>🎯 Restam para a meta: <span id="faltaMeta">R$ 50.000,00</span></div>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-submit">
-                            💾 Registrar Venda
+                    <div id="recibosContainer">
+                        <!-- Recibos serão adicionados dinamicamente -->
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button type="button" class="btn-add" onclick="adicionarRecibo()">
+                            ➕ Adicionar Recibo
                         </button>
-                    </form>
+                        <button type="button" id="btnRemoverRecibo" class="btn-remove" 
+                                onclick="removerUltimoRecibo()" style="display: none;">
+                            ➖ Remover Último
+                        </button>
+                    </div>
                 </div>
-            </section>
 
-            <!-- Histórico de Vendas -->
-            <section class="historico-vendas">
-                <h2>📊 Últimas Vendas</h2>
-                <div id="loadingHistorico" class="alert alert-info" style="display: none;">
-                    <span class="loading-spinner"></span> Carregando histórico de vendas...
+                <!-- Seguro -->
+                <div class="form-section">
+                    <h3>🛡️ Seguro Viagem</h3>
+                    
+                    <div class="form-group">
+                        <label>Situação do Seguro</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado">
+                                <label for="seguroRecusado">❌ Oferecido e RECUSADO</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="seguro" value="nao_oferecido" id="seguroNaoOferecido">
+                                <label for="seguroNaoOferecido">⚠️ Não Ofertou</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="seguro" value="comprou" id="seguroComprou">
+                                <label for="seguroComprou">✅ COMPROU</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div id="listaVendas">
-                    <!-- Vendas serão carregadas dinamicamente -->
-                </div>
-            </section>
+
+                <button type="submit" class="btn-submit">
+                    💾 Cadastrar Venda Completa
+                </button>
+            </form>
         </div>
     </main>
 
     <script>
         // ================================================================================
-        // 🔐 SISTEMA DE AUTENTICAÇÃO
+        // 🔧 CONFIGURAÇÕES
         // ================================================================================
         
-        const SENHA_VENDAS = 'CVC2025!';
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
-        const PLANILHA_URL = 'https://docs.google.com/spreadsheets/d/SEU_SHEET_ID/edit';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzrigpXOzcK-4ezlXLmh99vDLTea2E2U6MEvgTTo7aFI6AI33lhHtl_M6_WWfTZGp8O/exec';
         
-        let vendedorLogado = '';
-        let vendasData = [];
-        let metaMensal = 50000; // Meta padrão R$ 50.000
+        const COMPANHIAS_AEREAS = [
+            'LATAM', 'AZUL', 'GOL', 'VOEPASS',
+            '──────────────',
+            'CRUZEIRO MSC', 'CRUZEIRO COSTA', 'CRUZEIRO TEMÁTICO', 'CRUZEIRO NCL', 
+            'CRUZEIRO DISNEY', 'CRUZEIROS OUTROS',
+            '──────────────',
+            'Aerolíneas Argentinas', 'Aeroméxico', 'Air Canada', 'Air China', 
+            'Air Europa', 'Air France', 'American Airlines', 'Arajet', 'Avianca',
+            'Boliviana de Aviación (BoA)', 'British Airways', 'Copa Airlines',
+            'Delta Air Lines', 'Emirates', 'Ethiopian Airlines', 'Flybondi',
+            'Iberia', 'ITA Airways', 'JetSmart', 'KLM', 'Lufthansa',
+            'Qatar Airways', 'Royal Air Maroc', 'Sky Airline', 
+            'Swiss International Air Lines', 'TAAG Linhas Aéreas de Angola',
+            'TAP Air Portugal', 'Turkish Airlines', 'United Airlines',
+            'OUTRAS CIAS'
+        ];
 
-        function verificarSenha() {
-            const senha = document.getElementById('senhaInput').value;
-            
-            if (senha === SENHA_VENDAS) {
-                document.getElementById('senhaContainer').style.display = 'none';
-                document.getElementById('sistemaVendas').style.display = 'block';
-                
-                // Configurar data atual
-                document.getElementById('dataVenda').valueAsDate = new Date();
-                
-                // Carregar dashboard
-                carregarDashboard();
-                
-                console.log('✅ Acesso autorizado ao sistema de vendas');
-            } else {
-                alert('❌ Senha incorreta! Tente novamente.');
-                document.getElementById('senhaInput').value = '';
-            }
-        }
+        const TIPOS_SERVICO = [
+            'Aéreo', 'Aéreo Facial', 'Hotel', 'A+H', 'A+H+S',
+            'Passeios', 'Traslados', 'Traslados + Passeios', 'Ingressos',
+            'Seguro', 'Cruzeiro', 'SVA e Outros', 'Locação'
+        ];
+
+        let contadorRecibos = 0;
 
         // ================================================================================
-        // 📊 DASHBOARD E MÉTRICAS
+        // 🧾 GERENCIAMENTO DE RECIBOS
         // ================================================================================
 
-        async function carregarDashboard() {
-            console.log('📊 Carregando dashboard de vendas...');
+        function adicionarRecibo() {
+            contadorRecibos++;
             
-            try {
-                // Simular carregamento (substituir por chamada real à API)
-                await simularCarregamentoDados();
-                
-                atualizarDashboard();
-                carregarHistoricoVendas();
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar dashboard:', error);
-                mostrarAlerta('Erro ao carregar dados do dashboard', 'error');
-            }
-        }
+            const container = document.getElementById('recibosContainer');
+            const reciboDiv = document.createElement('div');
+            reciboDiv.className = 'recibo-container';
+            reciboDiv.id = `recibo-${contadorRecibos}`;
+            
+            reciboDiv.innerHTML = `
+                <div class="recibo-header">
+                    <div class="recibo-number">🧾 Recibo ${contadorRecibos}</div>
+                    <button type="button" class="btn-remove-recibo" onclick="removerRecibo(${contadorRecibos})">
+                        🗑️ Remover
+                    </button>
+                </div>
 
-        async function simularCarregamentoDados() {
-            // Simular dados para demonstração
-            // Na versão real, isso seria uma chamada para o Google Sheets
-            
-            const hoje = new Date();
-            const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-            
-            vendasData = [
-                {
-                    vendedor: 'Adriana',
-                    valor: 15420.50,
-                    cliente: 'Maria Silva',
-                    produto: 'Pacote Orlando',
-                    data: '2025-01-15',
-                    comissao: 539.72
-                },
-                {
-                    vendedor: 'Alessandro',
-                    valor: 8750.00,
-                    cliente: 'João Santos',
-                    produto: 'Aéreo Nacional',
-                    data: '2025-01-20',
-                    comissao: 306.25
-                }
-            ];
-        }
-
-        function atualizarDashboard() {
-            const hoje = new Date();
-            const mesAtual = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-            
-            // Calcular totais
-            const totalVendas = vendasData.reduce((sum, venda) => sum + venda.valor, 0);
-            const totalComissao = vendasData.reduce((sum, venda) => sum + venda.comissao, 0);
-            const percentualMeta = (totalVendas / metaMensal) * 100;
-            
-            // Atualizar elementos
-            document.getElementById('totalVendasMes').textContent = formatarMoeda(totalVendas);
-            document.getElementById('metaMensal').textContent = formatarMoeda(metaMensal);
-            document.getElementById('comissaoMes').textContent = formatarMoeda(totalComissao);
-            document.getElementById('percentualMeta').textContent = percentualMeta.toFixed(1) + '%';
-            document.getElementById('progressoMeta').style.width = Math.min(percentualMeta, 100) + '%';
-            
-            // Atualizar período
-            document.querySelectorAll('.stat-period').forEach(el => {
-                if (el.textContent.includes('2025')) {
-                    el.textContent = mesAtual;
-                }
-            });
-            
-            // Status da meta
-            const statusMeta = document.getElementById('statusMeta');
-            if (percentualMeta >= 100) {
-                statusMeta.textContent = '🏆 Meta Atingida!';
-                statusMeta.style.color = '#28a745';
-            } else if (percentualMeta >= 80) {
-                statusMeta.textContent = '🎯 Quase Lá!';
-                statusMeta.style.color = '#ffc107';
-            } else {
-                statusMeta.textContent = '📈 Em Progresso';
-                statusMeta.style.color = '#dc3545';
-            }
-        }
-
-        function carregarHistoricoVendas() {
-            const container = document.getElementById('listaVendas');
-            
-            if (vendasData.length === 0) {
-                container.innerHTML = `
-                    <div class="alert alert-info">
-                        📝 Nenhuma venda registrada este mês. Que tal começar agora?
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📄 Nº do Recibo</label>
+                        <input type="text" name="recibo[]" placeholder="Apenas números">
                     </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = vendasData.map(venda => `
-                <div class="venda-item">
-                    <div class="venda-header">
-                        <div>
-                            <strong>${venda.cliente}</strong> - ${venda.produto}
-                        </div>
-                        <div class="venda-valor">${formatarMoeda(venda.valor)}</div>
+                    
+                    <div class="form-group">
+                        <label>📋 Nº do Pedido</label>
+                        <input type="text" name="pedido[]">
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <small>👤 ${venda.vendedor} | 📅 ${formatarData(venda.data)}</small>
-                        </div>
-                        <div>
-                            <small>💰 Comissão: ${formatarMoeda(venda.comissao)}</small>
-                        </div>
+                    
+                    <div class="form-group">
+                        <label>🎫 Reserva</label>
+                        <input type="text" name="reserva[]">
                     </div>
                 </div>
-            `).join('');
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🎯 Tipo de Serviço</label>
+                        <select name="tipo[]" onchange="toggleExtras(this, ${contadorRecibos})" required>
+                            <option value="">Selecione...</option>
+                            ${TIPOS_SERVICO.map(tipo => `<option value="${tipo}">${tipo}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📅 Data Ida</label>
+                        <input type="date" name="dataIda[]" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📅 Data Volta</label>
+                        <input type="date" name="dataVolta[]">
+                    </div>
+                </div>
+
+                <!-- Campos extras para aéreo -->
+                <div class="extra-fields" id="extras-${contadorRecibos}">
+                    <h4>✈️ Detalhes Aéreos</h4>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🏢 Companhia Aérea</label>
+                            <select name="cia[]">
+                                <option value="">Selecione...</option>
+                                ${COMPANHIAS_AEREAS.map(cia => 
+                                    cia.startsWith('──') ? 
+                                    `<option disabled>${cia}</option>` : 
+                                    `<option value="${cia}">${cia}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🔗 LOC GDS</label>
+                            <input type="text" name="locGds[]">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>🔗 LOC CIA</label>
+                            <input type="text" name="locCia[]">
+                        </div>
+                    </div>
+
+                    <!-- Bagagem e Assento -->
+                    <div class="bagagem-assento" id="bagagem-${contadorRecibos}">
+                        <div class="checkbox-item">
+                            <input type="hidden" name="temBagagem[]" value="false">
+                            <input type="checkbox" name="temBagagem[]" value="true" id="bagagem-${contadorRecibos}-check">
+                            <label for="bagagem-${contadorRecibos}-check">🧳 Tem Bagagem?</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="hidden" name="temAssento[]" value="false">
+                            <input type="checkbox" name="temAssento[]" value="true" id="assento-${contadorRecibos}-check">
+                            <label for="assento-${contadorRecibos}-check">💺 Tem Assento Marcado?</label>
+                        </div>
+                    </div>
+
+                    <!-- Multi Trecho -->
+                    <div class="form-group">
+                        <label>🔄 É Multi Trecho?</label>
+                        <select name="multiTrecho[]" onchange="toggleMulti(this, ${contadorRecibos})">
+                            <option value="Não">Não</option>
+                            <option value="Sim">Sim</option>
+                        </select>
+                    </div>
+
+                    <!-- Datas Multi Trecho -->
+                    <div class="multi-datas" id="multi-${contadorRecibos}">
+                        <h5>📅 Datas Intermediárias</h5>
+                        <div class="datas-extras" id="datas-extras-${contadorRecibos}"></div>
+                        <button type="button" class="btn-add" onclick="adicionarData(${contadorRecibos})">
+                            ➕ Adicionar Data
+                        </button>
+                        <button type="button" class="btn-remove" onclick="removerData(${contadorRecibos})">
+                            ➖ Remover Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>💬 Observações</label>
+                    <textarea name="observacoes[]" rows="2" placeholder="Informações adicionais sobre este recibo..."></textarea>
+                </div>
+            `;
+            
+            container.appendChild(reciboDiv);
+            atualizarBotaoRemover();
+            
+            console.log(`✅ Recibo ${contadorRecibos} adicionado`);
+        }
+
+        function removerRecibo(numero) {
+            const recibo = document.getElementById(`recibo-${numero}`);
+            if (recibo) {
+                recibo.remove();
+                console.log(`🗑️ Recibo ${numero} removido`);
+            }
+            atualizarBotaoRemover();
+        }
+
+        function removerUltimoRecibo() {
+            const container = document.getElementById('recibosContainer');
+            const ultimoRecibo = container.lastElementChild;
+            
+            if (ultimoRecibo) {
+                ultimoRecibo.remove();
+                console.log('🗑️ Último recibo removido');
+            }
+            
+            atualizarBotaoRemover();
+        }
+
+        function atualizarBotaoRemover() {
+            const container = document.getElementById('recibosContainer');
+            const btnRemover = document.getElementById('btnRemoverRecibo');
+            const temRecibos = container.children.length > 0;
+            
+            btnRemover.style.display = temRecibos ? 'inline-block' : 'none';
         }
 
         // ================================================================================
-        // 📝 FORMULÁRIO DE VENDAS
+        // 🔄 CAMPOS DINÂMICOS
+        // ================================================================================
+
+        function toggleExtras(selectElement, reciboId) {
+            const extrasDiv = document.getElementById(`extras-${reciboId}`);
+            const bagagemDiv = document.getElementById(`bagagem-${reciboId}`);
+            
+            const tiposAereos = ['Aéreo', 'Aéreo Facial', 'A+H', 'A+H+S'];
+            const isAereo = tiposAereos.includes(selectElement.value);
+            
+            if (extrasDiv) {
+                extrasDiv.style.display = isAereo ? 'block' : 'none';
+            }
+            
+            if (bagagemDiv) {
+                bagagemDiv.style.display = isAereo ? 'grid' : 'none';
+            }
+            
+            console.log(`🔄 Extras ${isAereo ? 'mostrados' : 'ocultos'} para recibo ${reciboId}`);
+        }
+
+        function toggleMulti(selectElement, reciboId) {
+            const multiDiv = document.getElementById(`multi-${reciboId}`);
+            const isMulti = selectElement.value === 'Sim';
+            
+            if (multiDiv) {
+                multiDiv.style.display = isMulti ? 'block' : 'none';
+            }
+            
+            console.log(`🔄 Multi trecho ${isMulti ? 'ativado' : 'desativado'} para recibo ${reciboId}`);
+        }
+
+        function adicionarData(reciboId) {
+            const container = document.getElementById(`datas-extras-${reciboId}`);
+            if (!container) return;
+            
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.name = 'datasExtras[]';
+            input.style.padding = '0.5rem';
+            input.style.border = '1px solid #ddd';
+            input.style.borderRadius = '4px';
+            
+            container.appendChild(input);
+            console.log(`📅 Data extra adicionada ao recibo ${reciboId}`);
+        }
+
+        function removerData(reciboId) {
+            const container = document.getElementById(`datas-extras-${reciboId}`);
+            if (!container) return;
+            
+            const ultimaData = container.lastElementChild;
+            if (ultimaData) {
+                ultimaData.remove();
+                console.log(`📅 Data extra removida do recibo ${reciboId}`);
+            }
+        }
+
+        // ================================================================================
+        // 📝 MÁSCARAS E FORMATAÇÃO
         // ================================================================================
 
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formVenda');
+                cpfInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    e.target.value = value;
+                });
+            }
+
+            // Máscara WhatsApp
+            const whatsappInput = document.getElementById('whatsappCliente');
+            if (whatsappInput) {
+                whatsappInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                    e.target.value = value;
+                });
+            }
+
+            // Máscara para campos de recibo (apenas números)
+            document.addEventListener('input', function(e) {
+                if (e.target.name === 'recibo[]') {
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                }
+            });
+
+            // Adicionar primeiro recibo automaticamente
+            adicionarRecibo();
+
+            // Configurar envio do formulário
+            const form = document.getElementById('formVendaCompleta');
             if (form) {
-                form.addEventListener('submit', enviarVenda);
+                form.addEventListener('submit', enviarVendaCompleta);
             }
-            
-            // Configurar data atual
-            const hoje = new Date().toISOString().split('T')[0];
-            if (document.getElementById('dataVenda')) {
-                document.getElementById('dataVenda').value = hoje;
-            }
+
+            // Configurar seleção de radio buttons
+            configurarRadioGroups();
         });
 
-        async function enviarVenda(e) {
+        function configurarRadioGroups() {
+            document.addEventListener('change', function(e) {
+                if (e.target.type === 'radio') {
+                    // Remover classe selected de todos os itens do mesmo grupo
+                    const groupName = e.target.name;
+                    const radioItems = document.querySelectorAll(`input[name="${groupName}"]`);
+                    
+                    radioItems.forEach(radio => {
+                        const radioItem = radio.closest('.radio-item');
+                        if (radioItem) {
+                            radioItem.classList.remove('selected');
+                        }
+                    });
+                    
+                    // Adicionar classe selected ao item selecionado
+                    const selectedRadioItem = e.target.closest('.radio-item');
+                    if (selectedRadioItem) {
+                        selectedRadioItem.classList.add('selected');
+                    }
+                }
+            });
+        }
+
+        // ================================================================================
+        // 📤 ENVIO DO FORMULÁRIO
+        // ================================================================================
+
+        async function enviarVendaCompleta(e) {
             e.preventDefault();
             
-            const formData = new FormData(e.target);
-            const dados = Object.fromEntries(formData.entries());
-            
-            // Validações
-            if (!validarFormulario(dados)) {
-                return;
-            }
-            
-            // Mostrar loading
             const submitBtn = e.target.querySelector('.btn-submit');
             const textoOriginal = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
-
+            
             try {
-                // Adicionar dados calculados
-                dados.comissaoValor = calcularValorComissao(dados.valorVenda, dados.comissaoVenda);
-                dados.dataRegistro = new Date().toISOString();
-                dados.metaMensal = metaMensal;
+                // Mostrar loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
                 
-                console.log('📤 Enviando venda:', dados);
+                // Coletar dados do formulário
+                const dadosVenda = coletarDadosFormulario(e.target);
                 
-                // Simular envio (substituir por chamada real ao Google Sheets)
-                await simularEnvioVenda(dados);
+                // Validar dados
+                const validacao = validarDadosVenda(dadosVenda);
+                if (!validacao.valido) {
+                    throw new Error(validacao.erros.join('\n'));
+                }
                 
-                // Sucesso
-                mostrarAlerta('✅ Venda registrada com sucesso!', 'success');
+                console.log('📤 Enviando dados da venda:', dadosVenda);
                 
-                // Limpar formulário
-                e.target.reset();
-                document.getElementById('dataVenda').valueAsDate = new Date();
+                // Enviar para Google Sheets
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'cadastrar_venda_completa',
+                        dados: dadosVenda
+                    })
+                });
                 
-                // Atualizar dashboard
-                carregarDashboard();
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarAlerta('✅ Venda cadastrada com sucesso!', 'success');
+                    limparFormulario();
+                } else {
+                    throw new Error(result.error || 'Erro desconhecido');
+                }
                 
             } catch (error) {
                 console.error('❌ Erro ao enviar venda:', error);
-                mostrarAlerta('Erro ao registrar venda: ' + error.message, 'error');
+                mostrarAlerta('Erro ao cadastrar venda:\n' + error.message, 'error');
                 
             } finally {
                 submitBtn.disabled = false;
@@ -817,92 +862,120 @@
             }
         }
 
-        async function simularEnvioVenda(dados) {
-            // Simular delay de rede
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        function coletarDadosFormulario(form) {
+            const formData = new FormData(form);
+            const dados = {};
             
-            // Adicionar à lista local (na versão real, seria salvo no Google Sheets)
-            vendasData.unshift({
-                vendedor: dados.vendedor,
-                valor: parseFloat(dados.valorVenda),
-                cliente: dados.nomeCliente,
-                produto: dados.tipoViagem + (dados.destino ? ` - ${dados.destino}` : ''),
-                data: dados.dataVenda,
-                comissao: dados.comissaoValor
-            });
-            
-            // Simular possível erro (5% de chance)
-            if (Math.random() < 0.05) {
-                throw new Error('Falha na conexão com o servidor');
+            // Processar campos simples
+            for (let [key, value] of formData.entries()) {
+                if (key.endsWith('[]')) {
+                    // Campo array
+                    const baseKey = key.slice(0, -2);
+                    if (!dados[baseKey]) dados[baseKey] = [];
+                    dados[baseKey].push(value);
+                } else {
+                    // Campo simples
+                    dados[key] = value;
+                }
             }
+            
+            // Processar checkboxes de pacote
+            const pacotes = [];
+            document.querySelectorAll('input[name="pacote"]:checked').forEach(cb => {
+                pacotes.push(cb.value);
+            });
+            dados.pacotes = pacotes;
+            
+            // Adicionar timestamp
+            dados.timestamp = new Date().toISOString();
+            dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
+            
+            return dados;
         }
 
-        function validarFormulario(dados) {
+        function validarDadosVenda(dados) {
             const erros = [];
             
+            // Validações obrigatórias
+            if (!dados.filial) erros.push('Selecione a filial');
             if (!dados.vendedor) erros.push('Selecione o vendedor');
-            if (!dados.valorVenda || parseFloat(dados.valorVenda) <= 0) erros.push('Valor da venda deve ser maior que zero');
-            if (!dados.nomeCliente || dados.nomeCliente.length < 2) erros.push('Nome do cliente é obrigatório');
-            if (!dados.tipoViagem) erros.push('Selecione o tipo de viagem');
-            if (!dados.dataVenda) erros.push('Data da venda é obrigatória');
+            if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
+            if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
+            if (!dados.seguro) erros.push('Informe a situação do seguro');
             
-            // Validar data da venda (não pode ser futura)
-            const dataVenda = new Date(dados.dataVenda);
-            const hoje = new Date();
-            if (dataVenda > hoje) {
-                erros.push('Data da venda não pode ser futura');
+            // Validar CPF
+            if (dados.cpfCliente && !validarCPF(dados.cpfCliente)) {
+                erros.push('CPF inválido');
             }
             
-            if (erros.length > 0) {
-                mostrarAlerta('Corrija os seguintes erros:\n• ' + erros.join('\n• '), 'error');
-                return false;
+            // Validar recibos
+            if (!dados.recibo || dados.recibo.length === 0) {
+                erros.push('Adicione pelo menos um recibo');
+            } else {
+                // Verificar se todos os recibos têm tipo e data ida
+                dados.tipo?.forEach((tipo, index) => {
+                    if (!tipo) erros.push(`Tipo é obrigatório no recibo ${index + 1}`);
+                });
+                
+                dados.dataIda?.forEach((data, index) => {
+                    if (!data) erros.push(`Data ida é obrigatória no recibo ${index + 1}`);
+                });
             }
             
-            return true;
+            return {
+                valido: erros.length === 0,
+                erros: erros
+            };
+        }
+
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+            
+            let soma = 0;
+            for (let i = 0; i < 9; i++) {
+                soma += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let digito1 = (soma * 10) % 11;
+            if (digito1 === 10) digito1 = 0;
+            
+            soma = 0;
+            for (let i = 0; i < 10; i++) {
+                soma += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            let digito2 = (soma * 10) % 11;
+            if (digito2 === 10) digito2 = 0;
+            
+            return digito1 === parseInt(cpf.charAt(9)) && digito2 === parseInt(cpf.charAt(10));
+        }
+
+        function limparFormulario() {
+            const form = document.getElementById('formVendaCompleta');
+            form.reset();
+            
+            // Limpar recibos e adicionar um novo
+            document.getElementById('recibosContainer').innerHTML = '';
+            contadorRecibos = 0;
+            adicionarRecibo();
+            
+            // Remover classes selected dos radio buttons
+            document.querySelectorAll('.radio-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            console.log('🧹 Formulário limpo');
         }
 
         // ================================================================================
-        // 🧮 CALCULADORAS E UTILITÁRIOS
+        // 🛠️ FUNÇÕES AUXILIARES
         // ================================================================================
-
-        function calcularComissao() {
-            const valor = parseFloat(document.getElementById('valorVenda').value) || 0;
-            const percentual = parseFloat(document.getElementById('comissaoVenda').value) || 3.5;
-            
-            const comissao = calcularValorComissao(valor, percentual);
-            const totalAtual = vendasData.reduce((sum, venda) => sum + venda.valor, 0);
-            const novoTotal = totalAtual + valor;
-            const progresso = (novoTotal / metaMensal) * 100;
-            const falta = Math.max(0, metaMensal - novoTotal);
-            
-            // Atualizar calculadora
-            document.getElementById('comissaoCalculada').textContent = formatarMoeda(comissao);
-            document.getElementById('progressoCalculado').textContent = progresso.toFixed(1) + '%';
-            document.getElementById('faltaMeta').textContent = formatarMoeda(falta);
-        }
-
-        function calcularValorComissao(valor, percentual) {
-            return (parseFloat(valor) * parseFloat(percentual)) / 100;
-        }
-
-        function formatarMoeda(valor) {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            }).format(valor);
-        }
-
-        function formatarData(dataString) {
-            const data = new Date(dataString + 'T00:00:00');
-            return data.toLocaleDateString('pt-BR');
-        }
 
         function mostrarAlerta(mensagem, tipo = 'info') {
             // Remover alertas existentes
-            const alertasExistentes = document.querySelectorAll('.alerta-temporario');
-            alertasExistentes.forEach(alerta => alerta.remove());
+            document.querySelectorAll('.alerta-temporario').forEach(alerta => alerta.remove());
             
-            // Criar novo alerta
             const alerta = document.createElement('div');
             alerta.className = `alert alert-${tipo} alerta-temporario`;
             alerta.style.cssText = `
@@ -918,10 +991,10 @@
             let icone = '📝';
             if (tipo === 'success') icone = '✅';
             if (tipo === 'error') icone = '❌';
-            if (tipo === 'warning') icone = '⚠️';
+            if (tipo === 'info') icone = 'ℹ️';
             
             alerta.innerHTML = `
-                ${icone} ${mensagem}
+                ${icone} ${mensagem.replace(/\n/g, '<br>')}
                 <button onclick="this.parentElement.remove()" 
                         style="float: right; background: none; border: none; 
                                font-size: 18px; cursor: pointer; margin-left: 10px;">×</button>
@@ -929,144 +1002,17 @@
             
             document.body.appendChild(alerta);
             
-            // Remover automaticamente após 5 segundos
+            // Auto-remover após 8 segundos
             setTimeout(() => {
                 if (alerta.parentElement) {
                     alerta.remove();
                 }
-            }, 5000);
+            }, 8000);
         }
 
         // ================================================================================
-        // 🔧 FUNCIONALIDADES AUXILIARES
+        // 🎨 ANIMAÇÕES E EFEITOS
         // ================================================================================
-
-        function exportarRelatorio() {
-            const dados = {
-                vendas: vendasData,
-                resumo: {
-                    totalVendas: vendasData.reduce((sum, v) => sum + v.valor, 0),
-                    totalComissao: vendasData.reduce((sum, v) => sum + v.comissao, 0),
-                    metaMensal: metaMensal,
-                    numeroVendas: vendasData.length
-                },
-                dataExportacao: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `relatorio-vendas-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            URL.revokeObjectURL(url);
-            
-            mostrarAlerta('📊 Relatório exportado com sucesso!', 'success');
-        }
-
-        function abrirGoogleSheets() {
-            window.open(PLANILHA_URL, '_blank');
-        }
-
-        function alterarMeta() {
-            const novaMeta = prompt('Digite a nova meta mensal (apenas números):', metaMensal);
-            
-            if (novaMeta && !isNaN(novaMeta) && parseFloat(novaMeta) > 0) {
-                metaMensal = parseFloat(novaMeta);
-                atualizarDashboard();
-                mostrarAlerta(`🎯 Meta alterada para ${formatarMoeda(metaMensal)}`, 'success');
-            }
-        }
-
-        // ================================================================================
-        // 🎨 MELHORIAS DE UX
-        // ================================================================================
-
-        // Máscara para telefone
-        document.addEventListener('DOMContentLoaded', function() {
-            const telefoneInput = document.getElementById('telefoneCliente');
-            if (telefoneInput) {
-                telefoneInput.addEventListener('input', function(e) {
-                    let valor = e.target.value.replace(/\D/g, '');
-                    valor = valor.replace(/^(\d{2})(\d)/g, '($1) $2');
-                    valor = valor.replace(/(\d)(\d{4})$/, '$1-$2');
-                    e.target.value = valor;
-                });
-            }
-        });
-
-        // Formatação automática do valor
-        document.addEventListener('DOMContentLoaded', function() {
-            const valorInput = document.getElementById('valorVenda');
-            if (valorInput) {
-                valorInput.addEventListener('blur', function(e) {
-                    const valor = parseFloat(e.target.value);
-                    if (!isNaN(valor)) {
-                        e.target.value = valor.toFixed(2);
-                    }
-                });
-            }
-        });
-
-        // Auto-completar destinos populares
-        const destinosPopulares = [
-            'Orlando, FL', 'Paris, França', 'Buenos Aires, Argentina',
-            'Rio de Janeiro, RJ', 'Salvador, BA', 'Fortaleza, CE',
-            'Lisboa, Portugal', 'Madrid, Espanha', 'Roma, Itália',
-            'Nova York, NY', 'Cancún, México', 'Punta Cana, Rep. Dominicana'
-        ];
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const destinoInput = document.getElementById('destino');
-            if (destinoInput) {
-                destinoInput.addEventListener('input', function(e) {
-                    // Implementar autocomplete simples
-                    const valor = e.target.value.toLowerCase();
-                    const sugestoes = destinosPopulares.filter(d => 
-                        d.toLowerCase().includes(valor)
-                    );
-                    
-                    // Mostrar primeira sugestão como placeholder
-                    if (sugestoes.length > 0 && valor.length > 2) {
-                        e.target.setAttribute('placeholder', sugestoes[0]);
-                    }
-                });
-            }
-        });
-
-        // Atalhos do teclado
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                const form = document.getElementById('formVenda');
-                if (form) {
-                    form.requestSubmit();
-                }
-            }
-            
-            if (e.ctrlKey && e.key === 'r') {
-                e.preventDefault();
-                carregarDashboard();
-            }
-        });
-
-        // ================================================================================
-        // 🚀 INICIALIZAÇÃO
-        // ================================================================================
-
-        // Permitir Enter na senha
-        document.addEventListener('DOMContentLoaded', function() {
-            const senhaInput = document.getElementById('senhaInput');
-            if (senhaInput) {
-                senhaInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        verificarSenha();
-                    }
-                });
-            }
-        });
 
         // CSS para animações
         const style = document.createElement('style');
@@ -1081,18 +1027,58 @@
                     opacity: 1;
                 }
             }
+            
+            .recibo-container {
+                animation: fadeInUp 0.5s ease;
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         `;
         document.head.appendChild(style);
 
-        console.log('🚀 Sistema de Cadastro de Vendas CVC Itaqua carregado!');
+        // ================================================================================
+        // 🚀 INICIALIZAÇÃO E LOGS
+        // ================================================================================
+
+        console.log('🚀 Sistema de Vendas Completo carregado!');
         console.log('✨ Funcionalidades:');
-        console.log('   📊 Dashboard de performance em tempo real');
-        console.log('   💰 Cálculo automático de comissões');
-        console.log('   🎯 Acompanhamento de metas mensais');
-        console.log('   📱 Interface responsiva e intuitiva');
-        console.log('   🔐 Sistema de autenticação por senha');
-        console.log('   📈 Histórico de vendas integrado');
-        console.log('   ⌨️ Atalhos: Ctrl+S (Salvar) | Ctrl+R (Atualizar)');
+        console.log('   📋 Formulário completo com todos os campos do Google Script');
+        console.log('   🧾 Sistema de múltiplos recibos');
+        console.log('   ✈️ Campos específicos para aéreo (CIA, LOC, bagagem, assento)');
+        console.log('   🔄 Multi trecho com datas extras');
+        console.log('   🛡️ Controle de seguro viagem');
+        console.log('   ✅ Validações completas (CPF, campos obrigatórios)');
+        console.log('   📤 Integração com Google Sheets via API');
+        console.log('   🎨 Interface moderna e responsiva');
+        console.log('   📱 Máscaras automáticas para CPF e WhatsApp');
+        
+        // Debug functions (apenas em desenvolvimento)
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('github.io')) {
+            window.debugVendas = {
+                adicionarRecibo: adicionarRecibo,
+                simularDados: function() {
+                    document.getElementById('cpfCliente').value = '123.456.789-00';
+                    document.getElementById('nomeCliente').value = 'João da Silva';
+                    document.getElementById('whatsappCliente').value = '(11) 99999-9999';
+                    document.getElementById('vendedor').value = 'Alessandro';
+                    document.querySelector('input[value="6220"]').checked = true;
+                    document.querySelector('input[value="Nacional"]').checked = true;
+                    document.querySelector('input[value="recusado"]').checked = true;
+                    mostrarAlerta('✅ Dados simulados preenchidos!', 'success');
+                },
+                limparTudo: limparFormulario
+            };
+            console.log('🧪 Funções de debug disponíveis em window.debugVendas');
+        }
     </script>
 </body>
 </html>
