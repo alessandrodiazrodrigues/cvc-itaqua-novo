@@ -62,54 +62,6 @@
             color: #721c24;
         }
         
-        .orbium-actions {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-        }
-        
-        .action-btn {
-            background: none;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .action-btn:hover {
-            background: #f8f9fa;
-            transform: scale(1.05);
-        }
-        
-        .action-btn.resolver {
-            color: #28a745;
-            border-color: #28a745;
-        }
-        
-        .action-btn.problema {
-            color: #dc3545;
-            border-color: #dc3545;
-        }
-        
-        .action-btn.editar {
-            color: #007bff;
-            border-color: #007bff;
-        }
-        
-        .filtros {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
         .orbium-details {
             font-size: 0.9rem;
             color: #6c757d;
@@ -159,6 +111,16 @@
         .stat-label {
             font-size: 0.75rem;
             color: #666;
+        }
+        
+        .filtros {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
         }
         
         .header-links {
@@ -392,12 +354,6 @@
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
-            }
-            
-            .orbium-actions {
-                position: static;
-                margin-top: 0.5rem;
-                justify-content: flex-start;
             }
             
             .header-links {
@@ -641,18 +597,31 @@
     </div>
 
     <script>
-        const ORBIUNS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsD39KeuMfCeRx3yUeFDOD8MJRcvoqOATBWluDcDrDj66Wv-kc_SHaDB1mOh1SCq-L4g/exec';
+        // ================================================================================
+        // 🔧 CONFIGURAÇÃO DA API - NOVA URL
+        // ================================================================================
+        const ORBIUNS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVkN4fI4HIEgZW3BKHQ0BxJBbTJWg9IwMRXoY3IpF8KVTm0aT0ekkLNIF6RZcukoCDKA/exec';
+        const SENHA_ORBIUNS = 'orb123';
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
 
+        // ================================================================================
+        // 🚀 INICIALIZAÇÃO
+        // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua carregado!');
+            console.log('🔗 API:', ORBIUNS_SCRIPT_URL);
+            
             document.getElementById('data_abertura').valueAsDate = new Date();
             carregarOrbiuns();
             document.getElementById('formNovoOrbium').addEventListener('submit', enviarNovoOrbium);
             document.getElementById('formEditarOrbium').addEventListener('submit', editarOrbium);
         });
 
+        // ================================================================================
+        // 📊 CARREGAR ORBIUNS DA PLANILHA
+        // ================================================================================
         async function carregarOrbiuns() {
             const loadingEl = document.getElementById('loadingMessage');
             const listEl = document.getElementById('orbiunsList');
@@ -661,25 +630,329 @@
             listEl.innerHTML = '';
 
             try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL + '?action=listar');
+                console.log('📋 Carregando orbiuns...');
+                
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'listar',
+                        filtros: {}
+                    })
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
+                console.log('📋 Resposta da API:', data);
                 
                 if (data.success) {
                     orbiunsData = data.data.orbiuns || [];
-                    orbiunsFiltrados = [...orbiunsData];
+                    orbiunsFiltrados = orbiunsData.filter(orbium => {
+                const matchStatus = !filtroStatus || orbium.status.toLowerCase().includes(filtroStatus);
+                const matchVendedor = !filtroVendedor || orbium.vendedor.toLowerCase().includes(filtroVendedor);
+                const matchDepartamento = !filtroDepartamento || (orbium.departamento && orbium.departamento.toLowerCase().includes(filtroDepartamento));
+                const matchCliente = !filtroCliente || (orbium.nome_cliente && orbium.nome_cliente.toLowerCase().includes(filtroCliente));
+
+                return matchStatus && matchVendedor && matchDepartamento && matchCliente;
+            });
+
+            renderizarOrbiuns();
+        }
+
+        // ================================================================================
+        // ✅ RESOLVER ORBIUM
+        // ================================================================================
+        async function resolverOrbium(id) {
+            if (!confirm('Tem certeza que deseja marcar este orbium como resolvido?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'atualizar_status',
+                        id: id,
+                        status: 'Resolvido',
+                        senha: SENHA_ORBIUNS
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Orbium marcado como resolvido!');
+                    carregarOrbiuns();
+                } else {
+                    throw new Error(result.message || 'Erro ao atualizar status');
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao resolver orbium:', error);
+                alert(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        // ================================================================================
+        // ⚠️ MARCAR PROBLEMA
+        // ================================================================================
+        async function marcarProblema(id) {
+            const motivo = prompt('Descreva brevemente o problema:');
+            if (!motivo) return;
+
+            try {
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'atualizar_status',
+                        id: id,
+                        status: 'Problema',
+                        observacoes: motivo,
+                        senha: SENHA_ORBIUNS
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('⚠️ Orbium marcado como problema!');
+                    carregarOrbiuns();
+                } else {
+                    throw new Error(result.message || 'Erro ao atualizar status');
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao marcar problema:', error);
+                alert(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        // ================================================================================
+        // ✏️ EDITAR ORBIUM
+        // ================================================================================
+        function editarOrbiumModal(id) {
+            const orbium = orbiunsData.find(o => o.id === id);
+            if (!orbium) {
+                alert('Orbium não encontrado!');
+                return;
+            }
+
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_status').value = orbium.status;
+            document.getElementById('edit_observacoes').value = orbium.observacoes || '';
+
+            document.getElementById('modalEditarOrbium').style.display = 'block';
+        }
+
+        async function editarOrbium(e) {
+            e.preventDefault();
+            
+            const botaoSubmit = e.target.querySelector('.btn-submit');
+            const textoOriginal = botaoSubmit.textContent;
+            
+            botaoSubmit.disabled = true;
+            botaoSubmit.innerHTML = '<span class="loading-spinner"></span> Salvando...';
+
+            try {
+                const formData = new FormData(e.target);
+                const dados = Object.fromEntries(formData.entries());
+
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'editar',
+                        id: dados.id,
+                        dados: {
+                            status: dados.status,
+                            observacoes: dados.observacoes
+                        },
+                        senha: SENHA_ORBIUNS
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Orbium atualizado com sucesso!');
+                    fecharModalEditar();
+                    carregarOrbiuns();
+                } else {
+                    throw new Error(result.message || 'Erro ao editar orbium');
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao editar orbium:', error);
+                alert(`❌ Erro: ${error.message}`);
+                
+            } finally {
+                botaoSubmit.disabled = false;
+                botaoSubmit.textContent = textoOriginal;
+            }
+        }
+
+        // ================================================================================
+        // ➕ CADASTRAR NOVO ORBIUM
+        // ================================================================================
+        function abrirModalNovoOrbium() {
+            document.getElementById('modalNovoOrbium').style.display = 'block';
+            document.getElementById('data_abertura').valueAsDate = new Date();
+        }
+
+        function fecharModal() {
+            document.getElementById('modalNovoOrbium').style.display = 'none';
+            document.getElementById('formNovoOrbium').reset();
+        }
+
+        function fecharModalEditar() {
+            document.getElementById('modalEditarOrbium').style.display = 'none';
+            document.getElementById('formEditarOrbium').reset();
+        }
+
+        async function enviarNovoOrbium(e) {
+            e.preventDefault();
+            
+            const botaoSubmit = e.target.querySelector('.btn-submit');
+            const textoOriginal = botaoSubmit.textContent;
+            
+            botaoSubmit.disabled = true;
+            botaoSubmit.innerHTML = '<span class="loading-spinner"></span> Enviando...';
+
+            try {
+                const formData = new FormData(e.target);
+                const dados = Object.fromEntries(formData.entries());
+                
+                if (!dados.orbium || !dados.vendedor || !dados.nome_cliente) {
+                    throw new Error('Preencha todos os campos obrigatórios');
+                }
+
+                console.log('📤 Enviando orbium:', dados);
+
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'cadastrar',
+                        orbium: dados,
+                        senha: SENHA_ORBIUNS
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('📥 Resposta:', result);
+
+                if (result.success) {
+                    alert('✅ Orbium cadastrado com sucesso!');
+                    fecharModal();
+                    carregarOrbiuns();
+                } else {
+                    throw new Error(result.message || 'Erro ao cadastrar orbium');
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao enviar orbium:', error);
+                alert(`❌ Erro ao cadastrar orbium: ${error.message}`);
+                
+            } finally {
+                botaoSubmit.disabled = false;
+                botaoSubmit.textContent = textoOriginal;
+            }
+        }
+
+        // ================================================================================
+        // 🛠️ FUNÇÕES AUXILIARES
+        // ================================================================================
+        function formatarWhatsApp(numero) {
+            if (!numero) return 'N/A';
+            const numeroLimpo = numero.toString().replace(/\D/g, '');
+            if (numeroLimpo.length === 11) {
+                return `(${numeroLimpo.slice(0,2)}) ${numeroLimpo.slice(2,7)}-${numeroLimpo.slice(7)}`;
+            }
+            return numero;
+        }
+
+        // ================================================================================
+        // 🎛️ EVENT LISTENERS
+        // ================================================================================
+        window.onclick = function(event) {
+            const modalNovo = document.getElementById('modalNovoOrbium');
+            const modalEditar = document.getElementById('modalEditarOrbium');
+            
+            if (event.target === modalNovo) {
+                fecharModal();
+            }
+            if (event.target === modalEditar) {
+                fecharModalEditar();
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                abrirModalNovoOrbium();
+            }
+            if (e.key === 'Escape') {
+                fecharModal();
+                fecharModalEditar();
+            }
+        });
+
+        // ================================================================================
+        // 🧪 TESTE DE CONEXÃO (DEBUG)
+        // ================================================================================
+        async function testarConexaoAPI() {
+            try {
+                console.log('🧪 Testando conexão com a API...');
+                
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'estatisticas'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('✅ API funcionando:', data);
+                
+            } catch (error) {
+                console.error('❌ Erro na API:', error);
+            }
+        }
+
+        // Testar conexão ao carregar a página
+        setTimeout(testarConexaoAPI, 2000);
+
+        console.log('🚀 Sistema de Orbiuns CVC Itaqua v2.0 carregado!');
+        console.log('✅ Funcionalidades:');
+        console.log('   - 📋 CRUD completo de orbiuns');
+        console.log('   - 📊 Estatísticas em tempo real');
+        console.log('   - 🔍 Filtros avançados');
+        console.log('   - ✅ Ações rápidas (Resolver/Problema/Editar)');
+        console.log('   - 🔗 Integração total com Google Sheets');
+        console.log('   - 📱 Interface responsiva');
+        console.log(`🔗 API: ${ORBIUNS_SCRIPT_URL}`);
+    </script>
+</body>
+</html>rados = [...orbiunsData];
                     renderizarOrbiuns();
-                    atualizarEstatisticas();
+                    await carregarEstatisticas();
+                    console.log(`✅ ${orbiunsData.length} orbiuns carregados`);
                 } else {
                     throw new Error(data.message || 'Erro ao carregar dados');
                 }
                 
             } catch (error) {
-                console.error('Erro ao carregar orbiuns:', error);
+                console.error('❌ Erro ao carregar orbiuns:', error);
                 
                 listEl.innerHTML = `
                     <div class="alert alert-error">
@@ -693,6 +966,40 @@
             }
         }
 
+        // ================================================================================
+        // 📊 CARREGAR ESTATÍSTICAS
+        // ================================================================================
+        async function carregarEstatisticas() {
+            try {
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'estatisticas'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.data;
+                    document.getElementById('totalAbertos').textContent = stats.em_atendimento;
+                    document.getElementById('totalProblemas').textContent = stats.problema;
+                    document.getElementById('totalResolvidosHoje').textContent = stats.resolvidos_hoje;
+                    document.getElementById('totalResolvidos30').textContent = stats.resolvidos_30_dias;
+                    document.getElementById('totalGeral').textContent = stats.total;
+                } else {
+                    console.warn('⚠️ Erro ao carregar estatísticas:', data.message);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro nas estatísticas:', error);
+            }
+        }
+
+        // ================================================================================
+        // 🎨 RENDERIZAR ORBIUNS NA INTERFACE
+        // ================================================================================
         function renderizarOrbiuns() {
             const container = document.getElementById('orbiunsList');
             
@@ -720,7 +1027,7 @@
                     </div>
                     
                     <div class="orbium-details">
-                        <div><strong>📅 Data:</strong> ${formatarData(orbium.data_abertura)}</div>
+                        <div><strong>📅 Data:</strong> ${orbium.data_abertura || 'N/A'}</div>
                         <div><strong>👤 Vendedor:</strong> ${orbium.vendedor || 'N/A'}</div>
                         <div><strong>🏢 Depto:</strong> ${orbium.departamento || 'N/A'}</div>
                         <div><strong>📞 WhatsApp:</strong> ${formatarWhatsApp(orbium.whats_cliente)}</div>
@@ -755,309 +1062,13 @@
             `).join('');
         }
 
+        // ================================================================================
+        // 🔍 FILTROS
+        // ================================================================================
         function filtrarOrbiuns() {
             const filtroStatus = document.getElementById('filtroStatus').value.toLowerCase();
             const filtroVendedor = document.getElementById('filtroVendedor').value.toLowerCase();
             const filtroDepartamento = document.getElementById('filtroDepartamento').value.toLowerCase();
             const filtroCliente = document.getElementById('filtroCliente').value.toLowerCase();
 
-            orbiunsFiltrados = orbiunsData.filter(orbium => {
-                const matchStatus = !filtroStatus || orbium.status.toLowerCase().includes(filtroStatus);
-                const matchVendedor = !filtroVendedor || orbium.vendedor.toLowerCase().includes(filtroVendedor);
-                const matchDepartamento = !filtroDepartamento || (orbium.departamento && orbium.departamento.toLowerCase().includes(filtroDepartamento));
-                const matchCliente = !filtroCliente || (orbium.nome_cliente && orbium.nome_cliente.toLowerCase().includes(filtroCliente));
-
-                return matchStatus && matchVendedor && matchDepartamento && matchCliente;
-            });
-
-            renderizarOrbiuns();
-            atualizarEstatisticas();
-        }
-
-        function atualizarEstatisticas() {
-            const hoje = new Date();
-            const ultimos30Dias = new Date();
-            ultimos30Dias.setDate(hoje.getDate() - 30);
-            
-            const stats = orbiunsData.reduce((acc, orbium) => {
-                const hojeStr = hoje.toISOString().split('T')[0];
-                const dataOrbium = orbium.data_abertura;
-                const dataOrb = new Date(dataOrbium + 'T00:00:00');
-                
-                acc.total++;
-                
-                switch (orbium.status) {
-                    case 'Em atendimento':
-                        acc.emAtendimento++;
-                        break;
-                    case 'Problema':
-                        acc.problema++;
-                        break;
-                    case 'Resolvido':
-                        acc.resolvido++;
-                        if (dataOrbium === hojeStr) {
-                            acc.resolvidosHoje++;
-                        }
-                        if (dataOrb >= ultimos30Dias) {
-                            acc.resolvidos30Dias++;
-                        }
-                        break;
-                }
-                
-                return acc;
-            }, {
-                total: 0,
-                emAtendimento: 0,
-                problema: 0,
-                resolvido: 0,
-                resolvidosHoje: 0,
-                resolvidos30Dias: 0
-            });
-
-            document.getElementById('totalAbertos').textContent = stats.emAtendimento;
-            document.getElementById('totalProblemas').textContent = stats.problema;
-            document.getElementById('totalResolvidosHoje').textContent = stats.resolvidosHoje;
-            document.getElementById('totalResolvidos30').textContent = stats.resolvidos30Dias;
-            document.getElementById('totalGeral').textContent = stats.total;
-        }
-
-        async function resolverOrbium(id) {
-            if (!confirm('Tem certeza que deseja marcar este orbium como resolvido?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'atualizar_status',
-                        id: id,
-                        status: 'Resolvido'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Orbium marcado como resolvido!');
-                    carregarOrbiuns();
-                } else {
-                    throw new Error(result.message || 'Erro ao atualizar status');
-                }
-
-            } catch (error) {
-                console.error('Erro ao resolver orbium:', error);
-                alert(`❌ Erro: ${error.message}`);
-            }
-        }
-
-        async function marcarProblema(id) {
-            const motivo = prompt('Descreva brevemente o problema:');
-            if (!motivo) return;
-
-            try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'atualizar_status',
-                        id: id,
-                        status: 'Problema',
-                        observacoes: motivo
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('⚠️ Orbium marcado como problema!');
-                    carregarOrbiuns();
-                } else {
-                    throw new Error(result.message || 'Erro ao atualizar status');
-                }
-
-            } catch (error) {
-                console.error('Erro ao marcar problema:', error);
-                alert(`❌ Erro: ${error.message}`);
-            }
-        }
-
-        function editarOrbiumModal(id) {
-            const orbium = orbiunsData.find(o => o.id === id);
-            if (!orbium) {
-                alert('Orbium não encontrado!');
-                return;
-            }
-
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_status').value = orbium.status;
-            document.getElementById('edit_observacoes').value = orbium.observacoes || '';
-
-            document.getElementById('modalEditarOrbium').style.display = 'block';
-        }
-
-        async function editarOrbium(e) {
-            e.preventDefault();
-            
-            const botaoSubmit = e.target.querySelector('.btn-submit');
-            const textoOriginal = botaoSubmit.textContent;
-            
-            botaoSubmit.disabled = true;
-            botaoSubmit.innerHTML = '<span class="loading-spinner"></span> Salvando...';
-
-            try {
-                const formData = new FormData(e.target);
-                const dados = Object.fromEntries(formData.entries());
-
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'editar',
-                        dados: dados
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Orbium atualizado com sucesso!');
-                    fecharModalEditar();
-                    carregarOrbiuns();
-                } else {
-                    throw new Error(result.message || 'Erro ao editar orbium');
-                }
-
-            } catch (error) {
-                console.error('Erro ao editar orbium:', error);
-                alert(`❌ Erro: ${error.message}`);
-                
-            } finally {
-                botaoSubmit.disabled = false;
-                botaoSubmit.textContent = textoOriginal;
-            }
-        }
-
-        function abrirModalNovoOrbium() {
-            document.getElementById('modalNovoOrbium').style.display = 'block';
-            document.getElementById('data_abertura').valueAsDate = new Date();
-        }
-
-        function fecharModal() {
-            document.getElementById('modalNovoOrbium').style.display = 'none';
-            document.getElementById('formNovoOrbium').reset();
-        }
-
-        function fecharModalEditar() {
-            document.getElementById('modalEditarOrbium').style.display = 'none';
-            document.getElementById('formEditarOrbium').reset();
-        }
-
-        async function enviarNovoOrbium(e) {
-            e.preventDefault();
-            
-            const botaoSubmit = e.target.querySelector('.btn-submit');
-            const textoOriginal = botaoSubmit.textContent;
-            
-            botaoSubmit.disabled = true;
-            botaoSubmit.innerHTML = '<span class="loading-spinner"></span> Enviando...';
-
-            try {
-                const formData = new FormData(e.target);
-                const dados = Object.fromEntries(formData.entries());
-                
-                if (!dados.orbium || !dados.vendedor || !dados.nome_cliente) {
-                    throw new Error('Preencha todos os campos obrigatórios');
-                }
-
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'cadastrar',
-                        dados: dados
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Orbium cadastrado com sucesso!');
-                    fecharModal();
-                    carregarOrbiuns();
-                } else {
-                    throw new Error(result.message || 'Erro ao cadastrar orbium');
-                }
-
-            } catch (error) {
-                console.error('Erro ao enviar orbium:', error);
-                alert(`❌ Erro ao cadastrar orbium: ${error.message}`);
-                
-            } finally {
-                botaoSubmit.disabled = false;
-                botaoSubmit.textContent = textoOriginal;
-            }
-        }
-
-        function formatarData(dataString) {
-            if (!dataString) return 'N/A';
-            const data = new Date(dataString + 'T00:00:00');
-            return data.toLocaleDateString('pt-BR');
-        }
-
-        function formatarWhatsApp(numero) {
-            if (!numero) return 'N/A';
-            const numeroLimpo = numero.toString().replace(/\D/g, '');
-            if (numeroLimpo.length === 11) {
-                return `(${numeroLimpo.slice(0,2)}) ${numeroLimpo.slice(2,7)}-${numeroLimpo.slice(7)}`;
-            }
-            return numero;
-        }
-
-        // Event listeners
-        window.onclick = function(event) {
-            const modalNovo = document.getElementById('modalNovoOrbium');
-            const modalEditar = document.getElementById('modalEditarOrbium');
-            
-            if (event.target === modalNovo) {
-                fecharModal();
-            }
-            if (event.target === modalEditar) {
-                fecharModalEditar();
-            }
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'n') {
-                e.preventDefault();
-                abrirModalNovoOrbium();
-            }
-            if (e.key === 'Escape') {
-                fecharModal();
-                fecharModalEditar();
-            }
-        });
-
-        console.log('🚀 Sistema de Orbiuns Atualizado carregado!');
-        console.log('✅ Funcionalidades:');
-        console.log('   - Lista de colaboradores em ordem alfabética');
-        console.log('   - Botões de ação (Resolver, Problema, Editar)');
-        console.log('   - Resumo dos últimos 30 dias');
-        console.log('   - Link direto para Google Sheets');
-        console.log('   - Interface mobile-friendly');
-    </script>
-</body>
-</html>
+            orbiunsFilt
