@@ -1,1323 +1,700 @@
 // ================================================================================
-// 🏆 CVC ITAQUA - FRONTEND LIMPO v5.2.0-clean
+// 🏆 CVC ITAQUA - API CORRIGIDA v5.2.0-clean
 // ================================================================================
-// FOCO: Interface limpa para orçamentos profissionais sem informações técnicas
+// FOCO: Orçamentos limpos sem cabeçalhos técnicos + Detalhes de escalas
 // ================================================================================
 
-const API_URL = '/api/ai';
-const VERSAO_SISTEMA = '5.2.0-clean';
+// ================================================================================
+// 🗺️ MAPEAMENTO COMPLETO DE AEROPORTOS
+// ================================================================================
 
-console.log(`⚡ CVC ITAQUA - FRONTEND LIMPO v${VERSAO_SISTEMA}`);
-console.log("🧹 Melhorias: Orçamentos limpos + Detecção de escalas + Conversão aeroportos");
-
-let formElements = {};
-let custoMeter = {
-  orcamentosHoje: 0,
-  custoTotalHoje: 0,
-  economiaHoje: 0,
-  orcamentosTexto: 0,
-  orcamentosImagem: 0,
-  ultimaAtualizacao: new Date().toDateString(),
-  modelosUsados: {
-    'claude-3-sonnet': 0,
-    'gpt-4o-mini': 0,
-    'fallback': 0
-  }
+const aeroportos = {
+  // Principais aeroportos brasileiros
+  'CGH': 'Congonhas (SP)', 'GRU': 'Guarulhos (SP)', 'VCP': 'Viracopos (SP)',
+  'SDU': 'Santos Dumont (RJ)', 'GIG': 'Galeão (RJ)', 
+  'BSB': 'Brasília (DF)', 'CNF': 'Confins (MG)', 'PLU': 'Pampulha (MG)',
+  'CWB': 'Curitiba (PR)', 'IGU': 'Foz do Iguaçu (PR)', 
+  'REC': 'Recife (PE)', 'FOR': 'Fortaleza (CE)', 'SSA': 'Salvador (BA)',
+  'MAO': 'Manaus (AM)', 'BEL': 'Belém (PA)', 'CGB': 'Cuiabá (MT)',
+  'CGR': 'Campo Grande (MS)', 'AJU': 'Aracaju (SE)', 'MCZ': 'Maceió (AL)',
+  'JPA': 'João Pessoa (PB)', 'NAT': 'Natal (RN)', 'THE': 'Teresina (PI)',
+  'SLZ': 'São Luís (MA)', 'VIX': 'Vitória (ES)', 'FLN': 'Florianópolis (SC)',
+  'POA': 'Porto Alegre (RS)', 'BPS': 'Porto Seguro (BA)', 'IOS': 'Ilhéus (BA)',
+  'RAO': 'Ribeirão Preto (SP)', 'NVT': 'Navegantes (SC)', 'UDI': 'Uberlândia (MG)',
+  'MOC': 'Montes Claros (MG)', 'JDF': 'Juiz de Fora (MG)', 'GYN': 'Goiânia (GO)',
+  'PNZ': 'Petrolina (PE)', 'JTC': 'Bauru (SP)', 'AQA': 'Araraquara (SP)',
+  'PPB': 'Presidente Prudente (SP)', 'CXJ': 'Caxias do Sul (RS)',
+  
+  // Aeroportos internacionais importantes
+  'EZE': 'Buenos Aires (Argentina)', 'MVD': 'Montevidéu (Uruguai)',
+  'ASU': 'Assunção (Paraguai)', 'SCL': 'Santiago (Chile)', 'LIM': 'Lima (Peru)',
+  'BOG': 'Bogotá (Colômbia)', 'UIO': 'Quito (Equador)', 'CCS': 'Caracas (Venezuela)',
+  'MIA': 'Miami (EUA)', 'MCO': 'Orlando (EUA)', 'JFK': 'Nova York (EUA)',
+  'LAX': 'Los Angeles (EUA)', 'CDG': 'Paris (França)', 'MAD': 'Madrid (Espanha)',
+  'FCO': 'Roma (Itália)', 'LIS': 'Lisboa (Portugal)', 'LGW': 'Londres (Reino Unido)',
+  'AMS': 'Amsterdã (Holanda)', 'FRA': 'Frankfurt (Alemanha)', 'ZUR': 'Zurich (Suíça)',
+  'DXB': 'Dubai (Emirados)', 'DOH': 'Doha (Catar)', 'IST': 'Istambul (Turquia)'
 };
 
 // ================================================================================
-// 🔧 INICIALIZAÇÃO LIMPA
+// 📋 TEMPLATES LIMPOS (SEM CABEÇALHOS TÉCNICOS)
 // ================================================================================
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema limpo...");
-  
-  try {
-    // Mapear elementos do DOM
-    formElements = {
-      form: document.getElementById("orcamentoForm"),
-      pasteArea: document.getElementById("pasteArea"),
-      previewArea: document.getElementById("previewArea"),
-      arquivo: document.getElementById("arquivo"),
-      pdfUpload: document.getElementById("pdfUpload")
-    };
+const TEMPLATES = {
+  'Aéreo Facial': `*Passagem Aérea - Somente Ida*
+🏷️ [COMPANHIA]
+🗓️ [DATA] (Somente ida)
+✈️ [DATA] - [ORIGEM] [HORA_IDA] / [DESTINO] [HORA_CHEGADA][DETALHES_VOO]
+💰 R$ [VALOR] para [PASSAGEIROS]
+💳 [PAGAMENTO]
+🔗 [LINK]
 
-    // Verificar elementos essenciais
-    if (!formElements.form) {
-      console.warn("⚠️ Formulário principal não encontrado");
-      return;
-    }
+⚠️ Passagem somente de ida - sem retorno incluído`,
 
-    // Configurar event listeners
-    formElements.form.addEventListener("submit", handleOrcamentoLimpo);
-    console.log("✅ Formulário principal conectado");
-    
-    if (formElements.arquivo) {
-      formElements.arquivo.addEventListener("change", handleFileUploadLimpo);
-      console.log("✅ Upload de arquivo conectado");
-    }
+  'Aéreo Múltiplas': `*Passagens Aéreas - Opções Somente Ida*
 
-    if (formElements.pdfUpload) {
-      window.analisarPDF = handlePDFAnalysisLimpo;
-      console.log("✅ Análise de PDF conectada");
-    }
+📋 *OPÇÃO 1: [COMPANHIA_1]*
+🗓️ [DATA_1] (Somente ida)
+✈️ [DATA_1] - [ORIGEM_1] [HORA_IDA_1] / [DESTINO_1] [HORA_CHEGADA_1][DETALHES_VOO_1]
+💰 R$ [VALOR_1] para [PASSAGEIROS_1]
+💳 [PAGAMENTO_1]
+🔗 [LINK_1]
 
-    // Inicializar componentes
-    setupPasteAreaLimpa();
-    inicializarMedidorCusto();
-    testarConexaoAPILimpa();
-    
-    console.log("✅ Sistema limpo inicializado com sucesso!");
-    
-  } catch (error) {
-    console.error("❌ Erro na inicialização:", error);
-    mostrarErroInicializacao(error);
-  }
-});
+📋 *OPÇÃO 2: [COMPANHIA_2]*
+🗓️ [DATA_2] (Somente ida)
+✈️ [DATA_2] - [ORIGEM_2] [HORA_IDA_2] / [DESTINO_2] [HORA_CHEGADA_2][DETALHES_VOO_2]
+💰 R$ [VALOR_2] para [PASSAGEIROS_2]
+💳 [PAGAMENTO_2]
+🔗 [LINK_2]
+
+⚠️ Todas as opções são SOMENTE IDA - sem retorno incluído
+📞 Dúvidas? Estamos aqui para ajudar!`,
+
+  'Aéreo VBI/Fácil': `*Passagem Aérea VBI/Fácil*
+🏷️ [COMPANHIA]
+🗓️ [DATA_IDA] a [DATA_VOLTA] ([DURACAO])
+✈️ Ida: [DATA_IDA] - [ORIGEM] [HORA_IDA] / [DESTINO] [HORA_CHEGADA_IDA][DETALHES_VOO_IDA]
+✈️ Volta: [DATA_VOLTA] - [DESTINO] [HORA_SAIDA_VOLTA] / [ORIGEM] [HORA_CHEGADA_VOLTA][DETALHES_VOO_VOLTA]
+
+💰 R$ [VALOR] para [PASSAGEIROS]
+💳 [PAGAMENTO]
+🔗 [LINK]
+
+⚠️ Passagem ida e volta incluída`,
+
+  'Cruzeiro': `🚢 Cruzeiro [NOME_NAVIO] – [DURACAO_NOITES] noites
+[COMPOSICAO_PASSAGEIROS]
+📅 Embarque: [DATA_EMBARQUE] ([DIA_SEMANA])
+📍 Saída e chegada: [PORTO_EMBARQUE]
+🌊 Roteiro incrível pelo litoral brasileiro!
+
+🗺 Itinerário:
+[ROTEIRO_DETALHADO]
+
+💥 [TIPO_TARIFA]!
+(Sujeita à confirmação de cabine e categoria)
+
+[OPCOES_CABINES]
+
+📎 Link para ver fotos, detalhes e reservar:
+[LINK_CRUZEIRO]
+
+✅ Inclui: hospedagem a bordo, pensão completa (refeições), entretenimento e atividades para todas as idades!
+🚫 Não inclui: taxas, bebidas, excursões e transporte até o porto.
+
+📲 Me chama pra garantir a sua cabine nesse cruzeiro incrível! 🌴🛳️`,
+
+  'Hotel': `*Hospedagem*
+🏨 [NOME_HOTEL] - [CATEGORIA]⭐
+📍 [LOCALIZACAO]
+🗓️ [CHECK_IN] a [CHECK_OUT] ([NOITES] noites)
+👥 [ADULTOS] adultos[CRIANCAS_TEXTO]
+
+🏠 *Acomodação:*
+[TIPO_QUARTO] com [REGIME_ALIMENTACAO]
+
+✅ *Inclui:*
+• [CAFE_MANHA]
+• [WIFI]
+• [SERVICOS_INCLUSOS]
+
+💰 R$ [VALOR_TOTAL] para toda a estadia
+💳 Parcelamento: [PARCELAS]x de R$ [VALOR_PARCELA]
+
+⚠️ Tarifas sujeitas à disponibilidade no momento da reserva`,
+
+  'Carro': `*Aluguel de Carro*
+🚗 [MODELO_CARRO] - [CATEGORIA]
+🏢 [LOCADORA]
+📍 Retirada: [LOCAL_RETIRADA]
+📍 Devolução: [LOCAL_DEVOLUCAO]
+🗓️ [DATA_RETIRADA] às [HORA_RETIRADA] até [DATA_DEVOLUCAO] às [HORA_DEVOLUCAO]
+⏱️ [DURACAO_DIAS] dias
+
+🔧 *Especificações:*
+• [CAMBIO] | [COMBUSTIVEL]
+• [AR_CONDICIONADO]
+• [PORTAS] portas | [PASSAGEIROS] passageiros
+• [BAGAGEM]
+
+✅ *Inclui:*
+• [QUILOMETRAGEM]
+• [SEGUROS_INCLUSOS]
+• [TAXAS_INCLUIDAS]
+
+💰 R$ [VALOR_TOTAL] para [DURACAO_DIAS] dias
+💳 [FORMA_PAGAMENTO]
+🔗 [LINK]
+
+⚠️ Valores sujeitos à disponibilidade. Documentação obrigatória: CNH válida`
+};
+
+const PRECOS_MODELOS = {
+  'gpt-4o': { input: 0.005, output: 0.015 },
+  'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
+  'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 }
+};
+
+const USD_TO_BRL = 5.2;
+const MAX_TOKENS = 2500;
 
 // ================================================================================
-// 🎯 HANDLER PRINCIPAL LIMPO - SEM CABEÇALHOS TÉCNICOS
+// 🎯 HANDLER PRINCIPAL
 // ================================================================================
 
-async function handleOrcamentoLimpo(e) {
-  e.preventDefault();
-  console.log("📝 [LIMPO] Processando orçamento sem cabeçalhos técnicos...");
-  
+export default async function handler(req, res) {
   const startTime = Date.now();
   
   try {
-    // Mostrar loading limpo
-    showLoadingLimpo("Validando dados...");
+    console.log('[CLEAN-API] Iniciando processamento...');
     
-    // VALIDAÇÃO RIGOROSA DOS DADOS
-    const validacao = validarFormularioCompleto(e.target);
-    if (!validacao.valido) {
-      throw new Error(`Validação falhou: ${validacao.erros.join(', ')}`);
+    // Configuração de CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).json({ message: 'CORS OK' });
     }
+
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        message: 'CVC Itaqua API - Orçamentos Limpos',
+        version: '5.2.0-clean',
+        produtos_suportados: Object.keys(TEMPLATES),
+        melhorias: [
+          'Orçamentos sem cabeçalhos técnicos',
+          'Detecção de escalas/conexões',
+          'Conversão completa de aeroportos',
+          'Templates limpos para copy/paste'
+        ],
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false,
+        error: 'Método não permitido' 
+      });
+    }
+
+    // VALIDAÇÃO
+    if (!req.body?.prompt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Prompt obrigatório'
+      });
+    }
+
+    const { prompt, temImagem, arquivo, tipos } = req.body;
+    console.log(`[CLEAN-API] Prompt: ${prompt.length} chars, Tipos: ${tipos?.join(', ')}`);
+
+    // ANÁLISE E SELEÇÃO DE TEMPLATE
+    const analise = analisarConteudoCompleto(prompt, tipos);
+    const template = selecionarTemplateCompleto(analise, tipos);
+    console.log(`[CLEAN-API] Template selecionado: ${template.nome}`);
+
+    // CONSTRUIR PROMPT LIMPO
+    const promptFinal = construirPromptLimpo(prompt, template, analise, tipos);
+
+    // CHAMADA PARA IA
+    const { modelo, estrategia, fallback } = selecionarModelo(temImagem);
+    const resultado = await chamarIASegura(promptFinal, temImagem, arquivo, modelo, fallback);
     
-    const formData = validacao.dados;
-    console.log("✅ [LIMPO] Dados validados:", {
-      tipos: formData.tipos,
-      temImagem: formData.temImagem,
-      destino: formData.destino,
-      tamanhoTexto: formData.observacoes.length
+    const responseProcessada = processarResposta(resultado.content);
+    const metricas = calcularMetricas(resultado, startTime, estrategia);
+
+    console.log(`[CLEAN-API] Concluído: ${Date.now() - startTime}ms`);
+
+    return res.status(200).json({
+      success: true,
+      choices: [{ 
+        message: { 
+          content: responseProcessada 
+        } 
+      }],
+      metricas: metricas
     });
-    
-    // Análise prévia
-    showLoadingLimpo("Analisando conteúdo e detectando escalas...");
-    const analise = analisarConteudoLimpo(formData);
-    console.log("📊 [LIMPO] Análise:", analise);
-    
-    // Feedback da estratégia (sem mostrar na tela final)
-    const estrategia = formData.temImagem ? 'Claude Sonnet (imagem)' : 'GPT-4o-mini (texto)';
-    console.log(`🎯 [LIMPO] Estratégia: ${estrategia}`);
-    
-    // GERAÇÃO DO ORÇAMENTO LIMPO
-    showLoadingLimpo("Gerando orçamento profissional...");
-    const response = await generateOrcamentoLimpo(formData, analise);
-    
-    // Processar métricas (apenas para logs)
-    if (response.metricas) {
-      atualizarMetricasHibridas(response.metricas);
-      console.log("💰 [LIMPO] Custo:", `R$ ${response.metricas.custo.brl.toFixed(4)}`);
-    }
-    
-    // Funcionalidades auxiliares
-    habilitarBotaoDicas();
-    
-    if (formData.tipos.includes("Hotel")) {
-      await generateRankingHoteisLimpo(formData.destino);
-    }
-    
-    const tempoTotal = Date.now() - startTime;
-    console.log(`✅ [LIMPO] Orçamento limpo gerado em ${tempoTotal}ms`);
-    
-    // Log de sucesso
-    logEventoSucesso('orcamento_limpo_gerado', {
-      estrategia: estrategia,
-      tempo_ms: tempoTotal,
-      multiplas_opcoes: analise.multiplasOpcoes,
-      tem_escalas: analise.temEscalas,
-      modelo_usado: response.metricas?.modelo_usado
-    });
-    
+
   } catch (error) {
-    console.error("❌ [LIMPO] Erro no processamento:", error);
+    console.error('💥 [CLEAN-API ERROR] 💥', error.message);
     
-    // Log de erro detalhado
-    logEventoErro('orcamento_limpo_falhou', error, {
-      tempo_ms: Date.now() - startTime,
-      stack: error.stack
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: `Erro no servidor: ${error.message}`,
+        type: 'SERVER_ERROR',
+        version: '5.2.0-clean'
+      }
     });
-    
-    // Mostrar erro amigável
-    showErrorLimpo(error.message);
-    
-  } finally {
-    hideLoadingLimpo();
   }
 }
 
 // ================================================================================
-// 📊 ANÁLISE LIMPA DE CONTEÚDO
+// 🔍 ANÁLISE COMPLETA DE CONTEÚDO
 // ================================================================================
 
-function analisarConteudoLimpo(formData) {
-  const textoCompleto = `${formData.observacoes} ${formData.textoColado}`.trim();
+function analisarConteudoCompleto(prompt, tipos) {
+  console.log('[ANÁLISE-CLEAN] Analisando tipos:', tipos);
   
-  // Análise de múltiplas opções
-  const multiplasOpcoes = detectarMultiplasOpcoesLimpo(textoCompleto);
+  if (!prompt || !tipos || tipos.length === 0) {
+    return { 
+      tipo: 'generico', 
+      multiplasOpcoes: false,
+      produtosPrincipais: ['Aéreo Facial'],
+      temEscalas: false
+    };
+  }
+
+  const promptLower = prompt.toLowerCase();
   
-  // Análise de escalas (NOVA FUNCIONALIDADE)
-  const temEscalas = detectarEscalasLimpo(textoCompleto);
+  // Detectar múltiplas opções
+  const precos = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
+  const totais = (promptLower.match(/total.*\d+/gi) || []).length;
+  const links = (promptLower.match(/https:\/\/www\.cvc\.com\.br/gi) || []).length;
+  const companhias = (promptLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
   
-  // Análise de tipo de viagem
-  const tipoViagem = analisarTipoViagemLimpo(textoCompleto);
+  const multiplasOpcoes = Math.max(precos, totais, links, companhias) >= 2;
   
-  // Contadores gerais
-  const precos = (textoCompleto.match(/r\$[\d.,]+/gi) || []).length;
-  const horarios = (textoCompleto.match(/\d{2}:\d{2}/g) || []).length;
-  const datas = (textoCompleto.match(/\d{2}\/\d{2}|\d{2} de \w+/gi) || []).length;
-  const companhias = (textoCompleto.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
+  // Detectar escalas/conexões
+  const temEscalas = detectarEscalas(prompt);
   
-  let descricao = '';
-  if (multiplasOpcoes.detectado) {
-    descricao = `Múltiplas opções detectadas (${multiplasOpcoes.quantidade} opções)`;
+  let tipoPrincipal = 'generico';
+  
+  if (tipos.includes('Aéreo Facial') || tipos.includes('Aéreo VBI/Fácil')) {
+    tipoPrincipal = 'aereo';
+  } else if (tipos.includes('Hotel')) {
+    tipoPrincipal = 'hotel';
+  } else if (tipos.includes('Carro')) {
+    tipoPrincipal = 'carro';
+  } else if (tipos.includes('Cruzeiro')) {
+    tipoPrincipal = 'cruzeiro';
   } else {
-    descricao = `Opção única - ${tipoViagem.tipo}`;
+    tipoPrincipal = tipos[0]?.toLowerCase() || 'generico';
   }
   
-  if (temEscalas) {
-    descricao += ' | Com escalas/conexões';
-  }
-  
-  if (formData.temImagem) {
-    descricao += ' | Análise visual';
-  }
+  console.log(`[ANÁLISE-CLEAN] Tipo: ${tipoPrincipal}, Múltiplas: ${multiplasOpcoes}, Escalas: ${temEscalas}`);
   
   return {
-    multiplasOpcoes: multiplasOpcoes.detectado,
-    quantidadeOpcoes: multiplasOpcoes.quantidade,
-    tipoViagem: tipoViagem.tipo,
-    temEscalas: temEscalas,
-    contadores: {
-      precos: precos,
-      horários: horarios,
-      datas: datas,
-      companhias: companhias
-    },
-    descricao: descricao
+    tipo: tipoPrincipal,
+    multiplasOpcoes: multiplasOpcoes,
+    produtosPrincipais: tipos,
+    temEscalas: temEscalas
   };
 }
 
 // ================================================================================
-// 🔍 DETECÇÃO DE ESCALAS MELHORADA
+// 🔍 DETECÇÃO DE ESCALAS/CONEXÕES MELHORADA
 // ================================================================================
 
-function detectarEscalasLimpo(texto) {
-  if (!texto) return false;
-  
+function detectarEscalas(texto) {
   const textoLower = texto.toLowerCase();
   
-  // Indicadores explícitos de escalas
+  // Indicadores de escalas
   const indicadoresEscalas = [
     'uma escala', 'duas escalas', 'três escalas',
     'conexão', 'conexao', 'escala em', 'via ',
     'com escala', 'parada em', 'troca em',
-    'conexão em', 'passando por'
+    /\d+h\s*\d+min.*escala/i,
+    /escala.*\d+h/i,
+    /via\s+\w{3,}/i
   ];
   
-  const temIndicadorExplicito = indicadoresEscalas.some(indicador => 
-    textoLower.includes(indicador)
-  );
+  const temEscala = indicadoresEscalas.some(indicador => {
+    if (typeof indicador === 'string') {
+      return textoLower.includes(indicador);
+    } else {
+      return indicador.test(texto);
+    }
+  });
   
-  // Detectar por padrões de regex
-  const padraoEscala = /\d+h\s*\d+min.*escala|escala.*\d+h|via\s+\w{3,}/i;
-  const temPadraoEscala = padraoEscala.test(texto);
-  
-  // Detectar voos longos (mais de 4h podem indicar escala)
+  // Detectar também por tempo de voo longo (mais de 4h pode indicar escala)
   const temposVoo = texto.match(/(\d+)h\s*(\d+)?min/gi) || [];
   const temVooLongo = temposVoo.some(tempo => {
     const match = tempo.match(/(\d+)h/);
-    return match && parseInt(match[1]) >= 5; // 5h+ mais provável ter escala
+    if (match && parseInt(match[1]) >= 4) {
+      return true;
+    }
+    return false;
   });
   
-  const resultado = temIndicadorExplicito || temPadraoEscala || temVooLongo;
+  console.log(`[ESCALAS] Detectado: ${temEscala || temVooLongo}`);
   
-  console.log(`[ESCALAS-LIMPO] Detectado: ${resultado}`, {
-    explicito: temIndicadorExplicito,
-    padrao: temPadraoEscala,
-    vooLongo: temVooLongo
-  });
-  
-  return resultado;
+  return temEscala || temVooLongo;
 }
 
-function detectarMultiplasOpcoesLimpo(texto) {
-  if (!texto) return { detectado: false, quantidade: 0 };
+// ================================================================================
+// 🎯 SELEÇÃO DE TEMPLATE COMPLETO
+// ================================================================================
+
+function selecionarTemplateCompleto(analise, tipos) {
+  console.log('[TEMPLATE-CLEAN] Selecionando para:', tipos);
   
-  const textoLower = texto.toLowerCase();
+  if (!tipos || tipos.length === 0) {
+    return {
+      nome: 'Aéreo Facial',
+      conteudo: TEMPLATES['Aéreo Facial']
+    };
+  }
+
+  // Priorizar primeiro tipo selecionado
+  const tipoPrincipal = tipos[0];
   
-  // Contadores mais precisos
-  const precos = (textoLower.match(/r\$.*?\d{1,3}[\.,]\d{3}/gi) || []).length;
-  const totais = (textoLower.match(/total.*\d+.*adult/gi) || []).length;
-  const companhias = (textoLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
-  const links = (textoLower.match(/https:\/\/www\.cvc\.com\.br\/carrinho/gi) || []).length;
+  // Para aéreo, verificar se é múltiplas opções
+  if (tipoPrincipal === 'Aéreo Facial' && analise.multiplasOpcoes) {
+    return {
+      nome: 'Aéreo Múltiplas',
+      conteudo: TEMPLATES['Aéreo Múltiplas']
+    };
+  }
   
-  let quantidade = Math.max(precos, totais, companhias, links);
-  const detectado = quantidade >= 2;
+  // Buscar template específico
+  if (TEMPLATES[tipoPrincipal]) {
+    return {
+      nome: tipoPrincipal,
+      conteudo: TEMPLATES[tipoPrincipal]
+    };
+  }
   
+  // Fallback para aéreo
+  console.warn(`[TEMPLATE-CLEAN] Template não encontrado para: ${tipoPrincipal}, usando Aéreo Facial`);
   return {
-    detectado: detectado,
-    quantidade: detectado ? quantidade : 1,
-    indicadores: { precos, totais, companhias, links }
+    nome: 'Aéreo Facial',
+    conteudo: TEMPLATES['Aéreo Facial']
   };
 }
 
-function analisarTipoViagemLimpo(texto) {
-  if (!texto) return { tipo: 'somente_ida', confianca: 0 };
+// ================================================================================
+// 🏗️ PROMPT LIMPO SEM CABEÇALHOS TÉCNICOS
+// ================================================================================
+
+function construirPromptLimpo(promptBase, template, analise, tipos) {
+  console.log('[PROMPT-CLEAN] Construindo prompt limpo...');
   
-  const textoLower = texto.toLowerCase();
+  const tipoPrincipal = tipos?.[0] || 'Aéreo Facial';
   
-  // Indicadores específicos
-  const somenteIda = (textoLower.match(/somente ida|só ida|one way/gi) || []).length;
-  const idaVolta = (textoLower.match(/ida.*volta|ida.*retorno/gi) || []).length;
-  
-  let tipo = 'somente_ida';
-  let confianca = 1;
-  
-  if (idaVolta > 0) {
-    tipo = 'ida_volta';
-    confianca = idaVolta;
-  } else if (somenteIda > 0) {
-    tipo = 'somente_ida';
-    confianca = somenteIda;
+  let prompt = `Você é um assistente especializado da CVC. Formate o orçamento de ${tipoPrincipal} usando EXATAMENTE o template abaixo.
+
+IMPORTANTE: Sua resposta deve conter APENAS o orçamento formatado, sem cabeçalhos técnicos, sem explicações, sem "PRODUTO SELECIONADO", sem "MÚLTIPLAS OPÇÕES", sem "TEMPLATE OBRIGATÓRIO".
+
+TEMPLATE PARA USAR:
+${template.conteudo}
+
+DADOS DO CLIENTE:
+${promptBase}
+
+`;
+
+  // Instruções específicas por tipo
+  if (tipoPrincipal === 'Aéreo Facial' || tipoPrincipal === 'Aéreo VBI/Fácil') {
+    prompt += `INSTRUÇÕES ESPECÍFICAS PARA AÉREO:
+
+1. **AEROPORTOS**: Converta códigos IATA para nomes completos:
+   - CGH = Congonhas (SP)
+   - GRU = Guarulhos (SP)
+   - VCP = Viracopos (SP)
+   - NVT = Navegantes (SC)
+   - REC = Recife (PE)
+   - SSA = Salvador (BA)
+   - E assim por diante para todos os códigos
+
+2. **ESCALAS/CONEXÕES**: Se detectar escalas, adicione detalhes:
+   - Para "Uma escala": adicione " (1 escala)" após o horário
+   - Para "Duas escalas": adicione " (2 escalas)" após o horário
+   - Para "Voo direto": adicione " (voo direto)" após o horário
+   - Para conexões específicas: adicione " (via [cidade])" se mencionado
+
+3. **MÚLTIPLAS OPÇÕES**: ${analise.multiplasOpcoes ? 'Formate TODAS as opções encontradas' : 'Formate apenas uma opção'}
+
+4. **LINKS**: Use os links exatos fornecidos nos dados
+
+EXEMPLO DE SAÍDA ESPERADA:
+*Passagem Aérea - Somente Ida*
+🏷️ LATAM
+🗓️ 13 de agosto (Somente ida)
+✈️ 13 de agosto - Congonhas (SP) 08:15 / Recife (PE) 15:40 (1 escala)
+💰 R$ 2.217,87 para 1 adulto
+💳 Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/688a64568c715d91ed9badf0
+
+⚠️ Passagem somente de ida - sem retorno incluído
+
+RESPONDA APENAS COM O ORÇAMENTO FORMATADO, SEM EXPLICAÇÕES.`;
+
+  } else if (tipoPrincipal === 'Cruzeiro') {
+    prompt += `INSTRUÇÕES ESPECÍFICAS PARA CRUZEIRO:
+
+1. **FORMATO OBRIGATÓRIO**: Use exatamente o modelo com emojis
+2. **NOME DO NAVIO**: Extraia "MSC Sinfonia" → "MSC Sinfonia"
+3. **DURAÇÃO**: Extraia "3 noites" 
+4. **COMPOSIÇÃO**: "2 adultos" (ajuste se houver crianças)
+5. **DATA EMBARQUE**: "25/11/2025" + dia da semana se souber
+6. **PORTO**: "Santos, Brasil" (saída e chegada)
+7. **ROTEIRO DETALHADO**: Format como:
+   25/11 – Santos – saída 17:00
+   26/11 – Ilha Grande – 08:00 às 20:00
+   27/11 – Em navegação
+   28/11 – Santos – chegada 08:00
+
+8. **OPÇÕES DE CABINES**: Formate como:
+   🛏 Cabine Interna Bella – IB: R$ 4.010,00
+   🌅 Cabine Externa com Vista Mar – OB: R$ 4.270,00  
+   🚪 Cabine com Varanda Bella – BB: R$ 4.610,00
+
+RESPONDA APENAS COM O CRUZEIRO FORMATADO, SEM EXPLICAÇÕES.`;
+
+  } else {
+    prompt += `INSTRUÇÕES GERAIS:
+- Use EXATAMENTE o formato do template
+- Preencha apenas com dados reais fornecidos
+- Não invente informações que não existem
+- Mantenha links e valores exatos
+- RESPONDA APENAS COM O TEMPLATE PREENCHIDO, SEM EXPLICAÇÕES`;
   }
-  
-  return { tipo, confianca };
-}
-
-// ================================================================================
-// 🤖 GERAÇÃO DE ORÇAMENTO LIMPO
-// ================================================================================
-
-async function generateOrcamentoLimpo(formData, analise) {
-  console.log("🤖 [LIMPO] Gerando orçamento sem cabeçalhos técnicos...");
-  
-  try {
-    const response = await callAILimpa(formData, analise);
-    
-    if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
-      throw new Error('Resposta da API em formato inválido');
-    }
-    
-    const conteudo = response.choices[0].message.content;
-    if (!conteudo || conteudo.trim().length === 0) {
-      throw new Error('Conteúdo da resposta está vazio');
-    }
-    
-    // Verificar se há cabeçalhos técnicos vazados e removê-los
-    const conteudoLimpo = limparCabecalhosTecnicos(conteudo);
-    
-    updateElementLimpo("orcamentoIA", conteudoLimpo);
-    
-    console.log("✅ [LIMPO] Orçamento limpo gerado:", {
-      tamanho: conteudoLimpo.length,
-      modelo: response.metricas?.modelo_usado,
-      multiplas: analise.multiplasOpcoes,
-      escalas: analise.temEscalas
-    });
-    
-    return response;
-    
-  } catch (error) {
-    console.error("❌ [LIMPO] Erro na geração:", error);
-    throw new Error(`Falha na geração do orçamento: ${error.message}`);
-  }
-}
-
-// ================================================================================
-// 🧹 LIMPEZA DE CABEÇALHOS TÉCNICOS
-// ================================================================================
-
-function limparCabecalhosTecnicos(conteudo) {
-  let limpo = conteudo;
-  
-  // Remover cabeçalhos técnicos que possam ter vazado
-  const cabecalhosRemover = [
-    /PRODUTO SELECIONADO:.*?\n/gi,
-    /MÚLTIPLAS OPÇÕES:.*?\n/gi,
-    /TEMPLATE OBRIGATÓRIO:.*?\n/gi,
-    /INSTRUÇÕES.*?\n/gi,
-    /DADOS DO CLIENTE:.*?\n/gi,
-    /FORMATO PARA USAR:.*?\n/gi
-  ];
-
-  cabecalhosRemover.forEach(regex => {
-    limpo = limpo.replace(regex, '');
-  });
-
-  // Remover múltiplas quebras de linha
-  limpo = limpo.replace(/\n\s*\n\s*\n/g, '\n\n');
-  
-  // Remover linhas vazias no início
-  limpo = limpo.replace(/^\s*\n+/, '');
-  
-  return limpo.trim();
-}
-
-// ================================================================================
-// 🔗 COMUNICAÇÃO LIMPA COM API
-// ================================================================================
-
-async function callAILimpa(formData, analise) {
-  console.log("🔄 [LIMPO] Enviando para API limpa...");
-  
-  const requestData = {
-    prompt: construirPromptFrontend(formData, analise),
-    tipo: 'orcamento',
-    destino: formData.destino || 'Não informado',
-    tipos: Array.isArray(formData.tipos) ? formData.tipos : [],
-    temImagem: Boolean(formData.temImagem),
-    arquivo: formData.temImagem ? formData.arquivoBase64 : undefined
-  };
-  
-  console.log("📤 [LIMPO] Dados da requisição:", {
-    prompt_length: requestData.prompt.length,
-    tipo: requestData.tipo,
-    temImagem: requestData.temImagem,
-    temEscalas: analise.temEscalas
-  });
-  
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'User-Agent': `CVC-Itaqua-Frontend-Limpo/${VERSAO_SISTEMA}`
-      },
-      body: JSON.stringify(requestData)
-    });
-
-    console.log("📊 [LIMPO] Status da resposta:", response.status, response.statusText);
-
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      
-      try {
-        const errorText = await response.text();
-        console.error("❌ [LIMPO] Erro da API:", errorText);
-        
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.error?.message || errorJson.error || errorMessage;
-        } catch (jsonError) {
-          errorMessage = errorText.substring(0, 200);
-        }
-      } catch (readError) {
-        console.error("❌ [LIMPO] Erro ao ler resposta de erro:", readError);
-      }
-      
-      throw new Error(errorMessage);
-    }
-
-    const responseText = await response.text();
-    console.log("📄 [LIMPO] Resposta recebida (primeiros 200 chars):", responseText.substring(0, 200) + "...");
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (jsonError) {
-      console.error("❌ [LIMPO] Erro ao parsear JSON:", jsonError);
-      throw new Error(`Resposta da API não é JSON válido: ${jsonError.message}`);
-    }
-    
-    // Validar estrutura da resposta
-    if (!data || typeof data !== 'object') {
-      throw new Error('Resposta da API não é um objeto válido');
-    }
-    
-    if (data.success === false) {
-      const errorMsg = data.error?.message || data.error || 'Erro desconhecido da API';
-      throw new Error(errorMsg);
-    }
-    
-    if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
-      throw new Error('Resposta da API não contém choices válidas');
-    }
-    
-    if (!data.choices[0].message || !data.choices[0].message.content) {
-      throw new Error('Resposta da API não contém conteúdo válido');
-    }
-    
-    console.log("✅ [LIMPO] Resposta válida recebida");
-    
-    return data;
-    
-  } catch (error) {
-    console.error("❌ [LIMPO] Erro na comunicação:", error);
-    
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error('Erro de conexão - verifique sua internet e tente novamente');
-    } else if (error.message.includes('JSON')) {
-      throw new Error('Erro na comunicação com o servidor - resposta inválida');
-    } else {
-      throw error;
-    }
-  }
-}
-
-function construirPromptFrontend(formData, analise) {
-  const textoCompleto = `${formData.observacoes} ${formData.textoColado}`.trim();
-  
-  let prompt = `Dados do orçamento:
-Destino: ${formData.destino}
-Adultos: ${formData.adultos}
-Crianças: ${formData.criancas}${formData.idades ? ` (idades: ${formData.idades} anos)` : ''}
-Tipos selecionados: ${formData.tipos.join(', ')}
-
-DADOS ESPECÍFICOS DA VIAGEM:
-${textoCompleto}
-
-ANÁLISE AUTOMATIZADA:
-- Múltiplas opções: ${analise.multiplasOpcoes ? 'SIM' : 'NÃO'}
-- Escalas/conexões detectadas: ${analise.temEscalas ? 'SIM' : 'NÃO'}
-- Tipo de viagem: ${analise.tipoViagem}`;
 
   return prompt;
 }
 
 // ================================================================================
-// 🎨 INTERFACE LIMPA E FEEDBACK
+// 🤖 SISTEMA DE IA (mantido igual)
 // ================================================================================
 
-function updateElementLimpo(id, content) {
-  try {
-    const element = document.getElementById(id);
-    if (!element) {
-      console.warn(`⚠️ [LIMPO] Elemento '${id}' não encontrado`);
-      return false;
-    }
-    
-    if (typeof content !== 'string') {
-      console.warn(`⚠️ [LIMPO] Conteúdo inválido para '${id}':`, typeof content);
-      content = String(content);
-    }
-    
-    element.innerText = content;
-    console.log(`📝 [LIMPO] Elemento '${id}' atualizado (${content.length} chars)`);
-    return true;
-    
-  } catch (error) {
-    console.error(`❌ [LIMPO] Erro ao atualizar elemento '${id}':`, error);
-    return false;
-  }
-}
-
-function showLoadingLimpo(mensagem = "Processando...") {
-  const sucesso = updateElementLimpo("orcamentoIA", `🤖 ${mensagem}`);
-  if (!sucesso) {
-    console.warn("⚠️ [LIMPO] Não foi possível mostrar loading");
-  }
-}
-
-function hideLoadingLimpo() {
-  console.log("🔄 [LIMPO] Loading ocultado");
-}
-
-function showErrorLimpo(message) {
-  const errorMessage = `❌ Erro: ${message}`;
-  const sucesso = updateElementLimpo("orcamentoIA", errorMessage);
-  
-  if (!sucesso) {
-    alert(errorMessage);
-  }
-  
-  console.error("❌ [LIMPO] Erro mostrado:", message);
-}
-
-// ================================================================================
-// 🔧 FUNCIONALIDADES AUXILIARES LIMPAS
-// ================================================================================
-
-async function generateRankingHoteisLimpo(destino) {
-  if (!destino || destino.trim().length === 0) {
-    console.warn("⚠️ [LIMPO] Destino vazio para ranking de hotéis");
-    return;
-  }
-  
-  console.log("🏨 [LIMPO] Gerando ranking de hotéis...");
-  
-  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
-
-Formato:
-🏆 1. Nome do Hotel - ⭐⭐⭐⭐
-📍 Região/Localização
-💰 Faixa de preço aproximada
-⭐ Principais diferenciais
-
-Use informações realistas e atuais.`;
-
-  try {
-    const response = await callAILimpa({ 
-      tipos: ['Hotel'], 
-      destino: destino,
-      observacoes: prompt,
-      textoColado: '',
-      temImagem: false 
-    }, { multiplasOpcoes: false, temEscalas: false });
-    
-    updateElementLimpo("rankingIA", response.choices[0].message.content);
-    console.log("✅ [LIMPO] Ranking de hotéis gerado");
-  } catch (error) {
-    console.error("❌ [LIMPO] Erro no ranking:", error);
-    updateElementLimpo("rankingIA", `❌ Erro ao gerar ranking: ${error.message}`);
-  }
-}
-
-// ================================================================================
-// 🛠️ FUNÇÕES AUXILIARES E VALIDAÇÕES (mantidas do sistema anterior)
-// ================================================================================
-
-function validarFormularioCompleto(form) {
-  const erros = [];
-  
-  try {
-    const tipos = Array.from(form.querySelectorAll("input[name='tipo']:checked")).map(el => el.value);
-    const destino = form.destino?.value?.trim() || "";
-    const adultos = parseInt(form.adultos?.value) || 0;
-    const criancas = parseInt(form.criancas?.value) || 0;
-    const observacoes = form.observacoes?.value?.trim() || "";
-    
-    if (tipos.length === 0) {
-      erros.push("Selecione pelo menos um tipo de serviço");
-    }
-    
-    if (adultos < 1 || adultos > 10) {
-      erros.push("Número de adultos deve estar entre 1 e 10");
-    }
-    
-    if (criancas < 0 || criancas > 10) {
-      erros.push("Número de crianças deve estar entre 0 e 10");
-    }
-    
-    let idadesCriancas = [];
-    for (let i = 1; i <= criancas; i++) {
-      const idadeInput = document.getElementById(`idade_crianca_${i}`);
-      if (idadeInput) {
-        const idade = parseInt(idadeInput.value);
-        if (!isNaN(idade) && idade >= 0 && idade <= 17) {
-          idadesCriancas.push(idade);
-        }
-      }
-    }
-    
-    const arquivoBase64 = formElements.previewArea?.dataset.fileData || "";
-    const temImagem = !!(arquivoBase64 && arquivoBase64.startsWith('data:image/'));
-    
-    const textoColado = formElements.pasteArea?.innerText?.trim() || '';
-    const conteudoTotal = (observacoes + ' ' + textoColado).trim();
-    
-    if (!temImagem && conteudoTotal.length < 10) {
-      console.warn("⚠️ Pouco conteúdo fornecido - resultado pode ser genérico");
-    }
-    
-    if (erros.length > 0) {
-      console.error("❌ [VALIDAÇÃO] Erros:", erros);
-      return { valido: false, erros: erros };
-    }
-    
+function selecionarModelo(temImagem) {
+  if (temImagem === true) {
     return {
-      valido: true,
-      erros: [],
-      dados: {
-        destino: destino || "(Destino não informado)",
-        adultos: adultos.toString(),
-        criancas: criancas.toString(),
-        idades: idadesCriancas.join(', '),
-        observacoes: observacoes,
-        tipos: tipos,
-        textoColado: textoColado,
-        arquivoBase64: arquivoBase64,
-        temImagem: temImagem
-      }
+      modelo: 'claude-3-5-sonnet-20240620',
+      estrategia: 'Claude para análise visual',
+      fallback: 'gpt-4o'
     };
-    
-  } catch (error) {
-    console.error("❌ [VALIDAÇÃO] Erro interno:", error);
+  } else {
     return {
-      valido: false,
-      erros: [`Erro interno na validação: ${error.message}`]
+      modelo: 'gpt-4o-mini',
+      estrategia: 'GPT-4o-mini para texto',
+      fallback: 'gpt-4o'
     };
   }
 }
 
-// ================================================================================
-// 🎨 SISTEMA DE PASTE AREA LIMPO
-// ================================================================================
-
-function setupPasteAreaLimpa() {
-  if (!formElements.pasteArea) {
-    console.warn("⚠️ [LIMPO] PasteArea não encontrada");
-    return;
-  }
-  
-  formElements.pasteArea.addEventListener('paste', function (e) {
-    console.log("📋 [LIMPO] Conteúdo sendo colado...");
-    
-    e.preventDefault();
-    
+async function chamarIASegura(prompt, temImagem, arquivo, modelo, fallbackModelo) {
+  try {
+    if (temImagem === true) {
+      return await chamarClaude(prompt, arquivo, modelo);
+    } else {
+      return await chamarOpenAI(prompt, false, null, modelo);
+    }
+  } catch (erro1) {
+    console.error(`❌ Falha principal: ${erro1.message}`);
     try {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-
-        if (item.type.indexOf('image') !== -1) {
-          console.log("🖼️ [LIMPO] Imagem detectada");
-          
-          const blob = item.getAsFile();
-          
-          if (!blob) {
-            console.error("❌ [LIMPO] Falha ao obter blob da imagem");
-            continue;
-          }
-          
-          if (blob.size > 5 * 1024 * 1024) {
-            alert('Imagem muito grande (máx: 5MB)');
-            continue;
-          }
-          
-          const reader = new FileReader();
-          
-          reader.onload = function (event) {
-            try {
-              const base64Data = event.target.result;
-              
-              const img = document.createElement('img');
-              img.src = base64Data;
-              img.style.maxWidth = '100%';
-              img.style.borderRadius = '8px';
-              img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-              
-              formElements.previewArea.innerHTML = `
-                <p>✅ Imagem colada - Claude Sonnet ready!</p>
-                <div style="font-size: 12px; color: #666; margin: 5px 0;">
-                  📊 Análise visual | 🔍 Detecção automática de escalas
-                </div>
-              `;
-              formElements.previewArea.appendChild(img);
-              formElements.previewArea.dataset.fileData = base64Data;
-              
-              console.log('✅ [LIMPO] Imagem colada processada');
-              
-            } catch (error) {
-              console.error('❌ [LIMPO] Erro ao processar imagem colada:', error);
-              formElements.previewArea.innerHTML = '<p>❌ Erro ao processar imagem</p>';
-            }
-          };
-          
-          reader.onerror = function() {
-            console.error('❌ [LIMPO] Erro ao ler imagem colada');
-            formElements.previewArea.innerHTML = '<p>❌ Erro ao ler imagem</p>';
-          };
-          
-          reader.readAsDataURL(blob);
-          break;
-          
-        } else if (item.type === 'text/plain') {
-          item.getAsString(function (text) {
-            if (text && text.trim().length > 0) {
-              // Detectar escalas no texto colado
-              const temEscalas = detectarEscalasLimpo(text);
-              const escalasTexto = temEscalas ? ' | 🔍 Escalas detectadas' : '';
-              
-              formElements.previewArea.innerHTML = `
-                <p>📝 Texto colado - GPT-4o-mini ready!</p>
-                <div style="font-size: 12px; color: #666;">${text.substring(0, 100)}...${escalasTexto}</div>
-              `;
-              console.log('📝 [LIMPO] Texto colado processado:', text.length, 'caracteres, escalas:', temEscalas);
-            }
-          });
-        }
-      }
-      
-    } catch (error) {
-      console.error('❌ [LIMPO] Erro no paste:', error);
-      formElements.previewArea.innerHTML = '<p>❌ Erro ao processar conteúdo colado</p>';
+      return await chamarOpenAI(prompt, temImagem, arquivo, fallbackModelo);
+    } catch (erro2) {
+      throw new Error(`Ambos modelos falharam: ${erro1.message} | ${erro2.message}`);
     }
-  });
-  
-  // Efeitos visuais
-  formElements.pasteArea.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    this.style.borderColor = '#003399';
-    this.style.backgroundColor = '#e9ecef';
-    this.textContent = '📎 Solte aqui - Sistema limpo!';
+  }
+}
+
+async function chamarClaude(prompt, arquivo, modelo) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('ANTHROPIC_API_KEY não encontrada');
+  }
+
+  const base64Match = arquivo.match(/data:(image\/[^;]+);base64,(.+)/);
+  if (!base64Match) {
+    throw new Error('Formato de imagem base64 inválido');
+  }
+
+  const content = [
+    { type: "text", text: prompt },
+    { type: "image", source: { type: "base64", media_type: base64Match[1], data: base64Match[2] } }
+  ];
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: modelo,
+      max_tokens: MAX_TOKENS,
+      messages: [{ role: 'user', content }]
+    })
   });
 
-  formElements.pasteArea.addEventListener('dragleave', function(e) {
-    this.style.borderColor = '#007bff';
-    this.style.backgroundColor = '#f8f9fa';
-    this.textContent = '📌 Clique ou Ctrl+V | 🔵 Texto→GPT-4o-mini | 🟠 Imagem→Claude | 🔍 Detecção automática de escalas';
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Erro Claude ${response.status}: ${errorText.substring(0, 200)}`);
+  }
+
+  const data = await response.json();
+  if (!data.content?.[0]?.text) {
+    throw new Error('Resposta Claude inválida');
+  }
+
+  return {
+    content: data.content[0].text,
+    usage: data.usage || { input_tokens: 0, output_tokens: 0 },
+    modelo_usado: modelo
+  };
+}
+
+async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY não encontrada');
+  }
+
+  let messages;
+  if (temImagem === true && arquivo) {
+    messages = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: { url: arquivo } }
+        ]
+      }
+    ];
+  } else {
+    messages = [{ role: "user", content: prompt }];
+  }
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: modelo,
+      messages: messages,
+      max_tokens: MAX_TOKENS,
+      temperature: 0.1
+    })
   });
-  
-  console.log("✅ [LIMPO] PasteArea configurada");
-}
 
-// ================================================================================
-// 📁 UPLOAD DE ARQUIVO LIMPO
-// ================================================================================
-
-async function handleFileUploadLimpo(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  console.log("📁 [LIMPO] Arquivo selecionado:", file.name, file.size, "bytes");
-
-  try {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Apenas arquivos de imagem são aceitos (PNG, JPG, JPEG)');
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('Arquivo muito grande. Máximo: 5MB');
-    }
-
-    if (file.size < 1024) {
-      throw new Error('Arquivo muito pequeno. Pode estar corrompido');
-    }
-
-    showLoadingLimpo("Processando imagem...");
-    const base64 = await fileToBase64Seguro(file);
-    
-    if (formElements.previewArea) {
-      formElements.previewArea.dataset.fileData = base64;
-      
-      const img = document.createElement('img');
-      img.src = base64;
-      img.style.maxWidth = '100%';
-      img.style.borderRadius = '8px';
-      img.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-      
-      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-      
-      formElements.previewArea.innerHTML = `
-        <p>✅ Imagem carregada - Claude Sonnet ready!</p>
-        <div style="font-size: 12px; color: #666; margin: 5px 0;">
-          📊 ${file.type} | ${sizeInMB}MB | 🟠 Análise visual | 🔍 Detecção automática
-        </div>
-      `;
-      formElements.previewArea.appendChild(img);
-    }
-    
-    console.log('✅ [LIMPO] Imagem processada:', sizeInMB, 'MB');
-    
-  } catch (error) {
-    console.error("❌ [LIMPO] Erro no upload:", error);
-    
-    if (formElements.previewArea) {
-      formElements.previewArea.innerHTML = `<p>❌ Erro: ${error.message}</p>`;
-    }
-    
-    alert(`Erro ao processar imagem: ${error.message}`);
-  } finally {
-    hideLoadingLimpo();
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Erro OpenAI ${response.status}: ${errorText.substring(0, 200)}`);
   }
+
+  const data = await response.json();
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error('Resposta OpenAI inválida');
+  }
+
+  return {
+    content: data.choices[0].message.content,
+    usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+    modelo_usado: modelo
+  };
 }
 
-function fileToBase64Seguro(file) {
-  return new Promise((resolve, reject) => {
-    if (!file || !(file instanceof File)) {
-      reject(new Error('Arquivo inválido'));
-      return;
-    }
-    
-    const reader = new FileReader();
-    
-    reader.onload = () => {
-      try {
-        const result = reader.result;
-        if (!result || typeof result !== 'string') {
-          reject(new Error('Resultado da leitura inválido'));
-          return;
-        }
-        resolve(result);
-      } catch (error) {
-        reject(new Error(`Erro no processamento: ${error.message}`));
-      }
-    };
-    
-    reader.onerror = () => {
-      reject(new Error('Erro ao ler arquivo - arquivo pode estar corrompido'));
-    };
-    
-    reader.onabort = () => {
-      reject(new Error('Leitura do arquivo cancelada'));
-    };
-    
-    const timeout = setTimeout(() => {
-      reader.abort();
-      reject(new Error('Timeout na leitura do arquivo (30s)'));
-    }, 30000);
-    
-    reader.onloadend = () => {
-      clearTimeout(timeout);
-    };
-    
-    reader.readAsDataURL(file);
+// ================================================================================
+// 🔧 PROCESSAMENTO MELHORADO COM CONVERSÃO DE AEROPORTOS
+// ================================================================================
+
+function processarResposta(response) {
+  if (!response || typeof response !== 'string') {
+    return 'Erro: Resposta inválida';
+  }
+
+  let processada = response.trim();
+
+  // REMOVER cabeçalhos técnicos que possam ter vazado
+  const cabecalhosRemover = [
+    /PRODUTO SELECIONADO:.*?\n/gi,
+    /MÚLTIPLAS OPÇÕES:.*?\n/gi,
+    /TEMPLATE OBRIGATÓRIO:.*?\n/gi,
+    /INSTRUÇÕES.*?\n/gi
+  ];
+
+  cabecalhosRemover.forEach(regex => {
+    processada = processada.replace(regex, '');
   });
+
+  // Conversão MELHORADA de aeroportos para nomes completos
+  Object.entries(aeroportos).forEach(([codigo, nomeCompleto]) => {
+    // Substituir códigos isolados (com espaços ou quebras de linha)
+    const regexIsolado = new RegExp(`\\b${codigo}\\b`, 'gi');
+    processada = processada.replace(regexIsolado, nomeCompleto);
+    
+    // Substituir códigos em contextos específicos de voo
+    const regexVoo = new RegExp(`(${codigo})\\s*(\\d{2}:\\d{2})`, 'gi');
+    processada = processada.replace(regexVoo, `${nomeCompleto} $2`);
+  });
+
+  // Limpar múltiplas quebras de linha
+  processada = processada.replace(/\n\s*\n/g, '\n\n').trim();
+
+  // Remover linhas vazias no início
+  processada = processada.replace(/^\s*\n+/, '');
+
+  return processada;
 }
 
-// ================================================================================
-// 🧪 TESTE DE CONEXÃO LIMPO
-// ================================================================================
-
-async function testarConexaoAPILimpa() {
-  try {
-    console.log("🧪 [LIMPO] Testando API limpa...");
-    
-    const response = await fetch(API_URL, { 
-      method: 'GET',
-      headers: {
-        'User-Agent': `CVC-Itaqua-Frontend-Limpo/${VERSAO_SISTEMA}`
-      }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log("✅ [LIMPO] API Limpa Online:", {
-        version: data.version,
-        melhorias: data.melhorias
-      });
-    } else {
-      console.warn("⚠️ [LIMPO] API com problemas:", response.status, response.statusText);
-    }
-  } catch (error) {
-    console.error("❌ [LIMPO] Erro na conexão:", error.message);
-  }
-}
-
-// ================================================================================
-// 💰 SISTEMA DE MEDIDOR DE CUSTO (mantido igual)
-// ================================================================================
-
-function inicializarMedidorCusto() {
-  try {
-    console.log("💰 [CUSTO] Inicializando medidor...");
-    
-    const dadosSalvos = localStorage.getItem('cvc_custo_meter_limpo');
-    if (dadosSalvos) {
-      const dados = JSON.parse(dadosSalvos);
-      
-      if (dados.ultimaAtualizacao === new Date().toDateString()) {
-        custoMeter = { ...custoMeter, ...dados };
-        console.log("💰 [CUSTO] Dados carregados");
-      } else {
-        console.log("💰 [CUSTO] Novo dia, resetando contador");
-        resetarContadorDiario();
-      }
-    }
-    
-    criarWidgetCustoLimpo();
-    atualizarWidgetCustoLimpo();
-    
-  } catch (error) {
-    console.error("❌ [CUSTO] Erro ao inicializar:", error);
-    resetarContadorDiario();
-  }
-}
-
-function criarWidgetCustoLimpo() {
-  if (document.getElementById('custoWidgetLimpo')) return;
+function calcularMetricas(resultado, startTime, estrategia) {
+  const tokensInput = resultado.usage?.prompt_tokens || resultado.usage?.input_tokens || 0;
+  const tokensOutput = resultado.usage?.completion_tokens || resultado.usage?.output_tokens || 0;
+  const modeloUsado = resultado.modelo_usado || 'desconhecido';
   
-  const widget = document.createElement('div');
-  widget.id = 'custoWidgetLimpo';
-  widget.style.cssText = `
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
-    z-index: 1001;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255,255,255,0.2);
-    min-width: 160px;
-  `;
+  const precosModelo = PRECOS_MODELOS[modeloUsado] || { input: 0, output: 0 };
   
-  widget.addEventListener('click', mostrarDashboardLimpo);
+  const custoUSD = (tokensInput / 1000) * precosModelo.input + (tokensOutput / 1000) * precosModelo.output;
+  const custoBRL = custoUSD * USD_TO_BRL;
+
+  const custoGPT4o = (tokensInput / 1000) * PRECOS_MODELOS['gpt-4o'].input + 
+                     (tokensOutput / 1000) * PRECOS_MODELOS['gpt-4o'].output;
+  const economiaUSD = custoGPT4o - custoUSD;
+  const economiaBRL = economiaUSD * USD_TO_BRL;
   
-  document.body.appendChild(widget);
-  console.log("✅ [CUSTO] Widget limpo criado");
-}
-
-function atualizarWidgetCustoLimpo() {
-  const widget = document.getElementById('custoWidgetLimpo');
-  if (!widget) return;
-  
-  widget.innerHTML = `
-    <div style="text-align: center;">
-      <div style="font-size: 13px; font-weight: bold;">💰 Hoje: R$ ${custoMeter.custoTotalHoje.toFixed(3)}</div>
-      <div style="font-size: 10px; opacity: 0.9; margin-top: 2px;">
-        📊 ${custoMeter.orcamentosHoje} orçamentos limpos
-      </div>
-      <div style="font-size: 9px; opacity: 0.8; margin-top: 1px;">
-        🔵${custoMeter.orcamentosTexto} texto | 🟠${custoMeter.orcamentosImagem} imagem
-      </div>
-    </div>
-  `;
-}
-
-function mostrarDashboardLimpo() {
-  const modal = document.createElement('div');
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-  
-  modal.innerHTML = `
-    <div style="background: white; padding: 2rem; border-radius: 12px; 
-                max-width: 600px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-      <h3 style="color: #003399; margin-bottom: 1.5rem;">📊 Dashboard Limpo - Orçamentos Profissionais</h3>
-      
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.4rem; font-weight: bold; color: #1976d2;">
-            R$ ${custoMeter.custoTotalHoje.toFixed(3)}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Custo Total</div>
-        </div>
-        
-        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.4rem; font-weight: bold; color: #388e3c;">
-            ${custoMeter.orcamentosHoje}
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Orçamentos Limpos</div>
-        </div>
-        
-        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <div style="font-size: 1.4rem; font-weight: bold; color: #f57c00;">
-            100%
-          </div>
-          <div style="font-size: 0.9rem; color: #666;">Sem Cabeçalhos</div>
-        </div>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-        <strong>🧹 Sistema Limpo Ativo:</strong><br>
-        ✅ Orçamentos sem cabeçalhos técnicos<br>
-        🔍 Detecção automática de escalas<br>
-        ✈️ Conversão completa de aeroportos<br>
-        📋 Prontos para copy/paste direto
-      </div>
-      
-      <button onclick="this.parentElement.parentElement.remove()" 
-              style="background: #003399; color: white; border: none; 
-                     padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer;">
-        Fechar Dashboard
-      </button>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-}
-
-function atualizarMetricasHibridas(metricas) {
-  try {
-    const hoje = new Date().toDateString();
-    if (custoMeter.ultimaAtualizacao !== hoje) {
-      resetarContadorDiario();
-    }
-    
-    custoMeter.orcamentosHoje++;
-    custoMeter.custoTotalHoje += metricas.custo.brl;
-    custoMeter.ultimaAtualizacao = hoje;
-    
-    if (metricas.estrategia && metricas.estrategia.includes('Claude')) {
-      custoMeter.orcamentosImagem++;
-      custoMeter.modelosUsados['claude-3-sonnet']++;
-    } else {
-      custoMeter.orcamentosTexto++;
-      custoMeter.modelosUsados['gpt-4o-mini']++;
-    }
-    
-    salvarMedidorCusto();
-    atualizarWidgetCustoLimpo();
-    
-    console.log("📊 [MÉTRICAS-LIMPO] Atualizadas:", {
-      estrategia: metricas.estrategia,
-      modelo: metricas.modelo_usado,
-      custo: `R$ ${metricas.custo.brl.toFixed(4)}`,
-      total_hoje: `R$ ${custoMeter.custoTotalHoje.toFixed(3)}`
-    });
-    
-  } catch (error) {
-    console.error("❌ [MÉTRICAS] Erro ao atualizar:", error);
-  }
-}
-
-function salvarMedidorCusto() {
-  try {
-    localStorage.setItem('cvc_custo_meter_limpo', JSON.stringify(custoMeter));
-  } catch (error) {
-    console.error("❌ [CUSTO] Erro ao salvar:", error);
-  }
-}
-
-function resetarContadorDiario() {
-  custoMeter = {
-    orcamentosHoje: 0,
-    custoTotalHoje: 0,
-    economiaHoje: 0,
-    orcamentosTexto: 0,
-    orcamentosImagem: 0,
-    ultimaAtualizacao: new Date().toDateString(),
-    modelosUsados: {
-      'claude-3-sonnet': 0,
-      'gpt-4o-mini': 0,
-      'fallback': 0
+  return {
+    modelo_usado: modeloUsado,
+    estrategia: estrategia,
+    tokens: {
+      input: tokensInput,
+      output: tokensOutput,
+      total: tokensInput + tokensOutput
+    },
+    custo: {
+      usd: custoUSD,
+      brl: custoBRL
+    },
+    economia: {
+      vs_gpt4o_usd: economiaUSD,
+      vs_gpt4o_brl: economiaBRL,
+      percentual: custoGPT4o > 0 ? ((economiaUSD / custoGPT4o) * 100).toFixed(1) + '%' : '0%'
+    },
+    performance: {
+      tempo_processamento_ms: Date.now() - startTime
     }
   };
-  salvarMedidorCusto();
 }
 
-// ================================================================================
-// 🎯 FUNÇÕES PRINCIPAIS MANTIDAS (compatibilidade)
-// ================================================================================
-
-function copiarTexto(id) {
-  const elemento = document.getElementById(id);
-  if (!elemento) {
-    console.error("❌ Elemento não encontrado:", id);
-    alert("Elemento não encontrado!");
-    return;
-  }
-  
-  const texto = elemento.innerText;
-  
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(texto).then(() => {
-      console.log("✅ Texto copiado:", id);
-      mostrarFeedbackCopia(event.target, "✅ Copiado!");
-    }).catch(err => {
-      console.warn("❌ Clipboard falhou:", err);
-      tentarCopiaAlternativa(texto, event.target);
-    });
-  } else {
-    tentarCopiaAlternativa(texto, event.target);
-  }
-}
-
-function tentarCopiaAlternativa(texto, button) {
-  try {
-    const textArea = document.createElement('textarea');
-    textArea.value = texto;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    
-    textArea.focus();
-    textArea.select();
-    
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-    
-    if (successful) {
-      console.log("✅ Copiado via execCommand");
-      mostrarFeedbackCopia(button, "✅ Copiado!");
-    } else {
-      throw new Error("execCommand falhou");
-    }
-  } catch (err) {
-    console.error("❌ Cópia falhou:", err);
-    mostrarFeedbackCopia(button, "❌ Erro");
-  }
-}
-
-function mostrarFeedbackCopia(button, texto) {
-  if (!button) return;
-  
-  const originalText = button.innerText;
-  button.innerText = texto;
-  button.style.background = '#28a745';
-  
-  setTimeout(() => {
-    button.innerText = originalText;
-    button.style.background = '';
-  }, 2000);
-}
-
-function habilitarBotaoDicas() {
-  const btnGerar = document.getElementById('btnGerarDicas');
-  if (btnGerar) {
-    btnGerar.disabled = false;
-    console.log("✅ Botão dicas habilitado");
-  }
-}
-
-function atualizarIdadesCriancas() {
-  const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
-  const container = document.getElementById('containerIdadesCriancas');
-  const camposContainer = document.getElementById('camposIdadesCriancas');
-  
-  if (qtdeCriancas > 0) {
-    container.style.display = 'block';
-    camposContainer.innerHTML = '';
-    
-    for (let i = 1; i <= qtdeCriancas; i++) {
-      const div = document.createElement('div');
-      div.style.marginBottom = '0.5rem';
-      div.innerHTML = `
-        <label for="idade_crianca_${i}" style="display: inline-block; width: 120px;">Criança ${i}:</label>
-        <input type="number" id="idade_crianca_${i}" name="idade_crianca_${i}" 
-               min="0" max="17" placeholder="Idade" 
-               style="width: 80px; margin-right: 10px;">
-        <small style="color: #666;">anos</small>
-      `;
-      camposContainer.appendChild(div);
-    }
-  } else {
-    container.style.display = 'none';
-    camposContainer.innerHTML = '';
-  }
-}
-
-async function gerarDicasDestino() {
-  const destino = document.getElementById('destino').value;
-  
-  if (!destino) {
-    alert('Informe um destino primeiro!');
-    return;
-  }
-  
-  const btnGerar = document.getElementById('btnGerarDicas');
-  const btnCopiar = document.getElementById('btnCopiarDicas');
-  
-  btnGerar.disabled = true;
-  btnGerar.innerText = '🤖 Gerando...';
-  
-  try {
-    const prompt = `Crie dicas personalizadas sobre ${destino} para WhatsApp da CVC.
-    
-Inclua:
-- Principais atrações e pontos turísticos
-- Melhor época para visitar
-- Dicas de clima e o que levar
-- Informações práticas (moeda, documentação, fuso horário)
-- Tom vendedor mas informativo
-- Máximo 250 palavras
-- Use emojis para deixar atrativo`;
-
-    const response = await callAILimpa({
-      tipos: ['Destino'],
-      destino: destino,
-      observacoes: prompt,
-      textoColado: '',
-      temImagem: false
-    }, { multiplasOpcoes: false, temEscalas: false });
-    
-    document.getElementById('destinoIA').innerText = response.choices[0].message.content;
-    
-    btnCopiar.style.display = 'inline-block';
-    console.log("✅ Dicas do destino geradas!");
-    
-  } catch (error) {
-    console.error("❌ Erro ao gerar dicas:", error);
-    document.getElementById('destinoIA').innerText = "❌ Erro ao gerar dicas: " + error.message;
-  } finally {
-    btnGerar.disabled = false;
-    btnGerar.innerText = '🎯 Gerar Dicas';
-  }
-}
-
-// ================================================================================
-// 🎛️ LOGS E EVENTOS
-// ================================================================================
-
-function logEventoSucesso(evento, dados) {
-  console.log(`✅ [EVENTO-LIMPO] ${evento}:`, dados);
-}
-
-function logEventoErro(evento, error, contexto) {
-  console.error(`❌ [EVENTO-LIMPO] ${evento}:`, {
-    message: error.message,
-    contexto: contexto
-  });
-}
-
-function mostrarErroInicializacao(error) {
-  const container = document.body || document.documentElement;
-  
-  const errorDiv = document.createElement('div');
-  errorDiv.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-    padding: 15px;
-    max-width: 400px;
-    font-family: monospace;
-    font-size: 12px;
-    z-index: 10000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  `;
-  
-  errorDiv.innerHTML = `
-    <strong>❌ Erro de Inicialização</strong><br>
-    ${error.message}<br><br>
-    <small>Recarregue a página ou contate o suporte.</small>
-    <button onclick="this.parentElement.remove()" style="float: right; margin-left: 10px;">×</button>
-  `;
-  
-  container.appendChild(errorDiv);
-  
-  setTimeout(() => {
-    if (errorDiv.parentElement) {
-      errorDiv.remove();
-    }
-  }, 10000);
-}
-
-// ================================================================================
-// 📊 LOGS FINAIS E INICIALIZAÇÃO
-// ================================================================================
-
-console.log(`🚀 Sistema CVC Itaqua LIMPO v${VERSAO_SISTEMA} carregado!`);
-console.log("🧹 Melhorias implementadas:");
-console.log("   ✅ Orçamentos sem cabeçalhos técnicos");
-console.log("   🔍 Detecção automática de escalas/conexões");
-console.log("   ✈️ Conversão completa de códigos de aeroportos");
-console.log("   📋 Templates prontos para copy/paste direto");
-console.log("   🎨 Interface limpa e profissional");
-console.log("   💰 Medidor de custos otimizado");
-console.log("🎯 Sistema pronto para orçamentos profissionais!");
-
-// Exportar funções para debug (apenas em desenvolvimento)
-if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-  window.debugCVCLimpo = {
-    detectarEscalas: detectarEscalasLimpo,
-    analisarConteudo: analisarConteudoLimpo,
-    limparCabecalhos: limparCabecalhosTecnicos,
-    resetarCusto: resetarContadorDiario,
-    versao: VERSAO_SISTEMA
-  };
-  console.log("🧪 [DEBUG] Funções de debug disponíveis em window.debugCVCLimpo");
-}
+console.log('✅ [CLEAN-API] CVC Itaqua API v5.2.0-clean carregada');
+console.log('🧹 [FOCO] Orçamentos limpos sem cabeçalhos técnicos');
+console.log('✈️ [MELHORIA] Detecção de escalas e conversão completa de aeroportos');
+console.log('📋 [RESULTADO] Templates prontos para copy/paste direto');
+console.log('🎯 [EXEMPLO] NVT → Navegantes (SC), CGH → Congonhas (SP)');
+console.log('🚀 [STATUS] Pronto para gerar orçamentos profissionais!');
