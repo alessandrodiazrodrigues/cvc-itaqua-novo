@@ -74,36 +74,9 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 0.5rem;
-            padding-right: 80px;
         }
         
-        .dias-aberto {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #007bff;
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        
-        .dias-aberto.urgente {
-            background: #dc3545;
-            animation: pulse 2s infinite;
-        }
-        
-        .dias-aberto.atencao {
-            background: #ffc107;
-            color: #000;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
+
         
         .loading-spinner {
             display: inline-block;
@@ -432,7 +405,6 @@
         @media (max-width: 768px) {
             .orbium-details {
                 grid-template-columns: 1fr;
-                padding-right: 0;
             }
             
             .filtros {
@@ -454,12 +426,6 @@
 
             .action-buttons {
                 justify-content: center;
-            }
-
-            .dias-aberto {
-                position: static;
-                margin: 0.5rem 0;
-                display: inline-block;
             }
         }
     </style>
@@ -868,35 +834,18 @@
         }
 
         // ================================================================================
-        // 📅 CALCULAR DIAS EM ABERTO
-        // ================================================================================
-        function calcularDiasAberto(dataAbertura) {
-            if (!dataAbertura) return 0;
-            
-            const hoje = new Date();
-            const abertura = new Date(dataAbertura);
-            const diffTime = Math.abs(hoje - abertura);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            return diffDays;
-        }
-
-        function getClasseDiasAberto(dias) {
-            if (dias > 7) return 'urgente';
-            if (dias > 3) return 'atencao';
-            return '';
-        }
-
-        // ================================================================================
         // 📋 ORDENAÇÃO DE ORBIUNS
         // ================================================================================
         function aplicarOrdenacao(tipoOrdenacao) {
             switch (tipoOrdenacao) {
                 case 'problemas-primeiro':
                     orbiunsFiltrados.sort((a, b) => {
-                        // Problemas primeiro, depois por mais antigo
+                        // Problemas primeiro, depois Em atendimento, depois Resolvido
                         if (a.status === 'Problema' && b.status !== 'Problema') return -1;
                         if (b.status === 'Problema' && a.status !== 'Problema') return 1;
+                        if (a.status === 'Em atendimento' && b.status === 'Resolvido') return -1;
+                        if (b.status === 'Em atendimento' && a.status === 'Resolvido') return 1;
+                        // Para mesmo status, ordenar por mais antigo
                         return new Date(a.data_abertura) - new Date(b.data_abertura);
                     });
                     break;
@@ -952,16 +901,10 @@
             }
 
             container.innerHTML = orbiunsFiltrados.map(orbium => {
-                const diasAberto = calcularDiasAberto(orbium.data_abertura);
-                const classeDias = getClasseDiasAberto(diasAberto);
                 const statusClass = orbium.status.toLowerCase().replace(' ', '-');
                 
                 return `
                     <div class="orbium-card ${statusClass}">
-                        <div class="dias-aberto ${classeDias}">
-                            ${diasAberto} dia${diasAberto !== 1 ? 's' : ''}
-                        </div>
-                        
                         <div class="orbium-header">
                             <h4 style="margin: 0; color: #003399;">
                                 📋 ${orbium.orbium || 'N/A'} - ${orbium.nome_cliente || 'Cliente não informado'}
@@ -1405,14 +1348,14 @@
         // ================================================================================
         // 🚀 LOGS E INICIALIZAÇÃO
         // ================================================================================
-        console.log('🚀 Sistema de Orbiuns CVC Itaqua v4.0 - Versão Corrigida!');
+        console.log('🚀 Sistema de Orbiuns CVC Itaqua v4.1 - Versão Limpa!');
         console.log('✨ Funcionalidades implementadas:');
-        console.log('   📊 Ordenação inteligente (problemas primeiro)');
+        console.log('   📊 Ordenação: Problemas → Em Atendimento → Resolvidos');
         console.log('   🔍 Filtros avançados (WhatsApp, recibo, período)');
-        console.log('   📅 Contador de dias em aberto');
         console.log('   🚨 Sistema de alertas melhorado');
-        console.log('   🎨 Interface responsiva e moderna');
+        console.log('   🎨 Layout limpo sem sobreposições');
         console.log('   ❌ Tratamento robusto de erros');
+        console.log('🎯 Contador de dias removido - interface limpa!');
         console.log('🎯 Pronto para uso!');
     </script>
 </body>
