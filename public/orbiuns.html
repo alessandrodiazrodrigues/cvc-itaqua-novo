@@ -780,7 +780,7 @@
                     orbiunsData = data.data.orbiuns || [];
                     orbiunsFiltrados = [...orbiunsData];
                     
-                    // Aplicar ordenação padrão (problemas primeiro)
+                    // Aplicar ordenação padrão (problemas primeiro, depois em atendimento)
                     aplicarOrdenacao('problemas-primeiro');
                     
                     await carregarEstatisticas();
@@ -887,11 +887,14 @@
         function renderizarOrbiuns() {
             const container = document.getElementById('orbiunsList');
             
-            if (orbiunsFiltrados.length === 0) {
+            // Mostrar TODOS os orbiuns ativos (Problema + Em atendimento)
+            const orbiunsAtivos = orbiunsFiltrados.filter(orbium => orbium.status !== 'Resolvido');
+            
+            if (orbiunsAtivos.length === 0) {
                 container.innerHTML = `
                     <div class="sem-orbiuns">
-                        <h3>🎉 Nenhum orbium encontrado</h3>
-                        <p>Não há orbiuns que correspondam aos filtros aplicados.</p>
+                        <h3>🎉 Nenhum orbium ativo encontrado</h3>
+                        <p>Todos os orbiuns estão resolvidos ou não correspondem aos filtros aplicados.</p>
                         <button onclick="limparFiltros()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
                             🔄 Limpar Filtros
                         </button>
@@ -900,7 +903,7 @@
                 return;
             }
 
-            container.innerHTML = orbiunsFiltrados.map(orbium => {
+            container.innerHTML = orbiunsAtivos.map(orbium => {
                 const statusClass = orbium.status.toLowerCase().replace(' ', '-');
                 
                 return `
@@ -1023,7 +1026,8 @@
             
             renderizarOrbiuns();
             
-            console.log(`🔍 Filtros aplicados: ${orbiunsFiltrados.length} de ${orbiunsData.length} orbiuns`);
+            console.log(`🔍 Filtros aplicados: ${orbiunsFiltrados.length} de ${orbiunsData.length} orbiuns exibidos`);
+            console.log(`📊 Mostrando: Problemas + Em Atendimento (excluindo Resolvidos da visualização)`);
         }
 
         function limparFiltros() {
