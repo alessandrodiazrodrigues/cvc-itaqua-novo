@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Atualizar Placar de Vendas - CVC Itaqua</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #003399 0%, #0056b3 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .header p {
+      margin: 0.5rem 0 0 0;
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+
+    .form-content {
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    input[type="password"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: white;
+      box-sizing: border-box;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #003399;
+      box-shadow: 0 0 0 3px rgba(0,51,153,0.1);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 200px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    button {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(40,167,69,0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #28a745;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .mensagem {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+
+    .mensagem.sucesso {
+      background: #d4edda;
+      border: 1px solid #28a745;
+      color: #155724;
+    }
+
+    .mensagem.erro {
+      background: #f8d7da;
+      border: 1px solid #dc3545;
+      color: #721c24;
+    }
+
+    .mensagem.aviso {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+    }
+
+    .instrucoes {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .instrucoes h3 {
+      color: #1976d2;
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+    }
+
+    .instrucoes ol {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+
+    .instrucoes li {
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .exemplo {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #495057;
+    }
+
+    .exemplo strong {
+      color: #007bff;
+    }
+
+    .validacao {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #fff9c4, #ffecb3);
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .info-box strong {
+      color: #856404;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .header {
+        padding: 1.5rem;
+      }
+      
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .form-content {
+        padding: 1.5rem;
+      }
+      
+      button {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Atualizar Placar de Vendas</h1>
+      <p>Sistema de gestão CVC Itaquaquecetuba</p>
+    </div>
+
+    <div class="form-content">
+      <!-- Instruções -->
+      <div class="instrucoes">
+        <h3>📋 Como usar este formulário:</h3>
+        <ol>
+          <li><strong>Abra o Excel</strong> com os dados de vendas dos vendedores</li>
+          <li><strong>Selecione as colunas:</strong> Vendedor | Meta | Realizado | (outras colunas opcionais)</li>
+          <li><strong>Copie os dados</strong> (Ctrl+C) incluindo os cabeçalhos</li>
+          <li><strong>Cole no campo abaixo</strong> - o sistema detectará automaticamente o formato</li>
+          <li><strong>Escolha a data de referência</strong> (geralmente hoje ou data do relatório)</li>
+          <li><strong>Digite a senha</strong> e clique em "Atualizar Placar"</li>
+        </ol>
+        
+        <div class="exemplo">
+          <strong>Exemplo do formato esperado:</strong><br>
+          Vendedor&nbsp;&nbsp;&nbsp;&nbsp;Meta&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Realizado<br>
+          Alessandro&nbsp;&nbsp;&nbsp;R$ 45.000,00&nbsp;&nbsp;&nbsp;R$ 32.150,00<br>
+          Adriana&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R$ 45.000,00&nbsp;&nbsp;&nbsp;R$ 28.500,00<br>
+          Ana Paula&nbsp;&nbsp;&nbsp;&nbsp;R$ 45.000,00&nbsp;&nbsp;&nbsp;R$ 31.200,00
+        </div>
+      </div>
+
+      <!-- Formulário -->
+      <form id="formPlacar">
+        <div class="form-group">
+          <label for="senha">🔒 Senha de Gestão</label>
+          <input type="password" id="senha" name="senha" placeholder="Digite a senha (1234)" required>
+          <div class="validacao">Apenas gestores podem atualizar o placar de vendas</div>
+        </div>
+
+        <div class="form-group">
+          <label for="dataReferencia">📅 Data de Referência</label>
+          <input type="date" id="dataReferencia" name="dataReferencia" required>
+          <div class="validacao">Data base dos dados de vendas (normalmente hoje)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="dados">📋 Dados do Excel (Cole aqui com Ctrl+V)</label>
+          <textarea id="dados" name="dados" placeholder="Cole os dados copiados do Excel aqui...
+
+Formato aceito:
+- TAB-separated (copiado diretamente do Excel)
+- Primeira linha deve conter os cabeçalhos
+- Colunas: Vendedor, Meta, Realizado (mínimo)
+- Sistema detecta valores monetários automaticamente" required></textarea>
+          <div class="validacao">
+            ✅ Aceita dados com TAB (Excel padrão)<br>
+            ✅ Detecta automaticamente formato de moeda<br>
+            ✅ Valida nomes dos vendedores
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>💡 Dica:</strong> Você pode colar dados diretamente do Excel. O sistema vai processar automaticamente valores como "R$ 45.000,00" e converter para o formato correto.
+        </div>
+
+        <button type="submit" id="btnEnviar">
+          ✅ Atualizar Placar de Vendas
+        </button>
+
+        <div id="mensagem" class="mensagem"></div>
+      </form>
+
+      <!-- Informações adicionais -->
+      <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+        <h3 style="color: #003399; margin-bottom: 1rem;">📊 Vendedores Cadastrados</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.9rem;">
+          <div>• Alessandro</div>
+          <div>• Adriana</div>
+          <div>• Adrielly</div>
+          <div>• Ana Paula</div>
+          <div>• Bia</div>
+          <div>• Conceição</div>
+          <div>• Jhully</div>
+        </div>
+        <p style="font-size: 0.8rem; color: #6c757d; margin-top: 1rem;">
+          ⚠️ Apenas vendedores desta lista serão processados. Outros nomes serão ignorados.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ================================================================================
+    // 🔧 CONFIGURAÇÕES E INICIALIZAÇÃO
+    // ================================================================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('📊 Formulário de Vendas CVC Itaqua carregado');
+      
+      // Definir data de hoje como padrão
+      const hoje = new Date();
+      document.getElementById('dataReferencia').valueAsDate = hoje;
+      
+      // Configurar formulário
+      document.getElementById('formPlacar').addEventListener('submit', enviarDados);
+      
+      // Configurar área de texto para auto-expansão
+      const textarea = document.getElementById('dados');
+      textarea.addEventListener('input', autoResize);
+      
+      // Configurar validação em tempo real
+      document.getElementById('senha').addEventListener('input', validarSenha);
+      document.getElementById('dados').addEventListener('input', validarDados);
+      
+      console.log('✅ Sistema inicializado com sucesso');
+    });
+
+    // ================================================================================
+    // 📝 VALIDAÇÕES EM TEMPO REAL
+    // ================================================================================
+
+    function validarSenha() {
+      const senha = document.getElementById('senha').value;
+      const campo = document.getElementById('senha');
+      
+      if (senha.length > 0) {
+        if (senha === '1234') {
+          campo.style.borderColor = '#28a745';
+          campo.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+        } else {
+          campo.style.borderColor = '#dc3545';
+          campo.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.1)';
+        }
+      } else {
+        campo.style.borderColor = '#e1e8ed';
+        campo.style.boxShadow = 'none';
+      }
+    }
+
+    function validarDados() {
+      const dados = document.getElementById('dados').value;
+      const campo = document.getElementById('dados');
+      
+      if (dados.trim().length > 10) {
+        // Verificar se tem formato válido (com TABs)
+        const hasTab = dados.includes('\t');
+        const linhas = dados.trim().split('\n');
+        const temVendedores = linhas.some(linha => 
+          ['alessandro', 'adriana', 'ana paula', 'bia', 'conceição', 'jhully', 'adrielly']
+          .some(vendedor => linha.toLowerCase().includes(vendedor))
+        );
+        
+        if (hasTab && temVendedores) {
+          campo.style.borderColor = '#28a745';
+        } else {
+          campo.style.borderColor = '#ffc107';
+        }
+      } else {
+        campo.style.borderColor = '#e1e8ed';
+      }
+    }
+
+    function autoResize() {
+      const textarea = document.getElementById('dados');
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.max(200, textarea.scrollHeight) + 'px';
+    }
+
+    // ================================================================================
+    // 📤 ENVIO DE DADOS
+    // ================================================================================
+
+    async function enviarDados(e) {
+      e.preventDefault();
+      
+      const botao = document.getElementById('btnEnviar');
+      const mensagem = document.getElementById('mensagem');
+      const senha = document.getElementById('senha').value;
+      const data = document.getElementById('dataReferencia').value;
+      const dados = document.getElementById('dados').value;
+      
+      // Validações básicas
+      if (!senha || !data || !dados.trim()) {
+        mostrarMensagem('Preencha todos os campos obrigatórios!', 'erro');
+        return;
+      }
+      
+      if (senha !== '1234') {
+        mostrarMensagem('Senha incorreta! Apenas gestores podem atualizar o placar.', 'erro');
+        return;
+      }
+      
+      // Validar formato dos dados
+      const validacao = validarFormatoDados(dados);
+      if (!validacao.valido) {
+        mostrarMensagem(validacao.erro, 'erro');
+        return;
+      }
+      
+      // Mostrar loading
+      botao.disabled = true;
+      botao.innerHTML = '<span class="loading-spinner"></span> Processando...';
+      mensagem.style.display = 'none';
+      
+      try {
+        console.log('📤 Enviando dados para Google Sheets...');
+        
+        // Chamar função do Google Apps Script
+        const resultado = await new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .processarFormulario(senha, data, dados);
+        });
+        
+        console.log('✅ Resposta recebida:', resultado);
+        
+        if (resultado && resultado.includes('sucesso')) {
+          mostrarMensagem(resultado, 'sucesso');
+          
+          // Limpar formulário após sucesso
+          setTimeout(() => {
+            document.getElementById('dados').value = '';
+            document.getElementById('senha').value = '';
+            validarSenha();
+            validarDados();
+          }, 2000);
+          
+        } else {
+          mostrarMensagem(resultado || 'Erro desconhecido no processamento', 'erro');
+        }
+        
+      } catch (error) {
+        console.error('❌ Erro no envio:', error);
+        
+        let mensagemErro = 'Erro ao conectar com o Google Sheets';
+        
+        if (error.message) {
+          if (error.message.includes('senha')) {
+            mensagemErro = 'Senha incorreta ou sem permissão';
+          } else if (error.message.includes('dados')) {
+            mensagemErro = 'Formato dos dados inválido';
+          } else {
+            mensagemErro = error.message;
+          }
+        }
+        
+        mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
+        
+      } finally {
+        botao.disabled = false;
+        botao.innerHTML = '✅ Atualizar Placar de Vendas';
+      }
+    }
+
+    // ================================================================================
+    // 🔍 VALIDAÇÕES AVANÇADAS
+    // ================================================================================
+
+    function validarFormatoDados(texto) {
+      const linhas = texto.trim().split('\n');
+      
+      if (linhas.length < 2) {
+        return {
+          valido: false,
+          erro: 'Dados insuficientes. É necessário pelo menos 2 linhas (cabeçalho + 1 vendedor).'
+        };
+      }
+      
+      // Verificar se tem TABs (formato Excel)
+      const hasTab = texto.includes('\t');
+      if (!hasTab) {
+        return {
+          valido: false,
+          erro: 'Formato inválido. Cole os dados diretamente do Excel (deve conter TABs).'
+        };
+      }
+      
+      // Verificar se tem vendedores válidos
+      const vendedoresValidos = [
+        'alessandro', 'adriana', 'adrielly', 'ana paula', 
+        'bia', 'conceição', 'jhully'
+      ];
+      
+      const vendedoresEncontrados = linhas.filter(linha => 
+        vendedoresValidos.some(vendedor => 
+          linha.toLowerCase().includes(vendedor)
+        )
+      );
+      
+      if (vendedoresEncontrados.length === 0) {
+        return {
+          valido: false,
+          erro: 'Nenhum vendedor válido encontrado nos dados. Verifique os nomes.'
+        };
+      }
+      
+      // Verificar se tem valores monetários
+      const temValores = linhas.some(linha => 
+        /r\$|(\d{1,3}[\.,]?\d{3}[\.,]?\d{2})/i.test(linha)
+      );
+      
+      if (!temValores) {
+        return {
+          valido: false,
+          erro: 'Nenhum valor monetário detectado. Verifique se os dados incluem metas e realizados.'
+        };
+      }
+      
+      return {
+        valido: true,
+        vendedores: vendedoresEncontrados.length
+      };
+    }
+
+    // ================================================================================
+    // 🎨 INTERFACE E FEEDBACK
+    // ================================================================================
+
+    function mostrarMensagem(texto, tipo) {
+      const mensagem = document.getElementById('mensagem');
+      
+      // Remover classes anteriores
+      mensagem.className = 'mensagem';
+      
+      // Adicionar classe do tipo
+      if (tipo === 'sucesso') {
+        mensagem.classList.add('sucesso');
+      } else if (tipo === 'erro') {
+        mensagem.classList.add('erro');
+      } else if (tipo === 'aviso') {
+        mensagem.classList.add('aviso');
+      }
+      
+      mensagem.innerText = texto;
+      mensagem.style.display = 'block';
+      
+      // Scroll para a mensagem
+      mensagem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
+      // Auto-ocultar mensagens de sucesso após 5 segundos
+      if (tipo === 'sucesso') {
+        setTimeout(() => {
+          mensagem.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    // ================================================================================
+    // 🛠️ FUNÇÕES AUXILIARES
+    // ================================================================================
+
+    function formatarData(data) {
+      return new Date(data).toLocaleDateString('pt-BR');
+    }
+
+    function validarSenhaForte(senha) {
+      // Por enquanto, senha simples. Depois pode implementar validações mais complexas
+      return senha === '1234';
+    }
+
+    // ================================================================================
+    // 🧪 FUNÇÕES DE TESTE E DEBUG
+    // ================================================================================
+
+    function preencherDadosTeste() {
+      const dadosTeste = `Vendedor	Meta	Realizado
+Alessandro	R$ 45.000,00	R$ 32.150,00
+Adriana	R$ 45.000,00	R$ 28.500,00
+Ana Paula	R$ 45.000,00	R$ 31.200,00
+Bia	R$ 45.000,00	R$ 41.800,00
+Conceição	R$ 45.000,00	R$ 29.650,00
+Jhully	R$ 45.000,00	R$ 35.920,00
+Adrielly	R$ 45.000,00	R$ 27.100,00`;
+      
+      document.getElementById('dados').value = dadosTeste;
+      document.getElementById('senha').value = '1234';
+      
+      validarDados();
+      validarSenha();
+      autoResize();
+      
+      mostrarMensagem('Dados de teste preenchidos! Você pode clicar em "Atualizar Placar".', 'aviso');
+    }
+
+    // Disponibilizar função de teste no console para debug
+    if (typeof window !== 'undefined') {
+      window.preencherDadosTeste = preencherDadosTeste;
+      window.validarFormatoDados = validarFormatoDados;
+      
+      console.log('🧪 Funções de debug disponíveis:');
+      console.log('   preencherDadosTeste() - Preenche dados de exemplo');
+      console.log('   validarFormatoDados(texto) - Valida formato dos dados');
+    }
+
+    console.log('🚀 Sistema de Vendas CVC Itaqua v2.0 carregado!');
+    console.log('📊 Funcionalidades ativas:');
+    console.log('   ✅ Validação em tempo real');
+    console.log('   ✅ Detecção automática de formato Excel');
+    console.log('   ✅ Validação de vendedores cadastrados');
+    console.log('   ✅ Processamento de valores monetários');
+    console.log('   ✅ Interface responsiva e moderna');
+    console.log('🎯 Pronto para uso!');
+  </script>
+</body>
+</html>
