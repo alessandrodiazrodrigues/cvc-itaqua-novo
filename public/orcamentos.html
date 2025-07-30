@@ -30,27 +30,50 @@
         <div class="form-section">
           <label>Tipo de orçamento:</label>
           <div class="checkbox-group">
-            <label><input type="checkbox" name="tipo" value="Aéreo Facial"> ✈️ Aéreo Facial</label>
-            <label><input type="checkbox" name="tipo" value="Aéreo VBI/Fácil"> ✈️ Aéreo VBI/Fácil</label>
-            <label><input type="checkbox" name="tipo" value="Frete"> 📦 Frete</label>
-            <label><input type="checkbox" name="tipo" value="Hotel"> 🏨 Hotel</label>
-            <label><input type="checkbox" name="tipo" value="Cruzeiro"> 🚢 Cruzeiro</label>
-            <label><input type="checkbox" name="tipo" value="Carro"> 🚗 Carro</label>
-            <label><input type="checkbox" name="tipo" value="Traslado"> 🚌 Traslado</label>
-            <label><input type="checkbox" name="tipo" value="Passeios"> 🎢 Passeios</label>
-            <label><input type="checkbox" name="tipo" value="Seguro"> 🛡️ Seguro</label>
-            <label><input type="checkbox" name="tipo" value="Circuito"> 🗺️ Circuito</label>
+            <label><input type="checkbox" name="tipo" value="Aéreo Facial" onchange="toggleParcelamento()"> ✈️ Aéreo Facial</label>
+            <label><input type="checkbox" name="tipo" value="Aéreo VBI/Fácil" onchange="toggleParcelamento()"> ✈️ Aéreo VBI/Fácil</label>
+            <label><input type="checkbox" name="tipo" value="Frete" onchange="toggleParcelamento()"> 📦 Frete</label>
+            <label><input type="checkbox" name="tipo" value="Hotel" onchange="toggleParcelamento()"> 🏨 Hotel</label>
+            <label><input type="checkbox" name="tipo" value="Cruzeiro" onchange="toggleParcelamento()"> 🚢 Cruzeiro</label>
+            <label><input type="checkbox" name="tipo" value="Carro" onchange="toggleParcelamento()"> 🚗 Carro</label>
+            <label><input type="checkbox" name="tipo" value="Traslado" onchange="toggleParcelamento()"> 🚌 Traslado</label>
+            <label><input type="checkbox" name="tipo" value="Passeios" onchange="toggleParcelamento()"> 🎢 Passeios</label>
+            <label><input type="checkbox" name="tipo" value="Seguro" onchange="toggleParcelamento()"> 🛡️ Seguro</label>
+            <label><input type="checkbox" name="tipo" value="Circuito" onchange="toggleParcelamento()"> 🗺️ Circuito</label>
+          </div>
+        </div>
+
+        <!-- NOVA SEÇÃO: Opções de Parcelamento -->
+        <div class="form-section" id="secaoParcelamento" style="display: none;">
+          <h3>💳 Opções de Parcelamento</h3>
+          
+          <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #007bff;">
+            <div class="checkbox-group">
+              <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.5rem;">
+                <input type="checkbox" name="parcelamento" value="10x" id="parcela10x" style="margin-right: 0.5rem; transform: scale(1.2);">
+                <span style="font-weight: 600;">💳 Incluir parcelamento em 10x</span>
+              </label>
+              
+              <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.5rem;">
+                <input type="checkbox" name="parcelamento" value="12x" id="parcela12x" style="margin-right: 0.5rem; transform: scale(1.2);">
+                <span style="font-weight: 600;">💳 Incluir parcelamento em 12x</span>
+              </label>
+            </div>
+            
+            <div style="margin-top: 1rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px; font-size: 0.9rem; color: #1976d2;">
+              <strong>💡 Dica:</strong> Se marcado, será incluído no orçamento: "💳 Parcelamento: 10x de R$ XX,XX"
+            </div>
           </div>
         </div>
 
         <div class="form-section">
-          <label for="destino">🌍 Destino:</label>
-          <input type="text" name="destino" id="destino" placeholder="Ex: Orlando, Paris, Buenos Aires">
+          <label for="destino">🌍 Destino (opcional):</label>
+          <input type="text" name="destino" id="destino" placeholder="Ex: Orlando, Paris, Buenos Aires - deixe vazio para detectar automaticamente">
           
-          <label for="adultos">👨‍👩‍👧‍👦 Adultos:</label>
-          <input type="number" name="adultos" id="adultos" min="1" max="10" value="2" required />
+          <label for="adultos">👨‍👩‍👧‍👦 Adultos (opcional):</label>
+          <input type="number" name="adultos" id="adultos" min="0" max="10" placeholder="Deixe vazio para detectar automaticamente" />
           
-          <label for="criancas">👶 Crianças:</label>
+          <label for="criancas">👶 Crianças (opcional):</label>
           <input type="number" name="criancas" id="criancas" min="0" max="10" value="0" onchange="atualizarIdadesCriancas()">
           
           <!-- Container para idades das crianças (aparece dinamicamente) -->
@@ -74,7 +97,7 @@
 
           <label>📋 Ou cole texto ou imagem (Ctrl + V):</label>
           <div id="pasteArea" contenteditable="true">
-            📌 Clique aqui ou pressione Ctrl+V para colar conteúdo
+            📌 Clique aqui ou pressione Ctrl+V para colar conteúdo | 🔍 Detecção automática de escalas
           </div>
           <div id="previewArea"></div>
         </div>
@@ -111,26 +134,46 @@
 
     <!-- Dicas de Uso -->
     <section>
-      <h2>💡 Dicas de Uso</h2>
+      <h2>💡 Dicas de Uso - Sistema Limpo</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
         
         <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
-          <h4>📝 Para melhores resultados:</h4>
+          <h4>🧹 Orçamentos Profissionais:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Informe destino específico</li>
-            <li>Cole dados completos nas observações</li>
-            <li>Inclua links e preços reais</li>
-            <li>Marque todos os tipos relevantes</li>
+            <li>Sem cabeçalhos técnicos</li>
+            <li>Prontos para copy/paste</li>
+            <li>Detecção automática de escalas</li>
+            <li>Conversão completa de aeroportos</li>
           </ul>
         </div>
         
         <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <h4>🤖 O que a IA faz:</h4>
+          <h4>💳 Sistema de Parcelamento:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Formata no padrão CVC</li>
-            <li>Detecta múltiplas opções automaticamente</li>
-            <li>Gera dicas personalizadas do destino</li>
-            <li>Pronto para envio por WhatsApp</li>
+            <li>Aéreo Facial: só se nas observações</li>
+            <li>Outros tipos: opcional via checkbox</li>
+            <li>Cálculo automático das parcelas</li>
+            <li>Opção de 10x, 12x ou ambos</li>
+          </ul>
+        </div>
+
+        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
+          <h4>🔍 Campos Inteligentes:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Destino e adultos são opcionais</li>
+            <li>IA extrai automaticamente dos dados</li>
+            <li>Se preenchido, tem prioridade</li>
+            <li>Mais flexível e ágil</li>
+          </ul>
+        </div>
+        
+        <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px;">
+          <h4>🚨 Segurança:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Não inventa dados não fornecidos</li>
+            <li>Usa apenas informações reais</li>
+            <li>Não cria roteiros fictícios</li>
+            <li>Preços sempre dos dados originais</li>
           </ul>
         </div>
         
@@ -139,10 +182,124 @@
   </main>
 
   <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
-    <p>© 2025 CVC Itaqua | Sistema de Orçamentos com IA</p>
+    <p>© 2025 CVC Itaqua | Sistema Limpo de Orçamentos com IA</p>
   </footer>
 
   <script>
+    // ================================================================================
+    // 🎯 CONTROLE DE PARCELAMENTO CONDICIONAL
+    // ================================================================================
+
+    function toggleParcelamento() {
+      console.log('🔄 Verificando tipos selecionados...');
+      
+      // Pegar todos os tipos selecionados
+      const tiposSelecionados = Array.from(document.querySelectorAll('input[name="tipo"]:checked'))
+        .map(checkbox => checkbox.value);
+      
+      console.log('📋 Tipos selecionados:', tiposSelecionados);
+      
+      // Definir tipos que NÃO devem mostrar parcelamento
+      const tiposSemParcelamento = ['Aéreo Facial'];
+      
+      // Verificar se algum tipo selecionado é "Aéreo Facial"
+      const temAereoFacial = tiposSelecionados.some(tipo => tiposSemParcelamento.includes(tipo));
+      
+      // Verificar se há tipos que permitem parcelamento
+      const temTiposComParcelamento = tiposSelecionados.some(tipo => !tiposSemParcelamento.includes(tipo));
+      
+      const secaoParcelamento = document.getElementById('secaoParcelamento');
+      
+      if (temTiposComParcelamento && tiposSelecionados.length > 0) {
+        // Mostrar seção de parcelamento
+        secaoParcelamento.style.display = 'block';
+        
+        // Se tem aéreo facial junto com outros, mostrar aviso
+        if (temAereoFacial) {
+          mostrarAvisoParcelamentoMisto();
+        } else {
+          esconderAvisoParcelamentoMisto();
+        }
+        
+        console.log('✅ Seção de parcelamento habilitada');
+      } else {
+        // Esconder seção de parcelamento
+        secaoParcelamento.style.display = 'none';
+        
+        // Desmarcar checkboxes de parcelamento
+        document.getElementById('parcela10x').checked = false;
+        document.getElementById('parcela12x').checked = false;
+        
+        esconderAvisoParcelamentoMisto();
+        
+        console.log('❌ Seção de parcelamento desabilitada');
+      }
+    }
+
+    function mostrarAvisoParcelamentoMisto() {
+      // Remover aviso existente
+      esconderAvisoParcelamentoMisto();
+      
+      const secaoParcelamento = document.getElementById('secaoParcelamento');
+      const aviso = document.createElement('div');
+      aviso.id = 'avisoParcelamentoMisto';
+      aviso.style.cssText = `
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 6px;
+        color: #856404;
+        font-size: 0.9rem;
+      `;
+      
+      aviso.innerHTML = `
+        <strong>⚠️ Atenção:</strong> Você selecionou "Aéreo Facial" junto com outros tipos.<br>
+        <small>• Para <strong>Aéreo Facial</strong>: parcelamento só aparece se informado nas observações</small><br>
+        <small>• Para outros tipos: parcelamento será incluído se marcado acima</small>
+      `;
+      
+      secaoParcelamento.appendChild(aviso);
+    }
+
+    function esconderAvisoParcelamentoMisto() {
+      const avisoExistente = document.getElementById('avisoParcelamentoMisto');
+      if (avisoExistente) {
+        avisoExistente.remove();
+      }
+    }
+
+    // ================================================================================
+    // 🔧 INTEGRAÇÃO COM FORMULÁRIO EXISTENTE
+    // ================================================================================
+
+    // Função para obter configuração de parcelamento (chamada pelo sistema principal)
+    function obterConfiguracaoParcelamento() {
+      const parcela10x = document.getElementById('parcela10x')?.checked || false;
+      const parcela12x = document.getElementById('parcela12x')?.checked || false;
+      
+      const configuracao = {
+        incluirParcelamento: parcela10x || parcela12x,
+        parcelas10x: parcela10x,
+        parcelas12x: parcela12x,
+        mostrarAmbos: parcela10x && parcela12x
+      };
+      
+      console.log('💳 Configuração de parcelamento:', configuracao);
+      
+      return configuracao;
+    }
+
+    // Função para resetar parcelamento (chamada ao limpar formulário)
+    function resetarParcelamento() {
+      document.getElementById('parcela10x').checked = false;
+      document.getElementById('parcela12x').checked = false;
+      document.getElementById('secaoParcelamento').style.display = 'none';
+      esconderAvisoParcelamentoMisto();
+      
+      console.log('🔄 Parcelamento resetado');
+    }
+
     // Função para atualizar campos de idades das crianças
     function atualizarIdadesCriancas() {
       const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
@@ -176,8 +333,8 @@
       const destino = document.getElementById('destino').value;
       const orcamentoTexto = document.getElementById('orcamentoIA').innerText;
       
-      if (!destino) {
-        alert('Informe um destino primeiro!');
+      if (!destino && (!orcamentoTexto || orcamentoTexto === 'Preencha o formulário acima para gerar o orçamento...')) {
+        alert('Gere um orçamento primeiro ou informe um destino!');
         return;
       }
       
@@ -188,13 +345,30 @@
       btnGerar.innerText = '🤖 Gerando...';
       
       try {
-        // Extrair datas do orçamento se disponível
+        // Extrair destino do orçamento se não foi informado
+        let destinoFinal = destino;
+        if (!destinoFinal && orcamentoTexto) {
+          // Tentar extrair destino do orçamento gerado
+          const linhas = orcamentoTexto.split('\n');
+          for (const linha of linhas) {
+            if (linha.includes('📍') || linha.includes('🌍')) {
+              destinoFinal = linha.replace(/[📍🌍]/g, '').trim();
+              break;
+            }
+          }
+        }
+        
+        if (!destinoFinal) {
+          alert('Não foi possível identificar o destino. Informe no campo destino.');
+          return;
+        }
+        
         let contextoData = '';
         if (orcamentoTexto && orcamentoTexto !== 'Preencha o formulário acima para gerar o orçamento...') {
           contextoData = `\n\nCONTEXTO DA VIAGEM:\n${orcamentoTexto.substring(0, 300)}...`;
         }
         
-        const prompt = `Crie dicas personalizadas sobre ${destino} para WhatsApp da CVC.${contextoData}
+        const prompt = `Crie dicas personalizadas sobre ${destinoFinal} para WhatsApp da CVC.${contextoData}
         
 Inclua:
 - Principais atrações e pontos turísticos
@@ -207,7 +381,7 @@ Inclua:
 
 Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
 
-        const response = await callAI(prompt, 'destino', { destino });
+        const response = await callAI(prompt, 'destino', { destino: destinoFinal });
         document.getElementById('destinoIA').innerText = response;
         
         btnCopiar.style.display = 'inline-block';
@@ -290,6 +464,36 @@ Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
       });
     }
 
+    // ================================================================================
+    // 📊 LOGS E INICIALIZAÇÃO
+    // ================================================================================
+
+    // Inicializar quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('💳 Sistema de parcelamento condicional carregado');
+      console.log('🧹 Sistema limpo ativo - campos opcionais');
+      
+      // Verificar estado inicial
+      toggleParcelamento();
+      
+      // Adicionar listeners para mudanças nos checkboxes de parcelamento
+      document.getElementById('parcela10x').addEventListener('change', function() {
+        if (this.checked) {
+          console.log('✅ Parcelamento 10x selecionado');
+        } else {
+          console.log('❌ Parcelamento 10x desmarcado');
+        }
+      });
+      
+      document.getElementById('parcela12x').addEventListener('change', function() {
+        if (this.checked) {
+          console.log('✅ Parcelamento 12x selecionado');
+        } else {
+          console.log('❌ Parcelamento 12x desmarcado');
+        }
+      });
+    });
+
     // Destacar página atual na navegação
     document.addEventListener('DOMContentLoaded', function() {
       const currentPage = window.location.pathname.split('/').pop() || 'index.html';
@@ -304,6 +508,66 @@ Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
         }
       });
     });
+
+    // ================================================================================
+    // 🎨 ESTILOS ESPECÍFICOS PARA O COMPONENTE
+    // ================================================================================
+
+    // Adicionar estilos CSS específicos
+    const styleParcelamento = document.createElement('style');
+    styleParcelamento.textContent = `
+      #secaoParcelamento {
+        transition: all 0.3s ease;
+        animation: fadeInParcelamento 0.5s ease;
+      }
+      
+      @keyframes fadeInParcelamento {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      #secaoParcelamento .checkbox-group label:hover {
+        background: #f0f0f0 !important;
+        transform: translateX(2px);
+        transition: all 0.2s ease;
+      }
+      
+      #secaoParcelamento input[type="checkbox"]:checked + span {
+        color: #007bff;
+        font-weight: bold;
+      }
+      
+      #avisoParcelamentoMisto {
+        animation: slideInAviso 0.3s ease;
+      }
+      
+      @keyframes slideInAviso {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `;
+
+    document.head.appendChild(styleParcelamento);
+
+    console.log('🎨 Estilos de parcelamento aplicados');
+    console.log('🚀 Sistema de parcelamento condicional pronto!');
+    console.log('📋 Regras:');
+    console.log('   ✅ Aéreo Facial: parcelamento oculto (só se nas observações)');
+    console.log('   ✅ Outros tipos: parcelamento opcional via checkbox');
+    console.log('   ✅ Tipos mistos: aviso explicativo');
+    console.log('   🔍 Campos destino e adultos opcionais - detecção automática');
   </script>
 
   <script src="ai.js"></script>
