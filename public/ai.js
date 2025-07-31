@@ -4,6 +4,79 @@
 // CORREÇÕES: Validação campos opcionais + Detecção ida/volta + Sistema completo
 // ================================================================================
 
+
+// ================================================================================
+// 📊 SISTEMA DE LOG DE EVENTOS
+// ================================================================================
+
+/**
+ * Registra eventos de sucesso para análise de performance e debugging
+ * @param {string} evento - Nome do evento (ex: 'orcamento_gerado', 'upload_sucesso')
+ * @param {object} dados - Dados adicionais do evento
+ */
+function logEventoSucesso(evento, dados = {}) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      evento: evento,
+      timestamp: timestamp,
+      dados: dados,
+      url: window.location.href,
+      userAgent: navigator.userAgent.substring(0, 100) // Truncar para não ficar muito longo
+    };
+    
+    // Log no console para debugging
+    console.log(`✅ [EVENTO-SUCESSO] ${evento}:`, logEntry);
+    
+    // Salvar no localStorage para análise posterior (opcional)
+    try {
+      const eventosAnteriores = JSON.parse(localStorage.getItem('eventos_sucesso') || '[]');
+      eventosAnteriores.push(logEntry);
+      
+      // Manter apenas os últimos 50 eventos para não sobrecarregar o storage
+      if (eventosAnteriores.length > 50) {
+        eventosAnteriores.splice(0, eventosAnteriores.length - 50);
+      }
+      
+      localStorage.setItem('eventos_sucesso', JSON.stringify(eventosAnteriores));
+    } catch (storageError) {
+      console.warn('⚠️ Não foi possível salvar evento no localStorage:', storageError);
+    }
+    
+    // Se você tiver um sistema de analytics, pode enviar o evento aqui
+    // Exemplo: analytics.track(evento, dados);
+    
+  } catch (error) {
+    console.error('❌ Erro ao registrar evento de sucesso:', error);
+  }
+}
+
+/**
+ * Função auxiliar para recuperar eventos salvos
+ * @returns {array} Lista de eventos de sucesso registrados
+ */
+function obterEventosSucesso() {
+  try {
+    return JSON.parse(localStorage.getItem('eventos_sucesso') || '[]');
+  } catch (error) {
+    console.error('❌ Erro ao recuperar eventos:', error);
+    return [];
+  }
+}
+
+/**
+ * Função auxiliar para limpar eventos salvos
+ */
+function limparEventosSucesso() {
+  try {
+    localStorage.removeItem('eventos_sucesso');
+    console.log('🗑️ Eventos de sucesso limpos');
+  } catch (error) {
+    console.error('❌ Erro ao limpar eventos:', error);
+  }
+}
+
+
 const API_URL = '/api/ai';
 const VERSAO_SISTEMA = '5.3.1-fixed';
 
