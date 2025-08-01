@@ -186,54 +186,69 @@ const MAX_TOKENS = 2500;
 
 export default async function handler(req, res) {
   const startTime = Date.now();
-  
+
   try {
-    console.log('[API-CORRIGIDA] Iniciando processamento...');
-    
-    // Configuração de CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-    if (req.method === 'OPTIONS') {
-      return res.status(200).json({ message: 'CORS OK' });
-    }
-
-    if (req.method === 'GET') {
-      return res.status(200).json({
-        message: 'CVC Itaqua API - Sistema Corrigido',
-        version: '5.3.2-fixed',
-        produtos_suportados: Object.keys(TEMPLATES),
-        correcoes: [
-          'Detecção múltiplas opções em imagem CORRIGIDA',
-          'Detecção ida/volta vs somente ida corrigida',
-          'Validação de campos opcionais corrigida',
-          'Templates específicos para cada tipo de viagem',
-          'Sistema de parcelamento condicional',
-          'Conversão completa de aeroportos'
-        ],
-        timestamp: new Date().toISOString()
-      });
-    }
+    if (req.method === 'OPTIONS') return res.status(200).json({ message: 'CORS OK' });
+    if (req.method === 'GET') return res.status(200).json({ message: 'API CVC Itaqua Online v5.4', version: '5.4' });
 
     if (req.method !== 'POST') {
-      return res.status(405).json({ 
-        success: false,
-        error: 'Método não permitido' 
-      });
+      return res.status(405).json({ success: false, error: 'Método não permitido' });
     }
 
-    // VALIDAÇÃO
-    if (!req.body?.prompt) {
-      return res.status(400).json({
-        success: false,
-        error: 'Prompt obrigatório'
-      });
+    const { prompt, temImagem, arquivo, tipos, tipoViagem, parcelamento, camposOpcionais, tipoRequisicao } = req.body;
+
+    if (!prompt || !tipoRequisicao) {
+      return res.status(400).json({ success: false, error: 'Prompt e tipoRequisicao são obrigatórios' });
     }
 
-    const { prompt, temImagem, arquivo, tipos, tipoViagem, parcelamento, camposOpcionais } = req.body;
-    console.log(`[API-CORRIGIDA] Prompt: ${prompt.length} chars, Tipos: ${tipos?.join(', ')}, TipoViagem: ${tipoViagem}, TemImagem: ${temImagem}`);
+    let promptFinal = '';
+    let modelo = 'gpt-4o-mini';
+    let fallback = 'gpt-4o';
+    let estrategia = 'GPT texto';
+    
+    // Escolha do promptBuilder adequado
+    if (tipoRequisicao === 'orcamento') {
+      const analise = analisarConteudoCorrigido(prompt, tipos, tipoViagem, temImagem);
+      const template = selecionarTemplateCorrigido(analise, tipos);
+      promptFinal = construirPromptCorrigido(prompt, template, analise, tipos, parcelamento, camposOpcionais, temImagem, arquivo);
+      ({ modelo, estrategia, fallback } = selecionarModelo(temImagem));
+
+    } else if (tipoRequisicao === 'dicas') {
+      promptFinal = construirPromptDicas(prompt);
+      modelo = 'gpt-4o-mini'; fallback = 'gpt-4o'; estrategia = 'GPT dicas';
+
+    } else if (tipoRequisicao === 'ranking') {
+      promptFinal = construirPromptRanking(prompt);
+      modelo = 'gpt-4o'; fallback = 'gpt-4o'; estrategia = 'GPT ranking';
+
+    } else {
+      return res.status(400).json({ success: false, error: 'Tipo de requisição inválido' });
+    }
+
+    const resultado = await chamarIASegura(promptFinal, temImagem, arquivo, modelo, fallback);
+    const responseProcessada = processarRespostaCorrigida(resultado.content);
+    const metricas = calcularMetricas(resultado, startTime, estrategia);
+
+    return res.status(200).json({
+      success: true,
+      choices: [{ message: { content: responseProcessada } }],
+      metricas
+    });
+
+  } catch (error) {
+    console.error('[ERRO API]', error.message);
+    return res.status(500).json({
+      success: false,
+      error: { message: `Erro no servidor: ${error.message}`, type: 'SERVER_ERROR' }
+    });
+  }
+}
+
 
     // ================================================================================
     // 🔧 ANÁLISE CORRIGIDA E SELEÇÃO DE TEMPLATE
@@ -851,3 +866,45 @@ console.log('🔧 [FOCO] Detecção CORRIGIDA de múltiplas opções em imagem')
 console.log('✈️ [MELHORIA] Templates específicos + Conversão de aeroportos');
 console.log('🎯 [CORREÇÃO] Instruções detalhadas para Claude Sonnet analisar imagens');
 console.log('🚀 [STATUS] Pronto para gerar orçamentos profissionais e corretos!');
+
+
+function construirPromptDicas(promptBase) {
+  return `Você é um assistente de viagens da CVC.
+
+A tarefa é gerar dicas turísticas PERSONALIZADAS com base no destino, número de adultos, crianças e datas da viagem (caso existam).
+
+🧠 INSTRUÇÕES:
+- Extraia o nome do destino e, se possível, o período da viagem e idades das crianças
+- Dê sugestões relevantes, práticas e positivas. Se o mês não for ideal, diga algo útil, mas sem desmotivar o cliente
+- Se houver criança, priorize dicas infantis e atrativos de família
+- Nunca repita o orçamento ou valores
+
+📌 FORMATO:
+🌟 **Dicas para [DESTINO]**
+
+🗓️ Melhor época  
+🌤️ Clima e bagagem  
+🎯 Atrações principais  
+💡 Dicas práticas (moeda, fuso, idioma, documentação)  
+🍽️ Gastronomia local  
+
+DADOS DO CLIENTE:
+${promptBase}`;
+}
+
+function construirPromptRanking(promptBase) {
+  return `Você é um especialista em turismo da CVC.
+
+Gere um RANKING de até 5 hotéis com base nas informações abaixo.
+
+INSTRUÇÕES:
+- Liste apenas os hotéis mencionados no orçamento (não inventar outros)
+- Use notas reais do TripAdvisor, Booking e Google (formato: 4,5/5 | 9,2/10 | 4,6/5)
+- Coloque 1 ponto positivo de cada hotel
+- Inclua distâncias reais até a praia e o centro. Se mais de 30min a pé, coloque o tempo de carro
+- Nunca repita o orçamento ou os valores
+- Comece com a frase: "Para facilitar a escolha do seu hotel, fizemos um ranking detalhado:"
+
+DADOS DO CLIENTE:
+${promptBase}`;
+}
