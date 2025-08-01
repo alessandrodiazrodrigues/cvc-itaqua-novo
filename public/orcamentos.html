@@ -184,7 +184,7 @@
 
     <div class="output-section">
       <h3>🏨 Ranking de Hotéis
-        <button class="gerar-dicas" onclick="gerarRankingHoteis()" id="btnGerarRanking" disabled title="Selecione 'Hotel' e gere um orçamento primeiro">
+        <button class="gerar-dicas" onclick="generateRankingHoteis()" id="btnGerarRanking" disabled title="Selecione 'Hotel' e gere um orçamento primeiro">
           🏆 Gerar Ranking
         </button>
         <button class="copiar" onclick="copiarTexto('rankingIA')" style="display: none;" id="btnCopiarRanking">
@@ -196,7 +196,7 @@
 
     <!-- Dicas de Uso -->
     <section>
-      <h2>💡 Dicas de Uso - Sistema Limpo</h2>
+      <h2>💡 Dicas de Uso - Sistema Modular v3.0</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
         
         <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
@@ -258,18 +258,55 @@
             <li>Apenas pontos positivos dos hotéis</li>
           </ul>
         </div>
+
+        <div style="background: #f0f8ff; padding: 1rem; border-radius: 8px;">
+          <h4>⚡ Sistema Modular v3.0:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Código organizado em módulos</li>
+            <li>Performance otimizada</li>
+            <li>Fácil manutenção e debug</li>
+            <li>Compatível com Claude Code</li>
+          </ul>
+        </div>
+
+        <div style="background: #ffe4e1; padding: 1rem; border-radius: 8px;">
+          <h4>🔧 Debug e Logs:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Console F12 para debug</li>
+            <li>Logs detalhados de cada módulo</li>
+            <li>Verificação automática do sistema</li>
+            <li>Fallbacks para compatibilidade</li>
+          </ul>
+        </div>
         
       </div>
     </section>
   </main>
 
   <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
-    <p>© 2025 CVC Itaqua | Sistema Limpo de Orçamentos com IA</p>
+    <p>© 2025 CVC Itaqua | Sistema Modular v3.0 com IA</p>
   </footer>
+
+  <!-- ================================================================================
+       🚀 SISTEMA MODULAR v3.0 - CARREGAMENTO DOS MÓDULOS
+       ================================================================================ -->
+
+  <!-- IMPORTANTE: Carregar módulos na ordem correta -->
+  <script src="modules/ai-utils.js"></script>
+  <script src="modules/ai-orcamento.js"></script>
+  <script src="modules/ai-dicas.js"></script>
+  <script src="modules/ai-ranking.js"></script>
+  
+  <!-- Arquivo principal (carrega por último) -->
+  <script src="ai.js"></script>
+
+  <!-- ================================================================================
+       📋 FUNÇÕES DE COMPATIBILIDADE (mantidas do HTML original)
+       ================================================================================ -->
 
   <script>
     // ================================================================================
-    // 🎯 CONTROLE DE PARCELAMENTO CONDICIONAL
+    // 🎯 CONTROLE DE PARCELAMENTO CONDICIONAL (mantido do HTML original)
     // ================================================================================
 
     function toggleParcelamento() {
@@ -351,11 +388,7 @@
       }
     }
 
-    // ================================================================================
-    // 🔧 INTEGRAÇÃO COM FORMULÁRIO EXISTENTE
-    // ================================================================================
-
-    // Função para obter configuração de parcelamento (chamada pelo sistema principal)
+    // Função para obter configuração de parcelamento (usada pelos módulos)
     function obterConfiguracaoParcelamento() {
       const parcela10x = document.getElementById('parcela10x')?.checked || false;
       const parcela12x = document.getElementById('parcela12x')?.checked || false;
@@ -372,135 +405,9 @@
       return configuracao;
     }
 
-    // Função para resetar parcelamento (chamada ao limpar formulário)
-    function resetarParcelamento() {
-      document.getElementById('parcela10x').checked = false;
-      document.getElementById('parcela12x').checked = false;
-      document.getElementById('secaoParcelamento').style.display = 'none';
-      esconderAvisoParcelamentoMisto();
-      
-      console.log('🔄 Parcelamento resetado');
-    }
-
-    // Função para atualizar campos de idades das crianças
-    function atualizarIdadesCriancas() {
-      const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
-      const container = document.getElementById('containerIdadesCriancas');
-      const camposContainer = document.getElementById('camposIdadesCriancas');
-      
-      if (qtdeCriancas > 0) {
-        container.style.display = 'block';
-        camposContainer.innerHTML = '';
-        
-        for (let i = 1; i <= qtdeCriancas; i++) {
-          const div = document.createElement('div');
-          div.style.marginBottom = '0.5rem';
-          div.innerHTML = `
-            <label for="idade_crianca_${i}" style="display: inline-block; width: 120px;">Criança ${i}:</label>
-            <input type="number" id="idade_crianca_${i}" name="idade_crianca_${i}" 
-                   min="0" max="17" placeholder="Idade" 
-                   style="width: 80px; margin-right: 10px;">
-            <small style="color: #666;">anos</small>
-          `;
-          camposContainer.appendChild(div);
-        }
-      } else {
-        container.style.display = 'none';
-        camposContainer.innerHTML = '';
-      }
-    }
-
-    // Função local de copiar (mantida para compatibilidade)
-    function copiarTexto(id) {
-      const texto = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(texto).then(() => {
-        // Feedback visual
-        const button = event.target;
-        const originalText = button.innerText;
-        button.innerText = "✅ Copiado!";
-        setTimeout(() => {
-          button.innerText = originalText;
-        }, 2000);
-      }).catch(err => {
-        console.error("Erro ao copiar:", err);
-        alert("Erro ao copiar. Tente selecionar o texto manualmente.");
-      });
-    }
-
-    // Melhorar área de paste
-    const pasteArea = document.getElementById('pasteArea');
-    const previewArea = document.getElementById('previewArea');
-
-    if (pasteArea && previewArea) {
-      pasteArea.addEventListener('paste', function (e) {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-
-          if (item.type.indexOf('image') !== -1) {
-            const blob = item.getAsFile();
-            const reader = new FileReader();
-            reader.onload = function (event) {
-              const img = document.createElement('img');
-              img.src = event.target.result;
-              img.style.maxWidth = '100%';
-              previewArea.innerHTML = '';
-              previewArea.appendChild(img);
-              previewArea.dataset.fileData = event.target.result;
-            };
-            reader.readAsDataURL(blob);
-          } else if (item.type === 'text/plain') {
-            item.getAsString(function (text) {
-              previewArea.innerHTML = '<p>' + text + '</p>';
-            });
-          }
-        }
-      });
-
-      // Destacar área quando hover
-      pasteArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#003399';
-        this.style.backgroundColor = '#e9ecef';
-      });
-
-      pasteArea.addEventListener('dragleave', function(e) {
-        this.style.borderColor = '#007bff';
-        this.style.backgroundColor = '#f8f9fa';
-      });
-    }
-
     // ================================================================================
-    // 📊 LOGS E INICIALIZAÇÃO
+    // 📱 NAVEGAÇÃO ATIVA (mantido do HTML original)
     // ================================================================================
-
-    // Inicializar quando a página carregar
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('💳 Sistema de parcelamento condicional carregado');
-      console.log('🧹 Sistema limpo ativo - campos opcionais');
-      console.log('🌍 Sistema de dicas automáticas carregado');
-      console.log('🏨 Sistema de ranking de hotéis carregado');
-      
-      // Verificar estado inicial
-      toggleParcelamento();
-      
-      // Adicionar listeners para mudanças nos checkboxes de parcelamento
-      document.getElementById('parcela10x').addEventListener('change', function() {
-        if (this.checked) {
-          console.log('✅ Parcelamento 10x selecionado');
-        } else {
-          console.log('❌ Parcelamento 10x desmarcado');
-        }
-      });
-      
-      document.getElementById('parcela12x').addEventListener('change', function() {
-        if (this.checked) {
-          console.log('✅ Parcelamento 12x selecionado');
-        } else {
-          console.log('❌ Parcelamento 12x desmarcado');
-        }
-      });
-    });
 
     // Destacar página atual na navegação
     document.addEventListener('DOMContentLoaded', function() {
@@ -515,13 +422,15 @@
           link.classList.remove('active');
         }
       });
+
+      // Verificar estado inicial do parcelamento
+      toggleParcelamento();
     });
 
     // ================================================================================
-    // 🎨 ESTILOS ESPECÍFICOS PARA O COMPONENTE
+    // 🎨 ESTILOS DINÂMICOS PARA PARCELAMENTO
     // ================================================================================
 
-    // Adicionar estilos CSS específicos
     const styleParcelamento = document.createElement('style');
     styleParcelamento.textContent = `
       #secaoParcelamento {
@@ -571,15 +480,6 @@
 
     console.log('🎨 Estilos de parcelamento aplicados');
     console.log('🚀 Sistema de parcelamento condicional pronto!');
-    console.log('📋 Regras:');
-    console.log('   ✅ Aéreo Facial: parcelamento oculto (só se nas observações)');
-    console.log('   ✅ Outros tipos: parcelamento opcional via checkbox');
-    console.log('   ✅ Tipos mistos: aviso explicativo');
-    console.log('   🔍 Campos destino e adultos opcionais - detecção automática');
-    console.log('   🌍 Dicas automáticas: extração de destino do orçamento');
-    console.log('   🏨 Ranking de hotéis: formato específico com avaliações');
   </script>
-
-  <script src="ai.js"></script>
 </body>
 </html>
