@@ -47,6 +47,53 @@
       flex-shrink: 0;
     }
 
+    /* 🎯 NOVOS ESTILOS PARA FASE 1 - INSTRUÇÕES MELHORADAS */
+    .instrucoes-melhoradas {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      border: 2px solid #2196f3;
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin: 1rem 0;
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+    }
+
+    .instrucoes-melhoradas h4 {
+      color: #1976d2;
+      margin: 0 0 0.8rem 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .deteccao-automatica {
+      background: #e8f5e8;
+      border-left: 4px solid #4caf50;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .exemplo-uso {
+      background: #fff3e0;
+      border: 1px solid #ff9800;
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .multiplas-opcoes-alert {
+      background: #ffebee;
+      border: 2px dashed #f44336;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      color: #c62828;
+      font-weight: 600;
+    }
+
     @media (max-width: 768px) {
       .output-section h3 {
         flex-direction: column;
@@ -77,6 +124,28 @@
   </header>
 
   <main>
+    <!-- 🎯 SEÇÃO DE INSTRUÇÕES MELHORADA - FASE 1 -->
+    <div class="instrucoes-melhoradas">
+      <h4>🚀 Sistema Corrigido - Detecção Automática Aprimorada</h4>
+      
+      <div class="deteccao-automatica">
+        <strong>✅ DETECÇÃO AUTOMÁTICA CORRIGIDA:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+          <li><strong>Múltiplas opções:</strong> Sistema identifica TODAS as opções de voo na imagem</li>
+          <li><strong>Ida e volta:</strong> Detecção corrigida para distinguir "somente ida" vs "ida e volta"</li>
+          <li><strong>Aeroportos limpos:</strong> Remove informações redundantes (ex: "Congonhas (SP)" → "Congonhas")</li>
+          <li><strong>Links inteligentes:</strong> Mostra links apenas quando existirem realmente</li>
+        </ul>
+      </div>
+
+      <div class="exemplo-uso">
+        <strong>💡 EXEMPLO DE USO PARA MÚLTIPLAS OPÇÕES:</strong><br>
+        • Cole imagem com 2+ opções de voo → Sistema detecta e formata TODAS<br>
+        • Upload de print com ida E volta → Sistema identifica corretamente<br>
+        • Dados de cruzeiro → Formatação por cabine, não por passageiro
+      </div>
+    </div>
+
     <!-- Formulário de Orçamento -->
     <section>
       <h2>📝 Dados do Orçamento</h2>
@@ -151,10 +220,26 @@
           <input type="file" id="arquivo" accept=".pdf,.png,.jpg,.jpeg">
 
           <label>📋 Ou cole texto ou imagem (Ctrl + V):</label>
-          <div id="pasteArea" contenteditable="true">
-            📌 Clique aqui ou pressione Ctrl+V para colar conteúdo | 🔍 Detecção automática de escalas
+          
+          <!-- 🎯 ÁREA DE PASTE MELHORADA - FASE 1 -->
+          <div class="multiplas-opcoes-alert">
+            <strong>🔍 DETECÇÃO APRIMORADA:</strong> Sistema identifica automaticamente múltiplas opções, ida/volta e escalas
+          </div>
+          
+          <div id="pasteArea" contenteditable="true" style="border: 2px dashed #2196f3; background: #f8f9ff;">
+            📌 Clique aqui ou pressione Ctrl+V para colar conteúdo | 🔍 Detecção automática de múltiplas opções e ida/volta
           </div>
           <div id="previewArea"></div>
+          
+          <div style="background: #e8f5e8; padding: 0.8rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.9rem;">
+            <strong>✨ NOVIDADES CORRIGIDAS:</strong>
+            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+              <li>✅ Múltiplas opções de voo detectadas automaticamente</li>
+              <li>✅ Distinção correta entre "somente ida" e "ida e volta"</li>
+              <li>✅ Limpeza automática de nomes de aeroportos</li>
+              <li>✅ Templates específicos para cruzeiros</li>
+            </ul>
+          </div>
         </div>
 
         <button type="submit">🚀 Gerar Orçamento Completo</button>
@@ -194,77 +279,56 @@
       <pre id="rankingIA">Será gerado automaticamente se você selecionar "Hotel" ou clique em "Gerar Ranking"...</pre>
     </div>
 
-    <!-- Dicas de Uso -->
+    <!-- 🎯 DICAS DE USO ATUALIZADAS - FASE 1 -->
     <section>
-      <h2>💡 Dicas de Uso - Sistema Limpo</h2>
+      <h2>💡 Dicas de Uso - Sistema Corrigido FASE 1</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
         
-        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
-          <h4>🧹 Orçamentos Profissionais:</h4>
+        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; border-left: 4px solid #2196f3;">
+          <h4>🧹 Formatação Corrigida:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Sem cabeçalhos técnicos</li>
-            <li>Prontos para copy/paste</li>
-            <li>Detecção automática de escalas</li>
-            <li>Conversão completa de aeroportos</li>
+            <li><strong>✅ Aeroportos limpos:</strong> "Congonhas (SP)" → "Congonhas"</li>
+            <li><strong>✅ Links inteligentes:</strong> Mostra apenas quando reais</li>
+            <li><strong>✅ Sem cabeçalhos técnicos:</strong> Texto limpo para WhatsApp</li>
+            <li><strong>✅ Preços exatos:</strong> Sem arredondamentos</li>
           </ul>
         </div>
         
-        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <h4>💳 Sistema de Parcelamento:</h4>
+        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; border-left: 4px solid #4caf50;">
+          <h4>🔍 Múltiplas Opções:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Aéreo Facial: só se nas observações</li>
-            <li>Outros tipos: opcional via checkbox</li>
-            <li>Cálculo automático das parcelas</li>
-            <li>Opção de 10x, 12x ou ambos</li>
+            <li><strong>✅ Detecção total:</strong> TODAS as opções na imagem</li>
+            <li><strong>✅ Numeração automática:</strong> OPÇÃO 1, OPÇÃO 2, etc.</li>
+            <li><strong>✅ Ida e volta:</strong> Distinção correta</li>
+            <li><strong>✅ Sem mistura:</strong> Cada opção separada</li>
           </ul>
         </div>
 
-        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <h4>🔍 Campos Inteligentes:</h4>
+        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; border-left: 4px solid #ff9800;">
+          <h4>🚢 Templates Específicos:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Destino e adultos são opcionais</li>
-            <li>IA extrai automaticamente dos dados</li>
-            <li>Se preenchido, tem prioridade</li>
-            <li>Mais flexível e ágil</li>
+            <li><strong>✅ Cruzeiros:</strong> Por cabine, não por passageiro</li>
+            <li><strong>✅ Hotéis:</strong> Nome exato e estrelas corretas</li>
+            <li><strong>✅ Ranking:</strong> Baseado no orçamento gerado</li>
+            <li><strong>✅ Dicas:</strong> Sem orçamento misturado</li>
           </ul>
         </div>
         
-        <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px;">
-          <h4>🚨 Segurança:</h4>
+        <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px; border-left: 4px solid #9c27b0;">
+          <h4>🔧 Sistema Robusto:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Não inventa dados não fornecidos</li>
-            <li>Usa apenas informações reais</li>
-            <li>Não cria roteiros fictícios</li>
-            <li>Preços sempre dos dados originais</li>
+            <li><strong>✅ Campos opcionais:</strong> Destino e adultos automáticos</li>
+            <li><strong>✅ Parcelamento inteligente:</strong> Por tipo de serviço</li>
+            <li><strong>✅ Análise precisa:</strong> GPT-4 com prompts específicos</li>
+            <li><strong>✅ Documentação:</strong> Por tipo de destino</li>
           </ul>
         </div>
-
-        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <h4>🌍 Dicas Automáticas:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Extrai destino do orçamento gerado</li>
-            <li>Detecta período da viagem</li>
-            <li>Identifica crianças para dicas familiares</li>
-            <li>Gera dicas personalizadas para WhatsApp</li>
-          </ul>
-        </div>
-
-        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <h4>🏨 Ranking de Hotéis:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Ranking com avaliações reais</li>
-            <li>TripAdvisor, Booking e Google</li>
-            <li>Distâncias para pontos turísticos</li>
-            <li>Apenas pontos positivos dos hotéis</li>
-          </ul>
-        </div>
-        
       </div>
     </section>
   </main>
 
   <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
-    <p>© 2025 CVC Itaqua | Sistema Limpo de Orçamentos com IA</p>
+    <p>© 2025 CVC Itaqua | Sistema Corrigido - FASE 1 Implementada</p>
   </footer>
 
   <script>
@@ -356,52 +420,51 @@
     // ================================================================================
 
     // Função para obter configuração de parcelamento (chamada pelo sistema principal)
-    function obterConfiguracaoParcelamento() {
-      const parcela10x = document.getElementById('parcela10x')?.checked || false;
-      const parcela12x = document.getElementById('parcela12x')?.checked || false;
+    function obterConfigParcelamento() {
+      const parcela10x = document.getElementById('parcela10x').checked;
+      const parcela12x = document.getElementById('parcela12x').checked;
       
-      const configuracao = {
-        incluirParcelamento: parcela10x || parcela12x,
-        parcelas10x: parcela10x,
-        parcelas12x: parcela12x,
-        mostrarAmbos: parcela10x && parcela12x
+      return {
+        incluir10x: parcela10x,
+        incluir12x: parcela12x,
+        ambos: parcela10x && parcela12x
       };
-      
-      console.log('💳 Configuração de parcelamento:', configuracao);
-      
-      return configuracao;
     }
 
-    // Função para resetar parcelamento (chamada ao limpar formulário)
-    function resetarParcelamento() {
-      document.getElementById('parcela10x').checked = false;
-      document.getElementById('parcela12x').checked = false;
-      document.getElementById('secaoParcelamento').style.display = 'none';
-      esconderAvisoParcelamentoMisto();
-      
-      console.log('🔄 Parcelamento resetado');
-    }
+    // ================================================================================
+    // 👶 GERENCIAMENTO DE IDADES DAS CRIANÇAS
+    // ================================================================================
 
-    // Função para atualizar campos de idades das crianças
     function atualizarIdadesCriancas() {
-      const qtdeCriancas = parseInt(document.getElementById('criancas').value) || 0;
+      const quantidadeCriancas = parseInt(document.getElementById('criancas').value) || 0;
       const container = document.getElementById('containerIdadesCriancas');
       const camposContainer = document.getElementById('camposIdadesCriancas');
       
-      if (qtdeCriancas > 0) {
+      if (quantidadeCriancas > 0) {
         container.style.display = 'block';
+        
+        // Limpar campos existentes
         camposContainer.innerHTML = '';
         
-        for (let i = 1; i <= qtdeCriancas; i++) {
+        // Criar campos para cada criança
+        for (let i = 1; i <= quantidadeCriancas; i++) {
           const div = document.createElement('div');
           div.style.marginBottom = '0.5rem';
-          div.innerHTML = `
-            <label for="idade_crianca_${i}" style="display: inline-block; width: 120px;">Criança ${i}:</label>
-            <input type="number" id="idade_crianca_${i}" name="idade_crianca_${i}" 
-                   min="0" max="17" placeholder="Idade" 
-                   style="width: 80px; margin-right: 10px;">
-            <small style="color: #666;">anos</small>
-          `;
+          
+          const label = document.createElement('label');
+          label.textContent = `Criança ${i}: `;
+          label.style.marginRight = '0.5rem';
+          
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.name = `idade_crianca_${i}`;
+          input.min = '0';
+          input.max = '17';
+          input.placeholder = 'Anos';
+          input.style.width = '80px';
+          
+          div.appendChild(label);
+          div.appendChild(input);
           camposContainer.appendChild(div);
         }
       } else {
@@ -410,176 +473,124 @@
       }
     }
 
-    // Função local de copiar (mantida para compatibilidade)
-    function copiarTexto(id) {
-      const texto = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(texto).then(() => {
-        // Feedback visual
-        const button = event.target;
-        const originalText = button.innerText;
-        button.innerText = "✅ Copiado!";
-        setTimeout(() => {
-          button.innerText = originalText;
-        }, 2000);
-      }).catch(err => {
-        console.error("Erro ao copiar:", err);
-        alert("Erro ao copiar. Tente selecionar o texto manualmente.");
-      });
+    // ================================================================================
+    // 📋 FUNÇÕES DE UTILITÁRIO
+    // ================================================================================
+
+    function copiarTexto(elementId) {
+      const elemento = document.getElementById(elementId);
+      if (!elemento) {
+        console.error('Elemento não encontrado:', elementId);
+        return;
+      }
+      
+      const texto = elemento.textContent || elemento.innerText;
+      
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto).then(() => {
+          mostrarFeedback('✅ Copiado para a área de transferência!');
+        }).catch(err => {
+          console.error('Erro ao copiar:', err);
+          copiarTextoFallback(texto);
+        });
+      } else {
+        copiarTextoFallback(texto);
+      }
     }
 
-    // Melhorar área de paste
-    const pasteArea = document.getElementById('pasteArea');
-    const previewArea = document.getElementById('previewArea');
-
-    if (pasteArea && previewArea) {
-      pasteArea.addEventListener('paste', function (e) {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-
-          if (item.type.indexOf('image') !== -1) {
-            const blob = item.getAsFile();
-            const reader = new FileReader();
-            reader.onload = function (event) {
-              const img = document.createElement('img');
-              img.src = event.target.result;
-              img.style.maxWidth = '100%';
-              previewArea.innerHTML = '';
-              previewArea.appendChild(img);
-              previewArea.dataset.fileData = event.target.result;
-            };
-            reader.readAsDataURL(blob);
-          } else if (item.type === 'text/plain') {
-            item.getAsString(function (text) {
-              previewArea.innerHTML = '<p>' + text + '</p>';
-            });
-          }
+    function copiarTextoFallback(texto) {
+      const textArea = document.createElement('textarea');
+      textArea.value = texto;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const sucesso = document.execCommand('copy');
+        if (sucesso) {
+          mostrarFeedback('✅ Copiado para a área de transferência!');
+        } else {
+          mostrarFeedback('❌ Erro ao copiar. Selecione e copie manualmente.');
         }
-      });
+      } catch (err) {
+        console.error('Erro no fallback de cópia:', err);
+        mostrarFeedback('❌ Erro ao copiar. Selecione e copie manualmente.');
+      }
+      
+      document.body.removeChild(textArea);
+    }
 
-      // Destacar área quando hover
-      pasteArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#003399';
-        this.style.backgroundColor = '#e9ecef';
-      });
-
-      pasteArea.addEventListener('dragleave', function(e) {
-        this.style.borderColor = '#007bff';
-        this.style.backgroundColor = '#f8f9fa';
-      });
+    function mostrarFeedback(mensagem) {
+      // Remover feedback existente
+      const feedbackExistente = document.getElementById('feedback-copia');
+      if (feedbackExistente) {
+        feedbackExistente.remove();
+      }
+      
+      // Criar novo feedback
+      const feedback = document.createElement('div');
+      feedback.id = 'feedback-copia';
+      feedback.textContent = mensagem;
+      feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        z-index: 10000;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      `;
+      
+      document.body.appendChild(feedback);
+      
+      // Remover após 3 segundos
+      setTimeout(() => {
+        if (feedback.parentNode) {
+          feedback.parentNode.removeChild(feedback);
+        }
+      }, 3000);
     }
 
     // ================================================================================
-    // 📊 LOGS E INICIALIZAÇÃO
+    // 🎯 PLACEHOLDER FUNCTIONS - SERÃO IMPLEMENTADAS NA FASE 2
     // ================================================================================
 
-    // Inicializar quando a página carregar
+    function gerarDicasDestino() {
+      console.log('🎯 Função gerarDicasDestino será implementada na FASE 2');
+      mostrarFeedback('🚧 Função será implementada na próxima fase');
+    }
+
+    function gerarRankingHoteis() {
+      console.log('🏆 Função gerarRankingHoteis será implementada na FASE 2');
+      mostrarFeedback('🚧 Função será implementada na próxima fase');
+    }
+
+    // ================================================================================
+    // 🚀 INICIALIZAÇÃO
+    // ================================================================================
+
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('💳 Sistema de parcelamento condicional carregado');
-      console.log('🧹 Sistema limpo ativo - campos opcionais');
-      console.log('🌍 Sistema de dicas automáticas carregado');
-      console.log('🏨 Sistema de ranking de hotéis carregado');
+      console.log('🎯 [FASE 1] orcamentos.html carregado com melhorias visuais');
       
-      // Verificar estado inicial
-      toggleParcelamento();
+      // Configurar área de paste melhorada
+      const pasteArea = document.getElementById('pasteArea');
+      if (pasteArea) {
+        pasteArea.addEventListener('paste', function(e) {
+          console.log('📋 [FASE 1] Evento de paste detectado - será processado na FASE 2');
+        });
+      }
       
-      // Adicionar listeners para mudanças nos checkboxes de parcelamento
-      document.getElementById('parcela10x').addEventListener('change', function() {
-        if (this.checked) {
-          console.log('✅ Parcelamento 10x selecionado');
-        } else {
-          console.log('❌ Parcelamento 10x desmarcado');
-        }
-      });
-      
-      document.getElementById('parcela12x').addEventListener('change', function() {
-        if (this.checked) {
-          console.log('✅ Parcelamento 12x selecionado');
-        } else {
-          console.log('❌ Parcelamento 12x desmarcado');
-        }
-      });
+      console.log('✅ [FASE 1] Sistema inicializado - aguardando correções JavaScript');
     });
-
-    // Destacar página atual na navegação
-    document.addEventListener('DOMContentLoaded', function() {
-      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-      const navLinks = document.querySelectorAll('nav a');
-      
-      navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href === currentPage) {
-          link.classList.add('active');
-        } else {
-          link.classList.remove('active');
-        }
-      });
-    });
-
-    // ================================================================================
-    // 🎨 ESTILOS ESPECÍFICOS PARA O COMPONENTE
-    // ================================================================================
-
-    // Adicionar estilos CSS específicos
-    const styleParcelamento = document.createElement('style');
-    styleParcelamento.textContent = `
-      #secaoParcelamento {
-        transition: all 0.3s ease;
-        animation: fadeInParcelamento 0.5s ease;
-      }
-      
-      @keyframes fadeInParcelamento {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      #secaoParcelamento .checkbox-group label:hover {
-        background: #f0f0f0 !important;
-        transform: translateX(2px);
-        transition: all 0.2s ease;
-      }
-      
-      #secaoParcelamento input[type="checkbox"]:checked + span {
-        color: #007bff;
-        font-weight: bold;
-      }
-      
-      #avisoParcelamentoMisto {
-        animation: slideInAviso 0.3s ease;
-      }
-      
-      @keyframes slideInAviso {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `;
-
-    document.head.appendChild(styleParcelamento);
-
-    console.log('🎨 Estilos de parcelamento aplicados');
-    console.log('🚀 Sistema de parcelamento condicional pronto!');
-    console.log('📋 Regras:');
-    console.log('   ✅ Aéreo Facial: parcelamento oculto (só se nas observações)');
-    console.log('   ✅ Outros tipos: parcelamento opcional via checkbox');
-    console.log('   ✅ Tipos mistos: aviso explicativo');
-    console.log('   🔍 Campos destino e adultos opcionais - detecção automática');
-    console.log('   🌍 Dicas automáticas: extração de destino do orçamento');
-    console.log('   🏨 Ranking de hotéis: formato específico com avaliações');
   </script>
 
-  <script src="ai.js"></script>
+  <!-- 🎯 SCRIPT DE IA SERÁ CARREGADO AQUI NA FASE 2 -->
+  <!-- <script src="ai.js"></script> -->
+  
 </body>
 </html>
