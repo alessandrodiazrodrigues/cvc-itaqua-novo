@@ -1,4 +1,4 @@
-// ================================================================================
+================================================================================
 // 🏆 CVC ITAQUA - FRONTEND CORRIGIDO v5.3.1-fixed
 // ================================================================================
 // CORREÇÕES: Validação campos opcionais + Detecção ida/volta + Sistema completo
@@ -626,7 +626,7 @@ async function callAICorrigida(formData, analise) {
 
   const requestData = {
     prompt: construirPromptCorrigido(formData, analise),
-    tipo: 'orcamento',
+    tipoRequisicao: 'orcamento',
     destino: formData.destino || 'Detectar automaticamente',
     tipos: Array.isArray(formData.tipos) ? formData.tipos : [],
     temImagem: Boolean(formData.temImagem),
@@ -1211,7 +1211,7 @@ async function chamarIAParaDicas(prompt, tipo, extraData = {}) {
     // Verificar se existe a função callAICorrigida (sistema mais novo)
     if (typeof callAICorrigida === 'function') {
       const formData = {
-        tipos: [tipo === 'destino' ? 'Destino' : 'Hotel'],
+        tipos: ['Hotel'],
         destino: extraData.destino || '',
         observacoes: prompt,
         textoColado: '',
