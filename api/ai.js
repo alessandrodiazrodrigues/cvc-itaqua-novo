@@ -10,7 +10,7 @@
 
 const aeroportos = {
   // Principais aeroportos brasileiros
-  'CGH': 'Congonhas (SP)', 'GRU': 'Guarulhos (SP)', 'VCP': 'Viracopos (SP)',
+  'CGH': 'Congonhas (SP)', 'GRU': 'Guarulhos (SP)', 'VCP': 'Campinas Viracopos (SP)',
   'SDU': 'Santos Dumont (RJ)', 'GIG': 'Galeão (RJ)', 
   'BSB': 'Brasília (DF)', 'CNF': 'Confins (MG)', 'PLU': 'Pampulha (MG)',
   'CWB': 'Curitiba (PR)', 'IGU': 'Foz do Iguaçu (PR)', 
@@ -25,13 +25,36 @@ const aeroportos = {
   'PNZ': 'Petrolina (PE)', 'JTC': 'Bauru (SP)', 'AQA': 'Araraquara (SP)',
   'PPB': 'Presidente Prudente (SP)', 'CXJ': 'Caxias do Sul (RS)',
   
-  // Aeroportos internacionais importantes
-  'EZE': 'Buenos Aires (Argentina)', 'MVD': 'Montevidéu (Uruguai)',
+  // Buenos Aires - Argentina (2 aeroportos)
+  'EZE': 'Buenos Aires Ezeiza (Argentina)', 
+  'AEP': 'Buenos Aires Aeroparque (Argentina)',
+  
+  // Londres - Reino Unido (5 aeroportos principais)
+  'LHR': 'Londres Heathrow (Reino Unido)',
+  'LGW': 'Londres Gatwick (Reino Unido)', 
+  'STN': 'Londres Stansted (Reino Unido)',
+  'LTN': 'Londres Luton (Reino Unido)',
+  'LCY': 'Londres City (Reino Unido)',
+  
+  // Nova York - EUA (3 aeroportos principais)
+  'JFK': 'Nova York JFK (EUA)',
+  'LGA': 'Nova York LaGuardia (EUA)',
+  'EWR': 'Nova York Newark (EUA)',
+  
+  // Milão - Itália (2 aeroportos)
+  'MXP': 'Milão Malpensa (Itália)',
+  'LIN': 'Milão Linate (Itália)',
+  
+  // Paris - França (2 aeroportos principais)
+  'CDG': 'Paris Charles de Gaulle (França)',
+  'ORY': 'Paris Orly (França)',
+  
+  // Outros aeroportos internacionais importantes
+  'MVD': 'Montevidéu (Uruguai)',
   'ASU': 'Assunção (Paraguai)', 'SCL': 'Santiago (Chile)', 'LIM': 'Lima (Peru)',
   'BOG': 'Bogotá (Colômbia)', 'UIO': 'Quito (Equador)', 'CCS': 'Caracas (Venezuela)',
-  'MIA': 'Miami (EUA)', 'MCO': 'Orlando (EUA)', 'JFK': 'Nova York (EUA)',
-  'LAX': 'Los Angeles (EUA)', 'CDG': 'Paris (França)', 'MAD': 'Madrid (Espanha)',
-  'FCO': 'Roma (Itália)', 'LIS': 'Lisboa (Portugal)', 'LGW': 'Londres (Reino Unido)',
+  'MIA': 'Miami (EUA)', 'MCO': 'Orlando (EUA)', 'LAX': 'Los Angeles (EUA)',
+  'MAD': 'Madrid (Espanha)', 'FCO': 'Roma (Itália)', 'LIS': 'Lisboa (Portugal)',
   'AMS': 'Amsterdã (Holanda)', 'FRA': 'Frankfurt (Alemanha)', 'ZUR': 'Zurich (Suíça)',
   'DXB': 'Dubai (Emirados)', 'DOH': 'Doha (Catar)', 'IST': 'Istambul (Turquia)'
 };
