@@ -6,6 +6,61 @@
   <title>Geração de Orçamento com IA - CVC Itaqua</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="shortcut icon" href="https://www.cvc.com.br/favicon.ico" type="image/x-icon">
+  
+  <!-- CSS adicional para os novos botões -->
+  <style>
+    .gerar-dicas {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-left: 1rem;
+    }
+
+    .gerar-dicas:hover:not(:disabled) {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+
+    .gerar-dicas:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.6;
+    }
+
+    .output-section h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .output-section h3 .copiar,
+    .output-section h3 .gerar-dicas {
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .output-section h3 {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .gerar-dicas,
+      .copiar {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+        width: auto;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -114,22 +169,29 @@
       <pre id="orcamentoIA">Preencha o formulário acima para gerar o orçamento...</pre>
     </div>
 
-    <!-- Seção de Dicas do Destino com Botão -->
+    <!-- Seção de Dicas do Destino com Botões Melhorados -->
     <div class="output-section">
       <h3>🌍 Dicas do Destino
-        <button class="gerar-dicas" onclick="gerarDicasDestino()" id="btnGerarDicas" disabled>
+        <button class="gerar-dicas" onclick="gerarDicasDestino()" id="btnGerarDicas" disabled title="Gere um orçamento primeiro">
           🎯 Gerar Dicas
         </button>
-        <button class="copiar" onclick="copiarTexto('destinoIA')" style="display: none;" id="btnCopiarDicas">📋 Copiar</button>
+        <button class="copiar" onclick="copiarTexto('destinoIA')" style="display: none;" id="btnCopiarDicas">
+          📋 Copiar
+        </button>
       </h3>
-      <pre id="destinoIA">Clique em "Gerar Dicas" após criar um orçamento para obter informações sobre o destino...</pre>
+      <pre id="destinoIA">Clique em "Gerar Dicas" após criar um orçamento para obter informações personalizadas sobre o destino...</pre>
     </div>
 
     <div class="output-section">
       <h3>🏨 Ranking de Hotéis
-        <button class="copiar" onclick="copiarTexto('rankingIA')">📋 Copiar</button>
+        <button class="gerar-dicas" onclick="gerarRankingHoteis()" id="btnGerarRanking" disabled title="Selecione 'Hotel' e gere um orçamento primeiro">
+          🏆 Gerar Ranking
+        </button>
+        <button class="copiar" onclick="copiarTexto('rankingIA')" style="display: none;" id="btnCopiarRanking">
+          📋 Copiar
+        </button>
       </h3>
-      <pre id="rankingIA">Será gerado automaticamente se você selecionar "Hotel"...</pre>
+      <pre id="rankingIA">Será gerado automaticamente se você selecionar "Hotel" ou clique em "Gerar Ranking"...</pre>
     </div>
 
     <!-- Dicas de Uso -->
@@ -174,6 +236,26 @@
             <li>Usa apenas informações reais</li>
             <li>Não cria roteiros fictícios</li>
             <li>Preços sempre dos dados originais</li>
+          </ul>
+        </div>
+
+        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
+          <h4>🌍 Dicas Automáticas:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Extrai destino do orçamento gerado</li>
+            <li>Detecta período da viagem</li>
+            <li>Identifica crianças para dicas familiares</li>
+            <li>Gera dicas personalizadas para WhatsApp</li>
+          </ul>
+        </div>
+
+        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
+          <h4>🏨 Ranking de Hotéis:</h4>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Ranking com avaliações reais</li>
+            <li>TripAdvisor, Booking e Google</li>
+            <li>Distâncias para pontos turísticos</li>
+            <li>Apenas pontos positivos dos hotéis</li>
           </ul>
         </div>
         
@@ -328,82 +410,6 @@
       }
     }
 
-    // Função para gerar dicas do destino (chamada manual)
-    async function gerarDicasDestino() {
-      const destino = document.getElementById('destino').value;
-      const orcamentoTexto = document.getElementById('orcamentoIA').innerText;
-      
-      if (!destino && (!orcamentoTexto || orcamentoTexto === 'Preencha o formulário acima para gerar o orçamento...')) {
-        alert('Gere um orçamento primeiro ou informe um destino!');
-        return;
-      }
-      
-      const btnGerar = document.getElementById('btnGerarDicas');
-      const btnCopiar = document.getElementById('btnCopiarDicas');
-      
-      btnGerar.disabled = true;
-      btnGerar.innerText = '🤖 Gerando...';
-      
-      try {
-        // Extrair destino do orçamento se não foi informado
-        let destinoFinal = destino;
-        if (!destinoFinal && orcamentoTexto) {
-          // Tentar extrair destino do orçamento gerado
-          const linhas = orcamentoTexto.split('\n');
-          for (const linha of linhas) {
-            if (linha.includes('📍') || linha.includes('🌍')) {
-              destinoFinal = linha.replace(/[📍🌍]/g, '').trim();
-              break;
-            }
-          }
-        }
-        
-        if (!destinoFinal) {
-          alert('Não foi possível identificar o destino. Informe no campo destino.');
-          return;
-        }
-        
-        let contextoData = '';
-        if (orcamentoTexto && orcamentoTexto !== 'Preencha o formulário acima para gerar o orçamento...') {
-          contextoData = `\n\nCONTEXTO DA VIAGEM:\n${orcamentoTexto.substring(0, 300)}...`;
-        }
-        
-        const prompt = `Crie dicas personalizadas sobre ${destinoFinal} para WhatsApp da CVC.${contextoData}
-        
-Inclua:
-- Principais atrações e pontos turísticos
-- Melhor época para visitar (considerando a época da viagem se informada)
-- Dicas de clima e o que levar
-- Informações práticas (moeda, documentação, fuso horário)
-- Tom vendedor mas informativo
-- Máximo 250 palavras
-- Use emojis para deixar atrativo
-
-Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
-
-        const response = await callAI(prompt, 'destino', { destino: destinoFinal });
-        document.getElementById('destinoIA').innerText = response;
-        
-        btnCopiar.style.display = 'inline-block';
-        console.log("✅ Dicas do destino geradas!");
-        
-      } catch (error) {
-        console.error("❌ Erro ao gerar dicas:", error);
-        document.getElementById('destinoIA').innerText = "❌ Erro ao gerar dicas: " + error.message;
-      } finally {
-        btnGerar.disabled = false;
-        btnGerar.innerText = '🎯 Gerar Dicas';
-      }
-    }
-
-    // Habilitar botão de gerar dicas quando orçamento for criado
-    function habilitarBotaoDicas() {
-      const btnGerar = document.getElementById('btnGerarDicas');
-      if (btnGerar) {
-        btnGerar.disabled = false;
-      }
-    }
-
     // Função local de copiar (mantida para compatibilidade)
     function copiarTexto(id) {
       const texto = document.getElementById(id).innerText;
@@ -472,6 +478,8 @@ Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
     document.addEventListener('DOMContentLoaded', function() {
       console.log('💳 Sistema de parcelamento condicional carregado');
       console.log('🧹 Sistema limpo ativo - campos opcionais');
+      console.log('🌍 Sistema de dicas automáticas carregado');
+      console.log('🏨 Sistema de ranking de hotéis carregado');
       
       // Verificar estado inicial
       toggleParcelamento();
@@ -568,6 +576,8 @@ Se há datas específicas na viagem, adapte as dicas para essa época do ano.`;
     console.log('   ✅ Outros tipos: parcelamento opcional via checkbox');
     console.log('   ✅ Tipos mistos: aviso explicativo');
     console.log('   🔍 Campos destino e adultos opcionais - detecção automática');
+    console.log('   🌍 Dicas automáticas: extração de destino do orçamento');
+    console.log('   🏨 Ranking de hotéis: formato específico com avaliações');
   </script>
 
   <script src="ai.js"></script>
