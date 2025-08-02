@@ -5,9 +5,27 @@
   "type": "module",
   "scripts": {
     "build": "echo 'Build concluído'",
-    "dev": "vercel dev"
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=18.x"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alessandrodiazrodrigues/cvc-itaqua-gestao.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alessandrodiazrodrigues/cvc-itaqua-gestao/issues"
+  },
+  "homepage": "https://github.com/alessandrodiazrodrigues/cvc-itaqua-gestao#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2"
   }
 }

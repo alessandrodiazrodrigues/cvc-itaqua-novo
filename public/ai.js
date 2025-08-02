@@ -1,7 +1,7 @@
 // 🚀 ai.js - Arquivo Principal (Versão Modular)
 // Importa todos os módulos necessários
 
-console.log("⚡ CVC ITAQUA - SISTEMA MODULAR ATIVO (v3.0)");
+console.log("⚡ CVC ITAQUA - SISTEMA MODULAR ATIVO (v4.0 - Integrado)");
 
 // ================================================================================
 // 📱 CONFIGURAÇÕES GLOBAIS
@@ -9,8 +9,14 @@ console.log("⚡ CVC ITAQUA - SISTEMA MODULAR ATIVO (v3.0)");
 
 const CONFIG = {
   API_URL: '/api/ai',
-  VERSION: '3.0',
-  DEBUG: true
+  VERSION: '4.0',
+  DEBUG: true,
+  MODULES: {
+    DETECTION: 'ai-detection.js',
+    TEMPLATES: 'ai-templates.js', 
+    PROMPTS: 'ai-prompts.js',
+    FORMATTING: 'ai-formatting.js'
+  }
 };
 
 let formElements = {};
@@ -25,7 +31,7 @@ let estadoGlobal = {
 // ================================================================================
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("🔄 Iniciando sistema modular v3.0...");
+  console.log("🔄 Iniciando sistema modular v4.0 integrado...");
   
   // Inicializar elementos do formulário
   initFormElements();
@@ -42,8 +48,49 @@ document.addEventListener("DOMContentLoaded", function () {
   // Inicializar botões de dicas
   initBotoesDicas();
   
-  console.log("✅ Sistema modular inicializado!");
+  // Verificar integração dos módulos
+  verificarModulosIntegrados();
+  
+  console.log("✅ Sistema modular v4.0 inicializado!");
 });
+
+// ================================================================================
+// 🔍 VERIFICAÇÃO DE MÓDULOS INTEGRADOS
+// ================================================================================
+
+function verificarModulosIntegrados() {
+  console.log("🔍 Verificando integração dos módulos v4.0...");
+  
+  const modulos = {
+    'ai-detection.js': typeof analisarTextoCompleto === 'function',
+    'ai-templates.js': typeof aplicarTemplate === 'function',
+    'ai-prompts.js': typeof gerarPromptOtimizado === 'function',
+    'ai-formatting.js': typeof formatText === 'function',
+    'ai-orcamento.js': typeof generateOrcamento === 'function'
+  };
+  
+  let modulosCarregados = 0;
+  let totalModulos = Object.keys(modulos).length;
+  
+  Object.entries(modulos).forEach(([nome, carregado]) => {
+    const status = carregado ? '✅ Carregado' : '❌ Não disponível';
+    console.log(`- ${nome}: ${status}`);
+    if (carregado) modulosCarregados++;
+  });
+  
+  const porcentagem = Math.round((modulosCarregados / totalModulos) * 100);
+  console.log(`\n📊 Status da integração: ${modulosCarregados}/${totalModulos} módulos (${porcentagem}%)`);
+  
+  if (porcentagem === 100) {
+    console.log("✅ Todos os módulos v4.0 integrados com sucesso!");
+  } else if (porcentagem >= 80) {
+    console.log("⚠️ Maioria dos módulos carregados - sistema funcional");
+  } else {
+    console.log("❌ Alguns módulos não carregaram - funcionalidade limitada");
+  }
+  
+  return { modulosCarregados, totalModulos, porcentagem };
+}
 
 // ================================================================================
 // 🎯 EXTRAÇÃO DE DADOS DO FORMULÁRIO
@@ -222,19 +269,23 @@ function habilitarBotoesDicas() {
 
 async function testarConexaoAPI() {
   try {
-    console.log("🧪 Testando conexão com API v3.0...");
+    console.log("🧪 Testando conexão com API v4.0...");
     
     const response = await fetch(CONFIG.API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: 'teste de conexão v3.0',
-        tipo: 'teste'
+        prompt: 'teste de conexão v4.0 integrado',
+        tipo: 'teste',
+        metadata: {
+          versao: CONFIG.VERSION,
+          modulos: Object.keys(CONFIG.MODULES)
+        }
       })
     });
     
     if (response.ok) {
-      console.log("✅ API Vercel v3.0 conectada!");
+      console.log("✅ API Vercel v4.0 conectada!");
     } else {
       console.warn("⚠️ API status:", response.status);
     }
@@ -287,21 +338,170 @@ function showError(message) {
 // ================================================================================
 
 function copiarTexto(id) {
-  const texto = document.getElementById(id)?.innerText;
-  if (!texto) return;
+  console.log("📋 Tentando copiar elemento:", id);
   
-  navigator.clipboard.writeText(texto).then(() => {
-    // Feedback visual
-    const button = event.target;
-    const originalText = button.innerText;
-    button.innerText = "✅ Copiado!";
-    setTimeout(() => {
-      button.innerText = originalText;
-    }, 2000);
-  }).catch(err => {
-    console.error("Erro ao copiar:", err);
-    alert("Erro ao copiar. Tente selecionar o texto manualmente.");
+  const elemento = document.getElementById(id);
+  if (!elemento) {
+    console.error("❌ Elemento não encontrado:", id);
+    alert("Elemento não encontrado!");
+    return;
+  }
+  
+  const texto = elemento.innerText || elemento.textContent;
+  
+  if (!texto || texto.trim() === '') {
+    console.warn("⚠️ Elemento vazio:", id);
+    alert("Não há conteúdo para copiar!");
+    return;
+  }
+  
+  console.log("📄 Copiando texto:", texto.substring(0, 100) + "...");
+  
+  // Tenta método moderno primeiro
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(texto).then(() => {
+      console.log("✅ Texto copiado via Clipboard API");
+      mostrarFeedbackCopia(event.target, "✅ Copiado!");
+    }).catch(err => {
+      console.warn("❌ Clipboard API falhou, tentando alternativo...", err);
+      tentarCopiaAlternativa(texto, event.target);
+    });
+  } else {
+    console.log("📝 Usando método alternativo (não é contexto seguro)");
+    tentarCopiaAlternativa(texto, event.target);
+  }
+}
+
+function tentarCopiaAlternativa(texto, button) {
+  try {
+    // Cria elemento temporário para seleção
+    const textArea = document.createElement('textarea');
+    textArea.value = texto;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    
+    // Seleciona e copia
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, 99999); // Para mobile
+    
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    if (successful) {
+      console.log("✅ Copiado via execCommand");
+      mostrarFeedbackCopia(button, "✅ Copiado!");
+    } else {
+      throw new Error("execCommand falhou");
+    }
+  } catch (err) {
+    console.error("❌ Cópia falhou completamente:", err);
+    mostrarInstrucoesManuais(button, texto);
+  }
+}
+
+function mostrarFeedbackCopia(button, texto) {
+  if (!button) return;
+  
+  const originalText = button.innerText;
+  const originalBackground = button.style.background;
+  
+  button.innerText = texto;
+  button.style.background = '#28a745';
+  button.style.transform = 'scale(1.05)';
+  
+  setTimeout(() => {
+    button.innerText = originalText;
+    button.style.background = originalBackground;
+    button.style.transform = 'scale(1)';
+  }, 2000);
+}
+
+function mostrarInstrucoesManuais(button, texto) {
+  mostrarFeedbackCopia(button, "❌ Falhou");
+  
+  // Cria modal com instruções
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 10000; display: flex;
+    align-items: center; justify-content: center;
+  `;
+  
+  const content = document.createElement('div');
+  content.style.cssText = `
+    background: white; padding: 2rem; border-radius: 8px;
+    max-width: 500px; max-height: 400px; overflow-y: auto;
+  `;
+  
+  content.innerHTML = `
+    <h3>📋 Cópia Manual Necessária</h3>
+    <p>Selecione o texto abaixo e pressione <strong>Ctrl+C</strong>:</p>
+    <textarea readonly style="width: 100%; height: 200px; margin: 1rem 0;">${texto}</textarea>
+    <button onclick="this.parentElement.parentElement.remove()" 
+            style="background: #007bff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px;">
+      Fechar
+    </button>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  
+  // Remove modal ao clicar fora
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove();
+  };
+}
+
+// ================================================================================
+// 🧪 FUNÇÃO DE TESTE PARA FUNCIONALIDADE DE CÓPIA
+// ================================================================================
+
+function testarFuncionalidadeCopia() {
+  console.log("🧪 Testando funcionalidade de cópia...");
+  
+  const elementos = ['orcamentoIA', 'destinoIA', 'rankingIA'];
+  const resultados = [];
+  
+  elementos.forEach(id => {
+    const elemento = document.getElementById(id);
+    const existe = elemento !== null;
+    const temConteudo = existe && elemento.innerText.trim() !== '';
+    
+    resultados.push({
+      id,
+      existe,
+      temConteudo,
+      conteudo: existe ? elemento.innerText.substring(0, 50) + '...' : 'N/A'
+    });
+    
+    console.log(`${existe ? '✅' : '❌'} Elemento '${id}': ${existe ? 'encontrado' : 'não encontrado'}`);
+    if (existe) {
+      console.log(`📄 Conteúdo: ${elemento.innerText.substring(0, 100)}...`);
+    }
   });
+  
+  // Testa função de cópia se elementos existem
+  const elementosExistentes = resultados.filter(r => r.existe && r.temConteudo);
+  if (elementosExistentes.length > 0) {
+    console.log(`🎯 Elementos disponíveis para cópia: ${elementosExistentes.map(e => e.id).join(', ')}`);
+  } else {
+    console.log("⚠️ Nenhum elemento com conteúdo disponível para teste de cópia");
+  }
+  
+  return resultados;
+}
+
+// Execução automática do teste em desenvolvimento
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  setTimeout(() => {
+    console.log("\n🧪 === TESTE FUNCIONALIDADE DE CÓPIA ===");
+    testarFuncionalidadeCopia();
+    console.log("🧪 === FIM DO TESTE ===\n");
+  }, 1500);
 }
 
 // ================================================================================
@@ -315,4 +515,5 @@ function copiarTexto(id) {
 // - ai-utils.js (utilitários)
 // - ai-paste.js (área de paste)
 
-console.log("🚀 Sistema modular v3.0 carregado!");
+console.log("🚀 Sistema modular v4.0 integrado carregado!");
+console.log("🔗 Módulos integrados: Detection, Templates, Prompts, Formatting");
