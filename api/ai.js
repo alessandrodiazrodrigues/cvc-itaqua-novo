@@ -1,7 +1,7 @@
 // ================================================================================
-// 🏆 CVC ITAQUA - API CORRIGIDA v5.3.2-fixed
+// 🏆 CVC ITAQUA - API CORRIGIDA v5.3.3-final
 // ================================================================================
-// CORREÇÕES: Detecção múltiplas opções em imagem + Ida/volta + Campos opcionais
+// CORREÇÕES: Detecção ida/volta CORRIGIDA + Templates corrigidos + Formatação
 // ================================================================================
 
 // ================================================================================
@@ -10,53 +10,33 @@
 
 const aeroportos = {
   // Principais aeroportos brasileiros
-  'CGH': 'Congonhas (SP)', 'GRU': 'Guarulhos (SP)', 'VCP': 'Campinas Viracopos (SP)',
-  'SDU': 'Santos Dumont (RJ)', 'GIG': 'Galeão (RJ)', 
-  'BSB': 'Brasília (DF)', 'CNF': 'Confins (MG)', 'PLU': 'Pampulha (MG)',
-  'CWB': 'Curitiba (PR)', 'IGU': 'Foz do Iguaçu (PR)', 
-  'REC': 'Recife (PE)', 'FOR': 'Fortaleza (CE)', 'SSA': 'Salvador (BA)',
-  'MAO': 'Manaus (AM)', 'BEL': 'Belém (PA)', 'CGB': 'Cuiabá (MT)',
-  'CGR': 'Campo Grande (MS)', 'AJU': 'Aracaju (SE)', 'MCZ': 'Maceió (AL)',
-  'JPA': 'João Pessoa (PB)', 'NAT': 'Natal (RN)', 'THE': 'Teresina (PI)',
-  'SLZ': 'São Luís (MA)', 'VIX': 'Vitória (ES)', 'FLN': 'Florianópolis (SC)',
-  'POA': 'Porto Alegre (RS)', 'BPS': 'Porto Seguro (BA)', 'IOS': 'Ilhéus (BA)',
-  'RAO': 'Ribeirão Preto (SP)', 'NVT': 'Navegantes (SC)', 'UDI': 'Uberlândia (MG)',
-  'MOC': 'Montes Claros (MG)', 'JDF': 'Juiz de Fora (MG)', 'GYN': 'Goiânia (GO)',
-  'PNZ': 'Petrolina (PE)', 'JTC': 'Bauru (SP)', 'AQA': 'Araraquara (SP)',
-  'PPB': 'Presidente Prudente (SP)', 'CXJ': 'Caxias do Sul (RS)',
+  'CGH': 'Congonhas', 'GRU': 'Guarulhos', 'VCP': 'Viracopos',
+  'SDU': 'Santos Dumont', 'GIG': 'Galeão', 
+  'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha',
+  'CWB': 'Curitiba', 'IGU': 'Foz do Iguaçu', 
+  'REC': 'Recife', 'FOR': 'Fortaleza', 'SSA': 'Salvador',
+  'MAO': 'Manaus', 'BEL': 'Belém', 'CGB': 'Cuiabá',
+  'CGR': 'Campo Grande', 'AJU': 'Aracaju', 'MCZ': 'Maceió',
+  'JPA': 'João Pessoa', 'NAT': 'Natal', 'THE': 'Teresina',
+  'SLZ': 'São Luís', 'VIX': 'Vitória', 'FLN': 'Florianópolis',
+  'POA': 'Porto Alegre', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus',
+  'RAO': 'Ribeirão Preto', 'NVT': 'Navegantes', 'UDI': 'Uberlândia',
+  'MOC': 'Montes Claros', 'JDF': 'Juiz de Fora', 'GYN': 'Goiânia',
+  'PNZ': 'Petrolina', 'JTC': 'Bauru', 'AQA': 'Araraquara',
+  'PPB': 'Presidente Prudente', 'CXJ': 'Caxias do Sul',
   
-  // Buenos Aires - Argentina (2 aeroportos)
-  'EZE': 'Buenos Aires Ezeiza (Argentina)', 
-  'AEP': 'Buenos Aires Aeroparque (Argentina)',
-  
-  // Londres - Reino Unido (5 aeroportos principais)
-  'LHR': 'Londres Heathrow (Reino Unido)',
-  'LGW': 'Londres Gatwick (Reino Unido)', 
-  'STN': 'Londres Stansted (Reino Unido)',
-  'LTN': 'Londres Luton (Reino Unido)',
-  'LCY': 'Londres City (Reino Unido)',
-  
-  // Nova York - EUA (3 aeroportos principais)
-  'JFK': 'Nova York JFK (EUA)',
-  'LGA': 'Nova York LaGuardia (EUA)',
-  'EWR': 'Nova York Newark (EUA)',
-  
-  // Milão - Itália (2 aeroportos)
-  'MXP': 'Milão Malpensa (Itália)',
-  'LIN': 'Milão Linate (Itália)',
-  
-  // Paris - França (2 aeroportos principais)
-  'CDG': 'Paris Charles de Gaulle (França)',
-  'ORY': 'Paris Orly (França)',
-  
-  // Outros aeroportos internacionais importantes
-  'MVD': 'Montevidéu (Uruguai)',
-  'ASU': 'Assunção (Paraguai)', 'SCL': 'Santiago (Chile)', 'LIM': 'Lima (Peru)',
-  'BOG': 'Bogotá (Colômbia)', 'UIO': 'Quito (Equador)', 'CCS': 'Caracas (Venezuela)',
-  'MIA': 'Miami (EUA)', 'MCO': 'Orlando (EUA)', 'LAX': 'Los Angeles (EUA)',
-  'MAD': 'Madrid (Espanha)', 'FCO': 'Roma (Itália)', 'LIS': 'Lisboa (Portugal)',
-  'AMS': 'Amsterdã (Holanda)', 'FRA': 'Frankfurt (Alemanha)', 'ZUR': 'Zurich (Suíça)',
-  'DXB': 'Dubai (Emirados)', 'DOH': 'Doha (Catar)', 'IST': 'Istambul (Turquia)'
+  // Aeroportos internacionais importantes
+  'EZE': 'Buenos Aires Ezeiza', 'AEP': 'Buenos Aires Aeroparque',
+  'LHR': 'Londres Heathrow', 'LGW': 'Londres Gatwick', 'STN': 'Londres Stansted',
+  'JFK': 'Nova York JFK', 'LGA': 'Nova York LaGuardia', 'EWR': 'Nova York Newark',
+  'MXP': 'Milão Malpensa', 'LIN': 'Milão Linate',
+  'CDG': 'Paris Charles de Gaulle', 'ORY': 'Paris Orly',
+  'MVD': 'Montevidéu', 'ASU': 'Assunção', 'SCL': 'Santiago', 'LIM': 'Lima',
+  'BOG': 'Bogotá', 'UIO': 'Quito', 'CCS': 'Caracas',
+  'MIA': 'Miami', 'MCO': 'Orlando', 'LAX': 'Los Angeles',
+  'MAD': 'Madrid', 'FCO': 'Roma', 'LIS': 'Lisboa',
+  'AMS': 'Amsterdã', 'FRA': 'Frankfurt', 'ZUR': 'Zurich',
+  'DXB': 'Dubai', 'DOH': 'Doha', 'IST': 'Istambul'
 };
 
 // ================================================================================
@@ -64,71 +44,67 @@ const aeroportos = {
 // ================================================================================
 
 const TEMPLATES = {
+  // ✅ TEMPLATE CORRIGIDO PARA IDA E VOLTA
+  'Aéreo Ida e Volta': `✈️ VOO DE IDA
+🏷️ [COMPANHIA]
+🗓️ [DATA_IDA]
+✈️ [HORA_IDA] - [ORIGEM] / [HORA_CHEGADA_IDA] - [DESTINO]
+💰 [VALOR] para [PASSAGEIROS]
+💳 [PAGAMENTO]
+
+✈️ VOO DE VOLTA
+🏷️ [COMPANHIA]
+🗓️ [DATA_VOLTA]
+✈️ [HORA_VOLTA] - [DESTINO] / [HORA_CHEGADA_VOLTA] - [ORIGEM]
+💰 [VALOR] para [PASSAGEIROS]
+💳 [PAGAMENTO]`,
+
   // ✅ TEMPLATE CORRIGIDO PARA SOMENTE IDA
-  'Aéreo Somente Ida': `*Passagem Aérea - Somente Ida*
+  'Aéreo Somente Ida': `✈️ VOO DE IDA
 🏷️ [COMPANHIA]
 🗓️ [DATA] (Somente ida)
-✈️ [DATA] - [ORIGEM] [HORA_IDA] / [DESTINO] [HORA_CHEGADA][DETALHES_VOO]
-💰 R$ [VALOR] para [PASSAGEIROS]
+✈️ [HORA_IDA] - [ORIGEM] / [HORA_CHEGADA] - [DESTINO]
+💰 [VALOR] para [PASSAGEIROS]
 💳 [PAGAMENTO]
-🔗 [LINK]
 
 ⚠️ Passagem somente de ida - sem retorno incluído`,
 
-  // ✅ TEMPLATE CORRIGIDO PARA IDA E VOLTA
-  'Aéreo Ida e Volta': `*Passagem Aérea - Ida e Volta*
-🏷️ [COMPANHIA]
-🗓️ [DATA_IDA] a [DATA_VOLTA] ([DURACAO])
-✈️ Ida: [DATA_IDA] - [ORIGEM] [HORA_IDA] / [DESTINO] [HORA_CHEGADA_IDA][DETALHES_VOO_IDA]
-✈️ Volta: [DATA_VOLTA] - [DESTINO] [HORA_SAIDA_VOLTA] / [ORIGEM] [HORA_CHEGADA_VOLTA][DETALHES_VOO_VOLTA]
+  // ✅ TEMPLATE PARA MÚLTIPLAS OPÇÕES IDA E VOLTA
+  'Múltiplas Ida e Volta': `📋 *OPÇÃO 1: [COMPANHIA_1]*
+✈️ VOO DE IDA
+🗓️ [DATA_IDA_1]
+✈️ [HORA_IDA_1] - [ORIGEM_1] / [HORA_CHEGADA_IDA_1] - [DESTINO_1]
 
-💰 R$ [VALOR] para [PASSAGEIROS]
-💳 [PAGAMENTO]
-🔗 [LINK]
+✈️ VOO DE VOLTA
+🗓️ [DATA_VOLTA_1]
+✈️ [HORA_VOLTA_1] - [DESTINO_1] / [HORA_CHEGADA_VOLTA_1] - [ORIGEM_1]
+💰 [VALOR_1] para [PASSAGEIROS_1]
 
-✅ Passagem ida e volta incluída`,
+📋 *OPÇÃO 2: [COMPANHIA_2]*
+✈️ VOO DE IDA
+🗓️ [DATA_IDA_2]
+✈️ [HORA_IDA_2] - [ORIGEM_2] / [HORA_CHEGADA_IDA_2] - [DESTINO_2]
+
+✈️ VOO DE VOLTA
+🗓️ [DATA_VOLTA_2]
+✈️ [HORA_VOLTA_2] - [DESTINO_2] / [HORA_CHEGADA_VOLTA_2] - [ORIGEM_2]
+💰 [VALOR_2] para [PASSAGEIROS_2]`,
 
   // ✅ TEMPLATE PARA MÚLTIPLAS OPÇÕES SOMENTE IDA
-  'Múltiplas Somente Ida': `*Passagens Aéreas - Opções Somente Ida*
-
-📋 *OPÇÃO 1: [COMPANHIA_1]*
+  'Múltiplas Somente Ida': `📋 *OPÇÃO 1: [COMPANHIA_1]*
 🗓️ [DATA_1] (Somente ida)
-✈️ [DATA_1] - [ORIGEM_1] [HORA_IDA_1] / [DESTINO_1] [HORA_CHEGADA_1][DETALHES_VOO_1]
-💰 R$ [VALOR_1] para [PASSAGEIROS_1]
-💳 [PAGAMENTO_1]
-🔗 [LINK_1]
+✈️ [HORA_IDA_1] - [ORIGEM_1] / [HORA_CHEGADA_1] - [DESTINO_1]
+💰 [VALOR_1] para [PASSAGEIROS_1]
 
 📋 *OPÇÃO 2: [COMPANHIA_2]*
 🗓️ [DATA_2] (Somente ida)
-✈️ [DATA_2] - [ORIGEM_2] [HORA_IDA_2] / [DESTINO_2] [HORA_CHEGADA_2][DETALHES_VOO_2]
-💰 R$ [VALOR_2] para [PASSAGEIROS_2]
-💳 [PAGAMENTO_2]
-🔗 [LINK_2]
+✈️ [HORA_IDA_2] - [ORIGEM_2] / [HORA_CHEGADA_2] - [DESTINO_2]
+💰 [VALOR_2] para [PASSAGEIROS_2]
 
 ⚠️ Todas as opções são SOMENTE IDA - sem retorno incluído`,
 
-  // ✅ TEMPLATE PARA MÚLTIPLAS OPÇÕES IDA E VOLTA
-  'Múltiplas Ida e Volta': `*Passagens Aéreas - Opções Ida e Volta*
-
-📋 *OPÇÃO 1: [COMPANHIA_1]*
-🗓️ [DATA_IDA_1] a [DATA_VOLTA_1] ([DURACAO_1])
-✈️ Ida: [DATA_IDA_1] - [ORIGEM_1] [HORA_IDA_1] / [DESTINO_1] [HORA_CHEGADA_IDA_1][DETALHES_IDA_1]
-✈️ Volta: [DATA_VOLTA_1] - [DESTINO_1] [HORA_SAIDA_VOLTA_1] / [ORIGEM_1] [HORA_CHEGADA_VOLTA_1][DETALHES_VOLTA_1]
-💰 R$ [VALOR_1] para [PASSAGEIROS_1]
-🔗 [LINK_1]
-
-📋 *OPÇÃO 2: [COMPANHIA_2]*
-🗓️ [DATA_IDA_2] a [DATA_VOLTA_2] ([DURACAO_2])
-✈️ Ida: [DATA_IDA_2] - [ORIGEM_2] [HORA_IDA_2] / [DESTINO_2] [HORA_CHEGADA_IDA_2][DETALHES_IDA_2]
-✈️ Volta: [DATA_VOLTA_2] - [DESTINO_2] [HORA_SAIDA_VOLTA_2] / [ORIGEM_2] [HORA_CHEGADA_VOLTA_2][DETALHES_VOLTA_2]
-💰 R$ [VALOR_2] para [PASSAGEIROS_2]
-🔗 [LINK_2]
-
-✅ Todas as opções incluem ida e volta`,
-
   // Outros templates mantidos
-  'Hotel': `*Hospedagem*
-🏨 [NOME_HOTEL] - [CATEGORIA]⭐
+  'Hotel': `🏨 [NOME_HOTEL] - [CATEGORIA]⭐
 📍 [LOCALIZACAO]
 🗓️ [CHECK_IN] a [CHECK_OUT] ([NOITES] noites)
 👥 [ADULTOS] adultos[CRIANCAS_TEXTO]
@@ -142,7 +118,7 @@ const TEMPLATES = {
 • [SERVICOS_INCLUSOS]
 
 💰 R$ [VALOR_TOTAL] para toda a estadia
-💳 Parcelamento: [PARCELAS]x de R$ [VALOR_PARCELA]
+💳 [PARCELAMENTO]
 
 ⚠️ Tarifas sujeitas à disponibilidade no momento da reserva`,
 
@@ -168,8 +144,7 @@ const TEMPLATES = {
 
 📲 Me chama pra garantir a sua cabine nesse cruzeiro incrível! 🌴🛳️`,
 
-  'Carro': `*Aluguel de Carro*
-🚗 [MODELO_CARRO] - [CATEGORIA]
+  'Carro': `🚗 [MODELO_CARRO] - [CATEGORIA]
 🏢 [LOCADORA]
 📍 Retirada: [LOCAL_RETIRADA]
 📍 Devolução: [LOCAL_DEVOLUCAO]
@@ -226,15 +201,15 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       return res.status(200).json({
         message: 'CVC Itaqua API - Sistema Corrigido',
-        version: '5.3.2-fixed',
+        version: '5.3.3-final',
         produtos_suportados: Object.keys(TEMPLATES),
         correcoes: [
-          'Detecção múltiplas opções em imagem CORRIGIDA',
-          'Detecção ida/volta vs somente ida corrigida',
-          'Validação de campos opcionais corrigida',
+          'Detecção ida/volta vs somente ida CORRIGIDA',
           'Templates específicos para cada tipo de viagem',
+          'Formatação com quebras de linha corrigida',
+          'Conversão completa de aeroportos',
           'Sistema de parcelamento condicional',
-          'Conversão completa de aeroportos'
+          'Detecção múltiplas opções em imagem corrigida'
         ],
         timestamp: new Date().toISOString()
       });
@@ -264,10 +239,10 @@ export default async function handler(req, res) {
     
     const analise = analisarConteudoCorrigido(prompt, tipos, tipoViagem, temImagem);
     const template = selecionarTemplateCorrigido(analise, tipos);
-    console.log(`[API-CORRIGIDA] Template selecionado: ${template.nome}, Múltiplas: ${analise.multiplasOpcoes}`);
+    console.log(`[API-CORRIGIDA] Template selecionado: ${template.nome}, TipoViagem: ${analise.tipoViagem}, Múltiplas: ${analise.multiplasOpcoes}`);
 
     // ================================================================================
-    // 🔧 CONSTRUIR PROMPT CORRIGIDO COM INSTRUÇÕES ESPECIAIS PARA IMAGEM
+    // 🔧 CONSTRUIR PROMPT CORRIGIDO COM INSTRUÇÕES ESPECIAIS
     // ================================================================================
     
     const promptFinal = construirPromptCorrigido(prompt, template, analise, tipos, parcelamento, camposOpcionais, temImagem, arquivo);
@@ -299,14 +274,14 @@ export default async function handler(req, res) {
       error: {
         message: `Erro no servidor: ${error.message}`,
         type: 'SERVER_ERROR',
-        version: '5.3.2-fixed'
+        version: '5.3.3-final'
       }
     });
   }
 }
 
 // ================================================================================
-// 🔍 ANÁLISE CORRIGIDA DE CONTEÚDO (COM DETECÇÃO PARA IMAGEM)
+// 🔍 ANÁLISE CORRIGIDA DE CONTEÚDO
 // ================================================================================
 
 function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem) {
@@ -316,9 +291,9 @@ function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem
     return { 
       tipo: 'generico', 
       multiplasOpcoes: false,
-      produtosPrincipais: ['Aéreo Somente Ida'],
+      produtosPrincipais: ['Aéreo Ida e Volta'], // ✅ PADRÃO CORRIGIDO
       temEscalas: false,
-      tipoViagem: tipoViagemDetectado || 'somente_ida',
+      tipoViagem: 'ida_volta', // ✅ PADRÃO CORRIGIDO
       temImagem: temImagem || false
     };
   }
@@ -326,26 +301,28 @@ function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem
   const promptLower = prompt.toLowerCase();
   
   // ================================================================================
-  // 🔧 DETECÇÃO MELHORADA DE MÚLTIPLAS OPÇÕES (ESPECIAL PARA IMAGEM)
+  // 🔧 DETECÇÃO MELHORADA DE TIPO DE VIAGEM
+  // ================================================================================
+  
+  const tipoViagemFinal = detectarTipoViagemMelhorado(prompt, tipoViagemDetectado);
+  
+  // ================================================================================
+  // 🔧 DETECÇÃO MELHORADA DE MÚLTIPLAS OPÇÕES
   // ================================================================================
   
   let multiplasOpcoes = false;
   
   if (temImagem) {
-    // Para imagens, assumir múltiplas opções se há indicação nos dados do frontend
-    // ou se o prompt contém múltiplos indicadores
+    // Para imagens, assumir múltiplas opções se há indicação nos dados
     const precos = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
     const totais = (promptLower.match(/total.*\d+/gi) || []).length;
     const links = (promptLower.match(/https:\/\/www\.cvc\.com\.br/gi) || []).length;
     const companhias = (promptLower.match(/(gol|latam|azul|avianca|tap)/gi) || []).length;
     const detalhes = (promptLower.match(/detalhes/gi) || []).length;
     
-    // Para imagem, ser mais sensível na detecção
     multiplasOpcoes = Math.max(precos, totais, links, companhias, detalhes) >= 2;
-    
     console.log(`[ANÁLISE-IMAGEM] Preços: ${precos}, Totais: ${totais}, Links: ${links}, Companhias: ${companhias}, Detalhes: ${detalhes}`);
   } else {
-    // Para texto, usar a lógica original
     const precos = (promptLower.match(/r\$[\s]*[\d.,]+/gi) || []).length;
     const totais = (promptLower.match(/total.*\d+/gi) || []).length;
     const links = (promptLower.match(/https:\/\/www\.cvc\.com\.br/gi) || []).length;
@@ -356,12 +333,6 @@ function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem
   
   // Detectar escalas/conexões
   const temEscalas = detectarEscalasCorrigido(prompt);
-  
-  // ================================================================================
-  // 🔧 USAR TIPO DE VIAGEM DETECTADO PELO FRONTEND
-  // ================================================================================
-  
-  const tipoViagemFinal = tipoViagemDetectado || analisarTipoViagemLocal(prompt);
   
   let tipoPrincipal = 'generico';
   
@@ -377,7 +348,7 @@ function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem
     tipoPrincipal = tipos[0]?.toLowerCase() || 'generico';
   }
   
-  console.log(`[ANÁLISE-CORRIGIDA] Tipo: ${tipoPrincipal}, Múltiplas: ${multiplasOpcoes}, TipoViagem: ${tipoViagemFinal}, TemImagem: ${temImagem}`);
+  console.log(`[ANÁLISE-CORRIGIDA] Tipo: ${tipoPrincipal}, TipoViagem: ${tipoViagemFinal}, Múltiplas: ${multiplasOpcoes}, TemImagem: ${temImagem}`);
   
   return {
     tipo: tipoPrincipal,
@@ -390,58 +361,102 @@ function analisarConteudoCorrigido(prompt, tipos, tipoViagemDetectado, temImagem
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES DE DETECÇÃO (usadas pela análise)
+// 🔧 DETECÇÃO MELHORADA DE TIPO DE VIAGEM
+// ================================================================================
+
+function detectarTipoViagemMelhorado(texto, tipoDetectado) {
+  console.log('[DETECCAO-MELHORADA] Analisando tipo de viagem...');
+  
+  // Se já foi detectado pelo frontend, confiar na detecção
+  if (tipoDetectado === 'ida_volta' || tipoDetectado === 'somente_ida') {
+    console.log(`[DETECCAO-MELHORADA] ✅ Usando detecção do frontend: ${tipoDetectado}`);
+    return tipoDetectado;
+  }
+  
+  const textoLower = texto.toLowerCase();
+  
+  // 1. INDICADORES EXPLÍCITOS DE IDA E VOLTA
+  const indicadoresIdaVolta = [
+    'ida e volta', 'ida/volta', 'round trip', 'retorno', 
+    'latamida', 'latamvolta', // Padrões específicos da companhia
+    'ida:', 'volta:', 'retorno:',
+    /\d+.*?jan.*?\d+.*?jan/i, // "17 de jan - 23 de jan"
+    /\d{1,2} de \w+ - \d{1,2} de \w+/i, // Padrão de datas
+    /gru.*?ssa.*?ssa.*?gru/i, // Padrão aeroportos ida/volta
+    /\d{2}:\d{2}.*?\d{2}:\d{2}.*?\d{2}:\d{2}.*?\d{2}:\d{2}/i // 4 ou mais horários
+  ];
+  
+  const temIdaVolta = indicadoresIdaVolta.some(indicador => 
+    typeof indicador === 'string' ? textoLower.includes(indicador) : indicador.test(textoLower)
+  );
+  
+  // 2. INDICADORES DE SOMENTE IDA
+  const indicadoresSomenteIda = ['somente ida', 'só ida', 'one way', 'sem retorno'];
+  const temSomenteIda = indicadoresSomenteIda.some(indicador => textoLower.includes(indicador));
+  
+  // 3. ANÁLISE HEURÍSTICA MELHORADA
+  const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
+  const datas = (textoLower.match(/\d{1,2} de \w+|\d{1,2}\/\d{1,2}/gi) || []);
+  const datasUnicas = [...new Set(datas.map(d => d.toLowerCase()))];
+  const aeroportos = (textoLower.match(/gru|ssa|cgh|sdu|gig|rec|for|bsb/g) || []).length;
+  
+  console.log('[DETECCAO-MELHORADA] Métricas:', { 
+    horarios, 
+    datasUnicas: datasUnicas.length, 
+    aeroportos,
+    temIdaVolta,
+    temSomenteIda 
+  });
+  
+  // 4. DECISÃO FINAL
+  if (temIdaVolta || (horarios >= 4 && datasUnicas.length >= 2) || aeroportos >= 4) {
+    console.log('[DETECCAO-MELHORADA] ✅ Detectado: IDA E VOLTA');
+    return 'ida_volta';
+  }
+  
+  if (temSomenteIda) {
+    console.log('[DETECCAO-MELHORADA] ✅ Detectado: SOMENTE IDA');
+    return 'somente_ida';
+  }
+  
+  // ✅ FALLBACK INTELIGENTE: Se tem mais de 2 horários, provavelmente é ida e volta
+  if (horarios >= 2 || datasUnicas.length >= 2) {
+    console.log('[DETECCAO-MELHORADA] ✅ Heurística: IDA E VOLTA (múltiplos horários/datas)');
+    return 'ida_volta';
+  }
+  
+  // ✅ PADRÃO ALTERADO: Assumir ida e volta como padrão (mais comum)
+  console.log('[DETECCAO-MELHORADA] ⚠️ Assumindo: IDA E VOLTA (padrão)');
+  return 'ida_volta';
+}
+
+// ================================================================================
+// 🔧 FUNÇÕES DE DETECÇÃO AUXILIARES
 // ================================================================================
 
 function detectarEscalasCorrigido(texto) {
-    const textoLower = texto.toLowerCase();
-    const indicadoresEscalas = [
-        'uma escala', 'duas escalas', 'três escalas',
-        'conexão', 'conexao', 'escala em', 'via ',
-        'com escala', 'parada em', 'troca em',
-        /\d+h\s*\d+min.*escala/i,
-        /escala.*\d+h/i,
-        /via\s+\w{3,}/i
-    ];
-    const temEscala = indicadoresEscalas.some(indicador => 
-        typeof indicador === 'string' ? textoLower.includes(indicador) : indicador.test(texto)
-    );
-    const temposVoo = texto.match(/(\d+)h\s*(\d+)?min/gi) || [];
-    const temVooLongo = temposVoo.some(tempo => {
-        const match = tempo.match(/(\d+)h/);
-        return match && parseInt(match[1]) >= 4;
-    });
-    return temEscala || temVooLongo;
-}
-
-function analisarTipoViagemLocal(texto) {
-    const textoLower = texto.toLowerCase();
-    const indicadoresIdaVolta = [
-        'ida e volta', 'ida/volta', 'round trip', 'retorno', 
-        /volta.*\d{2}/
-    ];
-    const temIdaVolta = indicadoresIdaVolta.some(indicador => 
-        typeof indicador === 'string' ? textoLower.includes(indicador) : indicador.test(textoLower)
-    );
-    const indicadoresSomenteIda = ['somente ida', 'só ida', 'one way'];
-    const temSomenteIda = indicadoresSomenteIda.some(indicador => textoLower.includes(indicador));
-
-    if (temIdaVolta) return 'ida_volta';
-    if (temSomenteIda) return 'somente_ida';
-
-    // Se não houver indicador explícito, tentar heurística
-    const horarios = (textoLower.match(/\d{2}:\d{2}/g) || []).length;
-    const datas = (textoLower.match(/\d{1,2}\/\d{1,2}|\d{1,2} de \w+/gi) || []);
-    const datasUnicas = [...new Set(datas)];
-
-    if (horarios >= 4 || datasUnicas.length >= 2) {
-        return 'ida_volta';
-    }
-    return 'somente_ida';
+  const textoLower = texto.toLowerCase();
+  const indicadoresEscalas = [
+    'uma escala', 'duas escalas', 'três escalas',
+    'conexão', 'conexao', 'escala em', 'via ',
+    'com escala', 'parada em', 'troca em',
+    /\d+h\s*\d+min.*escala/i,
+    /escala.*\d+h/i,
+    /via\s+\w{3,}/i
+  ];
+  const temEscala = indicadoresEscalas.some(indicador => 
+    typeof indicador === 'string' ? textoLower.includes(indicador) : indicador.test(texto)
+  );
+  const temposVoo = texto.match(/(\d+)h\s*(\d+)?min/gi) || [];
+  const temVooLongo = temposVoo.some(tempo => {
+    const match = tempo.match(/(\d+)h/);
+    return match && parseInt(match[1]) >= 4;
+  });
+  return temEscala || temVooLongo;
 }
 
 // ================================================================================
-// 🔧 SELEÇÃO DE TEMPLATE CORRIGIDO (COM PRIORIDADE PARA IMAGEM)
+// 🔧 SELEÇÃO DE TEMPLATE CORRIGIDO
 // ================================================================================
 
 function selecionarTemplateCorrigido(analise, tipos) {
@@ -449,44 +464,31 @@ function selecionarTemplateCorrigido(analise, tipos) {
   
   if (!tipos || tipos.length === 0) {
     return {
-      nome: 'Aéreo Somente Ida',
-      conteudo: TEMPLATES['Aéreo Somente Ida']
+      nome: 'Aéreo Ida e Volta', // ✅ PADRÃO CORRIGIDO
+      conteudo: TEMPLATES['Aéreo Ida e Volta']
     };
   }
 
   const tipoPrincipal = tipos[0];
   
   // ================================================================================
-  // 🔧 LÓGICA CORRIGIDA PARA TEMPLATES AÉREOS (PRIORIDADE PARA IMAGEM)
+  // 🔧 LÓGICA CORRIGIDA PARA TEMPLATES AÉREOS
   // ================================================================================
   
   if (tipoPrincipal === 'Aéreo Facial' || tipoPrincipal === 'Aéreo VBI/Fácil') {
     
-    // ✅ CORREÇÃO PRINCIPAL: Para imagens, sempre verificar múltiplas opções PRIMEIRO
-    if (analise.temImagem && analise.multiplasOpcoes) {
-      if (analise.tipoViagem === 'ida_volta') {
-        console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Múltiplas Ida e Volta (IMAGEM)');
-        return {
-          nome: 'Múltiplas Ida e Volta',
-          conteudo: TEMPLATES['Múltiplas Ida e Volta']
-        };
-      } else {
-        console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Múltiplas Somente Ida (IMAGEM)');
-        return {
-          nome: 'Múltiplas Somente Ida',
-          conteudo: TEMPLATES['Múltiplas Somente Ida']
-        };
-      }
-    }
+    console.log('[TEMPLATE-CORRIGIDO] Analisando aéreo - TipoViagem:', analise.tipoViagem, 'Múltiplas:', analise.multiplasOpcoes);
     
-    // Múltiplas opções (texto)
+    // 1. MÚLTIPLAS OPÇÕES (tem prioridade)
     if (analise.multiplasOpcoes) {
       if (analise.tipoViagem === 'ida_volta') {
+        console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Múltiplas Ida e Volta');
         return {
           nome: 'Múltiplas Ida e Volta',
           conteudo: TEMPLATES['Múltiplas Ida e Volta']
         };
       } else {
+        console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Múltiplas Somente Ida');
         return {
           nome: 'Múltiplas Somente Ida',
           conteudo: TEMPLATES['Múltiplas Somente Ida']
@@ -494,16 +496,25 @@ function selecionarTemplateCorrigido(analise, tipos) {
       }
     }
     
-    // Opção única
+    // 2. OPÇÃO ÚNICA - VERIFICA TIPO DE VIAGEM
     if (analise.tipoViagem === 'ida_volta') {
+      console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Aéreo Ida e Volta');
       return {
         nome: 'Aéreo Ida e Volta',
         conteudo: TEMPLATES['Aéreo Ida e Volta']
       };
-    } else {
+    } else if (analise.tipoViagem === 'somente_ida') {
+      console.log('[TEMPLATE-CORRIGIDO] ✅ Selecionando: Aéreo Somente Ida');
       return {
         nome: 'Aéreo Somente Ida',
         conteudo: TEMPLATES['Aéreo Somente Ida']
+      };
+    } else {
+      // ✅ FALLBACK: Assume ida e volta como padrão
+      console.log('[TEMPLATE-CORRIGIDO] ⚠️ Tipo não reconhecido, assumindo Ida e Volta');
+      return {
+        nome: 'Aéreo Ida e Volta',
+        conteudo: TEMPLATES['Aéreo Ida e Volta']
       };
     }
   }
@@ -516,16 +527,16 @@ function selecionarTemplateCorrigido(analise, tipos) {
     };
   }
   
-  // Fallback
-  console.warn(`[TEMPLATE-CORRIGIDO] Template não encontrado para: ${tipoPrincipal}`);
+  // ✅ FALLBACK CORRIGIDO: Ida e volta como padrão
+  console.warn(`[TEMPLATE-CORRIGIDO] Template não encontrado para: ${tipoPrincipal}, usando Ida e Volta`);
   return {
-    nome: 'Aéreo Somente Ida',
-    conteudo: TEMPLATES['Aéreo Somente Ida']
+    nome: 'Aéreo Ida e Volta',
+    conteudo: TEMPLATES['Aéreo Ida e Volta']
   };
 }
 
 // ================================================================================
-// 🏗️ PROMPT CORRIGIDO COM INSTRUÇÕES ESPECIAIS PARA IMAGEM
+// 🏗️ PROMPT CORRIGIDO COM INSTRUÇÕES ESPECIAIS
 // ================================================================================
 
 function construirPromptCorrigido(promptBase, template, analise, tipos, parcelamento, camposOpcionais, temImagem, arquivo) {
@@ -541,7 +552,7 @@ function construirPromptCorrigido(promptBase, template, analise, tipos, parcelam
   let prompt = '';
 
   // ================================================================================
-  // 📝 INSTRUÇÕES ESPECIAIS PARA ANÁLISE DE IMAGEM COM MÚLTIPLAS OPÇÕES
+  // 📝 INSTRUÇÕES ESPECIAIS PARA ANÁLISE DE IMAGEM
   // ================================================================================
   
   if (temImagem && arquivo) {
@@ -567,26 +578,39 @@ function construirPromptCorrigido(promptBase, template, analise, tipos, parcelam
   // 📋 TEMPLATE E DADOS PRINCIPAIS
   // ================================================================================
   
-  prompt += `Formate o orçamento de ${tipoPrincipal} usando EXATAMENTE o template abaixo.\n\n`;
-  prompt += `IMPORTANTE: Sua resposta deve conter APENAS o orçamento formatado, sem cabeçalhos técnicos, sem explicações.\n\n`;
+  prompt += `IMPORTANTE: Formate usando EXATAMENTE o template ${template.nome} abaixo.\n\n`;
+  prompt += `✅ DETECÇÃO AUTOMÁTICA: O sistema detectou que este é um orçamento do tipo "${analise.tipoViagem === 'ida_volta' ? 'IDA E VOLTA' : 'SOMENTE IDA'}".\n\n`;
   
-  prompt += `TEMPLATE PARA USAR:\n${template.conteudo}\n\n`;
+  prompt += `TEMPLATE OBRIGATÓRIO:\n${template.conteudo}\n\n`;
   
   prompt += `DADOS DO CLIENTE:\n${promptBase}\n\n`;
 
   // ================================================================================
-  // 🔧 INSTRUÇÕES ESPECÍFICAS PARA MÚLTIPLAS OPÇÕES
+  // 🔧 INSTRUÇÕES ESPECÍFICAS BASEADAS NO TIPO DETECTADO
   // ================================================================================
+  
+  if (analise.tipoViagem === 'ida_volta') {
+    prompt += `INSTRUÇÕES PARA IDA E VOLTA:\n`;
+    prompt += `- ✈️ OBRIGATÓRIO: Criar seção "✈️ VOO DE IDA" e seção "✈️ VOO DE VOLTA"\n`;
+    prompt += `- 🗓️ Identificar data de ida e data de volta\n`;
+    prompt += `- 🛫 Ida: [ORIGEM] → [DESTINO]\n`;
+    prompt += `- 🛬 Volta: [DESTINO] → [ORIGEM]\n`;
+    prompt += `- ❌ NÃO escrever "sem retorno incluído" - é IDA E VOLTA!\n\n`;
+  } else {
+    prompt += `INSTRUÇÕES PARA SOMENTE IDA:\n`;
+    prompt += `- ✈️ Criar apenas seção "✈️ VOO DE IDA"\n`;
+    prompt += `- ⚠️ OBRIGATÓRIO: Incluir "⚠️ Passagem somente de ida - sem retorno incluído"\n`;
+    prompt += `- 🛫 Apenas: [ORIGEM] → [DESTINO]\n\n`;
+  }
   
   if (analise.multiplasOpcoes) {
     prompt += `INSTRUÇÕES PARA MÚLTIPLAS OPÇÕES:\n`;
     prompt += `- 📋 Se encontrar 2+ opções, use EXATAMENTE o formato do template\n`;
-    prompt += `- 🔢 Preencha [COMPANHIA_1], [VALOR_1], [LINK_1] para primeira opção\n`;
-    prompt += `- 🔢 Preencha [COMPANHIA_2], [VALOR_2], [LINK_2] para segunda opção\n`;
+    prompt += `- 🔢 Preencha [COMPANHIA_1], [VALOR_1] para primeira opção\n`;
+    prompt += `- 🔢 Preencha [COMPANHIA_2], [VALOR_2] para segunda opção\n`;
     prompt += `- ➕ Se houver mais opções, continue a numeração (OPÇÃO 3, OPÇÃO 4, etc.)\n`;
     prompt += `- 💰 Mantenha os valores exatos (não arredonde preços)\n`;
-    prompt += `- 🔗 Se não conseguir ler algum link, use "Detalhes" ou "Link na imagem"\n`;
-    prompt += `- ✈️ Para cada opção, identifique corretamente se é somente ida ou ida e volta\n\n`;
+    prompt += `- ✈️ Para cada opção, use o mesmo padrão: ${analise.tipoViagem === 'ida_volta' ? 'IDA E VOLTA' : 'SOMENTE IDA'}\n\n`;
   }
 
   // ================================================================================
@@ -643,7 +667,7 @@ function construirPromptCorrigido(promptBase, template, analise, tipos, parcelam
   prompt += `- ✅ Preencha apenas com dados reais encontrados no texto/imagem\n`;
   prompt += `- ❌ Não invente informações que não existem\n`;
   prompt += `- 🔗 Mantenha links e valores monetários exatos\n`;
-  prompt += `- ✈️ Converta códigos de aeroporto para nomes completos (Ex: CGH = Congonhas (SP), VCP = Viracopos (SP))\n`;
+  prompt += `- ✈️ Converta códigos de aeroporto para nomes completos (Ex: GRU = Guarulhos, SSA = Salvador)\n`;
   
   if (analise.tipo === 'aereo') {
     prompt += `- 🛫 ESCALAS/CONEXÕES: Se detectar escalas, adicione detalhes como "(1 escala)" ou "(voo direto)" após o horário\n`;
@@ -811,7 +835,8 @@ function processarRespostaCorrigida(response) {
     /INSTRUÇÕES.*?\n/gi,
     /DADOS DO CLIENTE:.*?\n/gi,
     /Orçamento:.*?\n/gi,
-    /Resultado:.*?\n/gi
+    /Resultado:.*?\n/gi,
+    /IMPORTANTE:.*?\n/gi
   ];
 
   cabecalhosRemover.forEach(regex => {
@@ -825,7 +850,7 @@ function processarRespostaCorrigida(response) {
   });
 
   // Limpar quebras de linha excessivas
-  processada = processada.replace(/\n\s*\n/g, '\n\n').trim();
+  processada = processada.replace(/\n\s*\n\s*\n/g, '\n\n').trim();
   processada = processada.replace(/^\s*\n+/, '');
 
   return processada;
@@ -869,8 +894,9 @@ function calcularMetricas(resultado, startTime, estrategia) {
   };
 }
 
-console.log('✅ [API-CORRIGIDA] CVC Itaqua API v5.3.2-fixed carregada');
-console.log('🔧 [FOCO] Detecção CORRIGIDA de múltiplas opções em imagem');
-console.log('✈️ [MELHORIA] Templates específicos + Conversão de aeroportos');
-console.log('🎯 [CORREÇÃO] Instruções detalhadas para Claude Sonnet analisar imagens');
-console.log('🚀 [STATUS] Pronto para gerar orçamentos profissionais e corretos!');
+console.log('✅ [API-CORRIGIDA] CVC Itaqua API v5.3.3-final carregada');
+console.log('🔧 [CORREÇÃO PRINCIPAL] Detecção ida/volta vs somente ida CORRIGIDA');
+console.log('✈️ [TEMPLATES] Templates específicos para cada tipo implementados');
+console.log('📱 [FORMATAÇÃO] Quebras de linha corrigidas para WhatsApp');
+console.log('🎯 [FALLBACK] Padrão alterado para "ida e volta" (mais comum)');
+console.log('🚀 [STATUS] Pronto para gerar orçamentos corretos!');
