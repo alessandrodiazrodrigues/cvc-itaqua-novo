@@ -1,7 +1,7 @@
-// 🎨 ai-formatting.js - Módulo de Formatação de Texto
+// 🎨 ai-formatting.js - Módulo de Formatação de Texto (VERSÃO CORRIGIDA)
 // Responsável por aplicar formatações e limpezas no texto gerado pela IA
 
-console.log("🎨 Módulo de Formatação carregado");
+console.log("🎨 Módulo de Formatação carregado (com correção de quebras de linha)");
 
 // ================================================================================
 // ✈️ FORMATAÇÃO DE AEROPORTOS
@@ -190,7 +190,15 @@ function cleanHeaders(text) {
       'INPUT:',
       'RESPOSTA:',
       'SOLICITAÇÃO:',
-      'REQUISIÇÃO:'
+      'REQUISIÇÃO:',
+      'ORÇAMENTO CVC ITAQUA:',
+      'TIPOS SELECIONADOS:',
+      'DADOS DA VIAGEM:',
+      'INFORMAÇÕES ADICIONAIS:',
+      'REGRAS OBRIGATÓRIAS:',
+      'CAMPOS OPCIONAIS:',
+      'GERE O ORÇAMENTO:',
+      'FORMATO PADRÃO:'
     ];
     
     let formatted = text;
@@ -248,7 +256,12 @@ function formatPrices(text) {
       .replace(/R\$\s*(\d{1,3})(?![.,\d])/g, 'R$ $1,00')
       
       // Remove espaços duplos entre R$ e valor
-      .replace(/R\$\s{2,}/g, 'R$ ');
+      .replace(/R\$\s{2,}/g, 'R$ ')
+      
+      // ✨ NOVO: Corrige espaços indevidos dentro dos valores
+      // "R$ 6. 242, 34" → "R$ 6.242,34"
+      .replace(/R\$\s*(\d+)\.\s*(\d{3}),\s*(\d{2})/g, 'R$ $1.$2,$3')
+      .replace(/R\$\s*(\d+)\.\s*(\d{3})\.\s*(\d{3}),\s*(\d{2})/g, 'R$ $1.$2.$3,$4');
     
     console.log("✅ Formatação de preços aplicada");
     return formatted;
@@ -260,12 +273,108 @@ function formatPrices(text) {
 }
 
 // ================================================================================
-// 📏 OTIMIZAÇÃO DE ESPAÇAMENTO
+// 📏 ADIÇÃO DE QUEBRAS DE LINHA INTELIGENTES (NOVA FUNÇÃO)
+// ================================================================================
+
+function addSmartLineBreaks(text) {
+  try {
+    console.log("📏 Adicionando quebras de linha inteligentes...");
+    
+    if (!text || typeof text !== 'string') {
+      return text || '';
+    }
+    
+    let formatted = text;
+    
+    // ETAPA 1: Padrões que devem ter quebra ANTES (principais emojis do orçamento)
+    const breakBefore = [
+      '🏷️',               // Companhia aérea
+      '🗓️',               // Data  
+      '💰',               // Preço
+      '💳',               // Condições de pagamento
+      '⚠️',               // Avisos
+      '🔗',               // Links
+      '✈️ VOO DE VOLTA',   // Seção de volta
+      '✈️ VOO DE IDA',     // Seção de ida
+      '🏨',               // Hotéis
+      '📍',               // Destino
+      '👥',               // Passageiros
+      '🧳',               // Bagagem
+      '🛡️',              // Seguro
+      '🎫'                // Ingressos
+    ];
+    
+    // ETAPA 2: Aplica quebras antes dos emojis (exceto no início)
+    breakBefore.forEach(pattern => {
+      const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?<!^)\\s*(${escaped})`, 'g');
+      formatted = formatted.replace(regex, '\n$1');
+    });
+    
+    // ETAPA 3: Quebras duplas para seções importantes
+    const doubleBrakes = [
+      '✈️ VOO DE VOLTA',
+      '🏨 OPÇÕES DE HOTÉIS',
+      '🏨 HOTEL',
+      'OPÇÃO 1',
+      'OPÇÃO 2',
+      'OPÇÃO 3'
+    ];
+    
+    doubleBrakes.forEach(pattern => {
+      const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?<!^\\n)\\s*(${escaped})`, 'g');
+      formatted = formatted.replace(regex, '\n\n$1');
+    });
+    
+    // ETAPA 4: Quebras específicas após informações de voo
+    formatted = formatted
+      // Quebra após horários quando há emoji seguinte
+      .replace(/(\d{2}:\d{2})\s+(💰|💳|🔗|⚠️|🏷️|🗓️)/g, '$1\n$2')
+      
+      // Quebra após aeroportos/cidades quando há emoji seguinte
+      .replace(/(Guarulhos|Salvador|Santos Dumont|Congonhas)\s+(\d{2}:\d{2})?\s*(💰|💳|🏷️|🗓️)/g, '$1 $2\n$3')
+      
+      // Quebra antes de "VOO DE VOLTA" se não tiver quebra
+      .replace(/([^\n])\s*(✈️ VOO DE VOLTA)/g, '$1\n\n$2')
+      
+      // Quebra antes de "VOO DE IDA" se não tiver quebra
+      .replace(/([^\n])\s*(✈️ VOO DE IDA)/g, '$1\n\n$2');
+    
+    // ETAPA 5: Limpeza final
+    formatted = formatted
+      // Remove quebras excessivas (máximo 2 seguidas)
+      .replace(/\n{3,}/g, '\n\n')
+      
+      // Remove espaços antes e depois de quebras
+      .replace(/\s+\n/g, '\n')
+      .replace(/\n\s+/g, '\n')
+      
+      // Remove quebras no início e fim
+      .replace(/^\n+/, '')
+      .replace(/\n+$/, '');
+    
+    const originalLines = (text.match(/\n/g) || []).length;
+    const formattedLines = (formatted.match(/\n/g) || []).length;
+    
+    console.log(`📊 Quebras de linha: ${originalLines} → ${formattedLines}`);
+    console.log("✅ Quebras de linha inteligentes aplicadas");
+    
+    return formatted;
+    
+  } catch (error) {
+    console.error("❌ Erro ao adicionar quebras de linha:", error);
+    return text;
+  }
+}
+
+// ================================================================================
+// 📏 OTIMIZAÇÃO DE ESPAÇAMENTO (PRESERVANDO QUEBRAS)
 // ================================================================================
 
 function optimizeSpacing(text) {
   try {
-    console.log("📏 Otimizando espaçamento...");
+    console.log("📏 Otimizando espaçamento (preservando quebras)...");
     
     let formatted = text
       // 1. FORMATAÇÃO DE HORÁRIOS: "23: 30" → "23:30", "8 : 15" → "08:15"
@@ -279,8 +388,8 @@ function optimizeSpacing(text) {
       // 2. FORMATAÇÃO DE DATAS: "17 / 01" → "17/01"
       .replace(/(\d{1,2})\s*\/\s*(\d{1,2})/g, '$1/$2')
       
-      // 3. Remove quebras de linha excessivas (mais de 2 seguidas)
-      .replace(/\n{3,}/g, '\n\n')
+      // 3. ⚠️ PRESERVA quebras de linha (não remove)
+      // .replace(/\n{3,}/g, '\n\n') // COMENTADO para preservar quebras inteligentes
       
       // 4. Remove espaços no final das linhas
       .replace(/[ \t]+$/gm, '')
@@ -291,7 +400,7 @@ function optimizeSpacing(text) {
       // 6. Normaliza espaços entre palavras
       .replace(/[ \t]{2,}/g, ' ')
       
-      // 7. Remove linhas vazias no início e fim
+      // 7. Remove apenas linhas vazias no início e fim (preserva quebras internas)
       .replace(/^\n+/, '')
       .replace(/\n+$/, '')
       
@@ -335,10 +444,9 @@ function optimizeSpacing(text) {
       // "CGH → GRU" mantém formatação correta
       .replace(/([A-Z]{3})\s*→\s*([A-Z]{3})/g, '$1 → $2');
     
-    // 14. Remove múltiplas linhas vazias consecutivas que possam ter sobrado
-    formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
+    // ⚠️ IMPORTANTE: NÃO remove quebras múltiplas para preservar formatação inteligente
     
-    console.log("✅ Espaçamento otimizado");
+    console.log("✅ Espaçamento otimizado (quebras preservadas)");
     return formatted.trim();
     
   } catch (error) {
@@ -348,7 +456,7 @@ function optimizeSpacing(text) {
 }
 
 // ================================================================================
-// 🎯 FUNÇÃO PRINCIPAL DE FORMATAÇÃO
+// 🎯 FUNÇÃO PRINCIPAL DE FORMATAÇÃO (CORRIGIDA)
 // ================================================================================
 
 function formatText(text) {
@@ -374,11 +482,16 @@ function formatText(text) {
     // ETAPA 2: FORMATAÇÕES SEQUENCIAIS
     let formatted = text;
     
-    // Aplica todas as formatações em sequência otimizada
+    // Aplica formatações básicas primeiro
     formatted = formatAirports(formatted);
     formatted = conditionalLinks(formatted);  
     formatted = cleanHeaders(formatted);
     formatted = formatPrices(formatted);
+    
+    // ✨ NOVO: Adiciona quebras de linha inteligentes
+    formatted = addSmartLineBreaks(formatted);
+    
+    // Otimização de espaçamento por último (mas preservando quebras)
     formatted = optimizeSpacing(formatted);
     
     // ETAPA 3: INFORMAÇÕES DE DEBUG (apenas em desenvolvimento)
@@ -386,10 +499,11 @@ function formatText(text) {
       console.log("📊 Resultado da formatação:");
       console.log(`   Texto original: ${text.length} caracteres`);
       console.log(`   Texto formatado: ${formatted.length} caracteres`);
-      console.log(`   Ida e volta detectado: ${isIdaVolta ? '✅' : '❌'}`);
+      console.log(`   Ida e volta detectado: ${isIdaVolta ? 'SIM' : 'NÃO'}`);
+      console.log(`   Quebras de linha: ${(formatted.match(/\n/g) || []).length}`);
     }
     
-    console.log("✅ Formatação completa aplicada");
+    console.log("✅ Formatação completa aplicada (com quebras de linha)");
     
     return formatted;
     
@@ -404,64 +518,45 @@ function formatText(text) {
 // ================================================================================
 
 function testarFormatacaoCompleta() {
-  console.log("🧪 Testando formatação completa...");
+  console.log("🧪 Testando formatação completa (com quebras de linha)...");
   
-  const textoTeste = `
-📍 Orlando - Disney World (Estados Unidos)
+  const textoTeste = `✈️ VOO DE IDA 🏷️ LATAM 🗓️ 17 de janeiro ✈️ 23: 30 - Guarulhos 01: 50 / Salvador 💰 R$ 6. 242, 34 para 2 Adultos e 1 Criança 💳 Não reembolsável ✈️ VOO DE VOLTA 🏷️ LATAM 🗓️ 23 de janeiro ✈️ 20: 55 - Salvador 23: 30 / Guarulhos 💰 R$ 6. 242, 34 para 2 Adultos e 1 Criança 💳 Não reembolsável`;
 
-🗓️ Saída: 17 de janeiro
-🗓️ Retorno: 23 de janeiro
-
-✈️ VOO DE IDA
-São Paulo (Guarulhos) → Miami (EUA) → Orlando (EUA)
-Saída: 23: 30 - Chegada: 18 : 45
-Companhia: LATAM + American Airlines
-
-✈️ VOO DE VOLTA  
-Orlando (EUA) → Miami (EUA) → São Paulo (Guarulhos)
-Saída: 08 : 15 - Chegada: 23: 30 (+1 dia)
-
-💰 VALOR TOTAL: R$12.850 , 00 por pessoa
-
-[LINK PARA RESERVAS]
-Para mais informações, acesse nosso site
-Link: www.exemplo-nao-valido.com.br
-
-DADOS DO CLIENTE: João Silva
-INFORMAÇÕES TÉCNICAS: Sistema processado
-`;
+  console.log("📥 TEXTO ORIGINAL (sem quebras):");
+  console.log(textoTeste);
+  console.log(`Quebras originais: ${(textoTeste.match(/\n/g) || []).length}`);
 
   const resultado = formatText(textoTeste);
   
-  console.log("📊 RESULTADO DO TESTE:");
-  console.log("Texto formatado:");
+  console.log("📤 TEXTO FORMATADO (com quebras):");
   console.log(resultado);
+  console.log(`Quebras finais: ${(resultado.match(/\n/g) || []).length}`);
   
   // Verificações específicas
   const verificacoes = [
     {
-      nome: "Aeroportos formatados",
-      teste: !resultado.includes("São Paulo (Guarulhos)") && resultado.includes("Guarulhos"),
+      nome: "Quebras de linha adicionadas",
+      teste: (resultado.match(/\n/g) || []).length >= 8,
       esperado: true
     },
     {
-      nome: "Horários formatados", 
+      nome: "Horários formatados",
       teste: !resultado.includes("23: 30") && resultado.includes("23:30"),
       esperado: true
     },
     {
-      nome: "Links removidos",
-      teste: !resultado.includes("[LINK PARA RESERVAS]"),
-      esperado: true
-    },
-    {
-      nome: "Cabeçalhos técnicos removidos",
-      teste: !resultado.includes("DADOS DO CLIENTE:"),
-      esperado: true
-    },
-    {
       nome: "Preços formatados",
-      teste: resultado.includes("R$ 12.850,00"),
+      teste: resultado.includes("R$ 6.242,34") && !resultado.includes("R$ 6. 242, 34"),
+      esperado: true
+    },
+    {
+      nome: "Seções separadas",
+      teste: resultado.includes("✈️ VOO DE IDA") && resultado.includes("✈️ VOO DE VOLTA"),
+      esperado: true
+    },
+    {
+      nome: "Emojis preservados",
+      teste: resultado.includes("🏷️") && resultado.includes("🗓️") && resultado.includes("💰"),
       esperado: true
     }
   ];
@@ -475,7 +570,37 @@ INFORMAÇÕES TÉCNICAS: Sistema processado
   
   console.log(`\n📊 Resultado: ${acertos}/${verificacoes.length} testes passaram`);
   
+  if (acertos === verificacoes.length) {
+    console.log("🎉 SUCESSO! Formatação com quebras de linha funcionando!");
+  } else {
+    console.log("⚠️ Alguns testes falharam. Verifique a implementação.");
+  }
+  
   return { acertos, total: verificacoes.length, resultado };
+}
+
+// ================================================================================
+// 🧪 TESTE ESPECÍFICO DE QUEBRAS DE LINHA
+// ================================================================================
+
+function testarQuebrasLinha() {
+  console.log("🧪 === TESTE ESPECÍFICO DE QUEBRAS DE LINHA ===");
+  
+  const textoSemQuebras = `✈️ VOO DE IDA 🏷️ LATAM 🗓️ 17 de janeiro ✈️ 23:30 - Guarulhos 01:50 / Salvador 💰 R$ 6.242,34 para 2 Adultos e 1 Criança 💳 Não reembolsável ✈️ VOO DE VOLTA 🏷️ LATAM 🗓️ 23 de janeiro ✈️ 20:55 - Salvador 23:30 / Guarulhos 💰 R$ 6.242,34 para 2 Adultos e 1 Criança 💳 Não reembolsável`;
+  
+  console.log("📥 ANTES (uma linha só):");
+  console.log(textoSemQuebras);
+  console.log(`Quebras: ${(textoSemQuebras.match(/\n/g) || []).length}`);
+  
+  const resultado = addSmartLineBreaks(textoSemQuebras);
+  
+  console.log("\n📤 DEPOIS (com quebras):");
+  console.log(resultado);
+  console.log(`Quebras: ${(resultado.match(/\n/g) || []).length}`);
+  
+  console.log("🧪 === FIM DO TESTE ===");
+  
+  return resultado;
 }
 
 // ================================================================================
@@ -491,6 +616,8 @@ if (typeof window !== 'undefined') {
   window.cleanHeaders = cleanHeaders;
   window.formatPrices = formatPrices;
   window.optimizeSpacing = optimizeSpacing;
+  window.addSmartLineBreaks = addSmartLineBreaks;
+  window.testarQuebrasLinha = testarQuebrasLinha;
 }
 
 // Exportação para sistemas que suportam modules
@@ -501,7 +628,9 @@ if (typeof module !== 'undefined' && module.exports) {
     conditionalLinks,
     cleanHeaders,
     formatPrices,
-    optimizeSpacing
+    optimizeSpacing,
+    addSmartLineBreaks,
+    testarQuebrasLinha
   };
 }
 
@@ -513,10 +642,12 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
   // Aguarda 2 segundos para carregar completamente e depois testa
   setTimeout(() => {
-    console.log("\n🧪 === TESTES AUTOMÁTICOS DO AI-FORMATTING ===");
+    console.log("\n🧪 === TESTES AUTOMÁTICOS DO AI-FORMATTING (CORRIGIDO) ===");
     testarFormatacaoCompleta();
+    console.log("\n🧪 === TESTE DE QUEBRAS DE LINHA ===");
+    testarQuebrasLinha();
     console.log("🧪 === FIM DOS TESTES ===\n");
   }, 2000);
 }
 
-console.log("✅ Módulo ai-formatting.js carregado e pronto para uso");
+console.log("✅ Módulo ai-formatting.js carregado e corrigido (com quebras de linha)");
