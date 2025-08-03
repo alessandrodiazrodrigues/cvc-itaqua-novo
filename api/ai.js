@@ -848,7 +848,97 @@ async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
 // 🧹 PROCESSAMENTO DA RESPOSTA
 // ================================================================================
 
-return resultado;
+function processarRespostaFinal(conteudo) {
+  console.log('[PROCESSAR-RESPOSTA] Iniciando processamento avançado...');
+  
+  if (!conteudo || typeof conteudo !== 'string') {
+    console.error('[PROCESSAR-RESPOSTA] Conteúdo inválido');
+    return 'Erro: Resposta inválida da IA';
+  }
+  
+  let resultado = conteudo.trim();
+  
+  // ================================================================================
+  // 🧹 LIMPEZA INICIAL
+  // ================================================================================
+  
+  // Remover cabeçalhos técnicos
+  resultado = resultado.replace(/^(Orçamento:|Resultado:|Resposta:)/i, '').trim();
+  
+  // ================================================================================
+  // ✈️ FORMATAÇÃO ESPECÍFICA PARA PASSAGENS AÉREAS
+  // ================================================================================
+  
+  // 1. CORRIGIR HORÁRIOS - remover espaços extras: "06: 20" → "06:20"
+  resultado = resultado.replace(/(\d{1,2}):\s+(\d{2})/g, '$1:$2');
+  
+  // 2. CORRIGIR DATAS - simplificar: "15 de novembro" → "15/11"
+  const meses = {
+    'janeiro': '01', 'jan': '01',
+    'fevereiro': '02', 'fev': '02',
+    'março': '03', 'mar': '03',
+    'abril': '04', 'abr': '04',
+    'maio': '05', 'mai': '05',
+    'junho': '06', 'jun': '06',
+    'julho': '07', 'jul': '07',
+    'agosto': '08', 'ago': '08',
+    'setembro': '09', 'set': '09',
+    'outubro': '10', 'out': '10',
+    'novembro': '11', 'nov': '11',
+    'dezembro': '12', 'dez': '12'
+  };
+  
+  Object.entries(meses).forEach(([nomeMes, numeroMes]) => {
+    const regex = new RegExp(`(\\d{1,2})\\s+de\\s+${nomeMes}`, 'gi');
+    resultado = resultado.replace(regex, `$1/${numeroMes}`);
+  });
+  
+  // 3. GARANTIR SEPARADOR IDA/VOLTA - forçar quebra de linha com "--"
+  resultado = resultado.replace(
+    /(\d{2}:\d{2}\s+[A-Za-z\s]+)\s*-\s*-\s*(\d{1,2}\/\d{1,2}\s+-\s+[A-Za-z\s]+\s+\d{2}:\d{2})/g,
+    '$1\n--\n$2'
+  );
+  
+  // 4. CORRIGIR CONEXÕES - garantir formato correto
+  resultado = resultado.replace(/Voo direto/g, '(voo direto)');
+  resultado = resultado.replace(/voo direto/g, '(voo direto)');
+  
+  // 5. SUBSTITUIR PLACEHOLDERS NÃO PREENCHIDOS
+  resultado = resultado.replace(/\[BAGAGEM_INFO\]/g, 'Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa');
+  resultado = resultado.replace(/\[REEMBOLSAVEL\]/g, 'Não reembolsável');
+  resultado = resultado.replace(/\[LINK\]/g, '');
+  
+  // 6. PADRONIZAR PASSAGEIROS - "2 Adultos" → "02 adultos"
+  resultado = resultado.replace(/(\d)\s+(Adultos?)/gi, (match, num, palavra) => {
+    const numeroFormatado = num.padStart(2, '0');
+    return `${numeroFormatado} ${palavra.toLowerCase()}`;
+  });
+  
+  // ================================================================================
+  // ✈️ CONVERSÃO DE CÓDIGOS DE AEROPORTO
+  // ================================================================================
+  
+  resultado = converterCodigosAeroporto(resultado);
+  
+  // ================================================================================
+  // 🔧 MELHORIAS FINAIS DE FORMATAÇÃO
+  // ================================================================================
+  
+  // Corrigir espaçamento em valores monetários
+  resultado = resultado.replace(/R\$\s*(\d+)/g, 'R$ $1');
+  
+  // Garantir espaço após emojis
+  resultado = resultado.replace(/([📱🎯✅❌⚠️💰🏨✈️🛫🚢])([A-Za-z])/g, '$1 $2');
+  
+  // Limpar quebras de linha excessivas, mas manter estrutura
+  resultado = resultado.replace(/\n{3,}/g, '\n\n');
+  
+  // Garantir quebra de linha antes do valor total
+  resultado = resultado.replace(/(💰\s*Valor total)/g, '\n$1');
+  
+  console.log('[PROCESSAR-RESPOSTA] Processamento avançado concluído');
+  
+  return resultado;
 }
 
 function converterCodigosAeroporto(texto) {
