@@ -261,7 +261,10 @@ function formatPrices(text) {
       // ✨ NOVO: Corrige espaços indevidos dentro dos valores
       // "R$ 6. 242, 34" → "R$ 6.242,34"
       .replace(/R\$\s*(\d+)\.\s*(\d{3}),\s*(\d{2})/g, 'R$ $1.$2,$3')
-      .replace(/R\$\s*(\d+)\.\s*(\d{3})\.\s*(\d{3}),\s*(\d{2})/g, 'R$ $1.$2.$3,$4');
+      .replace(/R\$\s*(\d+)\.\s*(\d{3})\.\s*(\d{3}),\s*(\d{2})/g, 'R$ $1.$2.$3,$4')
+      
+      // Corrige padrões específicos como "R$ 6. 242, 34"
+      .replace(/R\$\s*(\d+)\s*\.\s*(\d{3})\s*,\s*(\d{2})/g, 'R$ $1.$2,$3');
     
     console.log("✅ Formatação de preços aplicada");
     return formatted;
@@ -377,7 +380,7 @@ function optimizeSpacing(text) {
     console.log("📏 Otimizando espaçamento (preservando quebras)...");
     
     let formatted = text
-      // 1. FORMATAÇÃO DE HORÁRIOS: "23: 30" → "23:30", "8 : 15" → "08:15"
+      // 1. FORMATAÇÃO DE HORÁRIOS: "23: 30" → "23:30", "17: 30" → "17:30"
       .replace(/(\d{1,2})\s*:\s*(\d{2})/g, (match, horas, minutos) => {
         // Adiciona zero à esquerda se necessário
         const h = horas.padStart(2, '0');
@@ -440,9 +443,19 @@ function optimizeSpacing(text) {
       // Valores sem vírgula: "R$ 1234" → "R$ 1.234,00" (valores acima de 999)
       .replace(/R\$\s*(\d{1,3})(\d{3})(?![,.])/g, 'R$ $1.$2,00')
       
+      // ✨ ADICIONAL: Corrige espaços em valores monetários específicos
+      // "R$ 6. 242, 34" → "R$ 6.242,34"
+      .replace(/R\$\s*(\d+)\s*\.\s*(\d{3})\s*,\s*(\d{2})/g, 'R$ $1.$2,$3')
+      
       // 13. CORREÇÃO DE ESPAÇOS EM CÓDIGOS
       // "CGH → GRU" mantém formatação correta
-      .replace(/([A-Z]{3})\s*→\s*([A-Z]{3})/g, '$1 → $2');
+      .replace(/([A-Z]{3})\s*→\s*([A-Z]{3})/g, '$1 → $2')
+      
+      // 14. ✨ REMOVE LINKS VAZIOS
+      // Remove emoji de link quando está isolado
+      .replace(/\n🔗\s*$/gm, '')
+      .replace(/🔗\s*\n/g, '\n')
+      .replace(/🔗\s*$/g, '');
     
     // ⚠️ IMPORTANTE: NÃO remove quebras múltiplas para preservar formatação inteligente
     
