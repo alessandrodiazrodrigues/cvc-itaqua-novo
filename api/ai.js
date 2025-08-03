@@ -662,16 +662,23 @@ function construirPromptFinal(promptBase, template, analise, tipos, parcelamento
   // 📝 INSTRUÇÕES FINAIS E PARCELAMENTO
   // ================================================================================
   
-  prompt += `📝 INSTRUÇÕES FINAIS:\n`;
+  prompt += `\n📝 INSTRUÇÕES FINAIS DE FORMATAÇÃO:\n`;
   prompt += `- ✅ Preencha apenas com dados reais encontrados no texto/imagem\n`;
   prompt += `- ❌ Não invente informações que não existem\n`;
   prompt += `- 🔗 Mantenha links e valores monetários exatos\n`;
   prompt += `- ✈️ Converta códigos de aeroporto para nomes completos (Ex: CGH = Congonhas, VCP = Viracopos)\n`;
+  prompt += `- 📅 Use datas no formato dd/mm (Ex: 15/11 ao invés de "15 de novembro")\n`;
+  prompt += `- ⏰ Use horários sem espaços extras (Ex: 06:20 ao invés de "06: 20")\n`;
+  prompt += `- 🛫 Para ida e volta, use OBRIGATORIAMENTE o separador "--" entre os trechos\n`;
+  prompt += `- 👥 Formate passageiros como "02 adultos" (com zero à esquerda)\n`;
+  prompt += `- 🧳 Substitua [BAGAGEM_INFO] por "Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa"\n`;
   
   if (analise.tipo === 'aereo') {
     prompt += `- 🛫 ESCALAS/CONEXÕES: Se detectar escalas, adicione detalhes como "(1 escala)" ou "(voo direto)" após o horário\n`;
-    prompt += `- ⏰ HORÁRIOS: Mantenha os horários exatamente como aparecem (formato HH:MM)\n`;
-    prompt += `- 📅 DATAS: Use o formato brasileiro (dd/mm) ou por extenso conforme o original\n`;
+    prompt += `- ✈️ FORMATO OBRIGATÓRIO para ida e volta:\n`;
+    prompt += `  15/11 - Congonhas 06:20 / Porto Alegre 08:00 (voo direto)\n`;
+    prompt += `  --\n`;
+    prompt += `  17/11 - Porto Alegre 19:30 / Congonhas 21:10 (voo direto)\n`;
   }
 
   // PARCELAMENTO
@@ -841,47 +848,7 @@ async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
 // 🧹 PROCESSAMENTO DA RESPOSTA
 // ================================================================================
 
-function processarRespostaFinal(conteudo) {
-  console.log('[PROCESSAR-RESPOSTA] Iniciando processamento...');
-  
-  if (!conteudo || typeof conteudo !== 'string') {
-    console.error('[PROCESSAR-RESPOSTA] Conteúdo inválido');
-    return 'Erro: Resposta inválida da IA';
-  }
-  
-  let resultado = conteudo.trim();
-  
-  // ================================================================================
-  // 🧹 LIMPEZA GERAL
-  // ================================================================================
-  
-  // Remover cabeçalhos técnicos
-  resultado = resultado.replace(/^(Orçamento:|Resultado:|Resposta:)/i, '').trim();
-  
-  // Remover quebras de linha excessivas
-  resultado = resultado.replace(/\n{3,}/g, '\n\n');
-  
-  // ================================================================================
-  // ✈️ CONVERSÃO DE CÓDIGOS DE AEROPORTO
-  // ================================================================================
-  
-  resultado = converterCodigosAeroporto(resultado);
-  
-  // ================================================================================
-  // 🔧 MELHORIAS ESPECÍFICAS
-  // ================================================================================
-  
-  // Corrigir formatação de valores
-  resultado = resultado.replace(/R\$\s*(\d+)/g, 'R$ $1');
-  
-  // Garantir espaço após emojis
-  resultado = resultado.replace(/([📱🎯✅❌⚠️💰🏨✈️🛫🚢])([A-Za-z])/g, '$1 $2');
-  
-  // Corrigir formatação de datas
-  resultado = resultado.replace(/(\d{1,2})\/(\d{1,2})/g, '$1/$2');
-  
-  console.log('[PROCESSAR-RESPOSTA] Processamento concluído');
-  return resultado;
+return resultado;
 }
 
 function converterCodigosAeroporto(texto) {
