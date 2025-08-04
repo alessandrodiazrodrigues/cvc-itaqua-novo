@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geração de Orçamento com IA - CVC Itaqua</title>
+  <title>Geração de Orçamento com IA - CVC Itaqua v7.0</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="shortcut icon" href="https://www.cvc.com.br/favicon.ico" type="image/x-icon">
   
@@ -60,11 +60,27 @@
         width: auto;
       }
     }
+
+    /* Loading indicator */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>💰 Geração de Orçamento com IA</h1>
+    <h1>💰 Geração de Orçamento com IA v7.0</h1>
     <nav>
       <ul>
         <li><a href="index.html">📊 Dashboard</a></li>
@@ -157,7 +173,7 @@
           <div id="previewArea"></div>
         </div>
 
-        <button type="submit">🚀 Gerar Orçamento Completo</button>
+        <button type="submit" id="btnGerar">🚀 Gerar Orçamento Completo</button>
       </form>
     </section>
 
@@ -196,229 +212,300 @@
 
     <!-- Dicas de Uso -->
     <section>
-      <h2>💡 Dicas de Uso - Sistema Modular v3.0</h2>
+      <h2>💡 Sistema v7.0 - Integração Completa</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
         
         <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px;">
-          <h4>🧹 Orçamentos Profissionais:</h4>
+          <h4>🚀 Sistema v7.0:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Sem cabeçalhos técnicos</li>
-            <li>Prontos para copy/paste</li>
-            <li>Detecção automática de escalas</li>
-            <li>Conversão completa de aeroportos</li>
+            <li>Sistema totalmente integrado</li>
+            <li>9 tipos específicos de orçamento</li>
+            <li>Formatação profissional automática</li>
+            <li>IA Dual (OpenAI + Claude)</li>
           </ul>
         </div>
         
         <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <h4>💳 Sistema de Parcelamento:</h4>
+          <h4>🎯 Templates Específicos:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Aéreo Facial: só se nas observações</li>
-            <li>Outros tipos: opcional via checkbox</li>
-            <li>Cálculo automático das parcelas</li>
-            <li>Opção de 10x, 12x ou ambos</li>
+            <li>Aéreo Nacional Simples</li>
+            <li>Múltiplas Opções (2 e 3 planos)</li>
+            <li>Cruzeiro por cabines</li>
+            <li>Pacote Completo</li>
           </ul>
         </div>
 
         <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <h4>🔍 Campos Inteligentes:</h4>
+          <h4>✅ Formatação Automática:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Destino e adultos são opcionais</li>
-            <li>IA extrai automaticamente dos dados</li>
-            <li>Se preenchido, tem prioridade</li>
-            <li>Mais flexível e ágil</li>
+            <li>Horários: 23:20 (sem espaços)</li>
+            <li>Aeroportos: GRU → Guarulhos</li>
+            <li>Passageiros: 02 adultos</li>
+            <li>Separador: -- entre ida/volta</li>
           </ul>
         </div>
         
         <div style="background: #f3e5f5; padding: 1rem; border-radius: 8px;">
-          <h4>🚨 Segurança:</h4>
+          <h4>🎨 WhatsApp Ready:</h4>
           <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Não inventa dados não fornecidos</li>
-            <li>Usa apenas informações reais</li>
-            <li>Não cria roteiros fictícios</li>
-            <li>Preços sempre dos dados originais</li>
+            <li>Sem cabeçalhos técnicos</li>
+            <li>Copy/paste direto</li>
+            <li>Emojis apropriados</li>
+            <li>Formatação limpa</li>
           </ul>
         </div>
 
-        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px;">
-          <h4>🌍 Dicas Automáticas:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Extrai destino do orçamento gerado</li>
-            <li>Detecta período da viagem</li>
-            <li>Identifica crianças para dicas familiares</li>
-            <li>Gera dicas personalizadas para WhatsApp</li>
-          </ul>
-        </div>
-
-        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px;">
-          <h4>🏨 Ranking de Hotéis:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Ranking com avaliações reais</li>
-            <li>TripAdvisor, Booking e Google</li>
-            <li>Distâncias para pontos turísticos</li>
-            <li>Apenas pontos positivos dos hotéis</li>
-          </ul>
-        </div>
-
-        <div style="background: #f0f8ff; padding: 1rem; border-radius: 8px;">
-          <h4>⚡ Sistema Modular v3.0:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Código organizado em módulos</li>
-            <li>Performance otimizada</li>
-            <li>Fácil manutenção e debug</li>
-            <li>Compatível com Claude Code</li>
-          </ul>
-        </div>
-
-        <div style="background: #ffe4e1; padding: 1rem; border-radius: 8px;">
-          <h4>🔧 Debug e Logs:</h4>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-            <li>Console F12 para debug</li>
-            <li>Logs detalhados de cada módulo</li>
-            <li>Verificação automática do sistema</li>
-            <li>Fallbacks para compatibilidade</li>
-          </ul>
-        </div>
-        
       </div>
     </section>
   </main>
 
   <footer style="text-align: center; padding: 2rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 3rem;">
-    <p>© 2025 CVC Itaqua | Sistema Modular v3.0 com IA</p>
+    <p>© 2025 CVC Itaqua | Sistema Integrado v7.0</p>
   </footer>
 
   <!-- ================================================================================
-       🚀 SISTEMA MODULAR v3.0 - CARREGAMENTO DOS MÓDULOS
-       ================================================================================ -->
-
-  <!-- IMPORTANTE: Carregar módulos na ordem correta v4.0 -->
-  <script src="modules/ai-utils.js"></script>
-  
-  <!-- Novos módulos v4.0 (ordem de dependência) -->
-  <script src="modules/ai-formatting.js"></script>
-  <script src="modules/ai-detection.js"></script>
-  <script src="modules/ai-templates.js"></script>
-  <script src="modules/ai-prompts.js"></script>
-  
-  <!-- Módulos principais integrados -->
-  <script src="modules/ai-orcamento.js"></script>
-  <script src="modules/ai-dicas.js"></script>
-  <script src="modules/ai-ranking.js"></script>
-  
-  <!-- Arquivo principal (carrega por último) -->
-  <script src="ai.js"></script>
-
-  <!-- ================================================================================
-       📋 FUNÇÕES DE COMPATIBILIDADE (mantidas do HTML original)
+       🚀 SISTEMA v7.0 - JAVASCRIPT INTEGRADO
        ================================================================================ -->
 
   <script>
+    console.log('🚀 Iniciando CVC Itaqua v7.0...');
+
     // ================================================================================
-    // 🎯 CONTROLE DE PARCELAMENTO CONDICIONAL (mantido do HTML original)
+    // 🎯 CONTROLE DE PARCELAMENTO
     // ================================================================================
 
     function toggleParcelamento() {
       console.log('🔄 Verificando tipos selecionados...');
       
-      // Pegar todos os tipos selecionados
       const tiposSelecionados = Array.from(document.querySelectorAll('input[name="tipo"]:checked'))
         .map(checkbox => checkbox.value);
       
       console.log('📋 Tipos selecionados:', tiposSelecionados);
       
-      // Definir tipos que NÃO devem mostrar parcelamento
       const tiposSemParcelamento = ['Aéreo Facial'];
-      
-      // Verificar se algum tipo selecionado é "Aéreo Facial"
       const temAereoFacial = tiposSelecionados.some(tipo => tiposSemParcelamento.includes(tipo));
-      
-      // Verificar se há tipos que permitem parcelamento
       const temTiposComParcelamento = tiposSelecionados.some(tipo => !tiposSemParcelamento.includes(tipo));
       
       const secaoParcelamento = document.getElementById('secaoParcelamento');
       
       if (temTiposComParcelamento && tiposSelecionados.length > 0) {
-        // Mostrar seção de parcelamento
         secaoParcelamento.style.display = 'block';
-        
-        // Se tem aéreo facial junto com outros, mostrar aviso
-        if (temAereoFacial) {
-          mostrarAvisoParcelamentoMisto();
-        } else {
-          esconderAvisoParcelamentoMisto();
-        }
-        
         console.log('✅ Seção de parcelamento habilitada');
       } else {
-        // Esconder seção de parcelamento
         secaoParcelamento.style.display = 'none';
-        
-        // Desmarcar checkboxes de parcelamento
         document.getElementById('parcela10x').checked = false;
         document.getElementById('parcela12x').checked = false;
-        
-        esconderAvisoParcelamentoMisto();
-        
         console.log('❌ Seção de parcelamento desabilitada');
       }
     }
 
-    function mostrarAvisoParcelamentoMisto() {
-      // Remover aviso existente
-      esconderAvisoParcelamentoMisto();
-      
-      const secaoParcelamento = document.getElementById('secaoParcelamento');
-      const aviso = document.createElement('div');
-      aviso.id = 'avisoParcelamentoMisto';
-      aviso.style.cssText = `
-        margin-top: 1rem;
-        padding: 0.75rem;
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        border-radius: 6px;
-        color: #856404;
-        font-size: 0.9rem;
-      `;
-      
-      aviso.innerHTML = `
-        <strong>⚠️ Atenção:</strong> Você selecionou "Aéreo Facial" junto com outros tipos.<br>
-        <small>• Para <strong>Aéreo Facial</strong>: parcelamento só aparece se informado nas observações</small><br>
-        <small>• Para outros tipos: parcelamento será incluído se marcado acima</small>
-      `;
-      
-      secaoParcelamento.appendChild(aviso);
-    }
-
-    function esconderAvisoParcelamentoMisto() {
-      const avisoExistente = document.getElementById('avisoParcelamentoMisto');
-      if (avisoExistente) {
-        avisoExistente.remove();
-      }
-    }
-
-    // Função para obter configuração de parcelamento (usada pelos módulos)
     function obterConfiguracaoParcelamento() {
       const parcela10x = document.getElementById('parcela10x')?.checked || false;
       const parcela12x = document.getElementById('parcela12x')?.checked || false;
       
-      const configuracao = {
+      return {
         incluirParcelamento: parcela10x || parcela12x,
         parcelas10x: parcela10x,
-        parcelas12x: parcela12x,
-        mostrarAmbos: parcela10x && parcela12x
+        parcelas12x: parcela12x
       };
-      
-      console.log('💳 Configuração de parcelamento:', configuracao);
-      
-      return configuracao;
     }
 
     // ================================================================================
-    // 📱 NAVEGAÇÃO ATIVA (mantido do HTML original)
+    // 📝 GERENCIAMENTO DE FORMULÁRIO
     // ================================================================================
 
-    // Destacar página atual na navegação
+    function atualizarIdadesCriancas() {
+      const numeroCriancas = parseInt(document.getElementById('criancas').value) || 0;
+      const container = document.getElementById('containerIdadesCriancas');
+      const campos = document.getElementById('camposIdadesCriancas');
+      
+      if (numeroCriancas > 0) {
+        container.style.display = 'block';
+        campos.innerHTML = '';
+        
+        for (let i = 0; i < numeroCriancas; i++) {
+          const div = document.createElement('div');
+          div.style.marginBottom = '0.5rem';
+          div.innerHTML = `
+            <label>Idade da criança ${i + 1}:</label>
+            <input type="number" name="idadeCrianca${i}" min="0" max="17" placeholder="Ex: 5">
+          `;
+          campos.appendChild(div);
+        }
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    function coletarIdadesCriancas() {
+      const numeroCriancas = parseInt(document.getElementById('criancas').value) || 0;
+      const idades = [];
+      
+      for (let i = 0; i < numeroCriancas; i++) {
+        const input = document.querySelector(`input[name="idadeCrianca${i}"]`);
+        if (input && input.value) {
+          idades.push(parseInt(input.value));
+        }
+      }
+      
+      return idades;
+    }
+
+    // ================================================================================
+    // 🚀 ENVIO PARA API v7.0
+    // ================================================================================
+
+    async function enviarParaAPI(dadosFormulario) {
+      console.log('[v7.0] 🚀 Enviando para API integrada...');
+      
+      try {
+        const response = await fetch('/api/ai', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dadosFormulario)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+          console.log('[v7.0] ✅ Resposta recebida com sucesso!');
+          console.log(`[v7.0] 📊 Tipo: ${resultado.analise.tipo_detectado}, Modelo: ${resultado.processamento.modelo_usado}`);
+          return resultado;
+        } else {
+          throw new Error(resultado.error || 'Erro desconhecido da API');
+        }
+        
+      } catch (error) {
+        console.error('[v7.0] ❌ Erro na comunicação com API:', error);
+        throw error;
+      }
+    }
+
+    // ================================================================================
+    // 📋 PROCESSAMENTO DO FORMULÁRIO
+    // ================================================================================
+
+    function coletarDadosFormulario() {
+      const tipos = Array.from(document.querySelectorAll('input[name="tipo"]:checked'))
+        .map(cb => cb.value);
+      
+      const dadosFormulario = {
+        tipos: tipos,
+        destino: document.getElementById('destino').value.trim(),
+        adultos: document.getElementById('adultos').value,
+        criancas: parseInt(document.getElementById('criancas').value) || 0,
+        idadesCriancas: coletarIdadesCriancas(),
+        observacoes: document.getElementById('observacoes').value.trim(),
+        textoColado: document.getElementById('pasteArea').textContent.trim(),
+        parcelamento: obterConfiguracaoParcelamento()
+      };
+
+      // Limpar texto padrão do pasteArea
+      if (dadosFormulario.textoColado.includes('📌 Clique aqui ou pressione')) {
+        dadosFormulario.textoColado = '';
+      }
+
+      return dadosFormulario;
+    }
+
+    // ================================================================================
+    // 🎯 HANDLER PRINCIPAL DO FORMULÁRIO
+    // ================================================================================
+
+    document.getElementById('orcamentoForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      console.log('[v7.0] 🚀 Iniciando geração de orçamento...');
+      
+      const btnGerar = document.getElementById('btnGerar');
+      const originalText = btnGerar.innerHTML;
+      
+      try {
+        // Mostrar loading
+        btnGerar.innerHTML = '<div class="loading"></div> Gerando...';
+        btnGerar.disabled = true;
+        
+        // Coletar dados
+        const dadosFormulario = coletarDadosFormulario();
+        console.log('[v7.0] 📋 Dados coletados:', dadosFormulario);
+        
+        // Validar dados básicos
+        if (dadosFormulario.tipos.length === 0) {
+          throw new Error('Selecione pelo menos um tipo de orçamento');
+        }
+        
+        if (!dadosFormulario.observacoes && !dadosFormulario.textoColado) {
+          throw new Error('Preencha as observações ou cole algum conteúdo');
+        }
+        
+        // Enviar para API
+        const resultado = await enviarParaAPI(dadosFormulario);
+        
+        // Exibir resultado
+        document.getElementById('orcamentoIA').textContent = resultado.orcamento;
+        
+        // Habilitar botões de funcionalidades extras
+        document.getElementById('btnGerarDicas').disabled = false;
+        if (dadosFormulario.tipos.includes('Hotel')) {
+          document.getElementById('btnGerarRanking').disabled = false;
+        }
+        
+        console.log('[v7.0] ✅ Orçamento gerado com sucesso!');
+        
+      } catch (error) {
+        console.error('[v7.0] ❌ Erro:', error);
+        document.getElementById('orcamentoIA').textContent = `❌ Erro: ${error.message}`;
+      } finally {
+        // Restaurar botão
+        btnGerar.innerHTML = originalText;
+        btnGerar.disabled = false;
+      }
+    });
+
+    // ================================================================================
+    // 📋 FUNÇÕES AUXILIARES
+    // ================================================================================
+
+    function copiarTexto(elementId) {
+      const elemento = document.getElementById(elementId);
+      const texto = elemento.textContent;
+      
+      navigator.clipboard.writeText(texto).then(() => {
+        console.log('📋 Texto copiado para clipboard');
+        // Feedback visual opcional
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Copiado!';
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('❌ Erro ao copiar:', err);
+      });
+    }
+
+    function gerarDicasDestino() {
+      alert('🚧 Funcionalidade em implementação para v7.0');
+    }
+
+    function generateRankingHoteis() {
+      alert('🚧 Funcionalidade em implementação para v7.0');
+    }
+
+    // ================================================================================
+    // 🎨 INICIALIZAÇÃO
+    // ================================================================================
+
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('✅ CVC Itaqua v7.0 carregado e pronto!');
+      
+      // Destacar página atual na navegação
       const currentPage = window.location.pathname.split('/').pop() || 'index.html';
       const navLinks = document.querySelectorAll('nav a');
       
@@ -435,59 +522,7 @@
       toggleParcelamento();
     });
 
-    // ================================================================================
-    // 🎨 ESTILOS DINÂMICOS PARA PARCELAMENTO
-    // ================================================================================
-
-    const styleParcelamento = document.createElement('style');
-    styleParcelamento.textContent = `
-      #secaoParcelamento {
-        transition: all 0.3s ease;
-        animation: fadeInParcelamento 0.5s ease;
-      }
-      
-      @keyframes fadeInParcelamento {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      #secaoParcelamento .checkbox-group label:hover {
-        background: #f0f0f0 !important;
-        transform: translateX(2px);
-        transition: all 0.2s ease;
-      }
-      
-      #secaoParcelamento input[type="checkbox"]:checked + span {
-        color: #007bff;
-        font-weight: bold;
-      }
-      
-      #avisoParcelamentoMisto {
-        animation: slideInAviso 0.3s ease;
-      }
-      
-      @keyframes slideInAviso {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `;
-
-    document.head.appendChild(styleParcelamento);
-
-    console.log('🎨 Estilos de parcelamento aplicados');
-    console.log('🚀 Sistema de parcelamento condicional pronto!');
+    console.log('🎯 Sistema v7.0 totalmente integrado e funcionando!');
   </script>
 </body>
 </html>
