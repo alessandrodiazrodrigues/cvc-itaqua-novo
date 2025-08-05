@@ -122,7 +122,10 @@ export default async function handler(req, res) {
         tempoProcessamento: `${tempoTotal}ms`,
         templateUsado: resultado.templateUsado,
         modeloUsado: resultado.modeloUsado,
-        modulosCarregados: true
+        modulosCarregados: true,
+        detalhesCompletos: resultado.detalhesProcessamento || {
+          status: 'Detalhes não disponíveis para este tipo de operação'
+        }
       }
     });
 
@@ -167,15 +170,21 @@ async function processarOrcamentoModular(formData, moduloTemplates, moduloAnalys
     
     // ETAPA 2: Aplicar template usando módulo templates.js
     let templateResult;
+    let templateUsadoReal = 'desconhecido';
+    
     if (moduloTemplates && moduloTemplates.aplicarTemplateCompleto) {
       templateResult = moduloTemplates.aplicarTemplateCompleto(formData, analise);
-      console.log("✅ Template modular aplicado");
+      templateUsadoReal = 'templates.js-aplicarTemplateCompleto';
+      console.log("✅ Template modular aplicado via aplicarTemplateCompleto()");
     } else if (moduloTemplates && moduloTemplates.default && moduloTemplates.default.aplicarTemplateCompleto) {
       templateResult = moduloTemplates.default.aplicarTemplateCompleto(formData, analise);
-      console.log("✅ Template modular (default export) aplicado");
+      templateUsadoReal = 'templates.js-default-aplicarTemplateCompleto';
+      console.log("✅ Template modular (default export) aplicado via default.aplicarTemplateCompleto()");
     } else {
-      console.log("⚠️ Template modular não encontrado, usando fallback");
+      console.log("⚠️ Template modular não encontrado, usando fallback integrado");
+      console.log("📋 Módulos disponíveis:", moduloTemplates ? Object.keys(moduloTemplates) : 'nenhum');
       templateResult = gerarTemplateManualIntegrado(formData, textoCompleto, analise);
+      templateUsadoReal = 'fallback-integrado-manual';
     }
     
     // ETAPA 3: Processar com IA ou usar template direto
@@ -217,8 +226,15 @@ async function processarOrcamentoModular(formData, moduloTemplates, moduloAnalys
     
     return {
       conteudo: conteudoFinal,
-      templateUsado: 'modular-templates',
-      modeloUsado: 'template-ia-hibrido'
+      templateUsado: templateUsadoReal,
+      modeloUsado: 'template-ia-hibrido',
+      detalhesProcessamento: {
+        moduloTemplatesCarregado: !!moduloTemplates,
+        funcaoTemplateUsada: templateUsadoReal,
+        analiseModular: moduloAnalysis ? 'SIM' : 'NÃO',
+        processamentoModular: moduloProcessing ? 'SIM' : 'NÃO',
+        iaUtilizada: conteudoFinal !== templateResult ? 'SIM' : 'NÃO'
+      }
     };
     
   } catch (error) {
