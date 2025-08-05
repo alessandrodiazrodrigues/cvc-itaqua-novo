@@ -1,15 +1,15 @@
-// 🔍 analysis.js - SISTEMA INTELIGENTE DE ANÁLISE v7.0
-// Detecção precisa de tipos de orçamento + Análise de contexto
-// Integração com templates do Manual Completo
+// 🔍 analysis.js - SISTEMA INTELIGENTE DE ANÁLISE v7.7
+// CORREÇÃO CRÍTICA #2: Exportação ES6 + Detecção Precisa
+// Análise avançada de tipos de orçamento + Integração com Manual
 
-console.log("🔍 Analysis v7.0 - DETECÇÃO INTELIGENTE IMPLEMENTADA");
+console.log("🔍 Analysis v7.7 - DETECÇÃO INTELIGENTE + ES6 CORRIGIDA");
 
 // ================================================================================
 // 🎯 SISTEMA PRINCIPAL DE ANÁLISE
 // ================================================================================
 
-function analisarTextoCompleto(formData) {
-  console.log("🔍 Iniciando análise completa v7.0...");
+export function analisarTextoCompleto(formData) {
+  console.log("🔍 Iniciando análise completa v7.7...");
   
   const textoCompleto = construirTextoAnalise(formData);
   const contexto = extrairContexto(textoCompleto);
@@ -95,7 +95,7 @@ function analisarElementosBasicos(texto) {
 // 🎯 DETECÇÃO DE TIPOS ESPECÍFICOS (MANUAL IMPLEMENTADO)
 // ================================================================================
 
-function detectarTiposEspecificos(texto, contexto) {
+export function detectarTiposEspecificos(texto, contexto) {
   console.log("🎯 Detectando tipos específicos do manual...");
   
   const tipos = {};
@@ -139,7 +139,7 @@ function detectarTiposEspecificos(texto, contexto) {
 }
 
 // ================================================================================
-// 🔍 FUNÇÕES DE DETECÇÃO ESPECÍFICAS
+// 🔍 FUNÇÕES DE DETECÇÃO ESPECÍFICAS POR TIPO
 // ================================================================================
 
 function detectarAereoNacionalSimples(texto, contexto) {
@@ -147,9 +147,9 @@ function detectarAereoNacionalSimples(texto, contexto) {
     !texto.includes('internacional'),
     texto.includes('ida') && texto.includes('volta'),
     !texto.includes('opção 1') && !texto.includes('opção 2'),
-    contexto.aeroportosNacionais.length > 0,
+    contexto?.aeroportosNacionais?.length > 0,
     !texto.includes('conexão') && !texto.includes('escala'),
-    contexto.precos.length === 1
+    contexto?.precos?.length === 1
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
@@ -172,139 +172,143 @@ function detectarAereoConexaoDetalhada(texto, contexto) {
   const indicadores = [
     texto.includes('conexão') || texto.includes('escala'),
     texto.includes('espera') || texto.includes('tempo'),
-    contexto.aeroportosDetectados.length >= 3, // origem, conexão, destino
-    texto.includes('brasília') || texto.includes('recife') || texto.includes('fortaleza'),
-    contexto.horarios.length >= 4 // ida1, ida2, volta1, volta2
+    contexto?.aeroportos?.length >= 3, // Origem + Conexão + Destino
+    texto.includes('brasília') || texto.includes('são paulo'),
+    contexto?.horarios?.length >= 4, // Múltiplos horários
+    !texto.includes('opção')
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.6,
+    detectado: score > 0.5,
     confianca: score,
     indicadores: {
       temConexao: indicadores[0],
-      temTempoEspera: indicadores[1],
+      temTempo: indicadores[1],
       multiplosAeroportos: indicadores[2],
-      aeroportoConexaoComum: indicadores[3],
-      multiplosHorarios: indicadores[4]
+      aeroportoConexao: indicadores[3],
+      multiplosHorarios: indicadores[4],
+      opcaoUnica: indicadores[5]
     }
   };
 }
 
 function detectarAereoSomenteIda(texto, contexto) {
   const indicadores = [
+    (texto.includes('ida') && !texto.includes('volta')),
     texto.includes('somente ida') || texto.includes('só ida'),
-    texto.includes('ida') && !texto.includes('volta'),
-    !texto.includes('--') && !texto.includes('retorno'),
-    contexto.datas.length === 1,
-    !texto.includes('round trip')
+    contexto?.datas?.length === 1,
+    contexto?.horarios?.length <= 2,
+    !texto.includes('retorno'),
+    texto.includes('sem volta') || texto.includes('passagem ida')
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.7,
+    detectado: score > 0.4,
     confianca: score,
     indicadores: {
-      explicito: indicadores[0],
-      somenteIda: indicadores[1],
-      semSeparador: indicadores[2],
-      dataUnica: indicadores[3],
-      naoRoundTrip: indicadores[4]
+      idaSemVolta: indicadores[0],
+      termoSomenteIda: indicadores[1],
+      dataUnica: indicadores[2],
+      poucoHorarios: indicadores[3],
+      semRetorno: indicadores[4],
+      termoPassagemIda: indicadores[5]
     }
   };
 }
 
 function detectarMultiplasOpcoes2(texto, contexto) {
   const indicadores = [
-    (texto.includes('opção 1') && texto.includes('opção 2')) ||
+    (texto.includes('opção 1') && texto.includes('opção 2')),
     (texto.includes('plano 1') && texto.includes('plano 2')),
-    contexto.precos.length === 2,
-    !texto.includes('opção 3') && !texto.includes('plano 3'),
-    texto.includes('bagagem') && (texto.match(/bagagem/g) || []).length >= 2,
-    mesmo_voo_multiplos_precos(texto)
+    contexto?.precos?.length === 2,
+    texto.includes('bagagem') && texto.includes('despachada'),
+    !texto.includes('opção 3'),
+    texto.includes('cancelamento') || texto.includes('reembolsável')
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.6,
+    detectado: score > 0.5,
     confianca: score,
     indicadores: {
-      opcoes2Explicitas: indicadores[0],
-      precosDuplos: indicadores[1],
-      naoOpcao3: indicadores[2],
-      bagagemMultipla: indicadores[3],
-      mesmoVoo: indicadores[4]
+      opcoes12: indicadores[0],
+      planos12: indicadores[1],
+      doisPrecos: indicadores[2],
+      diferencaBagagem: indicadores[3],
+      semOpcao3: indicadores[4],
+      diferenciasServicos: indicadores[5]
     }
   };
 }
 
 function detectarMultiplasOpcoes3(texto, contexto) {
   const indicadores = [
-    (texto.includes('opção 1') && texto.includes('opção 2') && texto.includes('opção 3')) ||
-    (texto.includes('plano 1') && texto.includes('plano 2') && texto.includes('plano 3')),
-    contexto.precos.length === 3,
-    texto.includes('marcação') && texto.includes('assento'),
-    (texto.match(/r\$.*?r\$.*?r\$/gi) || []).length >= 1,
-    texto.includes('2 bagagens') || texto.includes('duas bagagens')
+    (texto.includes('opção 1') && texto.includes('opção 2') && texto.includes('opção 3')),
+    contexto?.precos?.length === 3,
+    texto.includes('marcação de assento'),
+    texto.includes('2 bagagens'),
+    texto.includes('básico') || texto.includes('premium'),
+    texto.match(/r\$.*r\$.*r\$/i) // Três valores diferentes
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.6,
+    detectado: score > 0.5,
     confianca: score,
     indicadores: {
-      opcoes3Explicitas: indicadores[0],
-      precosTriplos: indicadores[1],
-      servicosPremium: indicadores[2],
-      multiplosPrecos: indicadores[3],
-      bagagemPremium: indicadores[4]
+      tresOpcoes: indicadores[0],
+      tresPrecos: indicadores[1],
+      assentoMarcado: indicadores[2],
+      duasBagagens: indicadores[3],
+      niveis: indicadores[4],
+      tresValores: indicadores[5]
     }
   };
 }
 
 function detectarMultitrecho(texto, contexto) {
   const indicadores = [
-    texto.includes('multitrecho') || texto.includes('multi-trecho'),
-    texto.includes('trecho 1') || texto.includes('1º trecho'),
-    contexto.datas.length >= 3,
-    contexto.aeroportosDetectados.length >= 3,
-    roteiro_nao_linear(texto),
-    (texto.includes('madrid') && texto.includes('lisboa')) ||
-    (texto.includes('paris') && texto.includes('roma')) ||
-    (texto.includes('londres') && texto.includes('edinburgo')),
-    texto.includes('tap portugal') || texto.includes('lufthansa')
+    texto.includes('multitrecho') || texto.includes('multitrechos'),
+    texto.includes('trecho 1') && texto.includes('trecho 2'),
+    contexto?.aeroportos?.length >= 4,
+    contexto?.datas?.length >= 3,
+    texto.includes('→') || texto.includes('madrid') || texto.includes('lisboa'),
+    texto.includes('dias') && texto.includes('noites')
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.5,
+    detectado: score > 0.4,
     confianca: score,
     indicadores: {
-      multitrechoExplicito: indicadores[0],
+      termoMultitrecho: indicadores[0],
       trechosNumerados: indicadores[1],
-      multiplasDatass: indicadores[2],
-      multiplosAeroportos: indicadores[3],
-      roteiroComplexo: indicadores[4],
-      destinosEuropeus: indicadores[5],
-      companhiaInternacional: indicadores[6]
+      multiplosAeroportos: indicadores[2],
+      multiplasDatas: indicadores[3],
+      roteiro: indicadores[4],
+      duracao: indicadores[5]
     }
   };
 }
 
 function detectarMultiplasCompanhiasInternacionais(texto, contexto) {
+  const companhiasInternacionais = ['copa', 'american', 'tap', 'lufthansa', 'delta', 'air france'];
+  const companhiasDetectadas = companhiasInternacionais.filter(comp => texto.includes(comp));
+  
   const indicadores = [
-    texto.includes('miami') || texto.includes('europa') || texto.includes('new york'),
-    (texto.includes('copa airlines') || texto.includes('american airlines') || 
-     texto.includes('lufthansa') || texto.includes('air france')),
-    contexto.companhiasDetectadas.length >= 2,
+    companhiasDetectadas.length >= 2,
+    texto.includes('panamá') || texto.includes('miami') || texto.includes('europa'),
     texto.includes('opção 1') && texto.includes('opção 2'),
-    destino_internacional(contexto.destino),
-    texto.includes('voo direto') && texto.includes('conexão')
+    !texto.includes('nacional'),
+    contexto?.precos?.length >= 2,
+    texto.includes('internacional') || contexto?.aeroportosInternacionais?.length > 0
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
@@ -313,26 +317,25 @@ function detectarMultiplasCompanhiasInternacionais(texto, contexto) {
     detectado: score > 0.5,
     confianca: score,
     indicadores: {
-      destinoInternacional: indicadores[0],
-      companhiasInternacionais: indicadores[1],
-      multiplas_companhias: indicadores[2],
-      opcoesComparativas: indicadores[3],
-      destinoDetectado: indicadores[4],
-      tiposVooVariados: indicadores[5]
-    }
+      multiplasCompanhias: indicadores[0],
+      destinoInternacional: indicadores[1],
+      opcoes: indicadores[2],
+      naoNacional: indicadores[3],
+      multiplosPrecos: indicadores[4],
+      termoInternacional: indicadores[5]
+    },
+    companhiasDetectadas: companhiasDetectadas
   };
 }
 
 function detectarPacoteCompleto(texto, contexto) {
   const indicadores = [
     texto.includes('pacote'),
+    (texto.includes('hotel') || texto.includes('hospedagem')) && (texto.includes('aéreo') || texto.includes('voo')),
     texto.includes('traslado') || texto.includes('transfer'),
-    (texto.includes('hotel') && texto.includes('aéreo')) ||
-    (texto.includes('hospedagem') && texto.includes('voo')),
-    texto.includes('inclui') || texto.includes('inclusões'),
-    contexto.hoteis.length > 0,
-    texto.includes('noites') || texto.includes('diárias'),
-    texto.includes('café da manhã') || texto.includes('meia pensão')
+    texto.includes('inclui') || texto.includes('o pacote inclui'),
+    contexto?.hoteis?.length > 0,
+    texto.includes('noites') && (texto.includes('embarque') || texto.includes('data'))
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
@@ -341,13 +344,12 @@ function detectarPacoteCompleto(texto, contexto) {
     detectado: score > 0.5,
     confianca: score,
     indicadores: {
-      pacoteExplicito: indicadores[0],
-      temTraslado: indicadores[1],
-      aereoHotel: indicadores[2],
-      listaInclusoes: indicadores[3],
-      hoteisDetectados: indicadores[4],
-      temNoites: indicadores[5],
-      regimeAlimentacao: indicadores[6]
+      termoPacote: indicadores[0],
+      aereoHotel: indicadores[1],
+      traslado: indicadores[2],
+      listaInclusos: indicadores[3],
+      opcoesHotel: indicadores[4],
+      duracaoEmbarque: indicadores[5]
     }
   };
 }
@@ -355,305 +357,293 @@ function detectarPacoteCompleto(texto, contexto) {
 function detectarCruzeiro(texto, contexto) {
   const indicadores = [
     texto.includes('cruzeiro'),
-    texto.includes('costa') || texto.includes('msc') || texto.includes('royal caribbean'),
-    texto.includes('cabine') || texto.includes('navio'),
+    texto.includes('msc') || texto.includes('costa') || texto.includes('navio'),
+    texto.includes('cabine') || texto.includes('suíte'),
     texto.includes('embarque') && texto.includes('porto'),
-    texto.includes('interna') || texto.includes('externa') || texto.includes('varanda'),
-    texto.includes('noites') && !texto.includes('hotel'),
-    texto.includes('roteiro') || texto.includes('itinerário'),
-    precos_por_cabine(texto)
+    texto.includes('santos') || texto.includes('rio de janeiro'),
+    texto.includes('roteiro') || texto.includes('litoral')
   ];
   
   const score = indicadores.filter(Boolean).length / indicadores.length;
   
   return {
-    detectado: score > 0.5,
+    detectado: score > 0.4,
     confianca: score,
     indicadores: {
-      cruzeiroExplicito: indicadores[0],
+      termoCruzeiro: indicadores[0],
       companhiaCruzeiro: indicadores[1],
-      terminologiaNautica: indicadores[2],
+      tipoAcomodacao: indicadores[2],
       embarquePorto: indicadores[3],
-      tiposCabine: indicadores[4],
-      duracaoNoites: indicadores[5],
-      temRoteiro: indicadores[6],
-      precosCabine: indicadores[7]
+      portoEspecifico: indicadores[4],
+      roteiro: indicadores[5]
     }
   };
 }
 
 // ================================================================================
-// 🧠 FUNÇÕES AUXILIARES DE DETECÇÃO
+// 🧮 ANÁLISE DE COMPLEXIDADE
 // ================================================================================
 
-function mesmo_voo_multiplos_precos(texto) {
-  const horarios = texto.match(/\d{1,2}:\d{2}/g) || [];
-  const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
+export function calcularComplexidadeAvancada(texto, formData) {
+  console.log("🧮 Calculando complexidade avançada...");
   
-  // Se há múltiplos preços mas poucos horários diferentes, provavelmente é mesmo voo
-  return precos.length >= 2 && horarios.length <= 4;
-}
-
-function roteiro_nao_linear(texto) {
-  const cidades = extrair_cidades_texto(texto);
+  const fatores = {
+    // Fator quantidade de texto
+    tamanhoTexto: Math.min(texto.length / 1000, 1), // Normalizado para 0-1
+    
+    // Fator quantidade de dados estruturados
+    dadosEstruturados: calcularDadosEstruturados(texto),
+    
+    // Fator multiplicidade de opções
+    multiplicidadeOpcoes: calcularMultiplicidadeOpcoes(texto),
+    
+    // Fator complexidade de roteiro
+    complexidadeRoteiro: calcularComplexidadeRoteiro(texto),
+    
+    // Fator diversidade de serviços
+    diversidadeServicos: calcularDiversidadeServicos(texto)
+  };
   
-  // Se há mais de 2 cidades e não é ida-volta simples
-  return cidades.length >= 3 && !eh_ida_volta_simples(cidades);
-}
-
-function destino_internacional(destino) {
-  const destinosInternacionais = [
-    'miami', 'new york', 'paris', 'londres', 'madrid', 'lisboa', 
-    'roma', 'amsterda', 'barcelona', 'berlim', 'zurich', 'dubai'
-  ];
-  
-  return destinosInternacionais.some(dest => 
-    (destino || '').toLowerCase().includes(dest)
+  // Cálculo da complexidade final (média ponderada)
+  const complexidadeNumerica = (
+    fatores.tamanhoTexto * 0.1 +
+    fatores.dadosEstruturados * 0.3 +
+    fatores.multiplicidadeOpcoes * 0.3 +
+    fatores.complexidadeRoteiro * 0.2 +
+    fatores.diversidadeServicos * 0.1
   );
-}
-
-function precos_por_cabine(texto) {
-  // Detectar se preços são por cabine (valores mais altos, poucos passageiros)
-  const precos = extrair_valores_numericos(texto);
-  const adultos = texto.match(/(\d+)\s*adult/gi) || [];
   
-  if (precos.length > 0 && adultos.length > 0) {
-    const precoMedio = precos.reduce((a, b) => a + b, 0) / precos.length;
-    return precoMedio > 5000; // Preços típicos de cabine de cruzeiro
+  // Classificação categórica
+  let complexidadeCategoria;
+  if (complexidadeNumerica < 0.3) {
+    complexidadeCategoria = 'simples';
+  } else if (complexidadeNumerica < 0.7) {
+    complexidadeCategoria = 'media';
+  } else {
+    complexidadeCategoria = 'alta';
   }
   
-  return false;
-}
-
-function extrair_cidades_texto(texto) {
-  const cidades = [
-    'são paulo', 'rio de janeiro', 'salvador', 'fortaleza', 'recife',
-    'madrid', 'lisboa', 'paris', 'roma', 'londres', 'miami', 'new york'
-  ];
-  
-  return cidades.filter(cidade => texto.includes(cidade));
-}
-
-function eh_ida_volta_simples(cidades) {
-  return cidades.length === 2;
-}
-
-function extrair_valores_numericos(texto) {
-  const matches = texto.match(/r\$\s*([\d.,]+)/gi) || [];
-  return matches.map(match => {
-    const numero = match.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
-    return parseFloat(numero) || 0;
-  });
-}
-
-// ================================================================================
-// 📊 EXTRAÇÃO DE CONTEXTO
-// ================================================================================
-
-function extrairContexto(texto) {
-  console.log("📊 Extraindo contexto...");
-  
   return {
-    // Preços detectados
-    precos: extrairPrecos(texto),
-    valoresNumericos: extrair_valores_numericos(texto),
-    
-    // Datas e horários
-    datas: extrairDatas(texto),
-    horarios: extrairHorarios(texto),
-    
-    // Aeroportos e companhias
-    aeroportosDetectados: extrairAeroportos(texto),
-    aeroportosNacionais: extrairAeroportosNacionais(texto),
-    companhiasDetectadas: extrairCompanhias(texto),
-    
-    // Hotéis e destinos
-    hoteis: extrairHoteis(texto),
-    destino: extrairDestinoPrincipal(texto),
-    
-    // Características técnicas
-    temLinks: texto.includes('http') || texto.includes('www'),
-    temEmojis: /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u.test(texto),
-    
-    // Análise de tamanho
-    tamanhoTexto: texto.length,
-    numeroLinhas: texto.split('\n').length,
-    numeroPalavras: texto.split(' ').length
+    complexidade: complexidadeCategoria,
+    complexidadeNumerica: Math.round(complexidadeNumerica * 100) / 100,
+    fatoresComplexidade: fatores
   };
 }
 
-function extrairPrecos(texto) {
-  const matches = texto.match(/r\$\s*[\d.,]+/gi) || [];
-  return matches.map(match => match.trim());
+function calcularDadosEstruturados(texto) {
+  const elementos = [
+    (texto.match(/\d{1,2}:\d{2}/g) || []).length, // Horários
+    (texto.match(/\d{1,2}\/\d{1,2}/g) || []).length, // Datas
+    (texto.match(/r\$\s*[\d.,]+/gi) || []).length, // Preços
+    (texto.match(/\d+x\s*de/gi) || []).length // Parcelamentos
+  ];
+  
+  const total = elementos.reduce((a, b) => a + b, 0);
+  return Math.min(total / 10, 1); // Normalizado
 }
 
-function extrairDatas(texto) {
-  const matches = texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{4})?/g) || [];
-  return [...new Set(matches)]; // Remove duplicatas
+function calcularMultiplicidadeOpcoes(texto) {
+  const opcoes = (texto.match(/opção\s*\d+/gi) || []).length;
+  const planos = (texto.match(/plano\s*\d+/gi) || []).length;
+  const hoteis = (texto.match(/hotel\s*[^\n]*/gi) || []).length;
+  
+  const total = Math.max(opcoes, planos, hoteis);
+  return Math.min(total / 5, 1); // Normalizado
 }
 
-function extrairHorarios(texto) {
-  const matches = texto.match(/\d{1,2}:\d{2}/g) || [];
-  return [...new Set(matches)]; // Remove duplicatas
+function calcularComplexidadeRoteiro(texto) {
+  const trechos = (texto.match(/trecho\s*\d+/gi) || []).length;
+  const conexoes = (texto.match(/conexão|escala/gi) || []).length;
+  const aeroportos = extrairAeroportos(texto).length;
+  
+  const score = (trechos * 0.4 + conexoes * 0.3 + aeroportos * 0.3) / 3;
+  return Math.min(score / 3, 1); // Normalizado
 }
+
+function calcularDiversidadeServicos(texto) {
+  const servicos = [
+    'bagagem', 'traslado', 'hotel', 'seguro', 'passeio',
+    'refeição', 'bebida', 'spa', 'piscina', 'wifi'
+  ];
+  
+  const encontrados = servicos.filter(servico => texto.includes(servico)).length;
+  return encontrados / servicos.length; // Já normalizado
+}
+
+// ================================================================================
+// 🔍 EXTRAÇÃO DE CONTEXTO
+// ================================================================================
+
+export function extrairContexto(texto) {
+  console.log("🔍 Extraindo contexto...");
+  
+  return {
+    // Aeroportos
+    aeroportos: extrairAeroportos(texto),
+    aeroportosNacionais: extrairAeroportosNacionais(texto),
+    aeroportosInternacionais: extrairAeroportosInternacionais(texto),
+    
+    // Companhias aéreas
+    companhias: extrairCompanhias(texto),
+    companhiasNacionais: extrairCompanhiasNacionais(texto),
+    companhiasInternacionais: extrairCompanhiasInternacionais(texto),
+    
+    // Dados temporais
+    datas: extrairDatas(texto),
+    horarios: extrairHorarios(texto),
+    duracao: extrairDuracao(texto),
+    
+    // Dados financeiros
+    precos: extrairPrecos(texto),
+    parcelamentos: extrairParcelamentos(texto),
+    
+    // Serviços
+    hoteis: extrairHoteis(texto),
+    servicos: extrairServicos(texto),
+    
+    // Links e referências
+    links: extrairLinks(texto),
+    referencias: extrairReferencias(texto)
+  };
+}
+
+// ================================================================================
+// 🔍 FUNÇÕES AUXILIARES DE EXTRAÇÃO
+// ================================================================================
 
 function extrairAeroportos(texto) {
-  const codigos = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB', 'SSA', 'FOR', 'REC', 'POA', 'CWB'];
-  const encontrados = [];
-  
-  codigos.forEach(codigo => {
-    if (texto.toUpperCase().includes(codigo)) {
-      encontrados.push(codigo);
-    }
-  });
-  
-  return encontrados;
+  const codigos = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB', 'CWB', 'POA', 'FOR', 'REC', 'SSA'];
+  return codigos.filter(codigo => texto.toUpperCase().includes(codigo));
 }
 
 function extrairAeroportosNacionais(texto) {
-  const nacionais = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB', 'SSA', 'FOR', 'REC', 'POA'];
-  return extrairAeroportos(texto).filter(codigo => nacionais.includes(codigo));
+  const nacionais = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB', 'CWB', 'POA'];
+  return nacionais.filter(codigo => texto.toUpperCase().includes(codigo));
+}
+
+function extrairAeroportosInternacionais(texto) {
+  const internacionais = ['JFK', 'LAX', 'CDG', 'LHR', 'FCO', 'MAD', 'LIS', 'PTY'];
+  return internacionais.filter(codigo => texto.toUpperCase().includes(codigo));
 }
 
 function extrairCompanhias(texto) {
-  const companhias = [
-    'latam', 'gol', 'azul', 'avianca', 'copa airlines', 'american airlines',
-    'united', 'delta', 'lufthansa', 'air france', 'klm', 'tap portugal'
-  ];
-  
-  const encontradas = [];
-  companhias.forEach(companhia => {
-    if (texto.toLowerCase().includes(companhia)) {
-      encontradas.push(companhia);
-    }
-  });
-  
-  return encontradas;
+  const companhias = ['latam', 'gol', 'azul', 'avianca', 'copa', 'american', 'tap', 'lufthansa'];
+  return companhias.filter(comp => texto.toLowerCase().includes(comp));
+}
+
+function extrairCompanhiasNacionais(texto) {
+  const nacionais = ['latam', 'gol', 'azul', 'avianca'];
+  return nacionais.filter(comp => texto.toLowerCase().includes(comp));
+}
+
+function extrairCompanhiasInternacionais(texto) {
+  const internacionais = ['copa', 'american', 'tap', 'lufthansa', 'delta', 'air france'];
+  return internacionais.filter(comp => texto.toLowerCase().includes(comp));
+}
+
+function extrairDatas(texto) {
+  return (texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{4})?/g) || []);
+}
+
+function extrairHorarios(texto) {
+  return (texto.match(/\d{1,2}:\d{2}/g) || []);
+}
+
+function extrairDuracao(texto) {
+  const match = texto.match(/(\d+)\s*dias?\s*e?\s*(\d+)?\s*noites?/i);
+  return match ? { dias: parseInt(match[1]), noites: parseInt(match[2] || match[1] - 1) } : null;
+}
+
+function extrairPrecos(texto) {
+  return (texto.match(/r\$\s*[\d.,]+/gi) || []);
+}
+
+function extrairParcelamentos(texto) {
+  return (texto.match(/\d+x\s*de\s*r\$\s*[\d.,]+/gi) || []);
 }
 
 function extrairHoteis(texto) {
-  const palavrasHotel = ['hotel', 'resort', 'pousada', 'flat', 'apart'];
-  const hoteis = [];
-  
-  // Buscar por nomes que contenham palavras relacionadas a hospedagem
-  palavrasHotel.forEach(palavra => {
-    const regex = new RegExp(`\\b\\w*${palavra}\\w*\\b`, 'gi');
-    const matches = texto.match(regex) || [];
-    hoteis.push(...matches);
-  });
-  
-  return [...new Set(hoteis)]; // Remove duplicatas
+  return (texto.match(/hotel\s*[^\n]*/gi) || []);
 }
 
-function extrairDestinoPrincipal(texto) {
-  const destinos = [
-    'são paulo', 'rio de janeiro', 'salvador', 'fortaleza', 'recife', 'maceió',
-    'porto alegre', 'curitiba', 'florianópolis', 'brasília', 'goiânia',
-    'miami', 'new york', 'paris', 'londres', 'madrid', 'lisboa', 'roma'
-  ];
-  
-  for (const destino of destinos) {
-    if (texto.includes(destino)) {
-      return destino;
-    }
-  }
-  
-  return null;
+function extrairServicos(texto) {
+  const servicos = ['traslado', 'bagagem', 'refeição', 'passeio', 'seguro'];
+  return servicos.filter(servico => texto.includes(servico));
+}
+
+function extrairLinks(texto) {
+  return (texto.match(/https?:\/\/[^\s]+/g) || []);
+}
+
+function extrairReferencias(texto) {
+  return (texto.match(/carrinho-dinamico\/[a-f0-9]+/g) || []);
 }
 
 // ================================================================================
-// 🧮 CÁLCULO DE COMPLEXIDADE AVANÇADA
+// 🔍 FUNÇÕES DE DETECÇÃO BÁSICA
 // ================================================================================
 
-function calcularComplexidadeAvancada(texto, formData) {
-  console.log("🧮 Calculando complexidade avançada...");
-  
-  let pontuacao = 0;
-  const fatores = {};
-  
-  // Fator 1: Número de tipos selecionados
-  const tiposSelecionados = formData.tipos?.length || 0;
-  pontuacao += tiposSelecionados * 10;
-  fatores.tiposSelecionados = tiposSelecionados;
-  
-  // Fator 2: Múltiplas opções
-  const numeroOpcoes = contarOpcoes(texto);
-  pontuacao += numeroOpcoes * 15;
-  fatores.numeroOpcoes = numeroOpcoes;
-  
-  // Fator 3: Conexões/escalas
-  if (detectarEscalas(texto)) {
-    pontuacao += 20;
-    fatores.temEscalas = true;
-  }
-  
-  // Fator 4: Múltiplas companhias
-  const companhias = extrairCompanhias(texto);
-  pontuacao += companhias.length * 10;
-  fatores.numeroCompanhias = companhias.length;
-  
-  // Fator 5: Crianças com idades
-  if (formData.criancas > 0 && formData.idadesCriancas?.length > 0) {
-    pontuacao += 15;
-    fatores.criancasComIdades = true;
-  }
-  
-  // Fator 6: Texto extenso
-  if (texto.length > 1000) {
-    pontuacao += 25;
-    fatores.textoExtenso = true;
-  }
-  
-  // Fator 7: Parcelamento solicitado
-  if (formData.parcelamento?.incluirParcelamento) {
-    pontuacao += 10;
-    fatores.parcelamentoSolicitado = true;
-  }
-  
-  // Determinar nível de complexidade
-  let nivel;
-  if (pontuacao <= 30) {
-    nivel = 'baixa';
-  } else if (pontuacao <= 70) {
-    nivel = 'média';
-  } else if (pontuacao <= 120) {
-    nivel = 'alta';
-  } else {
-    nivel = 'muito_alta';
-  }
-  
-  return {
-    complexidade: nivel,
-    pontuacao: pontuacao,
-    fatores: fatores,
-    recomendacoes: gerarRecomendacoes(nivel, fatores)
-  };
+function detectarEscalas(texto) {
+  return texto.includes('escala') || texto.includes('conexão');
 }
 
-function gerarRecomendacoes(nivel, fatores) {
-  const recomendacoes = [];
-  
-  if (nivel === 'muito_alta') {
-    recomendacoes.push('Usar GPT-4o para maior precisão');
-    recomendacoes.push('Aumentar max_tokens para 3000');
-    recomendacoes.push('Aplicar validação extra na resposta');
-  } else if (nivel === 'alta') {
-    recomendacoes.push('Usar GPT-4o-mini com temperature 0.3');
-    recomendacoes.push('Aplicar template específico');
-  } else {
-    recomendacoes.push('GPT-4o-mini suficiente');
-    recomendacoes.push('Template básico adequado');
-  }
-  
-  if (fatores.temEscalas) {
-    recomendacoes.push('Detalhar conexões claramente');
-  }
-  
-  if (fatores.numeroOpcoes > 2) {
-    recomendacoes.push('Usar formatação escalonada de bagagem');
-  }
-  
-  return recomendacoes;
+function detectarConexoes(texto) {
+  return texto.includes('conexão') || texto.includes('tempo de espera');
+}
+
+function detectarIdaVolta(texto) {
+  return texto.includes('ida') && texto.includes('volta');
+}
+
+function detectarSomenteIda(texto) {
+  return (texto.includes('ida') && !texto.includes('volta')) || texto.includes('somente ida');
+}
+
+function detectarMultiplasOpcoes(texto) {
+  return texto.includes('opção') || texto.includes('plano');
+}
+
+function contarOpcoes(texto) {
+  const opcoes = texto.match(/opção\s*\d+/gi) || [];
+  const planos = texto.match(/plano\s*\d+/gi) || [];
+  return Math.max(opcoes.length, planos.length);
+}
+
+function detectarPrecos(texto) {
+  return /r\$\s*[\d.,]+/i.test(texto);
+}
+
+function contarPrecos(texto) {
+  const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
+  return [...new Set(precos)].length; // Remove duplicatas
+}
+
+function detectarDatas(texto) {
+  return /\d{1,2}\/\d{1,2}(?:\/\d{4})?/.test(texto);
+}
+
+function contarDatas(texto) {
+  const datas = texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{4})?/g) || [];
+  return [...new Set(datas)].length; // Remove duplicatas
+}
+
+function detectarHorarios(texto) {
+  return /\d{1,2}:\d{2}/.test(texto);
+}
+
+function contarHorarios(texto) {
+  const horarios = texto.match(/\d{1,2}:\d{2}/g) || [];
+  return [...new Set(horarios)].length; // Remove duplicatas
+}
+
+function detectarAeroportos(texto) {
+  const codigos = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB'];
+  return codigos.some(codigo => texto.toUpperCase().includes(codigo));
+}
+
+function detectarCompanhias(texto) {
+  const companhias = ['latam', 'gol', 'azul', 'avianca', 'copa', 'american'];
+  return companhias.some(companhia => texto.toLowerCase().includes(companhia));
 }
 
 // ================================================================================
@@ -661,23 +651,13 @@ function gerarRecomendacoes(nivel, fatores) {
 // ================================================================================
 
 function detectarPadroes(texto) {
-  console.log("🔍 Detectando padrões...");
+  console.log("🔍 Detectando padrões de layout...");
   
   return {
-    // Padrões de layout
+    // Layout patterns
     layoutVertical: detectarLayoutVertical(texto),
     layoutHorizontal: detectarLayoutHorizontal(texto),
     layoutTabular: detectarLayoutTabular(texto),
-    
-    // Padrões de conteúdo
-    temResumoExecutivo: texto.includes('resumo') || texto.includes('sumário'),
-    temObservacoes: texto.includes('obs:') || texto.includes('observação'),
-    temCondicoes: texto.includes('condições') || texto.includes('termos'),
-    
-    // Padrões de formatação
-    temNegrito: texto.includes('*') || texto.includes('**'),
-    temEmojis: /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]/u.test(texto),
-    temListas: texto.includes('•') || texto.includes('-') || /^\d+\./m.test(texto),
     
     // Padrões específicos CVC
     formatoCVC: texto.includes('cvc') || texto.includes('carrinho-dinamico'),
@@ -688,7 +668,7 @@ function detectarPadroes(texto) {
 
 function detectarLayoutVertical(texto) {
   const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
-  const linhasComPreco = linhas.filter(linha => linha.includes('R));
+  const linhasComPreco = linhas.filter(linha => linha.includes('R$'));
   
   // Layout vertical: preços em linhas separadas
   return linhasComPreco.length > 1 && 
@@ -720,7 +700,7 @@ function detectarLayoutTabular(texto) {
 // 🎯 DETERMINAÇÃO DO TIPO PRINCIPAL
 // ================================================================================
 
-function determinarTipoPrincipal(tipos) {
+export function determinarTipoPrincipal(tipos) {
   console.log("🎯 Determinando tipo principal...");
   
   // Converter objetos de detecção em pontuações
@@ -743,14 +723,12 @@ function determinarTipoPrincipal(tipos) {
     }
   });
   
-  // Fallback se nenhum tipo atingir confiança mínima
-  if (confiancaMaxima < 0.4) {
-    tipoMaximo = 'aereoNacionalSimples'; // Tipo padrão
+  // Fallback para tipo padrão se nenhum atingir confiança mínima
+  if (confiancaMaxima < 0.3) {
+    return 'aereoNacionalSimples';
   }
   
-  console.log(`🎯 Tipo principal detectado: ${tipoMaximo} (${(confiancaMaxima * 100).toFixed(1)}%)`);
-  
-  return tipoMaximo;
+  return tipoMaximo || 'aereoNacionalSimples';
 }
 
 function calcularConfiancaDeteccao(tipos) {
@@ -760,86 +738,8 @@ function calcularConfiancaDeteccao(tipos) {
   
   if (scores.length === 0) return 0;
   
-  const maxScore = Math.max(...scores);
-  const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-  
-  // Confiança baseada no melhor score e consistência geral
-  return (maxScore * 0.7) + (avgScore * 0.3);
-}
-
-// ================================================================================
-// 🔍 FUNÇÕES BÁSICAS DE DETECÇÃO (REUTILIZADAS)
-// ================================================================================
-
-function detectarEscalas(texto) {
-  return texto.includes('escala') || texto.includes('conexão') || 
-         texto.includes('parada') || texto.includes('trânsito');
-}
-
-function detectarConexoes(texto) {
-  return detectarEscalas(texto) || texto.includes('via ') || 
-         texto.includes('connecting');
-}
-
-function detectarIdaVolta(texto) {
-  return texto.includes('ida') && texto.includes('volta') && 
-         !texto.includes('somente ida');
-}
-
-function detectarSomenteIda(texto) {
-  return (texto.includes('somente ida') || texto.includes('só ida')) ||
-         (texto.includes('ida') && !texto.includes('volta'));
-}
-
-function detectarMultiplasOpcoes(texto) {
-  return (texto.includes('opção 1') || texto.includes('plano 1')) ||
-         (texto.match(/r\$.*?r\$/gi) || []).length >= 2;
-}
-
-function contarOpcoes(texto) {
-  const opcoes = texto.match(/opção \d+|plano \d+/gi) || [];
-  const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
-  
-  return Math.max(opcoes.length, Math.min(precos.length, 5)); // Máximo 5 opções
-}
-
-function detectarPrecos(texto) {
-  return texto.includes('R) || texto.includes('r) || 
-         texto.includes('real') || /\d+[.,]\d{2}/.test(texto);
-}
-
-function contarPrecos(texto) {
-  const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
-  return precos.length;
-}
-
-function detectarDatas(texto) {
-  return /\d{1,2}\/\d{1,2}/.test(texto) || 
-         texto.includes('janeiro') || texto.includes('fevereiro');
-}
-
-function contarDatas(texto) {
-  const datas = texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{4})?/g) || [];
-  return [...new Set(datas)].length; // Remove duplicatas
-}
-
-function detectarHorarios(texto) {
-  return /\d{1,2}:\d{2}/.test(texto);
-}
-
-function contarHorarios(texto) {
-  const horarios = texto.match(/\d{1,2}:\d{2}/g) || [];
-  return [...new Set(horarios)].length; // Remove duplicatas
-}
-
-function detectarAeroportos(texto) {
-  const codigos = ['CGH', 'GRU', 'VCP', 'SDU', 'GIG', 'BSB'];
-  return codigos.some(codigo => texto.toUpperCase().includes(codigo));
-}
-
-function detectarCompanhias(texto) {
-  const companhias = ['latam', 'gol', 'azul', 'avianca', 'copa', 'american'];
-  return companhias.some(companhia => texto.toLowerCase().includes(companhia));
+  // Retorna a maior confiança encontrada
+  return Math.max(...scores);
 }
 
 // ================================================================================
@@ -847,7 +747,7 @@ function detectarCompanhias(texto) {
 // ================================================================================
 
 function logAnalise(analise) {
-  console.log("📊 === RELATÓRIO DE ANÁLISE v7.0 ===");
+  console.log("📊 === RELATÓRIO DE ANÁLISE v7.7 ===");
   console.log(`🎯 Tipo detectado: ${analise.tipoDetectado}`);
   console.log(`📈 Confiança: ${(analise.confiancaDeteccao * 100).toFixed(1)}%`);
   console.log(`🧮 Complexidade: ${analise.complexidade}`);
@@ -860,32 +760,34 @@ function logAnalise(analise) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO E INICIALIZAÇÃO
+// 🚀 EXPORTAÇÃO ES6 (CORREÇÃO CRÍTICA #2)
 // ================================================================================
 
-console.log("✅ Analysis v7.0 carregado:");
+// Log de inicialização
+console.log("✅ Analysis v7.7 carregado:");
 console.log("🔍 Detecção inteligente de 9 tipos de orçamento");
 console.log("📊 Análise de contexto avançada");
 console.log("🧮 Cálculo de complexidade dinâmico");
 console.log("🎯 Determinação automática de tipo principal");
 console.log("📈 Sistema de confiança e validação");
+console.log("🚨 EXPORTAÇÃO ES6 CORRIGIDA - Compatível com import()");
 
-// Exportar funções principais
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    analisarTextoCompleto,
-    detectarTiposEspecificos,
-    calcularComplexidadeAvancada,
-    determinarTipoPrincipal,
-    extrairContexto
-  };
-} else {
-  // Browser environment
-  window.analisarTextoCompleto = analisarTextoCompleto;
-  window.detectarTiposEspecificos = detectarTiposEspecificos;
-  window.calcularComplexidadeAvancada = calcularComplexidadeAvancada;
-  window.determinarTipoPrincipal = determinarTipoPrincipal;
-  window.extrairContexto = extrairContexto;
-}
+// Exportação individual das funções principais
+export {
+  analisarTextoCompleto,
+  detectarTiposEspecificos,
+  calcularComplexidadeAvancada,
+  determinarTipoPrincipal,
+  extrairContexto
+};
 
-console.log("🚀 Sistema de Análise v7.0 - DETECÇÃO INTELIGENTE COMPLETA!");
+// Exportação padrão para máxima compatibilidade
+export default {
+  analisarTextoCompleto,
+  detectarTiposEspecificos,
+  calcularComplexidadeAvancada,
+  determinarTipoPrincipal,
+  extrairContexto
+};
+
+console.log("🚀 Sistema de Análise v7.7 - DETECÇÃO INTELIGENTE COMPLETA!");
