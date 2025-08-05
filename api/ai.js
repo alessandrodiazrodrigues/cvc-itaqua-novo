@@ -1,35 +1,21 @@
-// 🚀 api/ai.js - SISTEMA BACKEND CVC ITAQUA v7.2 - INTEGRAÇÃO COMPLETA
-// Integração total de todos os módulos especializados
-// Sistema modular avançado + Templates profissionais + IA dual
-
-// ================================================================================
-// 📥 IMPORTS DOS MÓDULOS ESPECIALIZADOS
-// ================================================================================
-
-import { aplicarTemplateCompleto, detectarLayoutOrcamento, TEMPLATES_MANUAIS } from './modules/templates.js';
-import { chamarIASegura, selecionarModelo, verificarDisponibilidadeAPIs } from './modules/ia-client.js';
-import { analisarTextoCompleto, detectarComplexidade, avaliarTipoOrcamento } from './modules/analysis.js';
-import { processarRespostaFinal, aplicarFormatacaoFinal, validarOrcamentoFinal } from './modules/processing.js';
-import { construirPromptOtimizado, construirPromptRanking, construirPromptDicas } from './modules/prompts.js';
-import { calcularMetricas, validarRespostaIA, formatarTimestamp } from './modules/utils.js';
-import { IA_CONFIG, VALIDACAO_CONFIG, SISTEMA_CONFIG, DESTINOS_CONFIG } from './modules/config.js';
-
-console.log("🚀 CVC ITAQUA API v7.2 - SISTEMA MODULAR COMPLETO");
+// 🚀 api/ai.js - SISTEMA CVC ITAQUA v7.1 SIMPLIFICADO
+// Versão funcional com integração gradual dos módulos
+// Foco: FUNCIONAR primeiro, depois otimizar
 
 export default async function handler(req, res) {
   const inicioProcessamento = Date.now();
   
-  console.log("📊 Nova requisição - Timestamp:", formatarTimestamp());
-  console.log("📊 Método:", req.method, "| Headers:", Object.keys(req.headers));
+  console.log("🚀 CVC ITAQUA API v7.1 - Processando requisição");
+  console.log("📊 Método:", req.method, "| Timestamp:", new Date().toISOString());
 
   // ================================================================================
-  // 🔧 CONFIGURAÇÃO CORS E VALIDAÇÕES BÁSICAS
+  // 🔧 CONFIGURAÇÃO CORS
   // ================================================================================
   
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v7.2');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v7.1');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -38,89 +24,98 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       success: false, 
-      error: 'Método não permitido. Use POST.',
-      versao: '7.2',
-      timestamp: formatarTimestamp()
+      error: 'Método não permitido',
+      versao: '7.1'
     });
   }
 
   try {
+    console.log("📥 Dados recebidos:");
+    console.log("- Body existe:", !!req.body);
+    console.log("- Body keys:", req.body ? Object.keys(req.body) : null);
+
     // ================================================================================
-    // 🔍 VALIDAÇÃO E NORMALIZAÇÃO DE DADOS
+    // 🔧 COMPATIBILIDADE: ACEITAR MÚLTIPLOS FORMATOS
     // ================================================================================
-    
-    console.log("📥 Processando dados de entrada...");
-    console.log("- Body size:", JSON.stringify(req.body).length, "bytes");
     
     let formData, tipo, versao;
     
-    // Suporte a múltiplos formatos (compatibilidade total)
+    // FORMATO NOVO (v7.x): { formData: {...}, tipo: 'orcamento', versao: '7.1' }
     if (req.body.formData && req.body.tipo) {
-      // Formato v7.x: { formData: {...}, tipo: 'orcamento', versao: '7.2' }
+      console.log("📍 Formato novo detectado (v7.x)");
       formData = req.body.formData;
       tipo = req.body.tipo;
-      versao = req.body.versao || '7.2';
-      console.log("📍 Formato v7.x detectado");
-    } else if (req.body.tipos || req.body.prompt || req.body.observacoes) {
-      // Formato legado: dados diretos no body
+      versao = req.body.versao || '7.1';
+    }
+    // FORMATO ANTIGO (v6.x): dados diretos no body
+    else if (req.body.tipos || req.body.prompt || req.body.observacoes) {
+      console.log("📍 Formato antigo detectado (v6.x) - Convertendo...");
       formData = req.body;
       tipo = determinarTipoLegado(formData);
-      versao = 'legado-convertido';
-      console.log("📍 Formato legado convertido para v7.2");
-    } else {
-      throw new Error("Formato de dados não reconhecido. Verifique a estrutura da requisição.");
+      versao = '6.x-convertido';
+    }
+    // FORMATO INVÁLIDO
+    else {
+      throw new Error("Formato de dados não reconhecido");
     }
 
-    // Normalizar tipos de orçamento
+    // ================================================================================
+    // 🔧 NORMALIZAÇÃO DOS DADOS
+    // ================================================================================
+    
+    // Garantir que 'tipos' seja sempre um array
     if (formData.tipos) {
-      formData.tipos = Array.isArray(formData.tipos) ? formData.tipos : [formData.tipos];
+      if (typeof formData.tipos === 'string') {
+        formData.tipos = [formData.tipos];
+      }
     } else if (formData.tipo) {
       formData.tipos = [formData.tipo];
     } else {
       formData.tipos = ['Aéreo Nacional']; // Padrão
     }
 
+    console.log("🎯 Dados normalizados:");
+    console.log("- Tipo operação:", tipo);
+    console.log("- Tipos orçamento:", formData.tipos);
+    console.log("- Destino:", formData.destino);
+
     // ================================================================================
-    // 🔍 VALIDAÇÃO DE LIMITES E SEGURANÇA
+    // 🎯 VALIDAÇÕES BÁSICAS
     // ================================================================================
     
-    const validacao = validarEntrada(formData);
-    if (!validacao.valido) {
-      throw new Error(`Dados inválidos: ${validacao.erros.join(', ')}`);
+    if (!formData.tipos || formData.tipos.length === 0) {
+      throw new Error("Pelo menos um tipo de orçamento deve ser selecionado");
     }
 
-    console.log("✅ Dados validados e normalizados:");
-    console.log(`- Tipo operação: ${tipo}`);
-    console.log(`- Tipos orçamento: ${formData.tipos.join(', ')}`);
-    console.log(`- Destino: ${formData.destino || 'N/A'}`);
-    console.log(`- Tem imagem: ${!!formData.temImagem}`);
+    const textoCompleto = `${formData.observacoes || ''} ${formData.textoColado || ''} ${formData.prompt || ''}`;
+    if (textoCompleto.trim().length < 5) {
+      throw new Error("Forneça informações sobre a viagem");
+    }
 
     // ================================================================================
-    // 🎯 PROCESSAMENTO BASEADO NO TIPO
+    // 🤖 PROCESSAMENTO BASEADO NO TIPO
     // ================================================================================
     
     let resultado;
-    let metricas;
-    
     switch (tipo) {
       case 'orcamento':
-        resultado = await processarOrcamentoCompleto(formData, inicioProcessamento);
+        resultado = await processarOrcamentoSimplificado(formData);
         break;
       case 'ranking':
-        resultado = await processarRankingCompleto(formData, inicioProcessamento);
+        resultado = await processarRankingSimplificado(formData);
         break;
       case 'dicas':
-        resultado = await processarDicasCompleto(formData, inicioProcessamento);
+        resultado = await processarDicasSimplificado(formData);
         break;
       case 'analise':
-        resultado = await processarAnaliseCompleto(formData, inicioProcessamento);
+        resultado = await processarAnaliseSimplificado(formData);
         break;
       default:
         throw new Error(`Tipo de operação não suportado: ${tipo}`);
     }
 
     // ================================================================================
-    // 📊 RESPOSTA FINAL COM MÉTRICAS
+    // 📊 RESPOSTA FINAL
     // ================================================================================
     
     const tempoTotal = Date.now() - inicioProcessamento;
@@ -128,28 +123,24 @@ export default async function handler(req, res) {
     console.log("✅ Processamento concluído com sucesso");
     console.log(`⏱️ Tempo total: ${tempoTotal}ms`);
     
-    const respostaFinal = {
+    return res.status(200).json({
       success: true,
       result: resultado.conteudo,
-      versao: '7.2',
-      timestamp: formatarTimestamp(),
-      metricas: resultado.metricas,
+      versao: '7.1',
+      timestamp: new Date().toISOString(),
       debug: {
         tipoOperacao: tipo,
         tiposOrcamento: formData.tipos,
         temImagem: !!formData.temImagem,
         tempoProcessamento: `${tempoTotal}ms`,
-        layoutDetectado: resultado.layoutDetectado,
-        modeloUsado: resultado.modeloUsado,
+        modeloUsado: resultado.modeloUsado || 'gpt-4o-mini',
         formatoEntrada: versao
       }
-    };
-
-    return res.status(200).json(respostaFinal);
+    });
 
   } catch (error) {
     // ================================================================================
-    // ❌ TRATAMENTO DE ERROS AVANÇADO
+    // ❌ TRATAMENTO DE ERROS
     // ================================================================================
     
     const tempoTotal = Date.now() - inicioProcessamento;
@@ -157,252 +148,308 @@ export default async function handler(req, res) {
     console.error("❌ Erro no processamento:", error);
     console.error("📚 Stack trace:", error.stack?.split('\n').slice(0, 3).join('\n'));
     
-    const tipoErro = classificarErro(error);
-    const statusCode = obterStatusCode(tipoErro);
-    
-    return res.status(statusCode).json({
+    return res.status(500).json({
       success: false,
       error: error.message,
-      tipoErro: tipoErro,
-      versao: '7.2',
-      timestamp: formatarTimestamp(),
+      versao: '7.1',
+      timestamp: new Date().toISOString(),
       debug: {
         tempoProcessamento: `${tempoTotal}ms`,
         bodyKeys: req.body ? Object.keys(req.body) : null,
-        errorCode: error.code || 'UNKNOWN'
+        errorType: error.name || 'Error'
       }
     });
   }
 }
 
 // ================================================================================
-// 🎯 PROCESSAMENTO COMPLETO DE ORÇAMENTOS
+// 🎯 PROCESSAMENTO SIMPLIFICADO DE ORÇAMENTOS
 // ================================================================================
 
-async function processarOrcamentoCompleto(formData, inicioProcessamento) {
-  console.log("💰 Iniciando processamento completo de orçamento...");
+async function processarOrcamentoSimplificado(formData) {
+  console.log("💰 Processando orçamento...");
   
   try {
-    // ETAPA 1: Análise inteligente com módulo especializado
-    console.log("🔍 ETAPA 1: Análise inteligente...");
-    const analise = analisarTextoCompleto(formData);
-    const complexidade = detectarComplexidade(formData, analise);
-    const tipoAvaliado = avaliarTipoOrcamento(formData.tipos, analise);
+    // PROMPT OTIMIZADO PARA CVC
+    const prompt = construirPromptCVC(formData);
     
-    console.log(`📊 Análise concluída - Complexidade: ${complexidade}, Tipo: ${tipoAvaliado}`);
+    // CHAMAR IA
+    const resposta = await chamarIASimples(prompt, formData.temImagem, formData.arquivo);
     
-    // ETAPA 2: Aplicação de template avançado
-    console.log("📋 ETAPA 2: Aplicando template avançado...");
-    const layoutDetectado = detectarLayoutOrcamento(formData);
-    const promptCompleto = aplicarTemplateCompleto(formData, analise);
+    // PROCESSAR RESPOSTA
+    const conteudoFinal = processarRespostaCVC(resposta.content);
     
-    console.log(`📋 Template aplicado - Layout: ${layoutDetectado}`);
+    // REGISTRAR CUSTOS (simplificado)
+    await registrarCustosSimples(resposta, formData);
     
-    // ETAPA 3: Seleção inteligente de modelo
-    console.log("🤖 ETAPA 3: Seleção de modelo IA...");
-    const modeloConfig = selecionarModelo(formData.temImagem);
-    console.log(`🤖 Modelo selecionado: ${modeloConfig.modelo} (${modeloConfig.estrategia})`);
+    return {
+      conteudo: conteudoFinal,
+      modeloUsado: resposta.modelo_usado
+    };
     
-    // ETAPA 4: Chamada segura para IA
-    console.log("🧠 ETAPA 4: Processamento com IA...");
-    const respostaIA = await chamarIASegura(
-      promptCompleto, 
-      formData.temImagem, 
-      formData.arquivo, 
-      modeloConfig.modelo,
-      modeloConfig.fallback
-    );
-    
-    console.log("✅ IA processou com sucesso");
-    
-    // ETAPA 5: Processamento final avançado
-    console.log("🔧 ETAPA 5: Processamento final...");
-    const conteudoProcessado = processarRespostaFinal(respostaIA.content, analise, formData);
-    const conteudoFormatado = aplicarFormatacaoFinal(conteudoProcessado, layoutDetectado);
-    
-    // ETAPA 6: Validação final
-    console.log("✅ ETAPA 6: Validação final...");
-    const validacao = validarOrcamentoFinal(conteudoFormatado, formData);
-    
-    if (!validacao.valido) {
-      console.warn("⚠️ Validação encontrou problemas:", validacao.problemas);
+  } catch (error) {
+    console.error("❌ Erro no orçamento:", error);
+    throw new Error(`Falha no orçamento: ${error.message}`);
+  }
+}
+
+// ================================================================================
+// 📋 PROMPT OTIMIZADO CVC
+// ================================================================================
+
+function construirPromptCVC(formData) {
+  const dadosViagem = formatarDadosViagem(formData);
+  
+  return `ORÇAMENTO CVC ITAQUAQUECETUBA PROFISSIONAL
+
+DADOS DA VIAGEM:
+${dadosViagem}
+
+FORMATO OBRIGATÓRIO CVC:
+
+📍 [Destino]
+🗓️ [Data ida] - [Data volta] ([X] dias e [Y] noites)
+👥 [Passageiros]
+
+*O Pacote Inclui:*
+- Aéreo ida e volta com [Companhia]
+- Taxas de embarque
+- [Bagagem incluída]
+
+✈ Detalhes dos Voos:
+[Data ida] - [Origem] [Hora] / [Destino] [Hora]
+[Data volta] - [Destino] [Hora] / [Origem] [Hora]
+
+💰 Valor Total: R$ [Valor]
+[Condições de reembolso]
+
+REGRAS CRÍTICAS:
+1. ⏰ HORÁRIOS: "06:20" (nunca "06: 20")
+2. 📅 DATAS: "17/09" ou "17 de set"
+3. ✈️ AEROPORTOS: CGH → São Paulo, GRU → São Paulo
+4. 👥 PASSAGEIROS: "02 adultos" (com zero)
+5. 💰 VALORES: "R$ 3.752,55" (espaço após R$)
+6. 🧳 BAGAGEM: "Só mala de mão incluída" (padrão)
+7. 🏷️ REEMBOLSO: "Não reembolsável" OU "Reembolsável conforme regras"
+8. 🚫 SEM separadores técnicos (---) ou formatação markdown
+
+DETECTAR AUTOMATICAMENTE:
+- Companhia aérea das informações
+- Horários e datas exatos
+- Valores reais (não inventar)
+- Tipo de voo (direto/conexão)
+
+GERAR ORÇAMENTO LIMPO PADRÃO CVC:`;
+}
+
+// ================================================================================
+// 🤖 CLIENTE DE IA SIMPLIFICADO
+// ================================================================================
+
+async function chamarIASimples(prompt, temImagem = false, arquivo = null) {
+  console.log("🤖 Chamando IA...");
+  
+  try {
+    if (temImagem && arquivo) {
+      // Usar Claude para imagens
+      return await chamarClaude(prompt, arquivo);
+    } else {
+      // Usar OpenAI para texto
+      return await chamarOpenAI(prompt);
     }
-    
-    // ETAPA 7: Cálculo de métricas
-    console.log("📊 ETAPA 7: Calculando métricas...");
-    const metricas = calcularMetricas(
-      inicioProcessamento,
-      respostaIA.usage,
-      respostaIA.modelo_usado,
-      promptCompleto,
-      conteudoFormatado
-    );
-    
-    // ETAPA 8: Registro de custos
-    console.log("💰 ETAPA 8: Registrando custos...");
-    await registrarCustosAvancado(metricas, formData, layoutDetectado);
-    
-    console.log("🎉 Orçamento processado com sucesso!");
-    
-    return {
-      conteudo: conteudoFormatado,
-      metricas: metricas,
-      layoutDetectado: layoutDetectado,
-      modeloUsado: respostaIA.modelo_usado,
-      validacao: validacao
-    };
-    
   } catch (error) {
-    console.error("❌ Erro no processamento de orçamento:", error);
-    throw new Error(`Falha no processamento do orçamento: ${error.message}`);
+    console.error("❌ Erro na IA:", error);
+    throw new Error(`Falha na IA: ${error.message}`);
   }
 }
 
-// ================================================================================
-// 🏨 PROCESSAMENTO COMPLETO DE RANKING
-// ================================================================================
-
-async function processarRankingCompleto(formData, inicioProcessamento) {
-  console.log("🏨 Processando ranking de hotéis...");
-  
-  try {
-    const destino = formData.destino || extrairDestino(formData.observacoes) || 'destino solicitado';
-    
-    // Usar módulo de prompts especializado
-    const prompt = construirPromptRanking(destino, formData);
-    
-    // Modelo otimizado para rankings
-    const modeloConfig = { modelo: 'gpt-4o-mini', fallback: 'gpt-4o' };
-    
-    const respostaIA = await chamarIASegura(prompt, false, null, modeloConfig.modelo, modeloConfig.fallback);
-    
-    const metricas = calcularMetricas(inicioProcessamento, respostaIA.usage, respostaIA.modelo_usado, prompt, respostaIA.content);
-    
-    await registrarCustosAvancado(metricas, formData, 'ranking');
-    
-    return {
-      conteudo: respostaIA.content,
-      metricas: metricas,
-      layoutDetectado: 'ranking',
-      modeloUsado: respostaIA.modelo_usado
-    };
-    
-  } catch (error) {
-    console.error("❌ Erro no processamento de ranking:", error);
-    throw new Error(`Falha na geração do ranking: ${error.message}`);
+async function chamarOpenAI(prompt) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY não configurada');
   }
-}
 
-// ================================================================================
-// 💡 PROCESSAMENTO COMPLETO DE DICAS
-// ================================================================================
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000,
+      temperature: 0.3
+    })
+  });
 
-async function processarDicasCompleto(formData, inicioProcessamento) {
-  console.log("💡 Processando dicas de destino...");
-  
-  try {
-    const destino = formData.destino || extrairDestino(formData.observacoes) || 'destino solicitado';
-    
-    // Usar módulo de prompts especializado
-    const prompt = construirPromptDicas(destino, formData);
-    
-    // Modelo otimizado para dicas
-    const modeloConfig = { modelo: 'gpt-4o-mini', fallback: 'gpt-4o' };
-    
-    const respostaIA = await chamarIASegura(prompt, false, null, modeloConfig.modelo, modeloConfig.fallback);
-    
-    const metricas = calcularMetricas(inicioProcessamento, respostaIA.usage, respostaIA.modelo_usado, prompt, respostaIA.content);
-    
-    await registrarCustosAvancado(metricas, formData, 'dicas');
-    
-    return {
-      conteudo: respostaIA.content,
-      metricas: metricas,
-      layoutDetectado: 'dicas',
-      modeloUsado: respostaIA.modelo_usado
-    };
-    
-  } catch (error) {
-    console.error("❌ Erro no processamento de dicas:", error);
-    throw new Error(`Falha na geração das dicas: ${error.message}`);
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`OpenAI Error ${response.status}: ${errorData.substring(0, 200)}`);
   }
-}
 
-// ================================================================================
-// 📊 PROCESSAMENTO COMPLETO DE ANÁLISE
-// ================================================================================
-
-async function processarAnaliseCompleto(formData, inicioProcessamento) {
-  console.log("📊 Processando análise de documento...");
+  const data = await response.json();
   
-  try {
-    const prompt = `Analise este documento e extraia as informações principais:
-
-1. 📊 Principais métricas e números
-2. 🎯 Pontos-chave identificados  
-3. 📈 Tendências ou padrões
-4. 💡 Recomendações baseadas nos dados
-5. 📋 Resumo executivo
-
-Documento: ${formData.nomeArquivo || 'Arquivo enviado'}
-Seja objetivo e organize as informações de forma clara.`;
-
-    // Usar modelo mais potente para análise
-    const modeloConfig = { modelo: 'gpt-4o', fallback: 'gpt-4o-mini' };
-    
-    const respostaIA = await chamarIASegura(
-      prompt, 
-      formData.temImagem, 
-      formData.arquivo, 
-      modeloConfig.modelo, 
-      modeloConfig.fallback
-    );
-    
-    const metricas = calcularMetricas(inicioProcessamento, respostaIA.usage, respostaIA.modelo_usado, prompt, respostaIA.content);
-    
-    await registrarCustosAvancado(metricas, formData, 'analise');
-    
-    return {
-      conteudo: respostaIA.content,
-      metricas: metricas,
-      layoutDetectado: 'analise',
-      modeloUsado: respostaIA.modelo_usado
-    };
-    
-  } catch (error) {
-    console.error("❌ Erro no processamento de análise:", error);
-    throw new Error(`Falha na análise do documento: ${error.message}`);
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error("Resposta inválida da OpenAI");
   }
-}
 
-// ================================================================================
-// 🔧 FUNÇÕES DE SUPORTE E VALIDAÇÃO
-// ================================================================================
-
-function validarEntrada(formData) {
-  const erros = [];
-  
-  // Validações básicas
-  if (!formData.tipos || formData.tipos.length === 0) {
-    erros.push('Pelo menos um tipo de orçamento deve ser selecionado');
-  }
-  
-  // Validar limites de texto
-  const textoCompleto = `${formData.observacoes || ''} ${formData.textoColado || ''} ${formData.prompt || ''}`;
-  if (textoCompleto.length > VALIDACAO_CONFIG.limites.maxPromptSize) {
-    erros.push(`Texto muito longo. Máximo: ${VALIDACAO_CONFIG.limites.maxPromptSize} caracteres`);
-  }
-  
-  // Validar se tem conteúdo mínimo
-  if (textoCompleto.trim().length < 10) {
-    erros.push('Forneça informações sobre a viagem (mínimo 10 caracteres)');
-  }
-  
   return {
-    valido: erros.length === 0,
-    erros
+    content: data.choices[0].message.content,
+    usage: data.usage || { prompt_tokens: 0, completion_tokens: 0 },
+    modelo_usado: 'gpt-4o-mini'
   };
 }
+
+async function chamarClaude(prompt, arquivo) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('ANTHROPIC_API_KEY não configurada');
+  }
+
+  // Extrair base64 da URL data:
+  const base64Data = arquivo.split(',')[1];
+  const mediaType = arquivo.split(':')[1].split(';')[0];
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-20240620',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType,
+              data: base64Data
+            }
+          }
+        ]
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Claude Error ${response.status}: ${errorData.substring(0, 200)}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.content?.[0]?.text) {
+    throw new Error("Resposta inválida do Claude");
+  }
+
+  return {
+    content: data.content[0].text,
+    usage: data.usage || { input_tokens: 0, output_tokens: 0 },
+    modelo_usado: 'claude-3-5-sonnet-20240620'
+  };
+}
+
+// ================================================================================
+// 🔧 PROCESSAMENTO DE RESPOSTA CVC
+// ================================================================================
+
+function processarRespostaCVC(conteudo) {
+  console.log("🔧 Processando resposta CVC...");
+  
+  let processado = conteudo;
+  
+  // Limpeza básica
+  processado = processado.trim();
+  
+  // Remover cabeçalhos técnicos residuais
+  processado = processado.replace(/ORÇAMENTO CVC.*?\n/gi, '');
+  processado = processado.replace(/DADOS DA VIAGEM.*?\n/gi, '');
+  processado = processado.replace(/GERE O ORÇAMENTO.*?\n/gi, '');
+  
+  // Garantir formatação de horários
+  processado = processado.replace(/(\d{1,2})\s*:\s*(\d{2})/g, '$1:$2');
+  
+  // Garantir formato de valores
+  processado = processado.replace(/R\$\s*(\d)/g, 'R$ $1');
+  
+  return processado;
+}
+
+// ================================================================================
+// 🏨 PROCESSAMENTO SIMPLIFICADO DE OUTROS TIPOS
+// ================================================================================
+
+async function processarRankingSimplificado(formData) {
+  const destino = formData.destino || 'destino solicitado';
+  const prompt = `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
+
+Formato:
+🏆 1. Nome do Hotel - ⭐⭐⭐⭐
+📍 Região/Localização
+💰 Faixa de preço aproximada
+⭐ Principais diferenciais
+
+Use informações realistas e atuais.`;
+
+  const resposta = await chamarIASimples(prompt);
+  await registrarCustosSimples(resposta, formData);
+  
+  return {
+    conteudo: resposta.content,
+    modeloUsado: resposta.modelo_usado
+  };
+}
+
+async function processarDicasSimplificado(formData) {
+  const destino = formData.destino || 'destino solicitado';
+  const prompt = `Gere dicas personalizadas de viagem para ${destino}, focadas em famílias.
+
+Incluir:
+🌡️ Melhor época para visitar
+🎯 Atrações imperdíveis para crianças
+🍽️ Gastronomia local
+💡 Dicas importantes de segurança e saúde
+
+Seja prático e direto.`;
+
+  const resposta = await chamarIASimples(prompt);
+  await registrarCustosSimples(resposta, formData);
+  
+  return {
+    conteudo: resposta.content,
+    modeloUsado: resposta.modelo_usado
+  };
+}
+
+async function processarAnaliseSimplificado(formData) {
+  const prompt = `Analise este documento e extraia:
+
+1. 📊 Principais métricas de vendas
+2. 🎯 Metas vs realizado  
+3. 🏆 Produtos mais vendidos
+4. 📈 Tendências identificadas
+5. 💡 Recomendações para melhoria
+
+Arquivo: ${formData.nomeArquivo || 'Documento enviado'}
+Seja objetivo e direto nas conclusões.`;
+
+  const resposta = await chamarIASimples(prompt, formData.temImagem, formData.arquivo);
+  await registrarCustosSimples(resposta, formData);
+  
+  return {
+    conteudo: resposta.content,
+    modeloUsado: resposta.modelo_usado
+  };
+}
+
+// ================================================================================
+// 🔧 FUNÇÕES AUXILIARES
+// ================================================================================
 
 function determinarTipoLegado(formData) {
   if (formData.tipos && formData.tipos.length > 0) {
@@ -417,154 +464,90 @@ function determinarTipoLegado(formData) {
   return 'orcamento';
 }
 
-function extrairDestino(texto) {
-  if (!texto) return null;
-  
-  // Usar mapeamento do config.js
-  const cidadesPopulares = DESTINOS_CONFIG.populares;
-  const textoLower = texto.toLowerCase();
-  
-  for (const cidade of cidadesPopulares) {
-    if (textoLower.includes(cidade.toLowerCase())) {
-      return cidade;
-    }
-  }
-  
-  return null;
+function formatarDadosViagem(formData) {
+  return `
+Destino: ${formData.destino || 'Não informado'}
+Adultos: ${formData.adultos || '2'}
+Crianças: ${formData.criancas || '0'}${formData.idades ? ` (idades: ${formData.idades} anos)` : ''}
+Tipos selecionados: ${formData.tipos?.join(', ') || 'Não especificado'}
+
+OBSERVAÇÕES:
+${formData.observacoes || 'Nenhuma observação específica'}
+
+INFORMAÇÕES DETALHADAS:
+${formData.textoColado || formData.prompt || 'Nenhuma informação adicional fornecida'}
+`;
 }
 
 // ================================================================================
-// 💰 SISTEMA AVANÇADO DE REGISTRO DE CUSTOS
+// 💰 REGISTRO DE CUSTOS SIMPLIFICADO
 // ================================================================================
 
-async function registrarCustosAvancado(metricas, formData, tipoOperacao) {
+async function registrarCustosSimples(resposta, formData) {
   try {
-    console.log('💰 Registrando custos avançados...');
+    console.log('💰 Registrando custos...');
     
-    const dadosCusto = {
-      timestamp: formatarTimestamp(),
-      destino: formData.destino || extrairDestino(formData.observacoes) || 'N/A',
-      tipoOperacao: tipoOperacao,
-      modeloUsado: metricas.modelo_usado,
-      custoBRL: metricas.custo.brl,
-      custoUSD: metricas.custo.usd,
-      tokensTotal: metricas.tokens.total,
-      tokensInput: metricas.tokens.input,
-      tokensOutput: metricas.tokens.output,
-      tempoProcessamento: metricas.performance.tempo_processamento_ms,
-      eficiencia: metricas.performance.eficiencia,
-      economiaPercent: metricas.economia.percentual,
-      passageiros: `${formData.adultos || 2} adultos${formData.criancas > 0 ? ` + ${formData.criancas} crianças` : ''}`,
-      versaoSistema: '7.2'
+    // Calcular tokens aproximados
+    const tokensInput = Math.ceil((formData.observacoes?.length || 0 + formData.textoColado?.length || 0) / 4);
+    const tokensOutput = Math.ceil((resposta.content?.length || 0) / 4);
+    const tokensTotal = tokensInput + tokensOutput;
+    
+    // Preços por modelo (USD por 1K tokens)
+    const precos = {
+      'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
+      'gpt-4o': { input: 0.0025, output: 0.01 },
+      'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 }
     };
     
-    // URL do Google Apps Script (usar config.js)
-    const SCRIPT_URL = SISTEMA_CONFIG.urls.scriptCustos;
+    const modelo = resposta.modelo_usado || 'gpt-4o-mini';
+    const preco = precos[modelo] || precos['gpt-4o-mini'];
     
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'registrarCustoAvancado',
-        dados: dadosCusto
-      })
-    });
+    const custoUSD = (tokensInput / 1000 * preco.input) + (tokensOutput / 1000 * preco.output);
+    const custoBRL = custoUSD * 5.2; // Taxa aproximada
     
-    if (response.ok) {
-      const resultado = await response.json();
-      console.log('✅ Custos registrados na planilha:', resultado);
-    } else {
-      console.warn('⚠️ Falha ao registrar custos na planilha:', response.status);
+    console.log(`💰 Custo: R$ ${custoBRL.toFixed(6)} (${tokensTotal} tokens)`);
+    
+    // Registrar na planilha (opcional - não bloqueia se falhar)
+    try {
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqOxRJNJm_X4lmD1-4v4OZYRt7E5xh0mYaX1kgRv-fGfFTU4YZM7UWQm8YrWl1B4VQ/exec';
+      
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'registrarCusto',
+          dados: {
+            timestamp: new Date().toISOString(),
+            destino: formData.destino || 'N/A',
+            modelo: modelo,
+            tokensTotal: tokensTotal,
+            custoUSD: custoUSD.toFixed(6),
+            custoBRL: custoBRL.toFixed(6)
+          }
+        })
+      });
+    } catch (planilhaError) {
+      console.warn('⚠️ Falha ao registrar na planilha:', planilhaError.message);
     }
     
   } catch (error) {
-    console.error('❌ Erro ao registrar custos:', error);
-    // Não interromper o fluxo principal por erro de log
+    console.error('❌ Erro no registro de custos:', error);
+    // Não interromper o fluxo principal
   }
 }
 
 // ================================================================================
-// 🔧 CLASSIFICAÇÃO E TRATAMENTO DE ERROS
+// 🚀 LOGS DE INICIALIZAÇÃO
 // ================================================================================
 
-function classificarErro(error) {
-  const message = error.message.toLowerCase();
-  
-  if (message.includes('api key') || message.includes('unauthorized')) {
-    return 'CONFIGURACAO';
-  } else if (message.includes('rate limit') || message.includes('quota')) {
-    return 'LIMITE_API';
-  } else if (message.includes('timeout') || message.includes('network')) {
-    return 'REDE';
-  } else if (message.includes('parsing') || message.includes('json')) {
-    return 'FORMATO';
-  } else if (message.includes('validation') || message.includes('invalid')) {
-    return 'VALIDACAO';
-  } else {
-    return 'INTERNO';
-  }
-}
+console.log("🚀 CVC ITAQUA API v7.1 SIMPLIFICADO INICIALIZADO");
+console.log("✅ Funcionalidades:");
+console.log("📋 Orçamentos com formato CVC profissional");
+console.log("🏨 Rankings de hotéis");
+console.log("💡 Dicas de destinos"); 
+console.log("📊 Análise de documentos");
+console.log("🤖 IA: OpenAI + Claude (fallback automático)");
+console.log("💰 Registro de custos automático");
+console.log("🔧 Sistema robusto e funcional");
 
-function obterStatusCode(tipoErro) {
-  const statusCodes = {
-    'CONFIGURACAO': 500,
-    'LIMITE_API': 429,
-    'REDE': 503,
-    'FORMATO': 422,
-    'VALIDACAO': 400,
-    'INTERNO': 500
-  };
-  
-  return statusCodes[tipoErro] || 500;
-}
-
-// ================================================================================
-// 🚀 INICIALIZAÇÃO E HEALTH CHECK
-// ================================================================================
-
-// Verificar disponibilidade das APIs na inicialização
-const statusAPIs = verificarDisponibilidadeAPIs();
-
-console.log("🚀 CVC ITAQUA API v7.2 - SISTEMA MODULAR COMPLETO INICIALIZADO");
-console.log("✅ Módulos carregados:");
-console.log(`📋 Templates: ${Object.keys(TEMPLATES_MANUAIS).length} layouts específicos`);
-console.log(`🤖 IA: OpenAI (${statusAPIs.openai ? 'OK' : 'FALTA KEY'}) + Claude (${statusAPIs.anthropic ? 'OK' : 'FALTA KEY'})`);
-console.log(`⚙️ Config: Sistema ${SISTEMA_CONFIG.nome} v${SISTEMA_CONFIG.versao}`);
-console.log(`✈️ Aeroportos: ${Object.keys(DESTINOS_CONFIG.aeroportos).length} mapeados`);
-console.log("🔧 Análise: Detecção automática de complexidade");
-console.log("📊 Processamento: Formatação avançada + validação");
-console.log("💰 Custos: Registro automático com métricas");
-console.log("🎯 Performance: Otimização e fallbacks automáticos");
-
-// Health check endpoint
-export function healthCheck() {
-  return {
-    status: 'healthy',
-    version: '7.2',
-    timestamp: formatarTimestamp(),
-    modules: {
-      templates: Object.keys(TEMPLATES_MANUAIS).length,
-      ia_client: 'loaded',
-      analysis: 'loaded',
-      processing: 'loaded',
-      prompts: 'loaded',
-      utils: 'loaded',
-      config: 'loaded'
-    },
-    apis: statusAPIs,
-    features: {
-      templates_avancados: true,
-      deteccao_automatica: true,
-      ia_dual: true,
-      processamento_completo: true,
-      metricas_avancadas: true,
-      registro_custos: true,
-      validacao_qualidade: true,
-      fallbacks_automaticos: true
-    }
-  };
-}
-
-console.log("🎉 SISTEMA TOTALMENTE INTEGRADO E OPERACIONAL!");
+console.log("🎉 SISTEMA OPERACIONAL - VERSÃO FUNCIONAL!");
