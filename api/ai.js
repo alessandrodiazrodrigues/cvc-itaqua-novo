@@ -275,18 +275,11 @@ function analisarTextoBasico(formData) {
   
   const complexidade = pontos <= 2 ? 'simples' : pontos <= 5 ? 'media' : 'alta';
   
-  // Análise de múltiplas opções (MELHORADA)
+  // Análise de múltiplas opções
   const multiplasOpcoes = {
     detectado: textoCompleto.includes('opção 1') || textoCompleto.includes('plano 1') || 
-               textoCompleto.includes('passageiro 1') || textoCompleto.includes('passageiro 2') ||
-               (textoCompleto.match(/r\$.*?r\$/g) || []).length >= 2 ||
-               (textoCompleto.match(/\d{1,3}[\.,]\d{3}[\.,]\d{2}/g) || []).length >= 2,
-    quantidade: Math.max(
-      (textoCompleto.match(/opção\s+\d+/g) || []).length,
-      (textoCompleto.match(/passageiro\s+\d+/g) || []).length,
-      (textoCompleto.match(/r\$\s*\d+[\.,]\d+/g) || []).length,
-      1
-    )
+               (textoCompleto.match(/r\$.*?r\$/g) || []).length >= 2,
+    quantidade: Math.max((textoCompleto.match(/opção\s+\d+/g) || []).length, 1)
   };
   
   // Análise de ida e volta
@@ -295,13 +288,11 @@ function analisarTextoBasico(formData) {
                (textoCompleto.match(/\d{1,2}\/\d{1,2}/g) || []).length >= 2
   };
   
-  // Análise de tipo específico (MELHORADA)
+  // Análise de tipo específico
   const tipoEspecifico = {
-    principal: textoCompleto.includes('cruzeiro') || textoCompleto.includes('msc') || 
-               textoCompleto.includes('costa') || textoCompleto.includes('navio') ||
-               textoCompleto.includes('embarque') || textoCompleto.includes('cabine') ? 'cruzeiro' :
-               textoCompleto.includes('hotel') || textoCompleto.includes('resort') ? 'hotel' :
-               textoCompleto.includes('multitrecho') || textoCompleto.includes('trecho') ? 'multitrecho' : 'aereo'
+    principal: textoCompleto.includes('cruzeiro') ? 'cruzeiro' :
+               textoCompleto.includes('hotel') ? 'hotel' :
+               textoCompleto.includes('multitrecho') ? 'multitrecho' : 'aereo'
   };
   
   return {
@@ -334,15 +325,10 @@ function construirPromptCVCOtimizado(formData) {
 🌊 Roteiro: [DESTINOS]
 
 💰 Opções de Cabines:
-**CABINE INTERNA** - [VALOR_INTERNA]
-**CABINE EXTERNA** - [VALOR_EXTERNA] 
-**CABINE VARANDA** - [VALOR_VARANDA]
-**SUÍTE** - [VALOR_SUITE]
+[CABINES E PREÇOS]
 
 ✅ Inclui: hospedagem a bordo, pensão completa
-🚫 Não inclui: taxas portuárias, bebidas, excursões
-
-IMPORTANTE: Este é um CRUZEIRO, não um voo. Não mencionar aeroportos ou voos.`;
+🚫 Não inclui: taxas portuárias, bebidas, excursões`;
     
   } else if (analise.multiplasOpcoes.detectado) {
     templateEspecifico = `
@@ -361,9 +347,7 @@ IMPORTANTE: Este é um CRUZEIRO, não um voo. Não mencionar aeroportos ou voos.
 
 ${analise.multiplasOpcoes.quantidade >= 3 ? `**OPÇÃO 3:** R$ [VALOR_3]
 ✈ [DETALHES_VOO_3]
-✅ [BAGAGEM_3]` : ''}
-
-IMPORTANTE: Detectar e apresentar TODAS as opções com preços diferentes.`;
+✅ [BAGAGEM_3]` : ''}`;
     
   } else if (analise.tipoEspecifico.principal === 'hotel') {
     templateEspecifico = `
@@ -424,9 +408,6 @@ INSTRUÇÕES FINAIS:
 3. Usar APENAS dados fornecidos (não inventar)
 4. Formato limpo para WhatsApp (sem markdown)
 5. Seguir EXATAMENTE o template selecionado
-6. Se CRUZEIRO: NÃO mencionar voos ou aeroportos
-7. Se MÚLTIPLAS OPÇÕES: Mostrar TODAS as opções com preços
-8. PASSAGEIROS: "02 adultos" (apenas UM zero à esquerda)
 
 GERAR ORÇAMENTO PROFISSIONAL CVC:`;
 }
@@ -488,16 +469,9 @@ function processarRespostaCVCAvancada(conteudo, layoutDetectado) {
   // Garantir formato de valores
   processado = processado.replace(/R\$\s*(\d)/g, 'R$ $1');
   
-  // Garantir formato de passageiros (CORREÇÃO: só um zero)
-  processado = processado.replace(/(\d) adulto/g, (match, num) => {
-    return num.length === 1 ? `0${num} adulto` : `${num} adulto`;
-  });
-  processado = processado.replace(/(\d) criança/g, (match, num) => {
-    return num.length === 1 ? `0${num} criança` : `${num} criança`;
-  });
-  
-  // Corrigir formato incorreto (002 → 02)
-  processado = processado.replace(/00(\d)\s+(adulto|criança)/g, '0$1 $2');
+  // Garantir formato de passageiros
+  processado = processado.replace(/(\d) adulto/g, '0$1 adulto');
+  processado = processado.replace(/(\d) criança/g, '0$1 criança');
   
   // Limpar linhas vazias excessivas
   processado = processado.replace(/\n\s*\n\s*\n/g, '\n\n');
