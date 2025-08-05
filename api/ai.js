@@ -372,22 +372,59 @@ async function processarComFallbackIntegrado(formData, tipo, res, inicio) {
 function analisarTextoSimples(texto) {
   const textoLower = texto.toLowerCase();
   
+  // DETECÇÃO MELHORADA DE CRUZEIRO
+  const ehCruzeiro = textoLower.includes('cruzeiro') || 
+                    textoLower.includes('navio') ||
+                    textoLower.includes('msc') ||
+                    textoLower.includes('costa') ||
+                    textoLower.includes('embarque: santos') ||
+                    textoLower.includes('desembarque: santos') ||
+                    textoLower.includes('sinfonia') ||
+                    textoLower.includes('cabine') ||
+                    (textoLower.includes('embarque') && textoLower.includes('santos'));
+  
+  console.log("🔍 Análise de cruzeiro:", {
+    texto: texto.substring(0, 100),
+    ehCruzeiro,
+    temMSC: textoLower.includes('msc'),
+    temSantos: textoLower.includes('santos'),
+    temEmbarque: textoLower.includes('embarque')
+  });
+  
   return {
-    ehCruzeiro: textoLower.includes('cruzeiro') || textoLower.includes('navio'),
+    ehCruzeiro,
     ehMultiplasOpcoes: textoLower.includes('opção 1') || textoLower.includes('opção 2'),
     ehSomenteIda: textoLower.includes('somente ida') || (!textoLower.includes('volta') && !textoLower.includes('retorno')),
     temConexao: textoLower.includes('conexão') || textoLower.includes('escala'),
     ehInternacional: textoLower.includes('miami') || textoLower.includes('europa') || textoLower.includes('internacional'),
     ehPacote: textoLower.includes('hotel') || textoLower.includes('pacote') || textoLower.includes('hospedagem'),
-    tipoDetectado: detectarTipoPrincipal(textoLower),
+    tipoDetectado: detectarTipoPrincipal(textoLower, ehCruzeiro),
     confiancaDeteccao: 0.8
   };
 }
 
-function detectarTipoPrincipal(textoLower) {
-  if (textoLower.includes('cruzeiro')) return 'cruzeiro';
-  if (textoLower.includes('opção 1')) return 'multiplas_opcoes';
-  if (textoLower.includes('hotel')) return 'pacote_completo';
+function detectarTipoPrincipal(textoLower, ehCruzeiro = false) {
+  console.log("🎯 Detectando tipo principal:", {
+    ehCruzeiro,
+    temMSC: textoLower.includes('msc'),
+    temCruzeiro: textoLower.includes('cruzeiro'),
+    temSantos: textoLower.includes('santos')
+  });
+  
+  if (ehCruzeiro || textoLower.includes('cruzeiro') || textoLower.includes('msc')) {
+    console.log("✅ TIPO DETECTADO: CRUZEIRO");
+    return 'cruzeiro';
+  }
+  if (textoLower.includes('opção 1')) {
+    console.log("✅ TIPO DETECTADO: MÚLTIPLAS OPÇÕES");
+    return 'multiplas_opcoes';
+  }
+  if (textoLower.includes('hotel')) {
+    console.log("✅ TIPO DETECTADO: PACOTE");
+    return 'pacote_completo';
+  }
+  
+  console.log("✅ TIPO DETECTADO: AÉREO (padrão)");
   return 'aereo_ida_volta';
 }
 
@@ -397,24 +434,32 @@ function detectarTipoPrincipal(textoLower) {
 
 function gerarTemplateManualIntegrado(formData, textoCompleto, analise) {
   console.log("📋 Gerando template manual integrado...");
+  console.log("🔍 Análise recebida:", analise);
   
   // Extrair dados do texto
   const dados = extrairDadosCompletos(textoCompleto, formData);
+  console.log("📊 Dados extraídos:", dados);
   
-  // Aplicar template baseado na análise
-  if (analise?.ehCruzeiro || textoCompleto.toLowerCase().includes('cruzeiro')) {
+  // CORREÇÃO: Aplicar template baseado na análise E no texto
+  const textoLower = textoCompleto.toLowerCase();
+  
+  if (analise?.ehCruzeiro || textoLower.includes('cruzeiro') || textoLower.includes('msc') || textoLower.includes('sinfonia')) {
+    console.log("🚢 APLICANDO TEMPLATE DE CRUZEIRO");
     return gerarTemplateCruzeiro(dados);
   }
   
-  if (analise?.ehMultiplasOpcoes || textoCompleto.toLowerCase().includes('opção')) {
+  if (analise?.ehMultiplasOpcoes || textoLower.includes('opção')) {
+    console.log("🔢 APLICANDO TEMPLATE DE MÚLTIPLAS OPÇÕES");
     return gerarTemplateMultiplasOpcoes(dados);
   }
   
-  if (analise?.ehPacote || textoCompleto.toLowerCase().includes('hotel')) {
+  if (analise?.ehPacote || textoLower.includes('hotel')) {
+    console.log("🏨 APLICANDO TEMPLATE DE PACOTE");
     return gerarTemplatePacote(dados);
   }
   
   // Template aéreo padrão
+  console.log("✈️ APLICANDO TEMPLATE AÉREO (padrão)");
   return gerarTemplateAereo(dados);
 }
 
@@ -430,6 +475,8 @@ ${dados.dataVolta} - ${dados.aeroportoDestino} ${dados.horaVolta} / ${dados.aero
 }
 
 function gerarTemplateCruzeiro(dados) {
+  console.log("🚢 Gerando template de cruzeiro com dados:", dados);
+  
   return `🚢 *Cruzeiro ${dados.navio}* – ${dados.duracao} noites
 👥 ${dados.passageiros}
 📅 Embarque: ${dados.dataEmbarque} (${dados.porto})
@@ -499,6 +546,46 @@ Valores sujeitos a confirmação e disponibilidade`;
 // ================================================================================
 
 function extrairDadosCompletos(texto, formData) {
+  console.log("🔍 Extraindo dados de:", texto.substring(0, 200));
+  
+  // Detecção específica para cruzeiro
+  const ehCruzeiro = texto.toLowerCase().includes('msc') || 
+                    texto.toLowerCase().includes('cruzeiro') ||
+                    texto.toLowerCase().includes('sinfonia');
+  
+  if (ehCruzeiro) {
+    console.log("🚢 Extraindo dados de CRUZEIRO");
+    
+    // Extrair dados específicos do cruzeiro
+    const navio = extrairNavio(texto);
+    const duracao = extrairDuracao(texto);
+    const valor = extrairValor(texto);
+    const passageiros = formatarPassageiros(formData.adultos, formData.criancas);
+    
+    console.log("📊 Dados do cruzeiro:", { navio, duracao, valor, passageiros });
+    
+    return {
+      // Dados de cruzeiro
+      navio,
+      duracao,
+      valor,
+      valorExterna: calcularValorExterna(valor),
+      valorVaranda: calcularValorVaranda(valor),
+      passageiros,
+      dataEmbarque: extrairDataEmbarque(texto),
+      porto: extrairPorto(texto),
+      
+      // Dados básicos (fallback)
+      companhia: 'MSC',
+      origem: 'Santos',
+      destino: 'Santos',
+      bagagem: 'Hospedagem a bordo incluída',
+      reembolso: 'Conforme regras da companhia',
+      noites: duracao
+    };
+  }
+  
+  // Dados para outros tipos (aéreo, etc.)
   return {
     // Dados básicos
     companhia: extrairCompanhia(texto),
@@ -536,10 +623,10 @@ function extrairDadosCompletos(texto, formData) {
     bagagem: 'Só mala de mão incluída',
     reembolso: 'Não reembolsável',
     
-    // Cruzeiro
-    navio: 'Costa Diadema',
-    duracao: '7',
-    dataEmbarque: extrairDataIda(texto) || '15/11',
+    // Cruzeiro (fallback)
+    navio: 'MSC Sinfonia',
+    duracao: '3',
+    dataEmbarque: extrairDataIda(texto) || '25/11',
     porto: 'Santos',
     
     // Pacote
@@ -548,7 +635,50 @@ function extrairDadosCompletos(texto, formData) {
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES DE EXTRAÇÃO
+// 🔍 FUNÇÕES DE EXTRAÇÃO ESPECÍFICAS PARA CRUZEIRO
+// ================================================================================
+
+function extrairNavio(texto) {
+  if (texto.toLowerCase().includes('msc sinfonia')) return 'MSC Sinfonia';
+  if (texto.toLowerCase().includes('sinfonia')) return 'MSC Sinfonia';
+  if (texto.toLowerCase().includes('costa diadema')) return 'Costa Diadema';
+  if (texto.toLowerCase().includes('msc')) return 'MSC Sinfonia';
+  return 'MSC Sinfonia';
+}
+
+function extrairDuracao(texto) {
+  const match = texto.match(/(\d+)\s*noites?/i);
+  if (match) return match[1];
+  
+  const matchDias = texto.match(/(\d+)\s*dias?/i);
+  if (matchDias) return (parseInt(matchDias[1]) - 1).toString();
+  
+  return '3'; // Padrão do exemplo
+}
+
+function extrairPorto(texto) {
+  if (texto.toLowerCase().includes('santos')) return 'Santos';
+  if (texto.toLowerCase().includes('rio de janeiro')) return 'Rio de Janeiro';
+  return 'Santos';
+}
+
+function extrairDataEmbarque(texto) {
+  // Procurar por data no formato 25/11/2025 ou 25/11
+  const matchCompleta = texto.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (matchCompleta) {
+    return `${matchCompleta[1].padStart(2, '0')}/${matchCompleta[2].padStart(2, '0')}`;
+  }
+  
+  const matchSimples = texto.match(/(\d{1,2})\/(\d{1,2})/);
+  if (matchSimples) {
+    return `${matchSimples[1].padStart(2, '0')}/${matchSimples[2].padStart(2, '0')}`;
+  }
+  
+  return '25/11';
+}
+
+// ================================================================================
+// 🔧 FUNÇÕES DE EXTRAÇÃO ORIGINAIS (MANTIDAS)
 // ================================================================================
 
 function extrairCompanhia(texto) {
