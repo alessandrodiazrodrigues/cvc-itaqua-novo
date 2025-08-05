@@ -24,16 +24,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log("📥 Dados recebidos:", {
-      body: !!req.body,
-      tipo: req.body?.tipo,
-      versao: req.body?.versao
-    });
+    console.log("📥 Dados recebidos:");
+    console.log("- Body existe:", !!req.body);
+    console.log("- Tipo:", req.body?.tipo);
+    console.log("- FormData existe:", !!req.body?.formData);
+    console.log("- Versão:", req.body?.versao);
+    console.log("- Body completo:", JSON.stringify(req.body, null, 2));
 
     const { formData, tipo, versao } = req.body;
 
-    if (!formData || !tipo) {
-      throw new Error("Dados obrigatórios ausentes (formData, tipo)");
+    // Validação melhorada
+    if (!req.body) {
+      throw new Error("Body da requisição está vazio");
+    }
+
+    if (!tipo) {
+      throw new Error("Parâmetro 'tipo' é obrigatório");
+    }
+
+    if (!formData) {
+      throw new Error("Parâmetro 'formData' é obrigatório");
     }
 
     console.log("🎯 Processando:", tipo, "| Destino:", formData.destino);
