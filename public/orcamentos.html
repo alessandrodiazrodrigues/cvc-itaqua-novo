@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Geração de Orçamento com IA v7.0</title>
+    <title>🤖 CVC Itaqua - Geração de Orçamento com IA v7.0</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,8 +11,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        :root {
+            --cvc-azul: #003399;
+            --cvc-amarelo: #FFD700;
+            --cvc-verde: #00A859;
+            --cvc-azul-claro: #4A90E2;
+            --cvc-azul-escuro: #002266;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -23,28 +31,110 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
             margin: 20px auto;
-            max-width: 1200px;
+            max-width: 1400px;
         }
         
         .header-section {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
             color: white;
             padding: 30px;
             border-radius: 20px 20px 0 0;
-            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
         
-        .header-section h1 {
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: var(--cvc-amarelo);
+            border-radius: 50%;
+            opacity: 0.1;
+            transform: translate(50%, -50%);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cvc-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--cvc-azul);
+            font-size: 18px;
+        }
+        
+        .header-title {
             margin: 0;
             font-weight: 700;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
         }
         
-        .header-section p {
+        .header-subtitle {
             margin: 10px 0 0 0;
             opacity: 0.9;
+            font-size: 1.1rem;
         }
         
+        /* ESTIMADOR DE CUSTOS */
+        .cost-estimator {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .cost-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .cost-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .cost-card i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--cvc-amarelo);
+        }
+        
+        .cost-card h6 {
+            margin: 5px 0;
+            font-weight: 600;
+        }
+        
+        .cost-card span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--cvc-amarelo);
+        }
+        
+        .cost-card small {
+            display: block;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        /* NAVEGAÇÃO */
         .nav-pills {
             background: #f8f9fa;
             padding: 20px;
@@ -56,12 +146,21 @@
             border-radius: 10px;
             margin: 0 5px;
             font-weight: 600;
+            color: var(--cvc-azul);
+            transition: all 0.3s ease;
         }
         
         .nav-pills .nav-link.active {
-            background: #4CAF50;
+            background: var(--cvc-azul);
+            color: white;
         }
         
+        .nav-pills .nav-link:hover:not(.active) {
+            background: var(--cvc-azul-claro);
+            color: white;
+        }
+        
+        /* FORMULÁRIO */
         .form-section {
             padding: 30px;
         }
@@ -72,8 +171,11 @@
         
         .form-label {
             font-weight: 600;
-            color: #333;
+            color: var(--cvc-azul);
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .form-control {
@@ -84,8 +186,8 @@
         }
         
         .form-control:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            border-color: var(--cvc-azul);
+            box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
         }
         
         .textarea-large {
@@ -93,9 +195,10 @@
             resize: vertical;
         }
         
+        /* CHECKBOXES TOTALMENTE CLICÁVEIS */
         .checkbox-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
             margin-top: 10px;
         }
@@ -103,135 +206,328 @@
         .checkbox-item {
             background: #f8f9fa;
             border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 18px;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
         .checkbox-item:hover {
-            border-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.1);
+            border-color: var(--cvc-azul);
+            background: rgba(0, 51, 153, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 51, 153, 0.1);
         }
         
-        .checkbox-item input:checked + label {
-            color: #4CAF50;
+        .checkbox-item.selected {
+            border-color: var(--cvc-azul);
+            background: rgba(0, 51, 153, 0.1);
+            color: var(--cvc-azul);
             font-weight: 600;
         }
         
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--cvc-azul);
+        }
+        
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+        
+        /* CAMPOS DINÂMICOS PARA CRIANÇAS */
+        .idade-crianca-input {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+        
+        /* BOTÕES */
         .btn-primary {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
             border: none;
-            border-radius: 10px;
-            padding: 15px 30px;
+            border-radius: 12px;
+            padding: 15px 35px;
             font-weight: 600;
             font-size: 1.1rem;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 51, 153, 0.3);
         }
         
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--cvc-verde) 0%, #007C42 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0, 168, 89, 0.3);
+        }
+        
+        /* RESULTADOS */
         .result-section {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 15px;
             padding: 25px;
-            margin-top: 30px;
-            border: 2px solid #e9ecef;
+            margin-top: 25px;
+            border: 2px solid #dee2e6;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--cvc-azul);
+        }
+        
+        .result-section h4 {
+            color: var(--cvc-azul);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .result-content {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 25px;
             min-height: 200px;
             border: 1px solid #dee2e6;
             white-space: pre-wrap;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .btn-copy {
-            background: #17a2b8;
+            background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 25px;
             margin-top: 15px;
             transition: all 0.3s ease;
+            font-weight: 600;
         }
         
         .btn-copy:hover {
-            background: #138496;
+            background: linear-gradient(135deg, #138496 0%, #0e6674 100%);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
         }
         
+        /* CARDS DE DICAS */
+        .info-card {
+            background: linear-gradient(135deg, rgba(0, 168, 89, 0.1) 0%, rgba(0, 168, 89, 0.05) 100%);
+            border: 2px solid rgba(0, 168, 89, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            border-color: var(--cvc-verde);
+            background: linear-gradient(135deg, rgba(0, 168, 89, 0.15) 0%, rgba(0, 168, 89, 0.08) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .info-card h5 {
+            color: var(--cvc-verde);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* PASTE AREA */
+        .paste-area {
+            min-height: 120px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .paste-area:hover {
+            border-color: var(--cvc-azul);
+            background: rgba(0, 51, 153, 0.05);
+        }
+        
+        .paste-area.has-content {
+            border-style: solid;
+            border-color: var(--cvc-verde);
+            background: rgba(0, 168, 89, 0.05);
+        }
+        
+        /* LOADING E ESTADOS */
         .loading {
             text-align: center;
             color: #6c757d;
             font-style: italic;
+            padding: 40px;
+        }
+        
+        .loading::before {
+            content: '🤖';
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .error {
             color: #dc3545;
             background: rgba(220, 53, 69, 0.1);
-            border: 1px solid rgba(220, 53, 69, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
+            border: 2px solid rgba(220, 53, 69, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
         }
         
         .success {
             color: #28a745;
             background: rgba(40, 167, 69, 0.1);
-            border: 1px solid rgba(40, 167, 69, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-        }
-        
-        .info-card {
-            background: rgba(76, 175, 80, 0.1);
-            border: 1px solid rgba(76, 175, 80, 0.3);
+            border: 2px solid rgba(40, 167, 69, 0.3);
             border-radius: 10px;
             padding: 20px;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
-        .info-card h5 {
-            color: #4CAF50;
-            margin-bottom: 15px;
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .header-title { font-size: 1.8rem; }
+            .checkbox-group { grid-template-columns: 1fr; }
+            .cost-card { margin: 10px 0; }
         }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="main-container">
-            <!-- Header -->
+            <!-- Header com Logo CVC -->
             <div class="header-section">
-                <h1><i class="fas fa-robot"></i> Geração de Orçamento com IA v7.0</h1>
-                <p>Sistema inteligente de criação de orçamentos profissionais - CVC Itaquaquecetuba</p>
+                <div class="header-content">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap">
+                        <div class="cvc-logo me-4">
+                            CVC
+                        </div>
+                        <div class="text-center">
+                            <h1 class="header-title">
+                                <i class="fas fa-robot"></i> Geração de Orçamento com IA v7.0
+                            </h1>
+                            <p class="header-subtitle">
+                                Sistema inteligente de criação de orçamentos profissionais - CVC Itaquaquecetuba
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Estimador de Custos -->
+                    <div class="cost-estimator">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="cost-card">
+                                    <i class="fas fa-coins"></i>
+                                    <h6>Custo do Dia</h6>
+                                    <span id="custoDia">R$ 0,00</span>
+                                    <small>com IA</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="cost-card">
+                                    <i class="fas fa-calendar-month"></i>
+                                    <h6>Custo do Mês</h6>
+                                    <span id="custoMes">R$ 0,00</span>
+                                    <small>acumulado</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="cost-card">
+                                    <i class="fas fa-chart-line"></i>
+                                    <h6>Orçamentos Hoje</h6>
+                                    <span id="orcamentosHoje">0</span>
+                                    <small>gerados</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Navigation -->
             <nav class="nav-pills">
                 <ul class="nav nav-pills justify-content-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="orcamentos.html"><i class="fas fa-calculator"></i> Orçamentos</a>
+                        <a class="nav-link active" href="orcamentos.html">
+                            <i class="fas fa-calculator"></i> Orçamentos
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="cadastro-vendas.html"><i class="fas fa-handshake"></i> Vendas</a>
+                        <a class="nav-link" href="cadastro-vendas.html">
+                            <i class="fas fa-handshake"></i> Vendas
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="embarques.html"><i class="fas fa-plane-departure"></i> Embarques</a>
+                        <a class="nav-link" href="embarques.html">
+                            <i class="fas fa-plane-departure"></i> Embarques
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="orbiuns.html"><i class="fas fa-headset"></i> Orbiuns</a>
+                        <a class="nav-link" href="orbiuns.html">
+                            <i class="fas fa-headset"></i> Orbiuns
+                        </a>
                     </li>
                 </ul>
             </nav>
@@ -244,40 +540,42 @@
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <label for="destino" class="form-label">
-                                    <i class="fas fa-map-marker-alt"></i> Destino
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Destino
                                 </label>
                                 <input type="text" class="form-control" id="destino" 
-                                       placeholder="Ex: Salvador, Maceió, Buenos Aires...">
+                                       placeholder="Ex: Salvador, Maceió, Buenos Aires, Cidade do Cabo...">
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="fas fa-list-check"></i> Tipos de Serviços
+                                    <i class="fas fa-list-check"></i>
+                                    Tipos de Serviços
                                 </label>
                                 <div class="checkbox-group">
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Aéreo Nacional">
                                         <input type="checkbox" id="aereo" name="tipos" value="Aéreo Nacional">
-                                        <label for="aereo" class="form-check-label">✈️ Aéreo Nacional</label>
+                                        <label for="aereo">✈️ Aéreo Nacional</label>
                                     </div>
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Aéreo Internacional">
                                         <input type="checkbox" id="aereoInt" name="tipos" value="Aéreo Internacional">
-                                        <label for="aereoInt" class="form-check-label">🌍 Aéreo Internacional</label>
+                                        <label for="aereoInt">🌍 Aéreo Internacional</label>
                                     </div>
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Hotel">
                                         <input type="checkbox" id="hotel" name="tipos" value="Hotel">
-                                        <label for="hotel" class="form-check-label">🏨 Hotel</label>
+                                        <label for="hotel">🏨 Hotel</label>
                                     </div>
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Pacote">
                                         <input type="checkbox" id="pacote" name="tipos" value="Pacote">
-                                        <label for="pacote" class="form-check-label">📦 Pacote Completo</label>
+                                        <label for="pacote">📦 Pacote Completo</label>
                                     </div>
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Cruzeiro">
                                         <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiro">
-                                        <label for="cruzeiro" class="form-check-label">🚢 Cruzeiro</label>
+                                        <label for="cruzeiro">🚢 Cruzeiro</label>
                                     </div>
-                                    <div class="checkbox-item">
+                                    <div class="checkbox-item" data-value="Seguro">
                                         <input type="checkbox" id="seguro" name="tipos" value="Seguro">
-                                        <label for="seguro" class="form-check-label">🛡️ Seguro Viagem</label>
+                                        <label for="seguro">🛡️ Seguro Viagem</label>
                                     </div>
                                 </div>
                                 <small class="text-muted">Selecione pelo menos um tipo de serviço</small>
@@ -285,7 +583,8 @@
                             
                             <div class="form-group">
                                 <label for="adultos" class="form-label">
-                                    <i class="fas fa-users"></i> Adultos (opcional)
+                                    <i class="fas fa-users"></i>
+                                    Adultos (opcional)
                                 </label>
                                 <input type="number" class="form-control" id="adultos" min="1" max="10" 
                                        placeholder="Deixe vazio para detectar automaticamente">
@@ -293,9 +592,18 @@
                             
                             <div class="form-group">
                                 <label for="criancas" class="form-label">
-                                    <i class="fas fa-child"></i> Crianças (opcional)
+                                    <i class="fas fa-child"></i>
+                                    Crianças (opcional)
                                 </label>
                                 <input type="number" class="form-control" id="criancas" min="0" max="5" value="0">
+                                
+                                <!-- CAMPOS DINÂMICOS DE IDADE -->
+                                <div id="idadesCriancas" style="display: none; margin-top: 15px;">
+                                    <label class="form-label">Idades das crianças:</label>
+                                    <div id="camposIdades" class="row">
+                                        <!-- Campos criados dinamicamente -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -303,7 +611,8 @@
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <label for="observacoes" class="form-label">
-                                    <i class="fas fa-pencil-alt"></i> Observações e dados da viagem
+                                    <i class="fas fa-pencil-alt"></i>
+                                    Observações e dados da viagem
                                 </label>
                                 <textarea class="form-control textarea-large" id="observacoes" 
                                           placeholder="Cole aqui as informações do orçamento (horários, preços, passageiros, etc.)"></textarea>
@@ -314,22 +623,23 @@
                             
                             <div class="form-group">
                                 <label for="textoColado" class="form-label">
-                                    <i class="fas fa-clipboard"></i> Ou cole texto ou imagem (Ctrl + V)
+                                    <i class="fas fa-clipboard"></i>
+                                    Ou cole texto ou imagem (Ctrl + V)
                                 </label>
-                                <div id="pasteArea" class="form-control textarea-large" 
-                                     contenteditable="true" 
-                                     style="min-height: 100px; background: #f8f9fa; border: 2px dashed #dee2e6;">
-                                    <span style="color: #6c757d; font-style: italic;">
+                                <div id="pasteArea" class="paste-area" contenteditable="true">
+                                    <div style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
+                                        <i class="fas fa-clipboard fa-2x" style="display: block; margin-bottom: 10px;"></i>
                                         📋 Clique aqui e pressione Ctrl+V para colar texto ou imagem
-                                    </span>
+                                    </div>
                                 </div>
                                 <input type="hidden" id="textoColado">
-                                <small class="text-muted">Detecção automática de escalas</small>
+                                <small class="text-muted">Detecção automática de escalas e múltiplas opções</small>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="fas fa-image"></i> Anexar orçamento (PDF ou Imagem)
+                                    <i class="fas fa-image"></i>
+                                    Anexar orçamento (PDF ou Imagem)
                                 </label>
                                 <input type="file" class="form-control" id="arquivo" 
                                        accept="image/*,.pdf" style="padding: 10px;">
@@ -341,21 +651,47 @@
                     </div>
                     
                     <!-- Botão Principal -->
-                    <div class="text-center" style="margin-top: 30px;">
+                    <div class="text-center" style="margin-top: 40px;">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-magic"></i> Gerar Orçamento Completo
                         </button>
                     </div>
                 </form>
                 
-                <!-- Resultado -->
+                <!-- Resultado Principal -->
                 <div class="result-section">
                     <h4><i class="fas fa-file-invoice-dollar"></i> Orçamento Principal</h4>
                     <div id="orcamentoIA" class="result-content">
-                        Nenhum conteúdo colado ainda...
+                        <div style="text-align: center; color: #6c757d; padding: 40px;">
+                            <i class="fas fa-robot fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                            <div>Aguardando informações da viagem...</div>
+                            <small>Cole as informações acima e clique em "Gerar Orçamento"</small>
+                        </div>
                     </div>
                     <button type="button" class="btn btn-copy" onclick="copiarTexto('orcamentoIA')">
                         <i class="fas fa-copy"></i> Copiar Orçamento
+                    </button>
+                </div>
+                
+                <!-- Dicas do Destino -->
+                <div class="result-section" id="secaoDicas" style="display: none;">
+                    <h4><i class="fas fa-lightbulb"></i> Dicas do Destino</h4>
+                    <div id="dicasIA" class="result-content">
+                        Aguardando geração de dicas...
+                    </div>
+                    <button type="button" class="btn btn-copy" onclick="copiarTexto('dicasIA')">
+                        <i class="fas fa-copy"></i> Copiar Dicas
+                    </button>
+                </div>
+                
+                <!-- Ranking de Hotéis -->
+                <div class="result-section" id="secaoRanking" style="display: none;">
+                    <h4><i class="fas fa-star"></i> Ranking de Hotéis</h4>
+                    <div id="rankingIA" class="result-content">
+                        Aguardando geração de ranking...
+                    </div>
+                    <button type="button" class="btn btn-copy" onclick="copiarTexto('rankingIA')">
+                        <i class="fas fa-copy"></i> Copiar Ranking
                     </button>
                 </div>
                 
@@ -365,7 +701,8 @@
                         <div class="info-card">
                             <h5><i class="fas fa-lightbulb"></i> Dicas do Destino</h5>
                             <p>Gere dicas personalizadas após criar um orçamento</p>
-                            <button type="button" class="btn btn-info btn-sm" id="btnGerarDicas" disabled>
+                            <button type="button" class="btn btn-secondary" id="btnGerarDicas" disabled 
+                                    onclick="gerarDicasDestino()">
                                 <i class="fas fa-compass"></i> Gerar Dicas
                             </button>
                         </div>
@@ -374,7 +711,8 @@
                         <div class="info-card">
                             <h5><i class="fas fa-star"></i> Ranking de Hotéis</h5>
                             <p>Rankings detalhados por categoria e preço</p>
-                            <button type="button" class="btn btn-warning btn-sm" id="btnGerarRanking" disabled>
+                            <button type="button" class="btn btn-secondary" id="btnGerarRanking" disabled
+                                    onclick="gerarRankingHoteis()">
                                 <i class="fas fa-trophy"></i> Gerar Ranking
                             </button>
                         </div>
@@ -398,7 +736,9 @@
         let estadoGlobal = {
             ultimoOrcamento: '',
             ultimoDestino: '',
-            imagemBase64: null
+            imagemBase64: null,
+            custoDia: 0,
+            orcamentosHoje: 0
         };
         
         // ================================================================================
@@ -406,11 +746,14 @@
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📋 Inicializando sistema v7.0...');
+            console.log('📋 Inicializando sistema CVC v7.0...');
             
             initFormElements();
             setupEventListeners();
             setupPasteArea();
+            setupCheckboxesClicaveis();
+            setupCamposCriancas();
+            atualizarDisplayCustos();
             
             console.log('✅ CVC Itaqua v7.0 carregado e pronto!');
         });
@@ -422,7 +765,8 @@
                 textoColado: document.getElementById('textoColado'),
                 destino: document.getElementById('destino'),
                 arquivo: document.getElementById('arquivo'),
-                pasteArea: document.getElementById('pasteArea')
+                pasteArea: document.getElementById('pasteArea'),
+                criancas: document.getElementById('criancas')
             };
         }
         
@@ -442,6 +786,81 @@
                 checkbox.addEventListener('change', verificarTiposSelecionados);
             });
         }
+        
+        // ================================================================================
+        // 🖱️ CHECKBOXES TOTALMENTE CLICÁVEIS
+        // ================================================================================
+        
+        function setupCheckboxesClicaveis() {
+            document.querySelectorAll('.checkbox-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Evitar duplo clique se clicar no checkbox ou label
+                    if (e.target.type === 'checkbox' || e.target.tagName === 'LABEL') {
+                        return;
+                    }
+                    
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    
+                    updateCheckboxVisual(this, checkbox.checked);
+                    
+                    // Trigger change event
+                    checkbox.dispatchEvent(new Event('change'));
+                });
+                
+                // Também atualizar visual quando checkbox for clicado diretamente
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                checkbox.addEventListener('change', function() {
+                    updateCheckboxVisual(item, this.checked);
+                });
+            });
+            
+            console.log('✅ Checkboxes clicáveis configurados');
+        }
+        
+        function updateCheckboxVisual(item, checked) {
+            if (checked) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        }
+        
+        // ================================================================================
+        // 👶 CAMPOS DINÂMICOS PARA CRIANÇAS
+        // ================================================================================
+        
+        function setupCamposCriancas() {
+            formElements.criancas.addEventListener('change', function() {
+                const numCriancas = parseInt(this.value) || 0;
+                const container = document.getElementById('idadesCriancas');
+                const camposContainer = document.getElementById('camposIdades');
+                
+                if (numCriancas > 0) {
+                    container.style.display = 'block';
+                    camposContainer.innerHTML = '';
+                    
+                    for (let i = 1; i <= numCriancas; i++) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-6 mb-2';
+                        col.innerHTML = `
+                            <input type="number" class="form-control idade-crianca-input" 
+                                   id="idadeCrianca${i}" min="0" max="17" 
+                                   placeholder="Idade da criança ${i}">
+                        `;
+                        camposContainer.appendChild(col);
+                    }
+                    
+                    console.log(`✅ ${numCriancas} campos de idade criados`);
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+        }
+        
+        // ================================================================================
+        // 📋 ÁREA DE PASTE
+        // ================================================================================
         
         function setupPasteArea() {
             if (!formElements.pasteArea) return;
@@ -464,7 +883,8 @@
                 // Se não há imagem, processar texto
                 const text = clipboardData.getData('text/plain');
                 if (text) {
-                    formElements.pasteArea.innerHTML = `<pre style="white-space: pre-wrap; margin: 0;">${text}</pre>`;
+                    this.innerHTML = `<pre style="white-space: pre-wrap; margin: 0; text-align: left;">${text}</pre>`;
+                    this.classList.add('has-content');
                     formElements.textoColado.value = text;
                     console.log('📝 Texto colado:', text.length, 'caracteres');
                 }
@@ -473,29 +893,28 @@
             formElements.pasteArea.addEventListener('input', function() {
                 const texto = this.innerText || this.textContent;
                 formElements.textoColado.value = texto;
+                
+                if (texto.trim()) {
+                    this.classList.add('has-content');
+                } else {
+                    this.classList.remove('has-content');
+                    this.innerHTML = `
+                        <div style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
+                            <i class="fas fa-clipboard fa-2x" style="display: block; margin-bottom: 10px;"></i>
+                            📋 Clique aqui e pressione Ctrl+V para colar texto ou imagem
+                        </div>
+                    `;
+                }
             });
         }
         
         function verificarTiposSelecionados() {
-            console.log('🔄 Verificando tipos selecionados...');
-            
             const tiposSelecionados = [];
             document.querySelectorAll('input[name="tipos"]:checked').forEach(checkbox => {
                 tiposSelecionados.push(checkbox.value);
             });
             
             console.log('📋 Tipos selecionados:', tiposSelecionados);
-            
-            // Habilitar/desabilitar seção de parcelamento baseado nos tipos
-            const temPacoteOuCruzeiro = tiposSelecionados.some(tipo => 
-                tipo.includes('Pacote') || tipo.includes('Cruzeiro')
-            );
-            
-            if (temPacoteOuCruzeiro) {
-                console.log('✅ Seção de parcelamento habilitada');
-            } else {
-                console.log('❌ Seção de parcelamento desabilitada');
-            }
         }
         
         // ================================================================================
@@ -514,13 +933,28 @@
                     estadoGlobal.imagemBase64 = base64;
                     
                     // Mostrar preview
-                    const preview = `<img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+                    const preview = `
+                        <div style="text-align: center;">
+                            <img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <div style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                                <i class="fas fa-image"></i> ${file.name}
+                            </div>
+                        </div>
+                    `;
                     formElements.pasteArea.innerHTML = preview;
+                    formElements.pasteArea.classList.add('has-content');
                     
                     console.log('🖼️ Imagem carregada:', file.name);
                 } else if (file.type === 'application/pdf') {
                     console.log('📄 PDF detectado:', file.name);
-                    formElements.pasteArea.innerHTML = `<div style="color: #666;"><i class="fas fa-file-pdf"></i> PDF: ${file.name}</div>`;
+                    formElements.pasteArea.innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-file-pdf fa-3x" style="color: #dc3545; margin-bottom: 15px;"></i>
+                            <div style="font-weight: 600;">PDF: ${file.name}</div>
+                            <small>Arquivo PDF carregado com sucesso</small>
+                        </div>
+                    `;
+                    formElements.pasteArea.classList.add('has-content');
                 }
             } catch (error) {
                 console.error('❌ Erro no upload:', error);
@@ -533,8 +967,16 @@
                 const base64 = await fileToBase64(file);
                 estadoGlobal.imagemBase64 = base64;
                 
-                const preview = `<img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+                const preview = `
+                    <div style="text-align: center;">
+                        <img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <div style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                            <i class="fas fa-image"></i> Imagem colada via Ctrl+V
+                        </div>
+                    </div>
+                `;
                 formElements.pasteArea.innerHTML = preview;
+                formElements.pasteArea.classList.add('has-content');
                 
                 console.log('🖼️ Imagem colada via Ctrl+V');
             } catch (error) {
@@ -552,13 +994,13 @@
         }
         
         // ================================================================================
-        // 📋 COLETA DE DADOS DO FORMULÁRIO (CORRIGIDA)
+        // 📋 COLETA DE DADOS DO FORMULÁRIO
         // ================================================================================
         
         function coletarDadosFormulario() {
-            const observacoes = document.getElementById('observacoes')?.value || '';
-            const textoColado = document.getElementById('textoColado')?.value || '';
-            const destino = document.getElementById('destino')?.value || '';
+            const observacoes = formElements.observacoes?.value || '';
+            const textoColado = formElements.textoColado?.value || '';
+            const destino = formElements.destino?.value || '';
             
             // Coletar tipos selecionados
             const tipos = [];
@@ -566,29 +1008,46 @@
                 tipos.push(checkbox.value);
             });
             
+            // Coletar idades das crianças
+            const numCriancas = parseInt(formElements.criancas.value) || 0;
+            const idadesCriancas = [];
+            for (let i = 1; i <= numCriancas; i++) {
+                const idade = document.getElementById(`idadeCrianca${i}`)?.value;
+                if (idade) {
+                    idadesCriancas.push(parseInt(idade));
+                }
+            }
+            
             // Criar prompt combinado
-            const prompt = [observacoes, textoColado].filter(texto => texto.trim()).join('\n\n');
+            let prompt = [observacoes, textoColado].filter(texto => texto.trim()).join('\n\n');
+            
+            // Adicionar informações de crianças se fornecidas
+            if (idadesCriancas.length > 0) {
+                prompt += `\n\nIdades das crianças: ${idadesCriancas.join(', ')} anos`;
+            }
             
             const dados = {
-                prompt: prompt || 'Teste de orçamento', // GARANTIR que sempre tenha algo
+                prompt: prompt || 'Teste de orçamento',
                 observacoes: observacoes,
                 textoColado: textoColado,
                 destino: destino,
                 tipos: tipos,
                 temImagem: !!estadoGlobal.imagemBase64,
-                arquivo: estadoGlobal.imagemBase64
+                arquivo: estadoGlobal.imagemBase64,
+                numCriancas: numCriancas,
+                idadesCriancas: idadesCriancas
             };
             
-            // DEBUG: Mostrar dados no console
-            console.log('📋 DADOS COLETADOS PARA DEBUG:', dados);
+            console.log('📋 DADOS COLETADOS:', dados);
             console.log('📝 Prompt length:', dados.prompt.length);
             console.log('🎯 Tipos:', dados.tipos);
+            console.log('👶 Crianças:', dados.numCriancas, 'idades:', dados.idadesCriancas);
             
             return dados;
         }
         
         // ================================================================================
-        // 📡 COMUNICAÇÃO COM API (CORRIGIDA)
+        // 📡 COMUNICAÇÃO COM API
         // ================================================================================
         
         async function enviarParaAPI(dados) {
@@ -614,6 +1073,11 @@
                 const resultado = await response.json();
                 console.log('[v7.0] ✅ Resposta recebida:', resultado);
                 
+                // Registrar custo se disponível
+                if (resultado.metricas?.custo?.brl) {
+                    registrarCusto(resultado.metricas.custo.brl, dados.tipos[0] || 'Orçamento');
+                }
+                
                 return resultado;
                 
             } catch (error) {
@@ -623,7 +1087,7 @@
         }
         
         // ================================================================================
-        // 🎯 HANDLER DO FORMULÁRIO (CORRIGIDO)
+        // 🎯 HANDLER DO FORMULÁRIO
         // ================================================================================
         
         async function handleSubmit(event) {
@@ -634,7 +1098,6 @@
             try {
                 // 1. Coletar dados
                 const dados = coletarDadosFormulario();
-                console.log('[v7.0] 📋 Dados coletados:', dados);
                 
                 // 2. Validar dados básicos
                 if (!dados.prompt || dados.prompt.trim().length < 10) {
@@ -646,7 +1109,14 @@
                 }
                 
                 // 3. Mostrar loading
-                document.getElementById('orcamentoIA').innerText = '🤖 Processando com IA v7.0...';
+                document.getElementById('orcamentoIA').innerHTML = `
+                    <div class="loading">
+                        🤖 Processando com IA v7.0...
+                        <div style="margin-top: 10px; font-size: 0.9rem;">
+                            Analisando: ${dados.tipos.join(', ')}
+                        </div>
+                    </div>
+                `;
                 
                 // 4. Enviar para API
                 console.log('[v7.0] 🚀 Enviando para API integrada...');
@@ -668,12 +1138,74 @@
                 
             } catch (error) {
                 console.error('[v7.0] ❌ Erro:', error);
-                document.getElementById('orcamentoIA').innerText = `❌ Erro: ${error.message}`;
+                document.getElementById('orcamentoIA').innerHTML = `
+                    <div class="error">
+                        <strong>❌ Erro:</strong> ${error.message}
+                        <div style="margin-top: 10px; font-size: 0.9rem;">
+                            Tente novamente ou verifique os dados informados
+                        </div>
+                    </div>
+                `;
             }
         }
         
         // ================================================================================
-        // 🔧 FUNÇÕES AUXILIARES
+        // 💰 SISTEMA DE CUSTOS
+        // ================================================================================
+        
+        function registrarCusto(valor, tipo) {
+            try {
+                const hoje = new Date().toLocaleDateString('pt-BR');
+                const custosHoje = JSON.parse(localStorage.getItem(`custos_${hoje}`) || '[]');
+                
+                custosHoje.push({
+                    valor: valor,
+                    tipo: tipo,
+                    timestamp: new Date().toISOString()
+                });
+                
+                localStorage.setItem(`custos_${hoje}`, JSON.stringify(custosHoje));
+                estadoGlobal.custoDia += valor;
+                estadoGlobal.orcamentosHoje += 1;
+                
+                atualizarDisplayCustos();
+                
+                console.log('💰 Custo registrado:', valor, tipo);
+            } catch (error) {
+                console.error('❌ Erro ao registrar custo:', error);
+            }
+        }
+        
+        function atualizarDisplayCustos() {
+            try {
+                const hoje = new Date().toLocaleDateString('pt-BR');
+                const custosHoje = JSON.parse(localStorage.getItem(`custos_${hoje}`) || '[]');
+                
+                const custoTotal = custosHoje.reduce((acc, item) => acc + (item.valor || 0), 0);
+                const quantidadeHoje = custosHoje.length;
+                
+                document.getElementById('custoDia').textContent = `R$ ${custoTotal.toFixed(2)}`;
+                document.getElementById('orcamentosHoje').textContent = quantidadeHoje;
+                
+                // Calcular custo do mês (últimos 30 dias)
+                let custoMes = 0;
+                for (let i = 0; i < 30; i++) {
+                    const data = new Date();
+                    data.setDate(data.getDate() - i);
+                    const dataStr = data.toLocaleDateString('pt-BR');
+                    const custosDia = JSON.parse(localStorage.getItem(`custos_${dataStr}`) || '[]');
+                    custoMes += custosDia.reduce((acc, item) => acc + (item.valor || 0), 0);
+                }
+                
+                document.getElementById('custoMes').textContent = `R$ ${custoMes.toFixed(2)}`;
+                
+            } catch (error) {
+                console.error('❌ Erro ao atualizar custos:', error);
+            }
+        }
+        
+        // ================================================================================
+        // 🔧 FUNCIONALIDADES AUXILIARES
         // ================================================================================
         
         function habilitarBotoesDicas() {
@@ -691,6 +1223,70 @@
             }
         }
         
+        async function gerarDicasDestino() {
+            try {
+                document.getElementById('secaoDicas').style.display = 'block';
+                document.getElementById('dicasIA').innerHTML = `
+                    <div class="loading">
+                        🧭 Gerando dicas personalizadas para ${estadoGlobal.ultimoDestino}...
+                    </div>
+                `;
+                
+                const dados = {
+                    prompt: `Gere dicas completas de viagem para ${estadoGlobal.ultimoDestino}. Inclua melhor época, atrações, gastronomia, dicas importantes e informações úteis para turistas.`,
+                    tipos: ['Dicas'],
+                    destino: estadoGlobal.ultimoDestino,
+                    temImagem: false
+                };
+                
+                const resultado = await enviarParaAPI(dados);
+                
+                if (resultado.success && resultado.choices?.[0]?.message?.content) {
+                    document.getElementById('dicasIA').innerText = resultado.choices[0].message.content;
+                    console.log('✅ Dicas geradas com sucesso!');
+                } else {
+                    throw new Error('Erro ao gerar dicas');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao gerar dicas:', error);
+                document.getElementById('dicasIA').innerHTML = `
+                    <div class="error">❌ Erro ao gerar dicas: ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function gerarRankingHoteis() {
+            try {
+                document.getElementById('secaoRanking').style.display = 'block';
+                document.getElementById('rankingIA').innerHTML = `
+                    <div class="loading">
+                        🏆 Gerando ranking de hotéis para ${estadoGlobal.ultimoDestino}...
+                    </div>
+                `;
+                
+                const dados = {
+                    prompt: `Crie um ranking detalhado dos melhores hotéis em ${estadoGlobal.ultimoDestino}. Inclua diferentes categorias (econômico, médio, luxo), avaliações, localização e destaques de cada hotel.`,
+                    tipos: ['Ranking'],
+                    destino: estadoGlobal.ultimoDestino,
+                    temImagem: false
+                };
+                
+                const resultado = await enviarParaAPI(dados);
+                
+                if (resultado.success && resultado.choices?.[0]?.message?.content) {
+                    document.getElementById('rankingIA').innerText = resultado.choices[0].message.content;
+                    console.log('✅ Ranking gerado com sucesso!');
+                } else {
+                    throw new Error('Erro ao gerar ranking');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao gerar ranking:', error);
+                document.getElementById('rankingIA').innerHTML = `
+                    <div class="error">❌ Erro ao gerar ranking: ${error.message}</div>
+                `;
+            }
+        }
+        
         function copiarTexto(elementId) {
             const elemento = document.getElementById(elementId);
             if (!elemento) {
@@ -701,7 +1297,7 @@
             
             const texto = elemento.innerText || elemento.textContent;
             
-            if (!texto || texto.trim() === '' || texto.includes('Nenhum conteúdo')) {
+            if (!texto || texto.trim() === '' || texto.includes('Aguardando')) {
                 alert('⚠️ Não há conteúdo para copiar!');
                 return;
             }
@@ -710,15 +1306,17 @@
                 console.log('✅ Texto copiado:', texto.length, 'caracteres');
                 
                 // Feedback visual
-                const btnCopy = event.target;
-                const textoOriginal = btnCopy.innerHTML;
-                btnCopy.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                btnCopy.style.background = '#28a745';
-                
-                setTimeout(() => {
-                    btnCopy.innerHTML = textoOriginal;
-                    btnCopy.style.background = '#17a2b8';
-                }, 2000);
+                const botoesCopy = document.querySelectorAll(`button[onclick*="${elementId}"]`);
+                botoesCopy.forEach(btn => {
+                    const textoOriginal = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    btn.style.background = 'linear-gradient(135deg, #28a745 0%, #20a139 100%)';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = textoOriginal;
+                        btn.style.background = '';
+                    }, 2000);
+                });
                 
             }).catch(err => {
                 console.error('❌ Erro ao copiar:', err);
@@ -730,14 +1328,15 @@
         // 🎯 LOG FINAL
         // ================================================================================
         
-        console.log('🎯 Sistema v7.0 totalmente integrado e funcionando!');
-        console.log('📋 Funcionalidades:');
-        console.log('- ✅ Análise inteligente de tipos');
-        console.log('- ✅ Templates especializados');
-        console.log('- ✅ Formatação profissional');
-        console.log('- ✅ IA Dual (OpenAI + Claude)');
-        console.log('- ✅ Processamento de imagens');
-        console.log('- ✅ Sistema de validação');
+        console.log('🎯 CVC Itaqua v7.0 totalmente carregado!');
+        console.log('📋 Funcionalidades ativas:');
+        console.log('- ✅ Interface CVC modernizada');
+        console.log('- ✅ Checkboxes totalmente clicáveis');
+        console.log('- ✅ Campos dinâmicos para crianças');
+        console.log('- ✅ Estimador de custos em tempo real');
+        console.log('- ✅ Upload de imagens e PDFs');
+        console.log('- ✅ Geração de dicas e rankings');
+        console.log('- ✅ Sistema de cópia funcionando');
         console.log('- ✅ Debug completo habilitado');
         
     </script>
