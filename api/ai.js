@@ -1,636 +1,740 @@
-// ================================================================================
-// 🚀 CVC ITAQUA API v7.0 - VERCEL FUNCTIONS COMPLETO
-// ================================================================================
+// 🚀 api/ai.js - SISTEMA BACKEND CVC ITAQUA v7.0
+// Sistema modular integrado + Custos corrigidos + Debug permanente
+// Arquitetura limpa - Sem duplicatas
 
-console.log("🚀 INICIANDO CVC ITAQUA API v7.0 - VERCEL");
+export default async function handler(req, res) {
+  console.log("🚀 CVC ITAQUA API v7.0 - Processando requisição");
+  console.log("📊 Método:", req.method, "| Timestamp:", new Date().toISOString());
 
-// ================================================================================
-// 🎯 CONFIGURAÇÕES
-// ================================================================================
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-const CONFIG = {
-  versao: '7.0.0',
-  modelos: {
-    principal: 'gpt-4o-mini',
-    imagem: 'claude-3-5-sonnet-20240620',
-    premium: 'gpt-4o'
-  },
-  precos: {
-    'gpt-4o': { input: 0.005, output: 0.015 },
-    'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-    'claude-3-5-sonnet-20240620': { input: 0.003, output: 0.015 }
-  },
-  limites: {
-    max_tokens: 2500,
-    timeout: 30000
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
-};
 
-// ================================================================================
-// 🗺️ AEROPORTOS
-// ================================================================================
-
-const AEROPORTOS = {
-  'CGH': 'Congonhas', 'GRU': 'Guarulhos', 'VCP': 'Viracopos',
-  'SDU': 'Santos Dumont', 'GIG': 'Galeão', 
-  'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha',
-  'CWB': 'Curitiba', 'IGU': 'Foz do Iguaçu', 
-  'REC': 'Recife', 'FOR': 'Fortaleza', 'SSA': 'Salvador',
-  'MAO': 'Manaus', 'BEL': 'Belém', 'CGB': 'Cuiabá',
-  'CGR': 'Campo Grande', 'AJU': 'Aracaju', 'MCZ': 'Maceió',
-  'JPA': 'João Pessoa', 'NAT': 'Natal', 'THE': 'Teresina',
-  'SLZ': 'São Luís', 'VIX': 'Vitória', 'FLN': 'Florianópolis',
-  'POA': 'Porto Alegre', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus'
-};
-
-// ================================================================================
-// 🔍 ANÁLISE DE CONTEÚDO
-// ================================================================================
-
-function analisarConteudo(prompt, tipos, temImagem) {
-  console.log('[ANALISE] 🔍 Iniciando análise...');
-  
-  const texto = prompt.toLowerCase();
-  
-  const analise = {
-    tipo: 'aereo',
-    multiplasOpcoes: texto.includes('opção 1') || texto.includes('plano 1') || texto.includes('**opção'),
-    temEscalas: texto.includes('escala') || texto.includes('conexão'),
-    temCruzeiro: texto.includes('cruzeiro') || texto.includes('cabine') || texto.includes('navio'),
-    temPacote: texto.includes('pacote') || (texto.includes('hotel') && texto.includes('aéreo')),
-    complexidade: temImagem ? 'alta' : 'media',
-    numeroOpcoes: contarOpcoes(texto)
-  };
-  
-  // Determinar tipo principal
-  if (analise.temCruzeiro) {
-    analise.tipo = 'cruzeiro';
-  } else if (analise.temPacote) {
-    analise.tipo = 'pacote';
-  } else if (analise.multiplasOpcoes) {
-    analise.tipo = analise.numeroOpcoes >= 3 ? 'multiplasOpcoes3' : 'multiplasOpcoes2';
-  } else if (analise.temEscalas) {
-    analise.tipo = 'aereoConexao';
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Método não permitido',
+      versao: '7.0'
+    });
   }
-  
-  console.log('[ANALISE] Tipo:', analise.tipo, 'Múltiplas:', analise.multiplasOpcoes);
-  return analise;
-}
 
-function contarOpcoes(texto) {
-  const opcoes = texto.match(/opção \d+|plano \d+|\*\*opção \d+/gi) || [];
-  const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
-  return Math.max(opcoes.length, Math.min(precos.length, 3), 1);
+  try {
+    console.log("📥 Dados recebidos:", {
+      body: !!req.body,
+      tipo: req.body?.tipo,
+      versao: req.body?.versao
+    });
+
+    const { formData, tipo, versao } = req.body;
+
+    if (!formData || !tipo) {
+      throw new Error("Dados obrigatórios ausentes (formData, tipo)");
+    }
+
+    console.log("🎯 Processando:", tipo, "| Destino:", formData.destino);
+
+    // Processar baseado no tipo
+    let resultado;
+    switch (tipo) {
+      case 'orcamento':
+        resultado = await processarOrcamento(formData);
+        break;
+      case 'ranking':
+        resultado = await processarRanking(formData);
+        break;
+      case 'dicas':
+        resultado = await processarDicas(formData);
+        break;
+      case 'analise':
+        resultado = await processarAnalise(formData);
+        break;
+      default:
+        throw new Error(`Tipo não suportado: ${tipo}`);
+    }
+
+    console.log("✅ Processamento concluído com sucesso");
+    
+    return res.status(200).json({
+      success: true,
+      result: resultado,
+      versao: '7.0',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error("❌ Erro no processamento:", error);
+    
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+      versao: '7.0',
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 // ================================================================================
-// 🎯 TEMPLATES
+// 🎯 PROCESSADORES ESPECIALIZADOS
 // ================================================================================
 
-function selecionarTemplate(analise, tipos) {
-  console.log('[TEMPLATE] Selecionando para tipo:', analise.tipo);
+async function processarOrcamento(formData) {
+  console.log("🎯 Iniciando processamento de orçamento...");
   
-  const templates = {
-    'aereo': 'AÉREO NACIONAL SIMPLES',
-    'aereoConexao': 'AÉREO COM CONEXÃO',
-    'multiplasOpcoes2': 'MÚLTIPLAS OPÇÕES (2)',
-    'multiplasOpcoes3': 'MÚLTIPLAS OPÇÕES (3)',
-    'cruzeiro': 'CRUZEIRO',
-    'pacote': 'PACOTE COMPLETO'
-  };
+  // ETAPA 1: Análise completa dos dados
+  const analise = analisarTextoCompleto(formData);
+  console.log("📊 Análise:", analise);
+  
+  // ETAPA 2: Selecionar template otimizado
+  const template = selecionarTemplate(formData, analise);
+  console.log("📋 Template selecionado:", template.tipo);
+  
+  // ETAPA 3: Gerar prompt final
+  const prompt = construirPromptFinal(formData, analise, template);
+  
+  // ETAPA 4: Determinar melhor modelo
+  const modelo = determinarModelo(analise.complexidade);
+  console.log("🤖 Modelo selecionado:", modelo);
+  
+  // ETAPA 5: Chamar IA
+  const resposta = await chamarIA(prompt, modelo);
+  
+  // ETAPA 6: Processar resposta
+  const resultado = processarResposta(resposta, analise);
+  
+  // ETAPA 7: Calcular e registrar custos (CORRIGIDO)
+  await registrarCustos(prompt, resposta, modelo, formData.destino);
+  
+  return resultado;
+}
+
+async function processarRanking(formData) {
+  console.log("🏨 Processando ranking de hotéis...");
+  
+  const prompt = construirPromptRanking(formData.destino);
+  const resposta = await chamarIA(prompt, 'gpt-4o-mini');
+  
+  await registrarCustos(prompt, resposta, 'gpt-4o-mini', formData.destino);
+  
+  return resposta;
+}
+
+async function processarDicas(formData) {
+  console.log("💡 Processando dicas de destino...");
+  
+  const prompt = construirPromptDicas(formData.destino);
+  const resposta = await chamarIA(prompt, 'gpt-4o-mini');
+  
+  await registrarCustos(prompt, resposta, 'gpt-4o-mini', formData.destino);
+  
+  return resposta;
+}
+
+async function processarAnalise(formData) {
+  console.log("📄 Processando análise de PDF...");
+  
+  const prompt = construirPromptAnalise(formData);
+  const resposta = await chamarIA(prompt, 'gpt-4o');
+  
+  await registrarCustos(prompt, resposta, 'gpt-4o', 'Análise PDF');
+  
+  return resposta;
+}
+
+// ================================================================================
+// 🧠 SISTEMA DE ANÁLISE INTELIGENTE
+// ================================================================================
+
+function analisarTextoCompleto(formData) {
+  const textoCompleto = `${formData.observacoes} ${formData.textoColado}`.trim();
+  
+  console.log("🔍 Analisando texto completo...");
+  
+  // Análise de múltiplas opções
+  const multiplasOpcoes = detectarMultiplasOpcoes(textoCompleto);
+  
+  // Análise de ida e volta
+  const idaVolta = detectarIdaVolta(textoCompleto);
+  
+  // Análise de complexidade
+  const complexidade = calcularComplexidade(textoCompleto, formData);
+  
+  // Análise de tipo específico
+  const tipoEspecifico = detectarTipoEspecifico(formData.tipos, textoCompleto);
   
   return {
-    nome: templates[analise.tipo] || templates['aereo'],
-    tipo: analise.tipo
+    multiplasOpcoes,
+    idaVolta,
+    complexidade,
+    tipoEspecifico,
+    temImagem: formData.temImagem,
+    tamanhoTexto: textoCompleto.length
   };
 }
 
-function construirPrompt(prompt, template, analise, tipos, temImagem) {
-  console.log('[PROMPT] Construindo para template:', template.nome);
-  
-  let promptFinal = `Crie um orçamento profissional CVC Itaqua baseado nestas informações:\n\n${prompt}\n\n`;
-  
-  // Template específico por tipo
-  switch (template.tipo) {
-    case 'multiplasOpcoes2':
-    case 'multiplasOpcoes3':
-      promptFinal += gerarTemplateMultiplasOpcoes(analise.numeroOpcoes);
-      break;
-    case 'cruzeiro':
-      promptFinal += gerarTemplateCruzeiro();
-      break;
-    case 'pacote':
-      promptFinal += gerarTemplatePacote();
-      break;
-    case 'aereoConexao':
-      promptFinal += gerarTemplateConexao();
-      break;
-    default:
-      promptFinal += gerarTemplateAereoSimples();
-  }
-  
-  promptFinal += `\n\nREGRAS OBRIGATÓRIAS:\n`;
-  promptFinal += `1. ⏰ HORÁRIOS: "06:20" (NUNCA "06: 20")\n`;
-  promptFinal += `2. ✈️ AEROPORTOS: CGH → Congonhas, GRU → Guarulhos\n`;
-  promptFinal += `3. 💰 VALORES: "R$ 1.234,56" (espaço após R$)\n`;
-  promptFinal += `4. 👥 PASSAGEIROS: "02 adultos" (zero à esquerda)\n`;
-  promptFinal += `5. 📅 SEPARADOR: "--" entre ida e volta\n`;
-  promptFinal += `6. 🧹 REMOVER cabeçalhos técnicos\n`;
-  promptFinal += `7. 📱 FORMATO limpo para WhatsApp\n\n`;
-  
-  promptFinal += `RESPONDA APENAS COM O ORÇAMENTO FORMATADO, SEM EXPLICAÇÕES.`;
-  
-  return promptFinal;
-}
-
-function gerarTemplateAereoSimples() {
-  return `TEMPLATE - AÉREO SIMPLES:
-
-*[COMPANHIA]*
-[DD/MM] - [ORIGEM] [HH:MM] / [DESTINO] [HH:MM] ([TIPO_VOO])
---
-[DD/MM] - [DESTINO] [HH:MM] / [ORIGEM] [HH:MM] ([TIPO_VOO])
-
-💰 R$ [VALOR] para [PASSAGEIROS]
-✅ Só mala de mão incluída
-🏷️ Não reembolsável`;
-}
-
-function gerarTemplateMultiplasOpcoes(numeroOpcoes) {
-  return `TEMPLATE - MÚLTIPLAS OPÇÕES:
-
-*[COMPANHIA]*
-[DD/MM] - [ORIGEM] [HH:MM] / [DESTINO] [HH:MM] ([TIPO_VOO])
---
-[DD/MM] - [DESTINO] [HH:MM] / [ORIGEM] [HH:MM] ([TIPO_VOO])
-
-💰 **OPÇÃO 1** - R$ [VALOR_1]
-✅ Só mala de mão incluída
-
-💰 **OPÇÃO 2** - R$ [VALOR_2]
-✅ Mala de mão + bagagem despachada
-✅ Cancelamento/alteração com multas
-
-${numeroOpcoes >= 3 ? `💰 **OPÇÃO 3** - R$ [VALOR_3]
-✅ Mala de mão + 2 bagagens despachadas
-✅ Reembolsável conforme regras do bilhete
-✅ Marcação de assento` : ''}
-
-Valores sujeitos a confirmação e disponibilidade`;
-}
-
-function gerarTemplateCruzeiro() {
-  return `TEMPLATE - CRUZEIRO:
-
-🚢 *Cruzeiro [NAVIO]* – [X] noites
-Para: [PASSAGEIROS]
-📅 Embarque: [DD/MM] ([PORTO])
-
-💰 *Opções de Cabines:*
-**CABINE INTERNA** - R$ [VALOR_1] ([OCUPAÇÃO])
-**CABINE EXTERNA** - R$ [VALOR_2] ([OCUPAÇÃO])
-**CABINE COM VARANDA** - R$ [VALOR_3] ([OCUPAÇÃO])
-
-✅ Inclui: hospedagem a bordo, pensão completa, entretenimento
-🚫 Não inclui: taxas portuárias, bebidas, excursões
-📋 Documentação: RG original (máx. 10 anos) ou passaporte
-
-📲 Me chama pra garantir a sua cabine! 🌴🛳️`;
-}
-
-function gerarTemplatePacote() {
-  return `TEMPLATE - PACOTE COMPLETO:
-
-*Pacote [DESTINO]*
-Pacote para [PASSAGEIROS]
-
-*O Pacote Inclui:*
-- Passagem Aérea ida e volta
-- Taxas de Embarque
-- Traslado Aeroporto / Hotel / Aeroporto
-- [X] noites de hospedagem
-
-✈️ *Voos [COMPANHIA]:*
-[DD/MM] - [ORIGEM] [HH:MM] / [DESTINO] [HH:MM] ([TIPO_VOO])
---
-[DD/MM] - [DESTINO] [HH:MM] / [ORIGEM] [HH:MM] ([TIPO_VOO])
-
-**OPÇÃO 1** - [HOTEL_1]
-💰 R$ [VALOR_1] para [PASSAGEIROS]
-
-**OPÇÃO 2** - [HOTEL_2]
-💰 R$ [VALOR_2] para [PASSAGEIROS]
-
-Valores sujeitos a confirmação e disponibilidade`;
-}
-
-function gerarTemplateConexao() {
-  return `TEMPLATE - CONEXÃO DETALHADA:
-
-*[COMPANHIA]*
-[DD/MM] - [ORIGEM] [HH:MM] / [CONEXÃO] [HH:MM] (voo direto)
-(conexão em [CONEXÃO] - [TEMPO] de espera)
-[DD/MM] - [CONEXÃO] [HH:MM] / [DESTINO] [HH:MM] (voo direto)
---
-[DD/MM] - [DESTINO] [HH:MM] / [ORIGEM] [HH:MM] ([TIPO_VOO])
-
-💰 R$ [VALOR] para [PASSAGEIROS]
-✅ Só mala de mão incluída
-🏷️ Não reembolsável`;
-}
-
-// ================================================================================
-// 🔧 PROCESSAMENTO
-// ================================================================================
-
-function processarResposta(conteudo) {
-  console.log('[PROCESSAMENTO] 🔧 Aplicando formatação...');
-  
-  if (!conteudo) {
-    return "Erro: Resposta vazia da IA";
-  }
-  
-  let processado = conteudo;
-  
-  try {
-    // 1. Remover cabeçalhos técnicos
-    processado = removerCabecalhos(processado);
-    
-    // 2. Aplicar formatação
-    processado = aplicarFormatacao(processado);
-    
-    // 3. Converter aeroportos
-    processado = converterAeroportos(processado);
-    
-    // 4. Limpar para WhatsApp
-    processado = limparParaWhatsApp(processado);
-    
-    console.log('[PROCESSAMENTO] ✅ Processado:', processado.length, 'caracteres');
-    return processado;
-    
-  } catch (error) {
-    console.error('[PROCESSAMENTO] ❌ Erro:', error);
-    return conteudo; // Retorna original se der erro
-  }
-}
-
-function removerCabecalhos(conteudo) {
-  const padroesRemover = [
-    /^ORÇAMENTO CVC ITAQUA[^\n]*\n?/gim,
-    /^TEMPLATE[^\n]*\n?/gim,
-    /^REGRAS[^\n]*\n?/gim,
-    /^\d+\.\s*[⏰📅✈️🛫💳👥🧳][^\n]*\n?/gim
+function detectarMultiplasOpcoes(texto) {
+  const indicadores = [
+    /opção\s+\d+/gi,
+    /alternativa\s+\d+/gi,
+    /\d+º?\s*-\s*(voo|passagem)/gi,
+    /r\$\s*\d+[\.,]\d+.*r\$\s*\d+[\.,]\d+/gi
   ];
   
-  let limpo = conteudo;
-  padroesRemover.forEach(padrao => {
-    limpo = limpo.replace(padrao, '');
-  });
+  const deteccoes = indicadores.map(regex => (texto.match(regex) || []).length);
+  const total = deteccoes.reduce((a, b) => a + b, 0);
   
-  return limpo.replace(/\n\s*\n\s*\n+/g, '\n\n').trim();
+  return {
+    detectado: total >= 2,
+    quantidade: Math.max(...deteccoes, 1),
+    confianca: Math.min(total / 4, 1)
+  };
 }
 
-function aplicarFormatacao(conteudo) {
-  let formatado = conteudo;
+function detectarIdaVolta(texto) {
+  const indicadoresIda = /\b(ida|saída|partida|embarque)\b/gi;
+  const indicadoresVolta = /\b(volta|retorno|chegada|regresso)\b/gi;
   
-  // Horários
-  formatado = formatado.replace(/(\d{1,2})\s*:\s*(\d{2})/g, '$1:$2');
-  formatado = formatado.replace(/\b(\d):/g, '0$1:');
+  const temIda = indicadoresIda.test(texto);
+  const temVolta = indicadoresVolta.test(texto);
   
-  // Valores
-  formatado = formatado.replace(/R\$(\d)/g, 'R$ $1');
+  // Detectar datas diferentes
+  const datas = texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{2,4})?/g) || [];
+  const datasUnicas = [...new Set(datas)];
   
-  // Passageiros
-  formatado = formatado.replace(/\b(\d) adulto/g, '0$1 adulto');
-  formatado = formatado.replace(/\b(\d) adultos/g, '0$1 adultos');
-  
-  return formatado;
+  return {
+    detectado: (temIda && temVolta) || datasUnicas.length >= 2,
+    temIndicadores: temIda && temVolta,
+    quantidadeDatas: datasUnicas.length
+  };
 }
 
-function converterAeroportos(conteudo) {
-  let convertido = conteudo;
+function calcularComplexidade(texto, formData) {
+  let pontos = 0;
   
-  Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
-    const regex = new RegExp(`\\b${codigo}\\b`, 'gi');
-    convertido = convertido.replace(regex, nome);
-  });
+  // Fatores de complexidade
+  if (texto.length > 500) pontos += 2;
+  if (formData.tipos.length > 1) pontos += 1;
+  if (formData.temImagem) pontos += 1;
+  if (detectarMultiplasOpcoes(texto).detectado) pontos += 2;
+  if ((texto.match(/\d{2}:\d{2}/g) || []).length > 4) pontos += 1;
+  if ((texto.match(/[A-Z]{3}/g) || []).length > 2) pontos += 1;
   
-  return convertido;
+  if (pontos <= 2) return 'simples';
+  if (pontos <= 5) return 'media';
+  return 'alta';
 }
 
-function limparParaWhatsApp(conteudo) {
-  let limpo = conteudo;
+function detectarTipoEspecifico(tipos, texto) {
+  const deteccoes = {
+    cruzeiro: /\b(cruzeiro|navio|msc|costa)\b/gi.test(texto),
+    hotel: /\b(hotel|resort|pousada|hostel)\b/gi.test(texto),
+    aereo: /\b(voo|passagem|aéreo|airline)\b/gi.test(texto),
+    pacote: /\b(pacote|combo|all inclusive)\b/gi.test(texto)
+  };
   
-  // Remover espaços extras
-  limpo = limpo.replace(/\n{3,}/g, '\n\n');
-  limpo = limpo.replace(/\n\s+/g, '\n');
-  limpo = limpo.replace(/\s+\n/g, '\n');
+  const tipoDetectado = Object.keys(deteccoes).find(tipo => deteccoes[tipo]);
   
-  return limpo.trim();
+  return {
+    principal: tipoDetectado || 'aereo',
+    deteccoes,
+    baseadoEm: tipoDetectado ? 'texto' : 'tipos_selecionados'
+  };
 }
 
 // ================================================================================
-// 🤖 SISTEMA DE IA
+// 📋 SISTEMA DE TEMPLATES OTIMIZADO
 // ================================================================================
 
-function selecionarModelo(temImagem, complexidade) {
-  if (temImagem) {
-    return {
-      modelo: CONFIG.modelos.imagem,
-      estrategia: 'Claude para imagem',
-      fallback: CONFIG.modelos.premium
-    };
-  } else if (complexidade === 'alta') {
-    return {
-      modelo: CONFIG.modelos.premium,
-      estrategia: 'GPT-4o para alta complexidade',
-      fallback: CONFIG.modelos.principal
-    };
-  } else {
-    return {
-      modelo: CONFIG.modelos.principal,
-      estrategia: 'GPT-4o-mini para eficiência',
-      fallback: CONFIG.modelos.premium
-    };
+function selecionarTemplate(formData, analise) {
+  console.log("📋 Selecionando template otimizado...");
+  
+  // Prioridade 1: Cruzeiros
+  if (analise.tipoEspecifico.principal === 'cruzeiro' || 
+      formData.tipos.some(t => t.toLowerCase().includes('cruzeiro'))) {
+    return { tipo: 'cruzeiro', template: TEMPLATE_CRUZEIRO };
+  }
+  
+  // Prioridade 2: Múltiplas opções
+  if (analise.multiplasOpcoes.detectado) {
+    return { tipo: 'multiplas_opcoes', template: TEMPLATE_MULTIPLAS_OPCOES };
+  }
+  
+  // Prioridade 3: Ida e volta
+  if (analise.idaVolta.detectado) {
+    return { tipo: 'ida_volta', template: TEMPLATE_IDA_VOLTA };
+  }
+  
+  // Prioridade 4: Hotel
+  if (analise.tipoEspecifico.principal === 'hotel' || 
+      formData.tipos.some(t => t.toLowerCase().includes('hotel'))) {
+    return { tipo: 'hotel', template: TEMPLATE_HOTEL };
+  }
+  
+  // Template padrão
+  return { tipo: 'ida_volta', template: TEMPLATE_IDA_VOLTA };
+}
+
+// Templates específicos
+const TEMPLATE_IDA_VOLTA = `
+ORÇAMENTO CVC ITAQUAQUECETUBA - IDA E VOLTA
+
+DADOS DA VIAGEM:
+{dadosViagem}
+
+INSTRUÇÕES ESPECÍFICAS:
+1. 🔍 ESTRUTURA OBRIGATÓRIA:
+   - Seção "✈️ VOO DE IDA" com data, horário e aeroportos
+   - Seção "✈️ VOO DE VOLTA" com data, horário e aeroportos
+   - Separar claramente as duas seções
+
+2. ✈️ AEROPORTOS:
+   - Converter códigos para nomes completos
+   - Ida: Origem → Destino (com escalas se houver)
+   - Volta: Destino → Origem (com escalas se houver)
+
+3. 💰 PREÇOS:
+   - Total por pessoa
+   - Total família (se múltiplos passageiros)
+   - Usar apenas valores reais fornecidos
+
+4. 🧹 FORMATAÇÃO:
+   - Sem cabeçalhos técnicos
+   - Pronto para WhatsApp
+   - Emojis apropriados
+
+GERE O ORÇAMENTO PROFISSIONAL:
+`;
+
+const TEMPLATE_MULTIPLAS_OPCOES = `
+ORÇAMENTO CVC ITAQUAQUECETUBA - MÚLTIPLAS OPÇÕES
+
+DADOS DA VIAGEM:
+{dadosViagem}
+
+INSTRUÇÕES ESPECÍFICAS:
+1. 🔢 NUMERAÇÃO CLARA:
+   - "OPÇÃO 1:", "OPÇÃO 2:", etc.
+   - Separar cada opção visualmente
+   - Apresentar TODAS as opções encontradas
+
+2. ✈️ PARA CADA OPÇÃO:
+   - Aeroportos e horários específicos
+   - Companhia aérea
+   - Escalas (se houver)
+   - Preço individual
+
+3. 💰 COMPARAÇÃO DE PREÇOS:
+   - Apresentar opções do menor para maior preço
+   - Total por pessoa para cada opção
+   - Destacar melhor custo-benefício
+
+GERE O COMPARATIVO COMPLETO:
+`;
+
+const TEMPLATE_CRUZEIRO = `
+ORÇAMENTO CVC ITAQUAQUECETUBA - CRUZEIRO
+
+DADOS DA VIAGEM:
+{dadosViagem}
+
+INSTRUÇÕES ESPECÍFICAS:
+1. 🚢 INFORMAÇÕES DO NAVIO:
+   - Nome do navio e companhia
+   - Categoria da cabine
+   - Datas de embarque e desembarque
+
+2. 🗺️ ITINERÁRIO:
+   - Portos de parada
+   - Dias em cada destino
+   - Atividades principais
+
+3. 🍽️ INCLUSO NO PACOTE:
+   - Refeições
+   - Entretenimento
+   - Serviços inclusos
+
+GERE O ORÇAMENTO DE CRUZEIRO:
+`;
+
+const TEMPLATE_HOTEL = `
+ORÇAMENTO CVC ITAQUAQUECETUBA - HOTEL
+
+DADOS DA VIAGEM:
+{dadosViagem}
+
+INSTRUÇÕES ESPECÍFICAS:
+1. 🏨 DETALHES DO HOTEL:
+   - Nome exato e categoria
+   - Localização e região
+   - Tipo de acomodação
+
+2. 🛏️ SERVIÇOS INCLUSOS:
+   - Tipo de pensão
+   - Facilidades do hotel
+   - Atividades disponíveis
+
+3. 💰 VALORES:
+   - Preço por diária
+   - Total da estadia
+   - Taxas e impostos
+
+GERE O ORÇAMENTO HOTELEIRO:
+`;
+
+// ================================================================================
+// 🤖 SISTEMA DE IA DUAL (OpenAI + Claude)
+// ================================================================================
+
+function determinarModelo(complexidade) {
+  switch (complexidade) {
+    case 'simples':
+      return 'gpt-4o-mini';
+    case 'media':
+      return 'gpt-4o-mini';
+    case 'alta':
+      return 'gpt-4o';
+    default:
+      return 'gpt-4o-mini';
   }
 }
 
-async function chamarIA(prompt, temImagem, arquivo, modelo, fallback) {
-  console.log('[IA] 🤖 Chamando:', modelo);
+function construirPromptFinal(formData, analise, template) {
+  const dadosViagem = formatarDadosViagem(formData);
+  const promptBase = template.template.replace('{dadosViagem}', dadosViagem);
+  
+  return promptBase;
+}
+
+function formatarDadosViagem(formData) {
+  return `
+Destino: ${formData.destino}
+Adultos: ${formData.adultos}
+Crianças: ${formData.criancas}${formData.idades ? ` (idades: ${formData.idades} anos)` : ''}
+Tipos selecionados: ${formData.tipos.join(', ')}
+
+OBSERVAÇÕES:
+${formData.observacoes}
+
+${formData.textoColado ? `INFORMAÇÕES COLADAS:
+${formData.textoColado}` : ''}
+`;
+}
+
+function construirPromptRanking(destino) {
+  return `Crie um ranking dos 5 melhores hotéis em ${destino} para famílias.
+
+Formato:
+🏆 1. Nome do Hotel - ⭐⭐⭐⭐
+📍 Região/Localização
+💰 Faixa de preço aproximada
+⭐ Principais diferenciais
+
+Use informações realistas e atuais.`;
+}
+
+function construirPromptDicas(destino) {
+  return `Gere dicas personalizadas de viagem para ${destino}, focadas em famílias.
+
+Incluir:
+🌡️ Melhor época para visitar
+🎯 Atrações imperdíveis para crianças
+🍽️ Gastronomia local
+💡 Dicas importantes de segurança e saúde
+
+Seja prático e direto.`;
+}
+
+function construirPromptAnalise(formData) {
+  return `Analise este relatório da CVC e extraia:
+
+1. 📊 Principais métricas de vendas
+2. 🎯 Metas vs realizado  
+3. 🏆 Produtos mais vendidos
+4. 📈 Tendências identificadas
+5. 💡 Recomendações para melhoria
+
+Arquivo: ${formData.nomeArquivo}
+Seja objetivo e direto nas conclusões.`;
+}
+
+// ================================================================================
+// 🤖 CLIENTE DE IA UNIFICADO
+// ================================================================================
+
+async function chamarIA(prompt, modelo) {
+  console.log(`🤖 Chamando ${modelo}...`);
   
   try {
-    if (modelo.startsWith('claude')) {
-      return await chamarClaude(prompt, arquivo, modelo);
+    if (modelo.startsWith('gpt')) {
+      return await chamarOpenAI(prompt, modelo);
+    } else if (modelo.startsWith('claude')) {
+      return await chamarClaude(prompt, modelo);
     } else {
-      return await chamarOpenAI(prompt, temImagem, arquivo, modelo);
+      throw new Error(`Modelo não suportado: ${modelo}`);
     }
-  } catch (erro1) {
-    console.warn('[IA] ⚠️ Tentando fallback:', fallback);
-    try {
-      return await chamarOpenAI(prompt, temImagem, arquivo, fallback);
-    } catch (erro2) {
-      throw new Error(`Ambos os modelos falharam: ${erro1.message} | ${erro2.message}`);
+  } catch (error) {
+    console.error(`❌ Erro ao chamar ${modelo}:`, error);
+    
+    // Fallback para modelo alternativo
+    if (modelo !== 'gpt-4o-mini') {
+      console.log("🔄 Tentando fallback para gpt-4o-mini...");
+      return await chamarOpenAI(prompt, 'gpt-4o-mini');
     }
+    
+    throw error;
   }
 }
 
-async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY não configurada');
-  }
-
-  const payload = {
-    model: modelo,
-    messages: [
-      {
-        role: "system",
-        content: "Você é um especialista em criação de orçamentos de viagem profissionais da CVC. Siga EXATAMENTE as regras de formatação fornecidas."
-      },
-      {
-        role: "user",
-        content: temImagem && arquivo ? [
-          { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: arquivo } }
-        ] : prompt
-      }
-    ],
-    max_tokens: CONFIG.limites.max_tokens,
-    temperature: 0.3
-  };
-
+async function chamarOpenAI(prompt, modelo) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      model: modelo,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: modelo === 'gpt-4o' ? 4000 : 2000,
+      temperature: 0.7
+    })
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenAI API erro ${response.status}: ${errorText.substring(0, 200)}`);
+    const errorData = await response.json();
+    throw new Error(`OpenAI Error: ${errorData.error?.message || response.statusText}`);
   }
 
   const data = await response.json();
   
   if (!data.choices?.[0]?.message?.content) {
-    throw new Error('Resposta inválida da OpenAI API');
+    throw new Error("Resposta inválida da OpenAI");
   }
 
-  const tokens = {
-    input: data.usage?.prompt_tokens || 0,
-    output: data.usage?.completion_tokens || 0,
-    total: data.usage?.total_tokens || 0
-  };
-  
-  const precoModelo = CONFIG.precos[modelo] || CONFIG.precos[CONFIG.modelos.principal];
-  const custo = ((tokens.input * precoModelo.input) + (tokens.output * precoModelo.output)) * 5.2;
-  
-  return {
-    content: data.choices[0].message.content,
-    tokens,
-    custo,
-    modelo
-  };
+  return data.choices[0].message.content;
 }
 
-async function chamarClaude(prompt, arquivo, modelo) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY não configurada');
-  }
-
-  let content = prompt;
-  
-  if (arquivo) {
-    const base64Match = arquivo.match(/data:(image\/[^;]+);base64,(.+)/);
-    if (base64Match) {
-      content = [
-        { type: "text", text: prompt },
-        { 
-          type: "image", 
-          source: { 
-            type: "base64", 
-            media_type: base64Match[1], 
-            data: base64Match[2] 
-          } 
-        }
-      ];
-    }
-  }
-
+async function chamarClaude(prompt, modelo) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
       'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01'
     },
     body: JSON.stringify({
       model: modelo,
-      max_tokens: CONFIG.limites.max_tokens,
-      messages: [{ role: 'user', content }],
-      temperature: 0.3
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
     })
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Claude API erro ${response.status}: ${errorText.substring(0, 200)}`);
+    const errorData = await response.json();
+    throw new Error(`Claude Error: ${errorData.error?.message || response.statusText}`);
   }
 
   const data = await response.json();
   
   if (!data.content?.[0]?.text) {
-    throw new Error('Resposta inválida da Claude API');
+    throw new Error("Resposta inválida do Claude");
   }
 
-  const tokens = {
-    input: data.usage?.input_tokens || 0,
-    output: data.usage?.output_tokens || 0,
-    total: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
-  };
-  
-  const precoModelo = CONFIG.precos[modelo] || CONFIG.precos[CONFIG.modelos.imagem];
-  const custo = ((tokens.input * precoModelo.input) + (tokens.output * precoModelo.output)) * 5.2;
-  
-  return {
-    content: data.content[0].text,
-    tokens,
-    custo,
-    modelo
-  };
+  return data.content[0].text;
 }
 
 // ================================================================================
-// 📊 MÉTRICAS
+// 📊 PROCESSAMENTO DE RESPOSTA
 // ================================================================================
 
-function calcularMetricas(resultado, startTime, estrategia) {
-  return {
-    modelo_usado: resultado.modelo,
-    estrategia: estrategia,
-    tempo_ms: Date.now() - startTime,
-    tokens: resultado.tokens,
-    custo: {
-      usd: resultado.custo / 5.2,
-      brl: resultado.custo
-    },
-    versao: CONFIG.versao
-  };
+function processarResposta(resposta, analise) {
+  console.log("📊 Processando resposta da IA...");
+  
+  // Aplicar formatação específica baseada na análise
+  let respostaProcessada = resposta;
+  
+  // Limpeza básica
+  respostaProcessada = respostaProcessada.trim();
+  
+  // Aplicar regras de formatação específicas
+  if (analise.multiplasOpcoes.detectado) {
+    respostaProcessada = formatarMultiplasOpcoes(respostaProcessada);
+  }
+  
+  if (analise.idaVolta.detectado) {
+    respostaProcessada = formatarIdaVolta(respostaProcessada);
+  }
+  
+  return respostaProcessada;
+}
+
+function formatarMultiplasOpcoes(texto) {
+  // Garantir que opções estejam bem separadas
+  return texto.replace(/OPÇÃO (\d+)/g, '\n🔸 **OPÇÃO $1**');
+}
+
+function formatarIdaVolta(texto) {
+  // Garantir separação clara entre ida e volta
+  return texto.replace(/(VOO DE VOLTA|VOLTA)/gi, '\n✈️ **$1**');
 }
 
 // ================================================================================
-// 🎯 HANDLER PRINCIPAL
+// 💰 SISTEMA DE CUSTOS CORRIGIDO (DEBUG PERMANENTE)
 // ================================================================================
 
-export default async function handler(req, res) {
-  const startTime = Date.now();
-  
+async function registrarCustos(prompt, resposta, modelo, destino) {
   try {
-    console.log('[v7.0] 🚀 Iniciando processamento...');
+    console.log('\n🧪 === DEBUG CUSTOS PERMANENTE ===');
     
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    // Calcular tokens (aproximação)
+    const tokensInput = Math.ceil(prompt.length / 4);
+    const tokensOutput = Math.ceil(resposta.length / 4);
+    const tokensTotal = tokensInput + tokensOutput;
     
-    if (req.method === 'OPTIONS') {
-      return res.status(200).json({ message: 'CORS OK' });
-    }
+    console.log(`📥 Input: ${tokensInput} tokens`);
+    console.log(`📤 Output: ${tokensOutput} tokens`);
+    console.log(`📊 Total: ${tokensTotal} tokens`);
+    console.log(`🤖 Modelo: ${modelo}`);
     
-    if (req.method === 'GET') {
-      return res.status(200).json({
-        nome: 'CVC Itaqua API v7.0',
-        versao: CONFIG.versao,
-        status: 'OPERACIONAL',
-        funcionalidades: [
-          'Análise inteligente de tipos',
-          'Templates especializados',
-          'Formatação profissional',
-          'IA Dual (OpenAI + Claude)',
-          'Processamento de imagens',
-          'Sistema integrado completo'
-        ]
-      });
-    }
-    
-    if (req.method !== 'POST') {
-      return res.status(405).json({ 
-        success: false, 
-        error: 'Método não permitido'
-      });
-    }
-    
-    // Validação
-    if (!req.body?.prompt) {
-      return res.status(400).json({
-        success: false,
-        error: 'Prompt obrigatório'
-      });
-    }
-    
-    const { prompt, temImagem, arquivo, tipos, tipoViagem, parcelamento, camposOpcionais } = req.body;
-    console.log(`[v7.0] Processando: ${prompt.length} chars, Tipos: ${tipos?.join(', ')}, TemImagem: ${temImagem}`);
-    
-    // ETAPA 1: ANÁLISE
-    const analise = analisarConteudo(prompt, tipos, temImagem);
-    
-    // ETAPA 2: TEMPLATE
-    const template = selecionarTemplate(analise, tipos);
-    
-    // ETAPA 3: PROMPT
-    const promptFinal = construirPrompt(prompt, template, analise, tipos, temImagem);
-    
-    // ETAPA 4: IA
-    const { modelo, estrategia, fallback } = selecionarModelo(temImagem, analise.complexidade);
-    const resultado = await chamarIA(promptFinal, temImagem, arquivo, modelo, fallback);
-    
-    // ETAPA 5: PROCESSAMENTO
-    const respostaProcessada = processarResposta(resultado.content);
-    
-    // ETAPA 6: MÉTRICAS
-    const metricas = calcularMetricas(resultado, startTime, estrategia);
-    
-    console.log(`[v7.0] ✅ Concluído: ${Date.now() - startTime}ms, Modelo: ${resultado.modelo}`);
-    
-    // RESPOSTA FINAL
-    return res.status(200).json({
-      success: true,
-      choices: [{
-        message: {
-          content: respostaProcessada,
-          role: 'assistant'
-        }
-      }],
-      metricas,
-      analise: {
-        tipo: analise.tipo,
-        multiplasOpcoes: analise.multiplasOpcoes,
-        complexidade: analise.complexidade
+    // Preços corretos por modelo (por 1K tokens)
+    const precos = {
+      'gpt-4o-mini': {
+        input: 0.00015,
+        output: 0.0006
+      },
+      'gpt-4o': {
+        input: 0.0025,
+        output: 0.01
+      },
+      'claude-3-5-sonnet': {
+        input: 0.003,
+        output: 0.015
       }
+    };
+    
+    const preco = precos[modelo] || precos['gpt-4o-mini'];
+    
+    // Cálculo CORRETO
+    const custoInputUSD = (tokensInput / 1000) * preco.input;
+    const custoOutputUSD = (tokensOutput / 1000) * preco.output;
+    const custoTotalUSD = custoInputUSD + custoOutputUSD;
+    
+    // Conversão para BRL (taxa atual aproximada)
+    const taxaBRL = 5.2;
+    const custoTotalBRL = custoTotalUSD * taxaBRL;
+    
+    console.log(`💵 Custo USD: ${custoTotalUSD.toFixed(6)}`);
+    console.log(`💸 Custo BRL: R${custoTotalBRL.toFixed(6)}`);
+    
+    // Registrar na planilha Google Sheets
+    await salvarCustoNaPlanilha({
+      timestamp: new Date().toISOString(),
+      destino: destino,
+      modelo: modelo,
+      tokensInput: tokensInput,
+      tokensOutput: tokensOutput,
+      tokensTotal: tokensTotal,
+      custoUSD: custoTotalUSD.toFixed(6),
+      custoBRL: custoTotalBRL.toFixed(6),
+      promptSize: prompt.length,
+      responseSize: resposta.length
     });
+    
+    console.log('✅ Custos registrados na planilha');
+    console.log('🧪 === FIM DEBUG CUSTOS ===\n');
     
   } catch (error) {
-    console.error('[v7.0] ❌ Erro:', error);
+    console.error('❌ Erro ao registrar custos:', error);
+  }
+}
+
+async function salvarCustoNaPlanilha(dados) {
+  try {
+    // URL do Google Apps Script para registrar custos
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqOxRJNJm_X4lmD1-4v4OZYRt7E5xh0mYaX1kgRv-fGfFTU4YZM7UWQm8YrWl1B4VQ/exec';
     
-    return res.status(500).json({
-      success: false,
-      error: 'Erro interno do servidor',
-      detalhes: error.message,
-      versao: CONFIG.versao,
-      tempo_ms: Date.now() - startTime
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'registrarCusto',
+        dados: dados
+      })
     });
+    
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
+    }
+    
+    const resultado = await response.json();
+    console.log('📊 Resposta da planilha:', resultado);
+    
+  } catch (error) {
+    console.error('❌ Erro ao salvar na planilha:', error);
+    // Não interromper o fluxo principal por erro de log
   }
 }
 
 // ================================================================================
-// 🚀 LOG DE INICIALIZAÇÃO
+// 🔧 UTILITÁRIOS
 // ================================================================================
 
-console.log('✅ CVC ITAQUA API v7.0 CARREGADA E PRONTA!');
-console.log('🎯 Tipos suportados: Aéreo, Cruzeiro, Pacote, Múltiplas Opções');
-console.log('🤖 IA Dual: OpenAI + Claude configurados');
-console.log('📱 Formatação: WhatsApp ready');
-console.log('🚀 STATUS: OPERACIONAL');
+function validarDados(formData) {
+  const erros = [];
+  
+  if (!formData.destino || formData.destino.trim() === '') {
+    erros.push('Destino é obrigatório');
+  }
+  
+  if (!formData.tipos || formData.tipos.length === 0) {
+    erros.push('Selecione pelo menos um tipo de orçamento');
+  }
+  
+  if (!formData.observacoes && !formData.textoColado) {
+    erros.push('Forneça observações ou cole informações da viagem');
+  }
+  
+  return {
+    valido: erros.length === 0,
+    erros
+  };
+}
+
+function formatarTimestamp() {
+  return new Date().toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+// ================================================================================
+// 📊 LOGS E MÉTRICAS
+// ================================================================================
+
+function logMetricas(tipo, dados) {
+  console.log(`📊 MÉTRICAS - ${tipo.toUpperCase()}:`);
+  console.log(`- Timestamp: ${formatarTimestamp()}`);
+  console.log(`- Destino: ${dados.destino || 'N/A'}`);
+  console.log(`- Tipos: ${dados.tipos?.join(', ') || 'N/A'}`);
+  console.log(`- Tem imagem: ${dados.temImagem ? 'Sim' : 'Não'}`);
+  console.log(`- Texto colado: ${dados.textoColado ? dados.textoColado.length + ' chars' : 'Não'}`);
+}
+
+console.log("✅ CVC ITAQUA API v7.0 carregada - Sistema completo integrado!");
