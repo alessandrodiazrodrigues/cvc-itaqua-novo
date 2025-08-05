@@ -12,7 +12,7 @@ import { analisarTextoCompleto, detectarComplexidade, avaliarTipoOrcamento } fro
 import { processarRespostaFinal, aplicarFormatacaoFinal, validarOrcamentoFinal } from './modules/processing.js';
 import { construirPromptOtimizado, construirPromptRanking, construirPromptDicas } from './modules/prompts.js';
 import { calcularMetricas, validarRespostaIA, formatarTimestamp } from './modules/utils.js';
-import { PRECOS_MODELOS, RESPONSE_CONFIG, LIMITS } from './modules/config.js';
+import { IA_CONFIG, VALIDACAO_CONFIG, SISTEMA_CONFIG, DESTINOS_CONFIG } from './modules/config.js';
 
 console.log("🚀 CVC ITAQUA API v7.2 - SISTEMA MODULAR COMPLETO");
 
@@ -389,8 +389,8 @@ function validarEntrada(formData) {
   
   // Validar limites de texto
   const textoCompleto = `${formData.observacoes || ''} ${formData.textoColado || ''} ${formData.prompt || ''}`;
-  if (textoCompleto.length > LIMITS.MAX_TEXTO_LENGTH) {
-    erros.push(`Texto muito longo. Máximo: ${LIMITS.MAX_TEXTO_LENGTH} caracteres`);
+  if (textoCompleto.length > VALIDACAO_CONFIG.limites.maxPromptSize) {
+    erros.push(`Texto muito longo. Máximo: ${VALIDACAO_CONFIG.limites.maxPromptSize} caracteres`);
   }
   
   // Validar se tem conteúdo mínimo
@@ -420,32 +420,13 @@ function determinarTipoLegado(formData) {
 function extrairDestino(texto) {
   if (!texto) return null;
   
-  const cidades = {
-    'maceió': 'Maceió',
-    'recife': 'Recife', 
-    'salvador': 'Salvador',
-    'fortaleza': 'Fortaleza',
-    'natal': 'Natal',
-    'joão pessoa': 'João Pessoa',
-    'porto alegre': 'Porto Alegre',
-    'curitiba': 'Curitiba',
-    'florianópolis': 'Florianópolis',
-    'brasília': 'Brasília',
-    'rio de janeiro': 'Rio de Janeiro',
-    'belo horizonte': 'Belo Horizonte',
-    'miami': 'Miami',
-    'orlando': 'Orlando',
-    'nova york': 'Nova York',
-    'paris': 'Paris',
-    'lisboa': 'Lisboa',
-    'madrid': 'Madrid'
-  };
-  
+  // Usar mapeamento do config.js
+  const cidadesPopulares = DESTINOS_CONFIG.populares;
   const textoLower = texto.toLowerCase();
   
-  for (const [key, value] of Object.entries(cidades)) {
-    if (textoLower.includes(key)) {
-      return value;
+  for (const cidade of cidadesPopulares) {
+    if (textoLower.includes(cidade.toLowerCase())) {
+      return cidade;
     }
   }
   
@@ -477,8 +458,8 @@ async function registrarCustosAvancado(metricas, formData, tipoOperacao) {
       versaoSistema: '7.2'
     };
     
-    // URL do Google Apps Script para registro avançado
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqOxRJNJm_X4lmD1-4v4OZYRt7E5xh0mYaX1kgRv-fGfFTU4YZM7UWQm8YrWl1B4VQ/exec';
+    // URL do Google Apps Script (usar config.js)
+    const SCRIPT_URL = SISTEMA_CONFIG.urls.scriptCustos;
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
@@ -550,6 +531,8 @@ console.log("🚀 CVC ITAQUA API v7.2 - SISTEMA MODULAR COMPLETO INICIALIZADO");
 console.log("✅ Módulos carregados:");
 console.log(`📋 Templates: ${Object.keys(TEMPLATES_MANUAIS).length} layouts específicos`);
 console.log(`🤖 IA: OpenAI (${statusAPIs.openai ? 'OK' : 'FALTA KEY'}) + Claude (${statusAPIs.anthropic ? 'OK' : 'FALTA KEY'})`);
+console.log(`⚙️ Config: Sistema ${SISTEMA_CONFIG.nome} v${SISTEMA_CONFIG.versao}`);
+console.log(`✈️ Aeroportos: ${Object.keys(DESTINOS_CONFIG.aeroportos).length} mapeados`);
 console.log("🔧 Análise: Detecção automática de complexidade");
 console.log("📊 Processamento: Formatação avançada + validação");
 console.log("💰 Custos: Registro automático com métricas");
