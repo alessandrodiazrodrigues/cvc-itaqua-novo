@@ -198,25 +198,45 @@ function extractFormData(form) {
 async function callAI(formData, tipo) {
   try {
     console.log(`🔄 Chamando API backend: ${tipo}`);
+    console.log("📊 Dados sendo enviados:", { formData, tipo });
+    
+    const requestBody = {
+      formData: formData,
+      tipo: tipo,
+      versao: '7.0'
+    };
+    
+    console.log("📤 Request body:", JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        formData,
-        tipo,
-        versao: '7.0'
-      })
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+    console.log("📥 Response status:", response.status);
+    
+    const responseText = await response.text();
+    console.log("📄 Response text:", responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("❌ Erro ao fazer parse da resposta:", parseError);
+      throw new Error(`Resposta inválida do servidor: ${responseText.substring(0, 100)}`);
     }
     
-    const data = await response.json();
+    if (!response.ok) {
+      console.error("❌ Erro HTTP:", data);
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
     
     if (!data.success) {
+      console.error("❌ Erro na resposta:", data);
       throw new Error(data.error || "Resposta inválida da API");
     }
     
