@@ -1046,54 +1046,93 @@
             return dados;
         }
         
-        // ================================================================================
-        // 📡 COMUNICAÇÃO COM API
+   // ================================================================================
+        // 📡 COMUNICAÇÃO COM API CORRIGIDA v7.1
         // ================================================================================
         
         async function enviarParaAPI(dados) {
-            console.log('[v7.0] 🚀 Enviando dados:', dados);
+            console.log('[v7.1] 🚀 Enviando dados:', dados);
             
             try {
+                // Estrutura corrigida para API v7.1
+                const requestBody = {
+                    formData: {
+                        destino: dados.destino || '',
+                        adultos: dados.adultos || '2',
+                        criancas: dados.numCriancas || '0',
+                        idades: dados.idadesCriancas?.join(', ') || '',
+                        observacoes: dados.observacoes || '',
+                        textoColado: dados.textoColado || '',
+                        prompt: dados.prompt || '',
+                        tipos: dados.tipos || ['Aéreo Nacional'],
+                        temImagem: dados.temImagem || false,
+                        arquivo: dados.arquivo || null
+                    },
+                    tipo: 'orcamento',
+                    versao: '7.1'
+                };
+                
+                console.log('[v7.1] 📤 Request body estruturado:', requestBody);
+                
                 const response = await fetch('/api/ai', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify(dados)
+                    body: JSON.stringify(requestBody)
                 });
                 
-                console.log('[v7.0] 📡 Response status:', response.status);
+                console.log('[v7.1] 📡 Response status:', response.status);
+                
+                // Ler resposta como texto primeiro para debug
+                const responseText = await response.text();
+                console.log('[v7.1] 📄 Response text (primeiros 300 chars):', responseText.substring(0, 300));
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('[v7.0] ❌ Erro da API:', errorText);
-                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    console.error('[v7.1] ❌ Erro HTTP:', responseText);
+                    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
                 }
                 
-                const resultado = await response.json();
-                console.log('[v7.0] ✅ Resposta recebida:', resultado);
+                // Tentar parsear JSON
+                let resultado;
+                try {
+                    resultado = JSON.parse(responseText);
+                    console.log('[v7.1] ✅ JSON parseado. Chaves:', Object.keys(resultado));
+                } catch (parseError) {
+                    console.error('[v7.1] ❌ Erro ao parsear JSON:', parseError);
+                    throw new Error(`Resposta não é JSON válido: ${responseText.substring(0, 100)}`);
+                }
+                
+                // VALIDAÇÃO CORRIGIDA - aceitar múltiplos formatos
+                if (resultado.success === false) {
+                    throw new Error(resultado.error || 'API retornou erro');
+                }
+                
+                console.log('[v7.1] ✅ Resposta recebida e validada');
                 
                 // Registrar custo se disponível
-                if (resultado.metricas?.custo?.brl) {
-                    registrarCusto(resultado.metricas.custo.brl, dados.tipos[0] || 'Orçamento');
+                if (resultado.debug?.custo || resultado.metricas?.custo?.brl) {
+                    const custo = resultado.debug?.custo || resultado.metricas.custo.brl;
+                    registrarCusto(custo, dados.tipos[0] || 'Orçamento');
                 }
                 
                 return resultado;
                 
             } catch (error) {
-                console.error('[v7.0] ❌ Erro na comunicação:', error);
+                console.error('[v7.1] ❌ Erro na comunicação:', error);
                 throw error;
             }
         }
         
         // ================================================================================
-        // 🎯 HANDLER DO FORMULÁRIO
+        // 🎯 HANDLER DO FORMULÁRIO CORRIGIDO
         // ================================================================================
         
         async function handleSubmit(event) {
             event.preventDefault();
             
-            console.log('[v7.0] 🚀 Iniciando geração de orçamento...');
+            console.log('[v7.1] 🚀 Iniciando geração de orçamento...');
             
             try {
                 // 1. Coletar dados
@@ -1111,7 +1150,7 @@
                 // 3. Mostrar loading
                 document.getElementById('orcamentoIA').innerHTML = `
                     <div class="loading">
-                        🤖 Processando com IA v7.0...
+                        🤖 Processando com IA v7.1...
                         <div style="margin-top: 10px; font-size: 0.9rem;">
                             Analisando: ${dados.tipos.join(', ')}
                         </div>
@@ -1119,28 +1158,76 @@
                 `;
                 
                 // 4. Enviar para API
-                console.log('[v7.0] 🚀 Enviando para API integrada...');
+                console.log('[v7.1] 🚀 Enviando para API integrada...');
                 const resultado = await enviarParaAPI(dados);
                 
-                // 5. Mostrar resultado
-                if (resultado.success && resultado.choices?.[0]?.message?.content) {
-                    document.getElementById('orcamentoIA').innerText = resultado.choices[0].message.content;
-                    estadoGlobal.ultimoOrcamento = resultado.choices[0].message.content;
+                // 5. VALIDAÇÃO CORRIGIDA - múltiplos formatos de resposta
+                let conteudoFinal = null;
+                
+                if (resultado.success && resultado.result) {
+                    // Formato v7.1: { success: true, result: "conteudo" }
+                    conteudoFinal = resultado.result;
+                    console.log('[v7.1] ✅ Formato v7.1 detectado');
+                    
+                } else if (resultado.choices?.[0]?.message?.content) {
+                    // Formato OpenAI: { choices: [{ message: { content: "..." }}] }
+                    conteudoFinal = resultado.choices[0].message.content;
+                    console.log('[v7.1] ✅ Formato OpenAI direto detectado');
+                    
+                } else if (resultado.content?.[0]?.text) {
+                    // Formato Claude: { content: [{ text: "..." }] }
+                    conteudoFinal = resultado.content[0].text;
+                    console.log('[v7.1] ✅ Formato Claude direto detectado');
+                    
+                } else if (typeof resultado === 'string') {
+                    // Resposta direta como string
+                    conteudoFinal = resultado;
+                    console.log('[v7.1] ✅ Resposta string direta detectada');
+                    
+                } else {
+                    // Tentar extrair conteúdo de qualquer campo
+                    conteudoFinal = resultado.message || resultado.response || resultado.output;
+                    
+                    if (!conteudoFinal) {
+                        console.error('[v7.1] ❌ Formato de resposta não reconhecido:', Object.keys(resultado));
+                        throw new Error(`Formato de resposta inválido. Chaves disponíveis: ${Object.keys(resultado).join(', ')}`);
+                    }
+                    
+                    console.log('[v7.1] ⚡ Conteúdo extraído de formato desconhecido');
+                }
+                
+                // 6. Mostrar resultado se encontrou conteúdo
+                if (conteudoFinal && conteudoFinal.trim()) {
+                    document.getElementById('orcamentoIA').innerText = conteudoFinal;
+                    estadoGlobal.ultimoOrcamento = conteudoFinal;
                     estadoGlobal.ultimoDestino = dados.destino;
                     
                     // Habilitar botões de dicas
                     habilitarBotoesDicas();
                     
-                    console.log('[v7.0] ✅ Orçamento gerado com sucesso!');
+                    console.log('[v7.1] ✅ Orçamento gerado com sucesso!');
+                    
                 } else {
-                    throw new Error('Resposta inválida da API');
+                    throw new Error('Conteúdo vazio na resposta da API');
                 }
                 
             } catch (error) {
-                console.error('[v7.0] ❌ Erro:', error);
+                console.error('[v7.1] ❌ Erro:', error);
+                
+                // Mensagem de erro mais específica
+                let mensagemErro = error.message;
+                
+                if (error.message.includes('API key')) {
+                    mensagemErro = 'Erro de configuração da IA. Contate o administrador.';
+                } else if (error.message.includes('timeout')) {
+                    mensagemErro = 'Timeout na API. Tente novamente em alguns momentos.';
+                } else if (error.message.includes('JSON')) {
+                    mensagemErro = 'Erro na resposta do servidor. Verifique os logs.';
+                }
+                
                 document.getElementById('orcamentoIA').innerHTML = `
                     <div class="error">
-                        <strong>❌ Erro:</strong> ${error.message}
+                        <strong>❌ Erro:</strong> ${mensagemErro}
                         <div style="margin-top: 10px; font-size: 0.9rem;">
                             Tente novamente ou verifique os dados informados
                         </div>
@@ -1205,7 +1292,7 @@
         }
         
         // ================================================================================
-        // 🔧 FUNCIONALIDADES AUXILIARES
+        // 🔧 FUNCIONALIDADES AUXILIARES CORRIGIDAS
         // ================================================================================
         
         function habilitarBotoesDicas() {
@@ -1241,14 +1328,28 @@
                 
                 const resultado = await enviarParaAPI(dados);
                 
-                if (resultado.success && resultado.choices?.[0]?.message?.content) {
-                    document.getElementById('dicasIA').innerText = resultado.choices[0].message.content;
-                    console.log('✅ Dicas geradas com sucesso!');
-                } else {
-                    throw new Error('Erro ao gerar dicas');
+                // Usar mesma lógica de validação da função principal
+                let conteudoFinal = null;
+                
+                if (resultado.success && resultado.result) {
+                    conteudoFinal = resultado.result;
+                } else if (resultado.choices?.[0]?.message?.content) {
+                    conteudoFinal = resultado.choices[0].message.content;
+                } else if (resultado.content?.[0]?.text) {
+                    conteudoFinal = resultado.content[0].text;
+                } else if (typeof resultado === 'string') {
+                    conteudoFinal = resultado;
                 }
+                
+                if (conteudoFinal && conteudoFinal.trim()) {
+                    document.getElementById('dicasIA').innerText = conteudoFinal;
+                    console.log('[v7.1] ✅ Dicas geradas com sucesso!');
+                } else {
+                    throw new Error('Resposta vazia para dicas');
+                }
+                
             } catch (error) {
-                console.error('❌ Erro ao gerar dicas:', error);
+                console.error('[v7.1] ❌ Erro ao gerar dicas:', error);
                 document.getElementById('dicasIA').innerHTML = `
                     <div class="error">❌ Erro ao gerar dicas: ${error.message}</div>
                 `;
@@ -1273,14 +1374,28 @@
                 
                 const resultado = await enviarParaAPI(dados);
                 
-                if (resultado.success && resultado.choices?.[0]?.message?.content) {
-                    document.getElementById('rankingIA').innerText = resultado.choices[0].message.content;
-                    console.log('✅ Ranking gerado com sucesso!');
-                } else {
-                    throw new Error('Erro ao gerar ranking');
+                // Usar mesma lógica de validação da função principal
+                let conteudoFinal = null;
+                
+                if (resultado.success && resultado.result) {
+                    conteudoFinal = resultado.result;
+                } else if (resultado.choices?.[0]?.message?.content) {
+                    conteudoFinal = resultado.choices[0].message.content;
+                } else if (resultado.content?.[0]?.text) {
+                    conteudoFinal = resultado.content[0].text;
+                } else if (typeof resultado === 'string') {
+                    conteudoFinal = resultado;
                 }
+                
+                if (conteudoFinal && conteudoFinal.trim()) {
+                    document.getElementById('rankingIA').innerText = conteudoFinal;
+                    console.log('[v7.1] ✅ Ranking gerado com sucesso!');
+                } else {
+                    throw new Error('Resposta vazia para ranking');
+                }
+                
             } catch (error) {
-                console.error('❌ Erro ao gerar ranking:', error);
+                console.error('[v7.1] ❌ Erro ao gerar ranking:', error);
                 document.getElementById('rankingIA').innerHTML = `
                     <div class="error">❌ Erro ao gerar ranking: ${error.message}</div>
                 `;
@@ -1325,10 +1440,10 @@
         }
         
         // ================================================================================
-        // 🎯 LOG FINAL
+        // 🎯 LOG FINAL ATUALIZADO
         // ================================================================================
         
-        console.log('🎯 CVC Itaqua v7.0 totalmente carregado!');
+        console.log('🎯 CVC Itaqua v7.1 totalmente carregado!');
         console.log('📋 Funcionalidades ativas:');
         console.log('- ✅ Interface CVC modernizada');
         console.log('- ✅ Checkboxes totalmente clicáveis');
@@ -1338,6 +1453,7 @@
         console.log('- ✅ Geração de dicas e rankings');
         console.log('- ✅ Sistema de cópia funcionando');
         console.log('- ✅ Debug completo habilitado');
+        console.log('- ✅ Validação de resposta corrigida v7.1');
         
     </script>
 </body>
