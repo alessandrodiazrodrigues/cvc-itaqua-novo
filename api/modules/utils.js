@@ -664,3 +664,56 @@ export default {
 };
 
 console.log('🚀 [UTILS] Sistema de Utilitários v7.7 - COMPLETO E FUNCIONAL!');
+
+
+// ================================================================================
+// 🔧 FUNÇÃO: NORMALIZAR ENTRADA (ADICIONAR AO utils.js)
+// ================================================================================
+
+export function normalizarEntrada(body) {
+  console.log('[UTILS] Normalizando entrada de dados...');
+  
+  let formData, tipo;
+
+  if (body?.formData && body?.tipo) {
+    formData = body.formData;
+    tipo = body.tipo;
+  } else if (body?.tipos || body?.observacoes) {
+    formData = body;
+    tipo = 'orcamento';
+  } else {
+    throw new Error("Formato de dados de entrada inválido");
+  }
+
+  // Normalizar tipos
+  if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
+    formData.tipos = ['Aéreo Nacional'];
+  }
+
+  // Garantir campos obrigatórios
+  formData.observacoes = formData.observacoes || '';
+  formData.textoColado = formData.textoColado || '';
+  formData.destino = formData.destino || '';
+
+  console.log(`[UTILS] ✅ Entrada normalizada: tipo=${tipo}, tipos=${formData.tipos?.length}`);
+  
+  return { formData, tipo };
+}
+
+// ================================================================================
+// ATUALIZAR EXPORTAÇÃO DEFAULT (no final do utils.js)
+// ================================================================================
+
+// Adicionar normalizarEntrada na exportação:
+export default {
+  normalizarEntrada, // 👈 ADICIONAR ESTA LINHA
+  calcularMetricas,
+  validarRespostaIA,
+  extrairInformacoes,
+  gerarRelatorioPerformance,
+  sanitizarEntrada,
+  calcularEstatisticasUso,
+  limparRecursos,
+  obterStatusSistema,
+  gerarLogEstruturado
+};
