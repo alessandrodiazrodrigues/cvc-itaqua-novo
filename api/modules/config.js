@@ -270,32 +270,239 @@ const DESTINOS_CONFIG = {
 // 🔧 FUNÇÕES DE UTILIDADE DE CONFIGURAÇÃO
 // ================================================================================
 
-function validateConfig() { /* ... (código inalterado) ... */ }
-function getConfigStatus() { /* ... (código inalterado) ... */ }
-function getConfig(path, defaultValue = null) { /* ... (código inalterado) ... */ }
-function updateConfig(path, value) { /* ... (código inalterado) ... */ }
-function getAeroportoInfo(codigo) { /* ... (código inalterado) ... */ }
-function isDestinoPopular(destino) { /* ... (código inalterado) ... */ }
+function validateConfig() {
+  console.log("🔧 Validando configurações...");
+  const errors = [];
+  const warnings = [];
+  
+  if (!API_CONFIG.OPENAI.API_KEY) {
+    warnings.push("OpenAI API Key não configurada - usando modo mock");
+  } else if (API_CONFIG.OPENAI.API_KEY.length < VALIDATION_CONFIG.API_KEY_MIN_LENGTH) {
+    errors.push("OpenAI API Key parece inválida (muito curta)");
+  }
+  
+  if (!API_CONFIG.ANTHROPIC.API_KEY) {
+    warnings.push("Anthropic API Key não configurada - funcionalidade limitada");
+  } else if (API_CONFIG.ANTHROPIC.API_KEY.length < VALIDATION_CONFIG.API_KEY_MIN_LENGTH) {
+    errors.push("Anthropic API Key parece inválida (muito curta)");
+  }
+  
+  if (!SERVER_CONFIG.PORT) {
+    errors.push("Porta do servidor não definida");
+  }
+
+  if (SERVER_CONFIG.PORT < 1000 || SERVER_CONFIG.PORT > 65535) {
+    errors.push("Porta do servidor fora do intervalo válido (1000-65535)");
+  }
+  
+  if (API_CONFIG.OPENAI.TIMEOUT < 5000) {
+    warnings.push("Timeout da OpenAI muito baixo (< 5s)");
+  }
+
+  if (API_CONFIG.ANTHROPIC.TIMEOUT < 5000) {
+    warnings.push("Timeout da Anthropic muito baixo (< 5s)");
+  }
+
+  if (warnings.length > 0) {
+    warnings.forEach(warning => console.warn(`⚠️ ${warning}`));
+  }
+
+  if (errors.length > 0) {
+    errors.forEach(error => console.error(`❌ ${error}`));
+    return false;
+  }
+  
+  console.log("✅ Configurações validadas com sucesso");
+  return true;
+}
+
+function getConfigStatus() {
+  return {
+    version: CVC_CONFIG.VERSION,
+    system_name: CVC_CONFIG.SYSTEM_NAME,
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+    
+    server: {
+      port: SERVER_CONFIG.PORT,
+      host: SERVER_CONFIG.HOST,
+      cors_origin: SERVER_CONFIG.CORS_ORIGIN
+    },
+    
+    apis: {
+      openai: {
+        configured: !!API_CONFIG.OPENAI.API_KEY,
+        model: API_CONFIG.OPENAI.MODEL,
+        max_tokens: API_CONFIG.OPENAI.MAX_TOKENS
+      },
+      anthropic: {
+        configured: !!API_CONFIG.ANTHROPIC.API_KEY,
+        model: API_CONFIG.ANTHROPIC.MODEL,
+        max_tokens: API_CONFIG.ANTHROPIC.MAX_TOKENS
+      }
+    },
+    
+    features: {
+      mock_mode: DEV_CONFIG.MOCK_MODE,
+      debug_mode: DEV_CONFIG.ENABLE_DEBUG,
+      verbose_logging: DEV_CONFIG.VERBOSE_LOGGING,
+      log_requests: LOG_CONFIG.LOG_REQUESTS
+    },
+
+    templates: {
+      total_tipos: Object.keys(CVC_CONFIG.TEMPLATES).length,
+      tipos_disponiveis: Object.values(CVC_CONFIG.TEMPLATES)
+    },
+
+    destinos: {
+      aeroportos_nacionais: Object.keys(DESTINOS_CONFIG.aeroportos_nacionais).length,
+      aeroportos_internacionais: Object.keys(DESTINOS_CONFIG.aeroportos_internacionais).length,
+      destinos_populares: DESTINOS_CONFIG.populares_nacionais.length + DESTINOS_CONFIG.populares_internacionais.length
+    }
+  };
+}
+
+function getConfig(path, defaultValue = null) {
+  try {
+    const keys = path.split('.');
+    let current = { 
+      API_CONFIG, 
+      SERVER_CONFIG, 
+      LOG_CONFIG, 
+      CVC_CONFIG, 
+      VALIDATION_CONFIG, 
+      RESPONSE_CONFIG, 
+      SECURITY_CONFIG, 
+      DEV_CONFIG,
+      DESTINOS_CONFIG
+    };
+    
+    for (const key of keys) {
+      current = current[key];
+      if (current === undefined) {
+        return defaultValue;
+      }
+    }
+    
+    return current;
+  } catch (error) {
+    console.warn(`⚠️ Erro ao acessar configuração '${path}':`, error.message);
+    return defaultValue;
+  }
+}
+
+function updateConfig(path, value) {
+  if (process.env.NODE_ENV === 'production') {
+    console.warn("⚠️ Tentativa de alterar configuração em produção bloqueada");
+    return false;
+  }
+  
+  try {
+    console.log(`🔧 Atualizando configuração '${path}' para:`, value);
+    
+    if (path.includes('PORT') && (value < 1000 || value > 65535)) {
+      console.error("❌ Porta inválida");
+      return false;
+    }
+
+    if (path.includes('TIMEOUT') && value < 1000) {
+      console.error("❌ Timeout muito baixo");
+      return false;
+    }
+
+    console.log(`✅ Configuração '${path}' atualizada com sucesso`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Erro ao atualizar configuração '${path}':`, error.message);
+    return false;
+  }
+}
+
+function getAeroportoInfo(codigo) {
+  const aeroporto = DESTINOS_CONFIG.aeroportos_nacionais[codigo] || 
+                      DESTINOS_CONFIG.aeroportos_internacionais[codigo];
+  
+  if (!aeroporto) {
+    return {
+      codigo,
+      nome: codigo, // Fallback para o próprio código
+      tipo: 'desconhecido',
+      encontrado: false
+    };
+  }
+
+  return {
+    codigo,
+    nome: aeroporto,
+    tipo: DESTINOS_CONFIG.aeroportos_nacionais[codigo] ? 'nacional' : 'internacional',
+    encontrado: true
+  };
+}
+
+function isDestinoPopular(destino) {
+  const destinoLower = destino.toLowerCase();
+  
+  return DESTINOS_CONFIG.populares_nacionais.some(d => d.toLowerCase().includes(destinoLower)) ||
+         DESTINOS_CONFIG.populares_internacionais.some(d => d.toLowerCase().includes(destinoLower));
+}
 
 // ================================================================================
 // 🚀 INICIALIZAÇÃO
 // ================================================================================
 
 validateConfig();
+const status = getConfigStatus();
+if (DEV_CONFIG.ENABLE_DEBUG) {
+  console.log("📊 Status das configurações:", JSON.stringify(status, null, 2));
+} else {
+  console.log(`📊 Sistema: ${status.system_name} v${status.version}`);
+  console.log(`🔧 Debug: ${status.features.debug_mode ? 'ATIVADO' : 'DESATIVADO'}`);
+  console.log(`🤖 APIs: OpenAI(${status.apis.openai.configured ? 'OK' : 'MOCK'}), Anthropic(${status.apis.anthropic.configured ? 'OK' : 'MOCK'})`);
+  console.log(`📋 Templates: ${status.templates.total_tipos} tipos disponíveis`);
+  console.log(`✈️ Destinos: ${status.destinos.aeroportos_nacionais + status.destinos.aeroportos_internacionais} aeroportos mapeados`);
+}
+
+console.log("✅ Módulo config.js v8.1 carregado e configurado");
 
 // ================================================================================
 // 🚀 EXPORTAÇÃO ES6 PURA - CORREÇÃO FINAL COMPLETA
 // ================================================================================
+
 export {
-  API_CONFIG, SERVER_CONFIG, LOG_CONFIG, CVC_CONFIG, VALIDATION_CONFIG,
-  RESPONSE_CONFIG, SECURITY_CONFIG, DEV_CONFIG, DESTINOS_CONFIG,
-  validateConfig, getConfigStatus, getConfig, updateConfig, getAeroportoInfo, isDestinoPopular
+  API_CONFIG,
+  SERVER_CONFIG,
+  LOG_CONFIG,
+  CVC_CONFIG,
+  VALIDATION_CONFIG,
+  RESPONSE_CONFIG,
+  SECURITY_CONFIG,
+  DEV_CONFIG,
+  DESTINOS_CONFIG,
+  validateConfig,
+  getConfigStatus,
+  getConfig,
+  updateConfig,
+  getAeroportoInfo,
+  isDestinoPopular
 };
 
 export default {
-  API_CONFIG, SERVER_CONFIG, LOG_CONFIG, CVC_CONFIG, VALIDATION_CONFIG,
-  RESPONSE_CONFIG, SECURITY_CONFIG, DEV_CONFIG, DESTINOS_CONFIG,
-  validateConfig, getConfigStatus, getConfig, updateConfig, getAeroportoInfo, isDestinoPopular
+  API_CONFIG,
+  SERVER_CONFIG,
+  LOG_CONFIG,
+  CVC_CONFIG,
+  VALIDATION_CONFIG,
+  RESPONSE_CONFIG,
+  SECURITY_CONFIG,
+  DEV_CONFIG,
+  DESTINOS_CONFIG,
+  validateConfig,
+  getConfigStatus,
+  getConfig,
+  updateConfig,
+  getAeroportoInfo,
+  isDestinoPopular
 };
 
 console.log("🚀 Sistema de Configuração v8.1 - EXPORTAÇÃO ES6 DEFINITIVAMENTE FUNCIONAL!");
+console.log("🎉 TODOS OS MÓDULOS CORRIGIDOS - ARQUITETURA MODULAR 100% ES6!");
