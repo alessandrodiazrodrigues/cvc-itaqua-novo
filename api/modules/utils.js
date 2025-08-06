@@ -1,11 +1,11 @@
-// 🔧 utils.js - UTILITÁRIOS E MÉTRICAS COMPLETOS v8.0
-// CORREÇÃO CRÍTICA: Exportação ES6 + normalizarEntrada + Sistema Avançado de Métricas
+// 🔧 utils.js - UTILITÁRIOS E MÉTRICAS COMPLETOS v8.1
+// CORREÇÃO FINAL: Removidos todos os 'export' duplicados para garantir a funcionalidade.
 // Responsável por: Cálculos, validações, logs, sanitização, estatísticas, normalização
 
-console.log("🔧 Utils v8.0 - UTILITÁRIOS COMPLETOS + NORMALIZAÇÃO + ES6 CORRIGIDA");
+console.log("🔧 Utils v8.1 - UTILITÁRIOS COMPLETOS + NORMALIZAÇÃO + ES6 CORRIGIDA");
 
 // ================================================================================
-// 📊 CONFIGURAÇÕES DE MÉTRICAS
+// 1. 📊 CONFIGURAÇÕES DE MÉTRICAS
 // ================================================================================
 
 const METRICAS_CONFIG = {
@@ -32,10 +32,11 @@ const METRICAS_CONFIG = {
 };
 
 // ================================================================================
-// 🔧 FUNÇÃO: NORMALIZAR ENTRADA (NOVA - CRÍTICA PARA ORQUESTRADOR)
+// 2. 🔧 FUNÇÃO: NORMALIZAR ENTRADA (NOVA - CRÍTICA PARA ORQUESTRADOR)
 // ================================================================================
 
-export function normalizarEntrada(body) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function normalizarEntrada(body) {
   console.log('[UTILS] Normalizando entrada de dados...');
   
   let formData, tipo;
@@ -66,10 +67,11 @@ export function normalizarEntrada(body) {
 }
 
 // ================================================================================
-// 📊 FUNÇÃO: CALCULAR MÉTRICAS COMPLETAS
+// 3. 📊 FUNÇÃO: CALCULAR MÉTRICAS COMPLETAS
 // ================================================================================
 
-export function calcularMetricas(resultado, startTime, estrategia) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function calcularMetricas(resultado, startTime, estrategia) {
   console.log('[UTILS] Calculando métricas do processamento...');
   
   const tempoTotal = Date.now() - startTime;
@@ -128,7 +130,7 @@ export function calcularMetricas(resultado, startTime, estrategia) {
 }
 
 // ================================================================================
-// 💰 FUNÇÃO: CALCULAR CUSTOS DE IA
+// 4. 💰 FUNÇÃO: CALCULAR CUSTOS DE IA
 // ================================================================================
 
 function calcularCustos(usage, modelo) {
@@ -164,10 +166,11 @@ function categorizar_eficiencia(tempo) {
 }
 
 // ================================================================================
-// ✅ FUNÇÃO: VALIDAR RESPOSTA DA IA
+// 5. ✅ FUNÇÃO: VALIDAR RESPOSTA DA IA
 // ================================================================================
 
-export function validarRespostaIA(conteudo, analise = null) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function validarRespostaIA(conteudo, analise = null) {
   const validacao = {
     isValida: true,
     problemas: [],
@@ -183,11 +186,6 @@ export function validarRespostaIA(conteudo, analise = null) {
     return validacao;
   }
   
-  // ================================================================================
-  // 🔍 VERIFICAÇÕES DE QUALIDADE
-  // ================================================================================
-  
-  // Verificar placeholders não substituídos
   const placeholders = conteudo.match(/\[[A-Z_]+\]/g);
   if (placeholders && placeholders.length > 0) {
     validacao.problemas.push(`Placeholders não substituídos: ${placeholders.join(', ')}`);
@@ -195,7 +193,6 @@ export function validarRespostaIA(conteudo, analise = null) {
     validacao.sugestoes.push('Revisar substituição de variáveis no template');
   }
   
-  // Verificar tamanho
   if (conteudo.trim().length < METRICAS_CONFIG.limites_qualidade.tamanho_minimo) {
     validacao.problemas.push('Resposta muito curta, possivelmente incompleta');
     validacao.score -= 40;
@@ -208,7 +205,6 @@ export function validarRespostaIA(conteudo, analise = null) {
     validacao.sugestoes.push('Considerar otimizar o prompt');
   }
   
-  // Verificar elementos básicos esperados
   const temCompanhia = /\*(.*?)\*/.test(conteudo);
   const temValor = /R\$\s*[\d.,]+/.test(conteudo);
   const temHorario = /\d{1,2}:\d{2}/.test(conteudo);
@@ -223,33 +219,15 @@ export function validarRespostaIA(conteudo, analise = null) {
     placeholders_encontrados: placeholders?.length || 0
   };
   
-  // Penalizar por elementos faltando
-  if (!temCompanhia) {
-    validacao.problemas.push('Companhia aérea não identificada');
-    validacao.score -= 15;
-  }
+  if (!temCompanhia) { validacao.problemas.push('Companhia aérea não identificada'); validacao.score -= 15; }
+  if (!temValor) { validacao.problemas.push('Valor em reais não encontrado'); validacao.score -= 25; }
+  if (!temHorario && analise?.tipos?.aereo) { validacao.problemas.push('Horários de voo não encontrados'); validacao.score -= 20; }
+  if (!temData && analise?.tipos?.aereo) { validacao.problemas.push('Datas de viagem não encontradas'); validacao.score -= 20; }
   
-  if (!temValor) {
-    validacao.problemas.push('Valor em reais não encontrado');
-    validacao.score -= 25;
-  }
-  
-  if (!temHorario && analise?.tipos?.aereo) {
-    validacao.problemas.push('Horários de voo não encontrados');
-    validacao.score -= 20;
-  }
-  
-  if (!temData && analise?.tipos?.aereo) {
-    validacao.problemas.push('Datas de viagem não encontradas');
-    validacao.score -= 20;
-  }
-  
-  // Verificar formatação específica
   const formatacaoProblemas = verificarFormatacao(conteudo);
   validacao.problemas.push(...formatacaoProblemas.problemas);
   validacao.score -= formatacaoProblemas.penalidade;
   
-  // Determinar se é válida
   validacao.isValida = validacao.score >= METRICAS_CONFIG.limites_qualidade.score_minimo;
   validacao.score = Math.max(0, validacao.score);
   
@@ -262,20 +240,17 @@ function verificarFormatacao(conteudo) {
   const problemas = [];
   let penalidade = 0;
   
-  // Verificar formatação de horários
   const horariosComEspaco = (conteudo.match(/\d{1,2}\s+:\s*\d{2}/g) || []).length;
   if (horariosComEspaco > 0) {
     problemas.push('Horários com espaçamento incorreto encontrados');
     penalidade += horariosComEspaco * 5;
   }
   
-  // Verificar separador ida/volta
   if (conteudo.includes('volta') && !conteudo.includes('--')) {
     problemas.push('Separador ida/volta (--) ausente');
     penalidade += 10;
   }
   
-  // Verificar parênteses duplos
   const parentesesDuplos = (conteudo.match(/\(\([^)]+\)\)/g) || []).length;
   if (parentesesDuplos > 0) {
     problemas.push('Parênteses duplos encontrados');
@@ -287,21 +262,14 @@ function verificarFormatacao(conteudo) {
 
 function calcularScoreQualidade(conteudo, analise = null) {
   let score = 100;
+  if (!/\*(.*?)\*/.test(conteudo)) score -= 15;
+  if (!/R\$\s*[\d.,]+/.test(conteudo)) score -= 25;
+  if (!/\d{1,2}:\d{2}/.test(conteudo)) score -= 20;
+  if (!/\d{1,2}\/\d{1,2}/.test(conteudo)) score -= 20;
   
-  // Elementos básicos
-  if (!/\*(.*?)\*/.test(conteudo)) score -= 15; // Sem companhia destacada
-  if (!/R\$\s*[\d.,]+/.test(conteudo)) score -= 25; // Sem valor
-  if (!/\d{1,2}:\d{2}/.test(conteudo)) score -= 20; // Sem horário
-  if (!/\d{1,2}\/\d{1,2}/.test(conteudo)) score -= 20; // Sem data
+  score -= (conteudo.match(/\d{1,2}\s+:\s*\d{2}/g) || []).length * 5;
+  score -= (conteudo.match(/\(\([^)]+\)\)/g) || []).length * 3;
   
-  // Formatação
-  const horariosComEspaco = (conteudo.match(/\d{1,2}\s+:\s*\d{2}/g) || []).length;
-  score -= horariosComEspaco * 5;
-  
-  const parentesesDuplos = (conteudo.match(/\(\([^)]+\)\)/g) || []).length;
-  score -= parentesesDuplos * 3;
-  
-  // Bonificações
   if (conteudo.includes('--') && conteudo.includes('volta')) score += 10;
   if (conteudo.match(/\*[^*]+\*/)) score += 5;
   if (conteudo.includes('💰')) score += 5;
@@ -312,10 +280,11 @@ function calcularScoreQualidade(conteudo, analise = null) {
 }
 
 // ================================================================================
-// 📊 FUNÇÃO: EXTRAIR INFORMAÇÕES ESTRUTURADAS
+// 6. 📊 FUNÇÃO: EXTRAIR INFORMAÇÕES ESTRUTURADAS
 // ================================================================================
 
-export function extrairInformacoes(conteudo) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function extrairInformacoes(conteudo) {
   console.log('[UTILS] Extraindo informações estruturadas...');
   
   const informacoes = {
@@ -349,13 +318,11 @@ function extrairCompanhias(conteudo) {
     /\*(.*?(?:gol|azul|latam|tap|copa|american|lufthansa).*?)\*/gi,
     /(?:gol|azul|latam|tap|copa|american|lufthansa)[^\n]*/gi
   ];
-  
   const companhias = new Set();
   patterns.forEach(pattern => {
     const matches = conteudo.match(pattern) || [];
     matches.forEach(match => companhias.add(match.trim()));
   });
-  
   return Array.from(companhias);
 }
 
@@ -379,13 +346,11 @@ function extrairDestinos(conteudo) {
     /(?:✈|→)\s*([A-Z][a-z\s]+)/g,
     /(?:para|destino|cidade)\s*:?\s*([A-Z][a-z\s]+)/gi
   ];
-  
   const destinos = new Set();
   patterns.forEach(pattern => {
     const matches = [...conteudo.matchAll(pattern)];
     matches.forEach(match => destinos.add(match[1].trim()));
   });
-  
   return Array.from(destinos);
 }
 
@@ -394,7 +359,6 @@ function extrairAeroportos(conteudo) {
   const encontrados = codigos.filter(codigo => 
     conteudo.toUpperCase().includes(codigo)
   );
-  
   return encontrados;
 }
 
@@ -404,10 +368,11 @@ function extrairLinks(conteudo) {
 }
 
 // ================================================================================
-// 📈 FUNÇÃO: GERAR RELATÓRIO DE PERFORMANCE
+// 7. 📈 FUNÇÃO: GERAR RELATÓRIO DE PERFORMANCE
 // ================================================================================
 
-export function gerarRelatorioPerformance(metricas, informacoes) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function gerarRelatorioPerformance(metricas, informacoes) {
   console.log('[UTILS] Gerando relatório de performance...');
   
   const relatorio = {
@@ -439,8 +404,8 @@ export function gerarRelatorioPerformance(metricas, informacoes) {
     qualidade: {
       score: metricas.qualidade,
       categoria: metricas.qualidade >= 90 ? 'excelente' : 
-                 metricas.qualidade >= 80 ? 'boa' : 
-                 metricas.qualidade >= 70 ? 'aceitavel' : 'baixa',
+                   metricas.qualidade >= 80 ? 'boa' : 
+                   metricas.qualidade >= 70 ? 'aceitavel' : 'baixa',
       tem_elementos_basicos: informacoes.companhias.length > 0 && informacoes.valores.length > 0
     }
   };
@@ -449,12 +414,12 @@ export function gerarRelatorioPerformance(metricas, informacoes) {
   
   return relatorio;
 }
-
 // ================================================================================
-// 🛠️ FUNÇÃO: SANITIZAR ENTRADA
+// 8. 🛠️ FUNÇÃO: SANITIZAR ENTRADA
 // ================================================================================
 
-export function sanitizarEntrada(texto) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function sanitizarEntrada(texto) {
   if (!texto || typeof texto !== 'string') {
     return '';
   }
@@ -490,10 +455,11 @@ export function sanitizarEntrada(texto) {
 }
 
 // ================================================================================
-// 📊 FUNÇÃO: ESTATÍSTICAS DE USO
+// 9. 📊 FUNÇÃO: ESTATÍSTICAS DE USO
 // ================================================================================
 
-export function calcularEstatisticasUso(historico) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function calcularEstatisticasUso(historico) {
   console.log(`[UTILS] Calculando estatísticas para ${historico?.length || 0} registros`);
   
   if (!Array.isArray(historico) || historico.length === 0) {
@@ -565,10 +531,11 @@ export function calcularEstatisticasUso(historico) {
 }
 
 // ================================================================================
-// 🔧 FUNÇÃO: LIMPAR RECURSOS
+// 10. 🔧 FUNÇÃO: LIMPAR RECURSOS
 // ================================================================================
 
-export function limparRecursos() {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function limparRecursos() {
   console.log('[UTILS] 🧹 Limpando recursos...');
   
   // Limpar caches se houver
@@ -585,10 +552,11 @@ export function limparRecursos() {
 }
 
 // ================================================================================
-// 📊 FUNÇÃO: STATUS DO SISTEMA
+// 11. 📊 FUNÇÃO: STATUS DO SISTEMA
 // ================================================================================
 
-export function obterStatusSistema() {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function obterStatusSistema() {
   const status = {
     timestamp: new Date().toISOString(),
     sistema: {
@@ -621,10 +589,11 @@ export function obterStatusSistema() {
 }
 
 // ================================================================================
-// 📋 FUNÇÃO: GERAR LOG ESTRUTURADO
+// 12. 📋 FUNÇÃO: GERAR LOG ESTRUTURADO
 // ================================================================================
 
-export function gerarLogEstruturado(nivel, componente, mensagem, dados = {}) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function gerarLogEstruturado(nivel, componente, mensagem, dados = {}) {
   const logEntry = {
     timestamp: new Date().toISOString(),
     nivel: nivel.toUpperCase(),
@@ -656,11 +625,8 @@ export function gerarLogEstruturado(nivel, componente, mensagem, dados = {}) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ES6 ÚNICA E COMPLETA - utils.js v8.0 CORRIGIDA
+// 13. 🚀 EXPORTAÇÃO ES6 ÚNICA E COMPLETA (v8.0)
 // ================================================================================
-// LOCALIZAÇÃO: Final do arquivo api/modules/utils.js
-// SUBSTITUA toda a seção de exportação no final do arquivo por esta:
-
 // Log de inicialização
 console.log('✅ [UTILS] Utils v8.0 carregado:');
 console.log('🔧 [UTILS] Normalização de entrada (NOVA)');
@@ -673,6 +639,10 @@ console.log('📊 [UTILS] Estatísticas de uso');
 console.log('🔧 [UTILS] Status do sistema');
 console.log('📋 [UTILS] Sistema de logs estruturados');
 console.log('🚨 [UTILS] EXPORTAÇÃO ES6 CORRIGIDA - Compatível com orquestrador v8.0');
+
+// ================================================================================
+// 14. 🚀 EXPORTAÇÃO FINAL
+// ================================================================================
 
 // EXPORTAÇÃO INDIVIDUAL COMPLETA
 export {
