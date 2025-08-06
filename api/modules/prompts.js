@@ -5,7 +5,7 @@
 console.log("🎯 Prompts v8.1 - ES6 EXPORTS CORRIGIDA");
 
 // ================================================================================
-// 🎯 CONSTRUTOR PRINCIPAL DE PROMPTS
+// 1. 🎯 CONSTRUTOR PRINCIPAL DE PROMPTS
 // ================================================================================
 
 // CORREÇÃO: Removido 'export' da linha abaixo
@@ -41,7 +41,7 @@ function gerarPromptOtimizado(formData, analise) {
 }
 
 // ================================================================================
-// 🏗️ CONSTRUÇÃO DE CONTEXTO INTELIGENTE
+// 2. 🏗️ CONSTRUÇÃO DE CONTEXTO INTELIGENTE
 // ================================================================================
 
 function construirContexto(formData, analise) {
@@ -83,7 +83,7 @@ function construirContexto(formData, analise) {
 }
 
 // ================================================================================
-// ⚙️ DETERMINAÇÃO DE ESTRATÉGIA
+// 3. ⚙️ DETERMINAÇÃO DE ESTRATÉGIA
 // ================================================================================
 
 function determinarEstrategia(analise) {
@@ -140,11 +140,10 @@ function determinarEstrategia(analise) {
 }
 
 // ================================================================================
-// 🎯 SELEÇÃO DE PROMPT POR TIPO
+// 4. 🎯 SELEÇÃO DE PROMPT POR TIPO
 // ================================================================================
 
-// SUBSTITUA A FUNÇÃO 'selecionarPromptPorTipo' EXISTENTE POR ESTA VERSÃO ATUALIZADA:
-
+// CORREÇÃO: Removido 'export' da linha abaixo
 function selecionarPromptPorTipo(tipoDetectado, contexto, estrategia) {
   console.log(`🎯 Selecionando prompt para tipo: ${tipoDetectado}`);
   
@@ -157,7 +156,7 @@ function selecionarPromptPorTipo(tipoDetectado, contexto, estrategia) {
     multitrecho: promptMultitrecho,
     multiplas_companhias_internacionais: promptMultiplasCompanhiasInternacionais,
     pacote_completo: promptPacoteCompleto,
-    hotel_somente: promptHotelSomente, // <-- ADICIONE ESTA LINHA
+    hotel_somente: promptHotelSomente,
     cruzeiro: promptCruzeiro
   };
   
@@ -166,7 +165,7 @@ function selecionarPromptPorTipo(tipoDetectado, contexto, estrategia) {
 }
 
 // ================================================================================
-// ✈️ PROMPTS ESPECÍFICOS POR TIPO (TODOS OS 9 DO MANUAL)
+// 5. ✈️ PROMPTS ESPECÍFICOS POR TIPO (TODOS OS 9 DO MANUAL)
 // ================================================================================
 
 function promptAereoNacionalSimples(contexto, estrategia) {
@@ -180,8 +179,7 @@ ANÁLISE INTELIGENTE DETECTOU:
 DADOS DA VIAGEM:
 ${contexto.observacoes}
 
-${contexto.textoColado ? `INFORMAÇÕES COMPLEMENTARES:
-${contexto.textoColado}` : ''}
+${contexto.textoColado ? `INFORMAÇÕES COMPLEMENTARES:\n${contexto.textoColado}` : ''}
 
 FORMATAÇÃO OBRIGATÓRIA - AÉREO NACIONAL SIMPLES:
 
@@ -218,8 +216,7 @@ ANÁLISE INTELIGENTE DETECTOU:
 DADOS DA VIAGEM:
 ${contexto.observacoes}
 
-${contexto.textoColado ? `INFORMAÇÕES COMPLEMENTARES:
-${contexto.textoColado}` : ''}
+${contexto.textoColado ? `INFORMAÇÕES COMPLEMENTARES:\n${contexto.textoColado}` : ''}
 
 FORMATAÇÃO OBRIGATÓRIA - CONEXÃO DETALHADA:
 
@@ -349,6 +346,10 @@ REGRAS 3 OPÇÕES:
 GERAR ORÇAMENTO COM 3 OPÇÕES:`;
 }
 
+// ================================================================================
+// 6. 🗺️ PROMPT MULTITRECHO
+// ================================================================================
+
 function promptMultitrecho(contexto, estrategia) {
   return `ORÇAMENTO CVC ITAQUA - MULTITRECHO v8.1
 
@@ -384,6 +385,10 @@ REGRAS MULTITRECHO:
 
 GERAR ORÇAMENTO MULTITRECHO:`;
 }
+
+// ================================================================================
+// 7. 🌍 PROMPT MÚLTIPLAS COMPANHIAS INTERNACIONAIS
+// ================================================================================
 
 function promptMultiplasCompanhiasInternacionais(contexto, estrategia) {
   return `ORÇAMENTO CVC ITAQUA - MÚLTIPLAS COMPANHIAS INTERNACIONAIS v8.1
@@ -423,6 +428,10 @@ REGRAS MÚLTIPLAS COMPANHIAS:
 
 GERAR ORÇAMENTO MÚLTIPLAS COMPANHIAS:`;
 }
+
+// ================================================================================
+// 8. 🏖️ PROMPT PACOTE COMPLETO
+// ================================================================================
 
 function promptPacoteCompleto(contexto, estrategia) {
   return `ORÇAMENTO CVC ITAQUA - PACOTE COMPLETO v8.1
@@ -472,6 +481,10 @@ REGRAS PACOTE:
 GERAR PACOTE COMPLETO:`;
 }
 
+// ================================================================================
+// 9. 🚢 PROMPT CRUZEIRO
+// ================================================================================
+
 function promptCruzeiro(contexto, estrategia) {
   return `ORÇAMENTO CVC ITAQUA - CRUZEIRO v8.1
 
@@ -513,7 +526,9 @@ REGRAS CRUZEIRO:
 GERAR ORÇAMENTO DE CRUZEIRO:`;
 }
 
-// ADICIONE ESTA NOVA FUNÇÃO no seu arquivo prompts.js
+// ================================================================================
+// 10. 🏨 PROMPT SOMENTE HOTEL
+// ================================================================================
 
 function promptHotelSomente(contexto, estrategia) {
   return `ORÇAMENTO CVC ITAQUA - SOMENTE HOSPEDAGEM v8.1
@@ -552,7 +567,7 @@ GERAR ORÇAMENTO DE HOSPEDAGEM:`;
 }
 
 // ================================================================================
-// 🔧 ENRIQUECIMENTO DE PROMPTS
+// 11. 🔧 ENRIQUECIMENTO DE PROMPTS
 // ================================================================================
 
 function enriquecerPrompt(promptBase, formData, analise) {
@@ -595,7 +610,7 @@ function enriquecerPrompt(promptBase, formData, analise) {
 }
 
 // ================================================================================
-// 🔧 OTIMIZAÇÃO DE PROMPTS
+// 12. 🔧 OTIMIZAÇÃO DE PROMPTS
 // ================================================================================
 
 function otimizarPromptFinal(prompt, limitesModelo) {
@@ -617,80 +632,104 @@ function otimizarPromptFinal(prompt, limitesModelo) {
 }
 
 // ================================================================================
-// 📊 GERAÇÃO DE PROMPTS ESPECIALIZADOS
+// 13. 📊 GERAÇÃO DE PROMPTS ESPECIALIZADOS
 // ================================================================================
 
 // CORREÇÃO: Removido 'export' da linha abaixo
 function gerarPromptDicasDestino(destino) {
   return `DICAS DE VIAGEM CVC ITAQUA - ${destino.toUpperCase()}
-... (conteúdo do prompt inalterado)`;
+
+GERAR 5 DICAS PRÁTICAS para viagem a ${destino}:
+
+🎯 *DICAS ESSENCIAIS - ${destino}*
+
+1. 📍 **Quando ir:** [melhor época/clima]
+2. 💰 **Orçamento:** [gastos médios por dia]
+3. 🎭 **Principais atrações:** [top 3 pontos turísticos]
+4. 🍽️ **Gastronomia:** [pratos típicos imperdíveis]
+5. 🚌 **Transporte:** [como se locomover]
+
+💡 **Dica extra:** [informação especial ou curiosidade]
+
+📲 Me chama para fechar seu pacote para ${destino}! ✈️
+
+GERAR DICAS PROFISSIONAIS:`;
 }
 
 // CORREÇÃO: Removido 'export' da linha abaixo
 function gerarPromptRankingHoteis(destino) {
   return `RANKING DE HOTÉIS CVC ITAQUA - ${destino.toUpperCase()}
-... (conteúdo do prompt inalterado)`;
+
+GERAR RANKING com 5 melhores hotéis em ${destino}:
+
+🏨 *RANKING DE HOTÉIS - ${destino}*
+
+🏆 1. **[NOME_HOTEL_1]** - ⭐⭐⭐⭐⭐
+📍 [Localização/bairro]
+💰 R$ [faixa_preco] por diária
+⭐ [principal diferencial]
+
+🏆 2. **[NOME_HOTEL_2]** - ⭐⭐⭐⭐
+📍 [Localização/bairro]
+💰 R$ [faixa_preco] por diária
+⭐ [principal diferencial]
+
+🏆 3. **[NOME_HOTEL_3]** - ⭐⭐⭐⭐
+📍 [Localização/bairro]
+💰 R$ [faixa_preco] por diária
+⭐ [principal diferencial]
+
+🏆 4. **[NOME_HOTEL_4]** - ⭐⭐⭐
+📍 [Localização/bairro]
+💰 R$ [faixa_preco] por diária
+⭐ [principal diferencial]
+
+🏆 5. **[NOME_HOTEL_5]** - ⭐⭐⭐
+📍 [Localização/bairro]
+💰 R$ [faixa_preco] por diária
+⭐ [principal diferencial]
+
+💡 **Nossa recomendação:** [hotel com melhor custo-benefício]
+
+📲 Me chama para reservar qualquer um desses hotéis! 🏨
+
+GERAR RANKING PROFISSIONAL:`;
 }
 
 // CORREÇÃO: Removido 'export' da linha abaixo
 function gerarPromptAnaliseRelatorio(dados) {
   return `ANÁLISE DE RELATÓRIO CVC ITAQUA
-... (conteúdo do prompt inalterado)`;
+
+DADOS PARA ANÁLISE:
+${JSON.stringify(dados, null, 2)}
+
+GERAR RELATÓRIO EXECUTIVO com:
+
+📊 *RELATÓRIO DE PERFORMANCE*
+
+**📈 Principais Métricas:**
+- [métrica_1]: [valor] ([variação]%)
+- [métrica_2]: [valor] ([variação]%)
+- [métrica_3]: [valor] ([variação]%)
+
+**🎯 Destaques do Período:**
+1. [destaque_positivo_1]
+2. [destaque_positivo_2]
+3. [destaque_positivo_3]
+
+**⚠️ Pontos de Atenção:**
+- [ponto_atencao_1]
+- [ponto_atencao_2]
+
+**💡 Recomendações:**
+- [recomendacao_1]
+- [recomendacao_2]
+
+GERAR ANÁLISE PROFISSIONAL:`;
 }
 
 // ================================================================================
-// 🔧 UTILITÁRIOS E VALIDAÇÃO
-// ================================================================================
-
-// CORREÇÃO: Removido 'export' da linha abaixo
-function ajustarPromptParaModelo(prompt, modelo) {
-  console.log(`🔧 Ajustando prompt para modelo: ${modelo}`);
-  // ... (código da função inalterado)
-  return prompt; // Retorno de exemplo
-}
-
-// CORREÇÃO: Removido 'export' da linha abaixo
-function validarPrompt(prompt, tipoDetectado) {
-  const validacao = { valido: true, problemas: [], sugestoes: [] };
-  // ... (código da função inalterado)
-  return validacao;
-}
-
-// ================================================================================
-// 📊 FUNÇÕES DE APOIO E MÉTRICAS
-// ================================================================================
-
-function calcularTamanhoPrompt(prompt) {
-  const caracteres = prompt.length;
-  const tokens_estimados = Math.ceil(caracteres / 4);
-  return {
-    caracteres,
-    palavras: prompt.split(/\s+/).length,
-    linhas: prompt.split('\n').length,
-    tokens_estimados,
-    categoria: tokens_estimados < 500 ? 'pequeno' : tokens_estimados < 2000 ? 'médio' : 'grande'
-  };
-}
-
-function gerarPromptFallback(formData) {
-  return `ORÇAMENTO CVC ITAQUA - FALLBACK v8.1
-... (conteúdo do prompt inalterado)`;
-}
-
-function logPromptGerado(prompt, analise, estrategia) {
-  const metricas = calcularTamanhoPrompt(prompt);
-  console.log("📊 === PROMPT GERADO v8.1 ===");
-  console.log(`🎯 Tipo: ${analise.tipoDetectado || analise.tipo_principal}`);
-  console.log(`📈 Confiança: ${((analise.confiancaDeteccao || analise.confianca_deteccao || 0) * 100).toFixed(1)}%`);
-  console.log(`🧮 Complexidade: ${analise.complexidade}`);
-  console.log(`⚙️ Estratégia: ${estrategia.foco}`);
-  console.log(`📏 Tamanho: ${metricas.caracteres} chars, ~${metricas.tokens_estimados} tokens`);
-  console.log(`📊 Categoria: ${metricas.categoria}`);
-  console.log("📊 === FIM LOG ===");
-}
-
-// ================================================================================
-// 🚀 EXPORTAÇÃO ES6 ÚNICA E CORRIGIDA
+// 14. 🚀 EXPORTAÇÃO ES6 ÚNICA E CORRIGIDA
 // ================================================================================
 console.log("✅ Prompts v8.1 carregado:");
 console.log("🎯 9 prompts específicos para TODOS os tipos do Manual CVC");
