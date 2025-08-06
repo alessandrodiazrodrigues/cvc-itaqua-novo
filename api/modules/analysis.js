@@ -128,7 +128,7 @@ function detectarTiposEspecificos(texto, contexto) {
   tipos.multiplasCompanhiasInternacionais = detectarMultiplasCompanhiasInternacionais(texto, contexto);
   
   // 8. 🏖️ PACOTE COMPLETO
-  tipos.pacoteCompleto = detectarPacoteCompleto(texto, contexto);
+  tipos.pacoteCompleto = teCompleto(texto, contexto);
   
   // 9. 🚢 CRUZEIRO
   tipos.cruzeiro = detectarCruzeiro(texto, contexto);
@@ -257,17 +257,41 @@ function detectarMultiplasCompanhiasInternacionais(texto, contexto) {
   };
 }
 
+// SUBSTITUA A FUNÇÃO 'detectarPacoteCompleto' EXISTENTE POR ESTA VERSÃO CORRIGIDA:
+
 function detectarPacoteCompleto(texto, contexto) {
+  const temInfoHotel = texto.includes('hotel') || texto.includes('resort') || texto.includes('pousada') || texto.includes('hospedagem');
+  const temInfoDuracao = texto.includes('noites') || texto.includes('diárias');
+  const temInfoAereo = texto.includes('aéreo') || texto.includes('voo') || texto.includes('passagem');
+
+  // CONDIÇÃO PARA PACOTE COMPLETO: Deve ter hotel E aéreo
+  const ePacoteCompleto = temInfoHotel && temInfoAereo && temInfoDuracao;
+
+  // CONDIÇÃO PARA SOMENTE HOTEL: Deve ter hotel e duração, MAS NÃO PODE ter aéreo
+  const eSomenteHotel = temInfoHotel && temInfoDuracao && !temInfoAereo;
+
+  if (eSomenteHotel) {
+    // Se for apenas hotel, retornamos com um tipo diferente
+    return {
+      detectado: true,
+      confianca: 0.9, // Alta confiança para este cenário
+      tipo: 'hotel_somente' // Um novo tipo específico para hotel
+    };
+  }
+
+  // Lógica original para pacote completo (agora mais estrita)
   const indicadores = [
     texto.includes('pacote'),
-    texto.includes('hotel') && (texto.includes('voo') || texto.includes('aéreo')),
-    texto.includes('traslado') || texto.includes('hospedagem'),
+    temInfoHotel && temInfoAereo,
+    texto.includes('traslado') || texto.includes('transfer'),
     texto.includes('inclui'),
     contexto?.hoteis?.length > 0
   ];
+  
   const score = indicadores.filter(Boolean).length / indicadores.length;
+  
   return {
-    detectado: score > 0.7,
+    detectado: ePacoteCompleto,
     confianca: score,
     tipo: 'pacote_completo'
   };
