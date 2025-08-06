@@ -348,6 +348,8 @@ function aplicarFormatacaoBasica(conteudo) {
 // ================================================================================
 // 🚀 EXPORTAÇÃO ÚNICA E LIMPA - CORREÇÃO DEFINITIVA
 // ================================================================================
+// LOCALIZAÇÃO: Final do arquivo api/modules/processing.js
+// SUBSTITUA toda a seção de exportação no final do arquivo por esta:
 
 console.log("✅ Processing v8.1 carregado:");
 console.log("🚨 EXPORTAÇÃO ES6 DEFINITIVAMENTE CORRIGIDA");
