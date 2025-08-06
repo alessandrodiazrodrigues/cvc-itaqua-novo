@@ -388,23 +388,13 @@ export function calcularComplexidadeAvancada(texto, formData) {
   console.log("🧮 Calculando complexidade avançada...");
   
   const fatores = {
-    // Fator quantidade de texto
-    tamanhoTexto: Math.min(texto.length / 1000, 1), // Normalizado para 0-1
-    
-    // Fator quantidade de dados estruturados
+    tamanhoTexto: Math.min(texto.length / 1000, 1),
     dadosEstruturados: calcularDadosEstruturados(texto),
-    
-    // Fator multiplicidade de opções
     multiplicidadeOpcoes: calcularMultiplicidadeOpcoes(texto),
-    
-    // Fator complexidade de roteiro
     complexidadeRoteiro: calcularComplexidadeRoteiro(texto),
-    
-    // Fator diversidade de serviços
     diversidadeServicos: calcularDiversidadeServicos(texto)
   };
   
-  // Cálculo da complexidade final (média ponderada)
   const complexidadeNumerica = (
     fatores.tamanhoTexto * 0.1 +
     fatores.dadosEstruturados * 0.3 +
@@ -413,7 +403,6 @@ export function calcularComplexidadeAvancada(texto, formData) {
     fatores.diversidadeServicos * 0.1
   );
   
-  // Classificação categórica
   let complexidadeCategoria;
   if (complexidadeNumerica < 0.3) {
     complexidadeCategoria = 'simples';
@@ -432,32 +421,29 @@ export function calcularComplexidadeAvancada(texto, formData) {
 
 function calcularDadosEstruturados(texto) {
   const elementos = [
-    (texto.match(/\d{1,2}:\d{2}/g) || []).length, // Horários
-    (texto.match(/\d{1,2}\/\d{1,2}/g) || []).length, // Datas
-    (texto.match(/r\$\s*[\d.,]+/gi) || []).length, // Preços
-    (texto.match(/\d+x\s*de/gi) || []).length // Parcelamentos
+    (texto.match(/\d{1,2}:\d{2}/g) || []).length,
+    (texto.match(/\d{1,2}\/\d{1,2}/g) || []).length,
+    (texto.match(/r\$\s*[\d.,]+/gi) || []).length,
+    (texto.match(/\d+x\s*de/gi) || []).length
   ];
-  
   const total = elementos.reduce((a, b) => a + b, 0);
-  return Math.min(total / 10, 1); // Normalizado
+  return Math.min(total / 10, 1);
 }
 
 function calcularMultiplicidadeOpcoes(texto) {
   const opcoes = (texto.match(/opção\s*\d+/gi) || []).length;
   const planos = (texto.match(/plano\s*\d+/gi) || []).length;
   const hoteis = (texto.match(/hotel\s*[^\n]*/gi) || []).length;
-  
   const total = Math.max(opcoes, planos, hoteis);
-  return Math.min(total / 5, 1); // Normalizado
+  return Math.min(total / 5, 1);
 }
 
 function calcularComplexidadeRoteiro(texto) {
   const trechos = (texto.match(/trecho\s*\d+/gi) || []).length;
   const conexoes = (texto.match(/conexão|escala/gi) || []).length;
   const aeroportos = extrairAeroportos(texto).length;
-  
   const score = (trechos * 0.4 + conexoes * 0.3 + aeroportos * 0.3) / 3;
-  return Math.min(score / 3, 1); // Normalizado
+  return Math.min(score / 3, 1);
 }
 
 function calcularDiversidadeServicos(texto) {
@@ -465,43 +451,34 @@ function calcularDiversidadeServicos(texto) {
     'bagagem', 'traslado', 'hotel', 'seguro', 'passeio',
     'refeição', 'bebida', 'spa', 'piscina', 'wifi'
   ];
-  
   const encontrados = servicos.filter(servico => texto.includes(servico)).length;
-  return encontrados / servicos.length; // Já normalizado
+  return encontrados / servicos.length;
 }
 
 // ================================================================================
 // 🔍 EXTRAÇÃO DE CONTEXTO
 // ================================================================================
 
-export function extrairContexto(texto) {
+// ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
+// A palavra "export" foi REMOVIDA da linha abaixo para corrigir o erro de exportação duplicada.
+function extrairContexto(texto) {
+// ▲▲▲ CORREÇÃO APLICADA AQUI ▲▲▲
   console.log("🔍 Extraindo contexto...");
   
   return {
-    // Aeroportos
     aeroportos: extrairAeroportos(texto),
     aeroportosNacionais: extrairAeroportosNacionais(texto),
     aeroportosInternacionais: extrairAeroportosInternacionais(texto),
-    
-    // Companhias aéreas
     companhias: extrairCompanhias(texto),
     companhiasNacionais: extrairCompanhiasNacionais(texto),
     companhiasInternacionais: extrairCompanhiasInternacionais(texto),
-    
-    // Dados temporais
     datas: extrairDatas(texto),
     horarios: extrairHorarios(texto),
     duracao: extrairDuracao(texto),
-    
-    // Dados financeiros
     precos: extrairPrecos(texto),
     parcelamentos: extrairParcelamentos(texto),
-    
-    // Serviços
     hoteis: extrairHoteis(texto),
     servicos: extrairServicos(texto),
-    
-    // Links e referências
     links: extrairLinks(texto),
     referencias: extrairReferencias(texto)
   };
@@ -615,7 +592,7 @@ function detectarPrecos(texto) {
 
 function contarPrecos(texto) {
   const precos = texto.match(/r\$\s*[\d.,]+/gi) || [];
-  return [...new Set(precos)].length; // Remove duplicatas
+  return [...new Set(precos)].length;
 }
 
 function detectarDatas(texto) {
@@ -624,7 +601,7 @@ function detectarDatas(texto) {
 
 function contarDatas(texto) {
   const datas = texto.match(/\d{1,2}\/\d{1,2}(?:\/\d{4})?/g) || [];
-  return [...new Set(datas)].length; // Remove duplicatas
+  return [...new Set(datas)].length;
 }
 
 function detectarHorarios(texto) {
@@ -633,7 +610,7 @@ function detectarHorarios(texto) {
 
 function contarHorarios(texto) {
   const horarios = texto.match(/\d{1,2}:\d{2}/g) || [];
-  return [...new Set(horarios)].length; // Remove duplicatas
+  return [...new Set(horarios)].length;
 }
 
 function detectarAeroportos(texto) {
@@ -654,12 +631,9 @@ function detectarPadroes(texto) {
   console.log("🔍 Detectando padrões de layout...");
   
   return {
-    // Layout patterns
     layoutVertical: detectarLayoutVertical(texto),
     layoutHorizontal: detectarLayoutHorizontal(texto),
     layoutTabular: detectarLayoutTabular(texto),
-    
-    // Padrões específicos CVC
     formatoCVC: texto.includes('cvc') || texto.includes('carrinho-dinamico'),
     temLinks: texto.includes('http') || texto.includes('www'),
     formatoWhatsApp: !texto.includes('ORÇAMENTO CVC') && texto.includes('💰')
@@ -669,8 +643,6 @@ function detectarPadroes(texto) {
 function detectarLayoutVertical(texto) {
   const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
   const linhasComPreco = linhas.filter(linha => linha.includes('R$'));
-  
-  // Layout vertical: preços em linhas separadas
   return linhasComPreco.length > 1 && 
          linhasComPreco.every((linha, index) => 
            index === 0 || linha !== linhasComPreco[index - 1]
@@ -680,19 +652,15 @@ function detectarLayoutVertical(texto) {
 function detectarLayoutHorizontal(texto) {
   const linhas = texto.split('\n');
   const linhasLongas = linhas.filter(linha => linha.length > 80);
-  
-  // Layout horizontal: informações em linha única longa
   return linhasLongas.length > 2;
 }
 
 function detectarLayoutTabular(texto) {
-  // Detectar padrões de tabela (múltiplas colunas alinhadas)
   const linhas = texto.split('\n');
   const linhasComSeparadores = linhas.filter(linha => 
     linha.includes('|') || linha.includes('\t') || 
     linha.match(/\s{3,}/g)?.length > 2
   );
-  
   return linhasComSeparadores.length > 3;
 }
 
@@ -703,19 +671,15 @@ function detectarLayoutTabular(texto) {
 export function determinarTipoPrincipal(tipos) {
   console.log("🎯 Determinando tipo principal...");
   
-  // Converter objetos de detecção em pontuações
   const scores = {};
-  
   Object.entries(tipos).forEach(([tipo, deteccao]) => {
     if (deteccao && typeof deteccao === 'object' && deteccao.confianca) {
       scores[tipo] = deteccao.confianca;
     }
   });
   
-  // Encontrar o tipo com maior confiança
   let tipoMaximo = null;
   let confiancaMaxima = 0;
-  
   Object.entries(scores).forEach(([tipo, confianca]) => {
     if (confianca > confiancaMaxima) {
       confiancaMaxima = confianca;
@@ -723,7 +687,6 @@ export function determinarTipoPrincipal(tipos) {
     }
   });
   
-  // Fallback para tipo padrão se nenhum atingir confiança mínima
   if (confiancaMaxima < 0.3) {
     return 'aereoNacionalSimples';
   }
@@ -735,10 +698,7 @@ function calcularConfiancaDeteccao(tipos) {
   const scores = Object.values(tipos)
     .filter(deteccao => deteccao && typeof deteccao === 'object' && deteccao.confianca)
     .map(deteccao => deteccao.confianca);
-  
   if (scores.length === 0) return 0;
-  
-  // Retorna a maior confiança encontrada
   return Math.max(...scores);
 }
 
@@ -763,7 +723,6 @@ function logAnalise(analise) {
 // 🚀 EXPORTAÇÃO ES6 (CORREÇÃO CRÍTICA #2)
 // ================================================================================
 
-// Log de inicialização
 console.log("✅ Analysis v7.7 carregado:");
 console.log("🔍 Detecção inteligente de 9 tipos de orçamento");
 console.log("📊 Análise de contexto avançada");
