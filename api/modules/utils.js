@@ -1,8 +1,8 @@
-// 🔧 utils.js - UTILITÁRIOS E MÉTRICAS COMPLETOS v7.7
-// CORREÇÃO CRÍTICA #2: Exportação ES6 + Sistema Avançado de Métricas
-// Responsável por: Cálculos, validações, logs, sanitização, estatísticas
+// 🔧 utils.js - UTILITÁRIOS E MÉTRICAS COMPLETOS v8.0
+// CORREÇÃO CRÍTICA: Exportação ES6 + normalizarEntrada + Sistema Avançado de Métricas
+// Responsável por: Cálculos, validações, logs, sanitização, estatísticas, normalização
 
-console.log("🔧 Utils v7.7 - UTILITÁRIOS COMPLETOS + ES6 CORRIGIDA");
+console.log("🔧 Utils v8.0 - UTILITÁRIOS COMPLETOS + NORMALIZAÇÃO + ES6 CORRIGIDA");
 
 // ================================================================================
 // 📊 CONFIGURAÇÕES DE MÉTRICAS
@@ -30,6 +30,40 @@ const METRICAS_CONFIG = {
     tamanho_maximo: 10000
   }
 };
+
+// ================================================================================
+// 🔧 FUNÇÃO: NORMALIZAR ENTRADA (NOVA - CRÍTICA PARA ORQUESTRADOR)
+// ================================================================================
+
+export function normalizarEntrada(body) {
+  console.log('[UTILS] Normalizando entrada de dados...');
+  
+  let formData, tipo;
+
+  if (body?.formData && body?.tipo) {
+    formData = body.formData;
+    tipo = body.tipo;
+  } else if (body?.tipos || body?.observacoes) {
+    formData = body;
+    tipo = 'orcamento';
+  } else {
+    throw new Error("Formato de dados de entrada inválido");
+  }
+
+  // Normalizar tipos
+  if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
+    formData.tipos = ['Aéreo Nacional'];
+  }
+
+  // Garantir campos obrigatórios
+  formData.observacoes = formData.observacoes || '';
+  formData.textoColado = formData.textoColado || '';
+  formData.destino = formData.destino || '';
+
+  console.log(`[UTILS] ✅ Entrada normalizada: tipo=${tipo}, tipos=${formData.tipos?.length}`);
+  
+  return { formData, tipo };
+}
 
 // ================================================================================
 // 📊 FUNÇÃO: CALCULAR MÉTRICAS COMPLETAS
@@ -572,7 +606,7 @@ export function obterStatusSistema() {
     },
     configuracao: {
       environment: process.env.NODE_ENV || 'development',
-      version: '7.7-modular-es6'
+      version: '8.0-modular-es6-normalizada'
     }
   };
   
@@ -622,11 +656,12 @@ export function gerarLogEstruturado(nivel, componente, mensagem, dados = {}) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ES6 (CORREÇÃO CRÍTICA #2)
+// 🚀 EXPORTAÇÃO ES6 ÚNICA E COMPLETA (v8.0)
 // ================================================================================
 
 // Log de inicialização
-console.log('✅ [UTILS] Utils v7.7 carregado:');
+console.log('✅ [UTILS] Utils v8.0 carregado:');
+console.log('🔧 [UTILS] Normalização de entrada (NOVA)');
 console.log('📊 [UTILS] Cálculo de métricas e custos');
 console.log('✅ [UTILS] Validação de resposta IA');
 console.log('📈 [UTILS] Extração de informações estruturadas');
@@ -635,10 +670,11 @@ console.log('🛠️ [UTILS] Sanitização de entrada');
 console.log('📊 [UTILS] Estatísticas de uso');
 console.log('🔧 [UTILS] Status do sistema');
 console.log('📋 [UTILS] Sistema de logs estruturados');
-console.log('🚨 [UTILS] EXPORTAÇÃO ES6 CORRIGIDA - Compatível com import()');
+console.log('🚨 [UTILS] EXPORTAÇÃO ES6 CORRIGIDA - Compatível com orquestrador v8.0');
 
-// Exportação individual das funções principais
+// EXPORTAÇÃO INDIVIDUAL COMPLETA
 export {
+  normalizarEntrada,     // 🆕 NOVA - CRÍTICA PARA ORQUESTRADOR
   calcularMetricas,
   validarRespostaIA,
   extrairInformacoes,
@@ -650,8 +686,9 @@ export {
   gerarLogEstruturado
 };
 
-// Exportação padrão para máxima compatibilidade
+// EXPORTAÇÃO PADRÃO COMPLETA
 export default {
+  normalizarEntrada,     // 🆕 NOVA - CRÍTICA PARA ORQUESTRADOR
   calcularMetricas,
   validarRespostaIA,
   extrairInformacoes,
@@ -663,57 +700,4 @@ export default {
   gerarLogEstruturado
 };
 
-console.log('🚀 [UTILS] Sistema de Utilitários v7.7 - COMPLETO E FUNCIONAL!');
-
-
-// ================================================================================
-// 🔧 FUNÇÃO: NORMALIZAR ENTRADA (ADICIONAR AO utils.js)
-// ================================================================================
-
-export function normalizarEntrada(body) {
-  console.log('[UTILS] Normalizando entrada de dados...');
-  
-  let formData, tipo;
-
-  if (body?.formData && body?.tipo) {
-    formData = body.formData;
-    tipo = body.tipo;
-  } else if (body?.tipos || body?.observacoes) {
-    formData = body;
-    tipo = 'orcamento';
-  } else {
-    throw new Error("Formato de dados de entrada inválido");
-  }
-
-  // Normalizar tipos
-  if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
-    formData.tipos = ['Aéreo Nacional'];
-  }
-
-  // Garantir campos obrigatórios
-  formData.observacoes = formData.observacoes || '';
-  formData.textoColado = formData.textoColado || '';
-  formData.destino = formData.destino || '';
-
-  console.log(`[UTILS] ✅ Entrada normalizada: tipo=${tipo}, tipos=${formData.tipos?.length}`);
-  
-  return { formData, tipo };
-}
-
-// ================================================================================
-// ATUALIZAR EXPORTAÇÃO DEFAULT (no final do utils.js)
-// ================================================================================
-
-// Adicionar normalizarEntrada na exportação:
-export default {
-  normalizarEntrada, // 👈 ADICIONAR ESTA LINHA
-  calcularMetricas,
-  validarRespostaIA,
-  extrairInformacoes,
-  gerarRelatorioPerformance,
-  sanitizarEntrada,
-  calcularEstatisticasUso,
-  limparRecursos,
-  obterStatusSistema,
-  gerarLogEstruturado
-};
+console.log('🚀 [UTILS] Sistema de Utilitários v8.0 - COMPLETO, CORRIGIDO E FUNCIONAL!');
