@@ -1,15 +1,15 @@
-// 🔧 processing.js - v8.1 - EXPORTAÇÕES ES6 COMPLETAMENTE CORRIGIDAS
-// CORREÇÃO DEFINITIVA: Sistema de exportação único e limpo
-// Implementação COMPLETA das regras do Manual de Modelos
+// 🔧 api/modules/processing.js - v8.2 - CORREÇÃO DEFINITIVA
+// TODAS AS EXPORTAÇÕES DUPLICADAS REMOVIDAS
+// Sistema de processamento e formatação completo
 
-console.log("🔧 Processing v8.1 - EXPORTAÇÕES ES6 CORRIGIDAS DEFINITIVAMENTE");
+console.log("🔧 Processing v8.2 - EXPORTAÇÕES CORRIGIDAS DEFINITIVAMENTE");
 
 // ================================================================================
 // 🧹 SISTEMA DE LIMPEZA E FORMATAÇÃO PRINCIPAL
 // ================================================================================
 
-export function processarRespostaCompleta(conteudo, analise, formData) {
-  console.log("🔧 Iniciando processamento completo v8.1...");
+function processarRespostaCompleta(conteudo, analise, formData) {
+  console.log("🔧 Iniciando processamento completo v8.2...");
   
   if (!conteudo) {
     console.error("❌ Conteúdo vazio para processar");
@@ -39,7 +39,7 @@ export function processarRespostaCompleta(conteudo, analise, formData) {
     
   } catch (error) {
     console.error("❌ Erro no processamento:", error);
-    return aplicarFormatacaoBasica(conteudo); // Fallback
+    return aplicarFormatacaoBasica(conteudo);
   }
 }
 
@@ -78,19 +78,32 @@ function removerCabecalhosTecnicos(conteudo) {
 // 🎨 FORMATAÇÃO COMPLETA E PROFISSIONAL
 // ================================================================================
 
-export function aplicarFormatacaoCompleta(conteudo) {
+function aplicarFormatacaoCompleta(conteudo) {
   console.log("🎨 Aplicando formatação completa...");
   let formatado = conteudo;
   
   // Conversão de códigos de aeroporto
   const codigosAeroporto = {
-    'CGH': 'São Paulo/Congonhas', 'GRU': 'São Paulo/Guarulhos', 'VCP': 'Campinas/Viracopos',
-    'SDU': 'Rio de Janeiro/Santos Dumont', 'GIG': 'Rio de Janeiro/Galeão', 'BSB': 'Brasília',
-    'CWB': 'Curitiba/Afonso Pena', 'POA': 'Porto Alegre/Salgado Filho', 'FOR': 'Fortaleza/Pinto Martins',
-    'REC': 'Recife/Guararapes', 'SSA': 'Salvador/Deputado Luís Eduardo', 'BEL': 'Belém/Val de Cans',
-    'MAO': 'Manaus/Eduardo Gomes', 'CGB': 'Cuiabá/Marechal Rondon', 'VIX': 'Vitória/Eurico de Aguiar',
-    'CNF': 'Belo Horizonte/Confins', 'NAT': 'Natal/Governador Aluízio Alves', 'MCZ': 'Maceió/Zumbi dos Palmares',
-    'AJU': 'Aracaju/Santa Maria', 'THE': 'Teresina/Senador Petrônio Portella'
+    'CGH': 'São Paulo/Congonhas',
+    'GRU': 'São Paulo/Guarulhos',
+    'VCP': 'Campinas/Viracopos',
+    'SDU': 'Rio de Janeiro/Santos Dumont',
+    'GIG': 'Rio de Janeiro/Galeão',
+    'BSB': 'Brasília',
+    'CWB': 'Curitiba/Afonso Pena',
+    'POA': 'Porto Alegre/Salgado Filho',
+    'FOR': 'Fortaleza/Pinto Martins',
+    'REC': 'Recife/Guararapes',
+    'SSA': 'Salvador/Deputado Luís Eduardo',
+    'BEL': 'Belém/Val de Cans',
+    'MAO': 'Manaus/Eduardo Gomes',
+    'CGB': 'Cuiabá/Marechal Rondon',
+    'VIX': 'Vitória/Eurico de Aguiar',
+    'CNF': 'Belo Horizonte/Confins',
+    'NAT': 'Natal/Governador Aluízio Alves',
+    'MCZ': 'Maceió/Zumbi dos Palmares',
+    'AJU': 'Aracaju/Santa Maria',
+    'THE': 'Teresina/Senador Petrônio Portella'
   };
   
   Object.entries(codigosAeroporto).forEach(([codigo, nome]) => {
@@ -182,8 +195,8 @@ function processarOrcamentoAereo(conteudo, analise) {
   console.log("✈️ Processando orçamento aéreo específico...");
   let processado = conteudo;
   
-  // Garantir emoji de avião no início
-  if (!processado.startsWith('✈️')) {
+  // Garantir emoji de avião no início se não houver
+  if (!processado.match(/^[✈️🛫]/)) {
     processado = '✈️ ' + processado;
   }
   
@@ -208,7 +221,7 @@ function processarOrcamentoHotel(conteudo, analise) {
   console.log("🏨 Processando orçamento de hotel específico...");
   let processado = conteudo;
   
-  if (!processado.startsWith('🏨')) {
+  if (!processado.match(/^[🏨🏩]/)) {
     processado = '🏨 ' + processado;
   }
   
@@ -219,7 +232,7 @@ function processarOrcamentoPacote(conteudo, analise) {
   console.log("🏖️ Processando orçamento de pacote específico...");
   let processado = conteudo;
   
-  if (!processado.startsWith('🏖️')) {
+  if (!processado.match(/^[🏖️📦]/)) {
     processado = '🏖️ ' + processado;
   }
   
@@ -227,10 +240,11 @@ function processarOrcamentoPacote(conteudo, analise) {
 }
 
 // ================================================================================
-// 📱 FORMATAÇÃO FINAL PARA WHATSAPP
+// 📱 FORMATAÇÃO FINAL PARA WHATSAPP - SEM EXPORT NA DECLARAÇÃO
 // ================================================================================
 
-export function formatarParaWhatsApp(conteudo) {
+// ⚠️ CORREÇÃO: Removido 'export' da declaração da função
+function formatarParaWhatsApp(conteudo) {
   console.log("📱 Formatando para WhatsApp...");
   let formatado = conteudo;
   
@@ -248,10 +262,11 @@ export function formatarParaWhatsApp(conteudo) {
 }
 
 // ================================================================================
-// ✅ VALIDAÇÃO FINAL DO ORÇAMENTO
+// ✅ VALIDAÇÃO FINAL DO ORÇAMENTO - SEM EXPORT NA DECLARAÇÃO
 // ================================================================================
 
-export function validarOrcamentoFinal(conteudo, formData) {
+// ⚠️ CORREÇÃO: Removido 'export' da declaração da função
+function validarOrcamentoFinal(conteudo, formData) {
   console.log("✅ Executando validação final...");
   
   const problemas = [];
@@ -278,9 +293,10 @@ export function validarOrcamentoFinal(conteudo, formData) {
 }
 
 // ================================================================================
-// 📊 MÉTRICAS DE QUALIDADE
+// 📊 MÉTRICAS DE QUALIDADE - SEM EXPORT NA DECLARAÇÃO
 // ================================================================================
 
+// ⚠️ CORREÇÃO: Removido 'export' da declaração da função
 function calcularMetricasQualidade(conteudoOriginal, conteudoProcessado) {
   console.log("📊 Calculando métricas de qualidade...");
   
@@ -346,15 +362,14 @@ function aplicarFormatacaoBasica(conteudo) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ÚNICA E LIMPA - CORREÇÃO DEFINITIVA
+// 🚀 EXPORTAÇÃO ÚNICA E LIMPA - v8.2 DEFINITIVA
 // ================================================================================
-// LOCALIZAÇÃO: Final do arquivo api/modules/processing.js
-// SUBSTITUA toda a seção de exportação no final do arquivo por esta:
 
-console.log("✅ Processing v8.1 carregado:");
-console.log("🚨 EXPORTAÇÃO ES6 DEFINITIVAMENTE CORRIGIDA");
+console.log("✅ Processing v8.2 carregado:");
+console.log("🚨 TODAS AS FUNÇÕES SEM 'export' NA DECLARAÇÃO");
+console.log("✅ EXPORTAÇÃO ÚNICA NO FINAL DO ARQUIVO");
 
-// EXPORTAÇÃO ÚNICA - SEM DUPLICATAS
+// EXPORTAÇÃO NOMEADA - CADA FUNÇÃO APARECE APENAS UMA VEZ
 export {
   processarRespostaCompleta,
   aplicarFormatacaoCompleta,
@@ -363,7 +378,7 @@ export {
   calcularMetricasQualidade
 };
 
-// EXPORTAÇÃO DEFAULT PARA MÁXIMA COMPATIBILIDADE
+// EXPORTAÇÃO DEFAULT - PARA COMPATIBILIDADE
 export default {
   processarRespostaCompleta,
   aplicarFormatacaoCompleta,
@@ -372,4 +387,4 @@ export default {
   calcularMetricasQualidade
 };
 
-console.log("🚀 Sistema de Processamento v8.1 - EXPORTAÇÃO DEFINITIVAMENTE FUNCIONAL!");
+console.log("🚀 Sistema de Processamento v8.2 - 100% FUNCIONAL!");
