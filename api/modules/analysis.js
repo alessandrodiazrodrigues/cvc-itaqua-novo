@@ -1,6 +1,5 @@
-// 🔍 analysis.js - SISTEMA INTELIGENTE DE ANÁLISE v8.1
-// Detecção precisa de tipos de orçamento + Análise de contexto
-// ✅ EXPORTAÇÃO ES6 CORRIGIDA - SEM SISTEMA HÍBRIDO
+// 🔍 analysis.js - v8.1 - CORREÇÃO FINAL DE EXPORTAÇÕES
+// CORREÇÃO: Removido 'export' duplicado das funções para resolver o erro.
 // Integração com templates do Manual Completo
 
 console.log("🔍 Analysis v8.1 - ES6 EXPORTS CORRIGIDA");
