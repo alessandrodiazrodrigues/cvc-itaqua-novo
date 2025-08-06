@@ -52,7 +52,10 @@ export default async function handler(req, res) {
         // 🔧 NORMALIZAÇÃO DE DADOS (USANDO UTILS)
         // ================================================================================
         
-        const { formData, tipo } = normalizarEntrada(req.body);
+        // ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
+        const { formData, tipo } = utils.normalizarEntrada(req.body);
+        // ▲▲▲ CORREÇÃO APLICADA AQUI ▲▲▲
+        
         console.log(`🎯 Dados normalizados para tipo: ${tipo}`);
         console.log(`📊 FormData: tipos=${formData.tipos?.length}, destino=${!!formData.destino}`);
 
@@ -124,10 +127,7 @@ async function orquestrarOrcamento(formData, modulos) {
     console.log("🔄 FLUXO: Análise → Prompt → IA → Processamento → Resposta");
 
     try {
-        // ================================================================================
         // ETAPA 1: ANÁLISE DO TEXTO DE ENTRADA (analysis.js)
-        // ================================================================================
-        
         console.log("📊 ETAPA 1: Análise do texto...");
         
         let analise;
@@ -141,10 +141,7 @@ async function orquestrarOrcamento(formData, modulos) {
         
         console.log(`✅ Análise concluída. Tipo detectado: ${analise?.tipoDetectado || 'generico'}`);
 
-        // ================================================================================
         // ETAPA 2: GERAÇÃO DO PROMPT OTIMIZADO (prompts.js)
-        // ================================================================================
-        
         console.log("📋 ETAPA 2: Geração de prompt especializado...");
         
         let prompt;
@@ -162,10 +159,7 @@ async function orquestrarOrcamento(formData, modulos) {
         
         console.log(`✅ Prompt gerado com ${prompt?.length || 0} caracteres`);
 
-        // ================================================================================
         // ETAPA 3: SELEÇÃO INTELIGENTE DO MODELO (ia-client.js)
-        // ================================================================================
-        
         console.log("🤖 ETAPA 3: Seleção de modelo de IA...");
         
         let modeloInfo = { modelo: 'gpt-4o-mini', fallback: ['gpt-4o'] };
@@ -177,10 +171,7 @@ async function orquestrarOrcamento(formData, modulos) {
         
         console.log(`✅ Modelo selecionado: ${modeloInfo.modelo}`);
 
-        // ================================================================================
         // ETAPA 4: CHAMADA PARA A IA (CORREÇÃO CRÍTICA!)
-        // ================================================================================
-        
         console.log("🧠 ETAPA 4: Chamada para Inteligência Artificial...");
         
         let respostaIA;
@@ -211,10 +202,7 @@ async function orquestrarOrcamento(formData, modulos) {
         console.log(`🧠 IA respondeu com ${respostaIA?.content?.length || 0} caracteres`);
         console.log(`🎯 Modelo usado: ${respostaIA?.modelo_usado || 'desconhecido'}`);
 
-        // ================================================================================
         // ETAPA 5: PÓS-PROCESSAMENTO DA RESPOSTA (processing.js)
-        // ================================================================================
-        
         console.log("🎨 ETAPA 5: Processamento final da resposta...");
         
         let conteudoFinal;
@@ -231,16 +219,12 @@ async function orquestrarOrcamento(formData, modulos) {
                 formData
             );
         } else {
-            // Fallback simples se processing falhar
             conteudoFinal = respostaIA?.content || respostaIA?.conteudo || 'Conteúdo não processado';
         }
         
         console.log(`✅ Resposta final processada`);
 
-        // ================================================================================
         // ETAPA 6: CÁLCULO DE MÉTRICAS (utils.js)
-        // ================================================================================
-        
         console.log("📊 ETAPA 6: Cálculo de métricas...");
         
         let custo = { custo_total: 0 };
@@ -258,10 +242,7 @@ async function orquestrarOrcamento(formData, modulos) {
             console.warn("⚠️ Erro ao calcular métricas:", errorMetricas.message);
         }
 
-        // ================================================================================
         // RESULTADO FINAL
-        // ================================================================================
-        
         return {
             conteudo: conteudoFinal,
             debug: {
@@ -352,35 +333,6 @@ async function orquestrarDicas(formData, modulos) {
         console.error("❌ Erro na orquestração de dicas:", error);
         throw new Error(`Falha na orquestração de dicas: ${error.message}`);
     }
-}
-
-// ================================================================================
-// 🔧 FUNÇÃO DE NORMALIZAÇÃO (INTEGRADA)
-// ================================================================================
-
-function normalizarEntrada(body) {
-    console.log("🔧 Normalizando entrada...");
-    
-    let formData, tipo;
-
-    if (body?.formData && body?.tipo) {
-        formData = body.formData;
-        tipo = body.tipo;
-    } else if (body?.tipos || body?.observacoes) {
-        formData = body;
-        tipo = 'orcamento';
-    } else {
-        throw new Error("Formato de dados de entrada inválido");
-    }
-
-    // Normalizar tipos
-    if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
-        formData.tipos = ['Aéreo Nacional'];
-    }
-
-    console.log(`✅ Entrada normalizada: tipo=${tipo}, formData.tipos=${formData.tipos?.length}`);
-    
-    return { formData, tipo };
 }
 
 // ================================================================================
