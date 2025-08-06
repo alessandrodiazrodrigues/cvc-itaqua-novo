@@ -656,8 +656,10 @@ export function gerarLogEstruturado(nivel, componente, mensagem, dados = {}) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ES6 ÚNICA E COMPLETA (v8.0)
+// 🚀 EXPORTAÇÃO ES6 ÚNICA E COMPLETA - utils.js v8.0 CORRIGIDA
 // ================================================================================
+// LOCALIZAÇÃO: Final do arquivo api/modules/utils.js
+// SUBSTITUA toda a seção de exportação no final do arquivo por esta:
 
 // Log de inicialização
 console.log('✅ [UTILS] Utils v8.0 carregado:');
@@ -674,7 +676,7 @@ console.log('🚨 [UTILS] EXPORTAÇÃO ES6 CORRIGIDA - Compatível com orquestra
 
 // EXPORTAÇÃO INDIVIDUAL COMPLETA
 export {
-  normalizarEntrada,     // 🆕 NOVA - CRÍTICA PARA ORQUESTRADOR
+  normalizarEntrada,
   calcularMetricas,
   validarRespostaIA,
   extrairInformacoes,
@@ -688,7 +690,7 @@ export {
 
 // EXPORTAÇÃO PADRÃO COMPLETA
 export default {
-  normalizarEntrada,     // 🆕 NOVA - CRÍTICA PARA ORQUESTRADOR
+  normalizarEntrada,
   calcularMetricas,
   validarRespostaIA,
   extrairInformacoes,
