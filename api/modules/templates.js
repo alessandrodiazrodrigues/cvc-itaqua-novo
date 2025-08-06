@@ -1,12 +1,13 @@
-// 📋 templates.js - SISTEMA COMPLETO DE TEMPLATES CVC ITAQUA v8.2
-// Implementação COMPLETA do Manual de Modelos de Orçamentos
-// ✅ TODOS OS 9 TIPOS OBRIGATÓRIOS DO MANUAL IMPLEMENTADOS
-// ✅ EXPORTAÇÃO ES6 CORRIGIDA - SEM SISTEMA HÍBRIDO
+// 📋 templates.js - v9.0 - SISTEMA COMPLETO DE TEMPLATES CVC ITAQUA
+// ✅ Exportações ES6 corretas (sem duplicação)
+// ✅ Todos os 9 tipos implementados
+// ✅ Detecção inteligente com prioridade
+// ✅ Formatação profissional completa
 
-console.log("📋 Templates v8.2 - MANUAL COMPLETAMENTE IMPLEMENTADO");
+console.log("📋 Templates v9.0 - SISTEMA PROFISSIONAL COMPLETO");
 
 // ================================================================================
-// 🎯 TEMPLATES COMPLETOS - TODOS OS 9 TIPOS DO MANUAL
+// 🎯 TEMPLATES COMPLETOS - TODOS OS 9 TIPOS DO MANUAL CVC
 // ================================================================================
 
 const TEMPLATES_MANUAIS = {
@@ -17,23 +18,26 @@ const TEMPLATES_MANUAIS = {
       const texto = dados.toLowerCase();
       return (
         !texto.includes('internacional') &&
+        !texto.includes('exterior') &&
         (texto.includes('ida') && texto.includes('volta')) &&
-        !texto.includes('opção 1') && !texto.includes('opção 2') &&
-        !texto.includes('somente ida') &&
+        !texto.includes('opção 1') && 
+        !texto.includes('opção 2') &&
+        !texto.includes('múltiplas') &&
         (texto.includes('congonhas') || texto.includes('santos dumont') || 
-         texto.includes('guarulhos') || texto.includes('viracopos'))
+         texto.includes('guarulhos') || texto.includes('galeão') ||
+         texto.includes('confins') || texto.includes('brasília'))
       );
     },
     
-    template: (data) => `*${data.companhia || 'Gol'} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida} / ${data.aeroporto_destino} ${data.hora_chegada_ida} (${data.tipo_voo_ida})
+    template: (data) => `*${data.companhia || 'LATAM'}*
+${data.data_ida} - ${data.origem} ${data.hora_ida} / ${data.destino} ${data.hora_chegada} (${data.tipo_voo_ida || 'voo direto'})
 --
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta} / ${data.aeroporto_origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta})
+${data.data_volta} - ${data.destino} ${data.hora_volta} / ${data.origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta || 'voo direto'})
 
 💰 ${data.valor_total} para ${data.passageiros}
-${data.parcelamento ? `💳 ${data.parcelamento}` : ''}
-✅ ${data.bagagem || 'Só mala de mão incluída'}
-🏷️ ${data.reembolso || 'Não reembolsável'}
+${data.parcelamento ? `💳 ${data.parcelamento}` : '💳 Em até 10x sem juros'}
+✅ ${data.bagagem || '1 mala de 23kg + mochila de mão'}
+🏷️ ${data.reembolso || 'Tarifa flexível com remarcação gratuita'}
 ${data.link ? `🔗 ${data.link}` : ''}`
   },
 
@@ -43,732 +47,850 @@ ${data.link ? `🔗 ${data.link}` : ''}`
       const texto = dados.toLowerCase();
       return (
         texto.includes('conexão') && 
-        (texto.includes('brasília') || texto.includes('recife') || texto.includes('fortaleza')) &&
-        (texto.includes('espera') || texto.includes('tempo'))
+        texto.includes('espera') &&
+        (texto.includes('ida') || texto.includes('volta')) &&
+        !texto.includes('múltiplas')
       );
     },
     
-    template: (data) => `*${data.companhia || 'Gol'} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida_1} / ${data.conexao} ${data.hora_chegada_1} (voo direto)
-(conexão em ${data.conexao} - ${data.tempo_espera} de espera)
-${data.data_ida} - ${data.conexao} ${data.hora_ida_2} / ${data.aeroporto_destino} ${data.hora_chegada_2} (voo direto)
+    template: (data) => `*${data.companhia || 'GOL'}*
+${data.data_ida} - ${data.origem} ${data.hora_ida_1} / ${data.conexao} ${data.hora_chegada_1} (voo direto)
+➜ Conexão em ${data.conexao} - ${data.tempo_espera || '2h30'} de espera
+${data.data_ida} - ${data.conexao} ${data.hora_ida_2} / ${data.destino} ${data.hora_chegada_2} (voo direto)
 --
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta} / ${data.aeroporto_origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta})
+${data.data_volta} - ${data.destino} ${data.hora_volta} / ${data.origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta || 'voo direto'})
 
 💰 ${data.valor_total} para ${data.passageiros}
-${data.parcelamento ? `💳 ${data.parcelamento}` : ''}
-✅ ${data.bagagem || 'Só mala de mão incluída'}
-🏷️ ${data.reembolso || 'Não reembolsável'}
+💳 ${data.parcelamento || 'Em até 10x sem juros'}
+✅ ${data.bagagem || '1 mala de 23kg despachada'}
+🏷️ ${data.reembolso || 'Tarifa promocional - Não reembolsável'}
 ${data.link ? `🔗 ${data.link}` : ''}`
   },
 
-  // ✈️ 3. AÉREO SOMENTE IDA (NOVO - OBRIGATÓRIO DO MANUAL)
+  // ✈️ 3. SOMENTE IDA (ONE WAY)
   'aereo_somente_ida': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        texto.includes('somente ida') || 
-        (texto.includes('ida') && !texto.includes('volta')) ||
-        (!texto.includes('--') && !texto.includes('retorno') && !texto.includes('volta'))
+        (texto.includes('somente ida') || texto.includes('apenas ida') || 
+         texto.includes('one way') || texto.includes('só ida')) &&
+        !texto.includes('volta') &&
+        !texto.includes('retorno')
       );
     },
     
-    template: (data) => `*${data.companhia || 'Latam'}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida} / ${data.aeroporto_destino} ${data.hora_chegada} (${data.tipo_voo})
+    template: (data) => `*${data.companhia || 'AZUL'}* - SOMENTE IDA
+${data.data_ida} - ${data.origem} ${data.hora_ida} / ${data.destino} ${data.hora_chegada} (${data.tipo_voo || 'voo direto'})
 
-💰 Valor total para ${data.passageiros} = ${data.valor_total}
-Valores sujeitos a confirmação e disponibilidade
-Inclui taxas de embarque
-Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa
-${data.reembolso || 'Não reembolsável'}
-
-⚠️ Passagem somente de ida - sem retorno incluído`
+💰 ${data.valor_total} para ${data.passageiros}
+💳 ${data.parcelamento || 'Em até 10x sem juros'}
+✅ ${data.bagagem || '1 mala de mão + 1 pessoal'}
+🏷️ ${data.reembolso || 'Tarifa Light - Alterações mediante taxa'}
+⚠️ Passagem somente ida - Sem trecho de volta
+${data.link ? `🔗 ${data.link}` : ''}`
   },
 
-  // 🔢 4. MÚLTIPLAS OPÇÕES - 2 PLANOS (NOVO - OBRIGATÓRIO DO MANUAL)
+  // ✈️ 4. MÚLTIPLAS OPÇÕES - 2 ALTERNATIVAS
   'multiplas_opcoes_2': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        ((texto.includes('opção 1') && texto.includes('opção 2')) ||
-        (texto.includes('plano 1') && texto.includes('plano 2'))) &&
-        !texto.includes('opção 3') && !texto.includes('plano 3')
+        (texto.includes('opção 1') && texto.includes('opção 2')) &&
+        !texto.includes('opção 3') &&
+        !texto.includes('internacional')
       );
     },
     
-    template: (data) => `*${data.companhia || 'Azul'} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida} / ${data.aeroporto_destino} ${data.hora_chegada_ida} (${data.tipo_voo_ida})
---
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta} / ${data.aeroporto_origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta})
+    template: (data) => `📍 ${data.destino ? data.destino.toUpperCase() : 'DESTINO'}
+${data.periodo || 'Período consultado'}
 
-💰 **OPÇÃO 1** - ${data.valor_opcao_1}
-✅ Só mala de mão incluída
-${data.parcelamento_1 ? `💳 ${data.parcelamento_1}` : ''}
-${data.link_1 ? `🔗 ${data.link_1}` : ''}
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1* - ${data.opcao1_companhia || 'LATAM'}
+${data.opcao1_ida || 'IDA: Data e horários'}
+${data.opcao1_volta || 'VOLTA: Data e horários'}
+💰 ${data.opcao1_valor || 'R$ 0.000,00'} para ${data.passageiros || '1 adulto'}
+💳 ${data.opcao1_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao1_bagagem || '1 mala 23kg + mão'}
 
-💰 **OPÇÃO 2** - ${data.valor_opcao_2}
-✅ Mala de mão + bagagem despachada
-✅ Cancelamento/alteração com multas
-✅ Reembolsável conforme regras do bilhete
-${data.parcelamento_2 ? `💳 ${data.parcelamento_2}` : ''}
-${data.link_2 ? `🔗 ${data.link_2}` : ''}
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2* - ${data.opcao2_companhia || 'GOL'}
+${data.opcao2_ida || 'IDA: Data e horários'}
+${data.opcao2_volta || 'VOLTA: Data e horários'}
+💰 ${data.opcao2_valor || 'R$ 0.000,00'} para ${data.passageiros || '1 adulto'}
+💳 ${data.opcao2_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao2_bagagem || '1 mala 23kg + mão'}
 
-Valores sujeitos a confirmação e disponibilidade`
+📱 *Escolha sua opção preferida!*`
   },
 
-  // 🔢 5. MÚLTIPLAS OPÇÕES - 3 PLANOS (NOVO - OBRIGATÓRIO DO MANUAL)
+  // ✈️ 5. MÚLTIPLAS OPÇÕES - 3 ALTERNATIVAS
   'multiplas_opcoes_3': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        (texto.includes('opção 1') && texto.includes('opção 2') && texto.includes('opção 3')) ||
-        (texto.includes('plano 1') && texto.includes('plano 2') && texto.includes('plano 3'))
+        texto.includes('opção 3') ||
+        (texto.includes('opção 1') && texto.includes('opção 2') && texto.includes('opção'))
       );
     },
     
-    template: (data) => `*${data.companhia || 'Gol'} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida} / ${data.aeroporto_destino} ${data.hora_chegada_ida} (${data.tipo_voo_ida})
---
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta} / ${data.aeroporto_origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta})
+    template: (data) => `📍 ${data.destino ? data.destino.toUpperCase() : 'DESTINO'}
+${data.periodo || 'Período consultado'}
 
-💰 **OPÇÃO 1** - ${data.valor_opcao_1}
-✅ Só mala de mão incluída
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1* - ${data.opcao1_companhia || 'LATAM'} ⭐ Recomendado
+${data.opcao1_ida || 'IDA: Data e horários'}
+${data.opcao1_volta || 'VOLTA: Data e horários'}
+💰 ${data.opcao1_valor || 'R$ 0.000,00'} para ${data.passageiros || '1 adulto'}
+💳 ${data.opcao1_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao1_bagagem || '1 mala 23kg + mão'}
 
-💰 **OPÇÃO 2** - ${data.valor_opcao_2}
-✅ Mala de mão + bagagem despachada
-✅ Cancelamento/alteração com multas
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2* - ${data.opcao2_companhia || 'GOL'} 
+${data.opcao2_ida || 'IDA: Data e horários'}
+${data.opcao2_volta || 'VOLTA: Data e horários'}
+💰 ${data.opcao2_valor || 'R$ 0.000,00'} para ${data.passageiros || '1 adulto'}
+💳 ${data.opcao2_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao2_bagagem || '1 mala 23kg + mão'}
 
-💰 **OPÇÃO 3** - ${data.valor_opcao_3}
-✅ Mala de mão + 2 bagagens despachadas
-✅ Cancelamento/alteração com multas
-✅ Reembolsável conforme regras do bilhete
-✅ Marcação de assento
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 3* - ${data.opcao3_companhia || 'AZUL'} 💰 Melhor Preço
+${data.opcao3_ida || 'IDA: Data e horários'}
+${data.opcao3_volta || 'VOLTA: Data e horários'}
+💰 ${data.opcao3_valor || 'R$ 0.000,00'} para ${data.passageiros || '1 adulto'}
+💳 ${data.opcao3_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao3_bagagem || 'Apenas mala de mão'}
 
-Valores sujeitos a confirmação e disponibilidade`
+📱 *Qual opção prefere? Posso detalhar!*`
   },
 
-  // 🗺️ 6. MULTITRECHO (NOVO - OBRIGATÓRIO DO MANUAL)
+  // ✈️ 6. MULTITRECHO (MÚLTIPLOS DESTINOS)
   'multitrecho': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
         texto.includes('multitrecho') || 
-        texto.includes('trecho 1') || 
-        (texto.includes('→') && texto.split('→').length > 2)
+        texto.includes('múltiplos destinos') ||
+        texto.includes('multidestino') ||
+        (texto.includes('trecho 1') && texto.includes('trecho 2')) ||
+        texto.includes('stopover')
       );
     },
     
-    template: (data) => `*Multitrecho - ${data.companhias || 'TAP Portugal + Portugalia'}*
-${data.data_ida} a ${data.data_volta} (${data.duracao_dias} dias e ${data.duracao_noites} noites)
+    template: (data) => `*ROTEIRO MULTITRECHO* ✈️
+${data.passageiros || '1 adulto'}
 
-*Trecho 1:* ${data.trecho_1_origem} → ${data.trecho_1_destino}
-${data.trecho_1_data} - ${data.trecho_1_aeroporto_origem} ${data.trecho_1_hora} / ${data.trecho_1_aeroporto_destino} ${data.trecho_1_chegada} (${data.trecho_1_tipo})
+━━━━━━━━━━━━━━━━━━
+📍 *TRECHO 1* - ${data.trecho1_origem || 'Origem'} → ${data.trecho1_destino || 'Destino 1'}
+${data.trecho1_data || 'Data'} - ${data.trecho1_companhia || 'Companhia'}
+${data.trecho1_horarios || 'Horários do voo'}
+${data.trecho1_tipo || 'Voo direto'}
 
-*Trecho 2:* ${data.trecho_2_origem} → ${data.trecho_2_destino}
-${data.trecho_2_data} - ${data.trecho_2_aeroporto_origem} ${data.trecho_2_hora} / ${data.trecho_2_aeroporto_destino} ${data.trecho_2_chegada} (${data.trecho_2_tipo})
+📍 *TRECHO 2* - ${data.trecho2_origem || 'Destino 1'} → ${data.trecho2_destino || 'Destino 2'}
+${data.trecho2_data || 'Data'} - ${data.trecho2_companhia || 'Companhia'}
+${data.trecho2_horarios || 'Horários do voo'}
+${data.trecho2_tipo || 'Voo direto'}
 
-*Trecho 3:* ${data.trecho_3_origem} → ${data.trecho_3_destino}
-${data.trecho_3_data} - ${data.trecho_3_aeroporto_origem} ${data.trecho_3_hora} / ${data.trecho_3_aeroporto_destino} ${data.trecho_3_chegada} (${data.trecho_3_tipo})
+${data.trecho3_origem ? `📍 *TRECHO 3* - ${data.trecho3_origem} → ${data.trecho3_destino}
+${data.trecho3_data} - ${data.trecho3_companhia}
+${data.trecho3_horarios}
+${data.trecho3_tipo || 'Voo direto'}` : ''}
 
-💰 ${data.valor_total} para ${data.passageiros}
-${data.parcelamento ? `💳 ${data.parcelamento}` : ''}
-✅ ${data.bagagem || 'Só mala de mão incluída'}
-🏷️ ${data.reembolso || 'Não reembolsável'}
-${data.link ? `🔗 ${data.link}` : ''}
-
-Valores sujeitos a confirmação e disponibilidade`
+━━━━━━━━━━━━━━━━━━
+💰 *VALOR TOTAL:* ${data.valor_total || 'R$ 0.000,00'}
+💳 ${data.parcelamento || 'Em até 10x sem juros'}
+✅ ${data.bagagem || '1 mala 23kg em todos os trechos'}
+🏷️ ${data.reembolso || 'Tarifa flexível com alterações'}
+⚠️ *Importante:* ${data.observacao || 'Confirme os horários de conexão'}`
   },
 
-  // 🌍 7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS (NOVO - OBRIGATÓRIO DO MANUAL)
+  // ✈️ 7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS
   'multiplas_companhias_internacionais': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        texto.includes('internacional') && 
-        (texto.includes('copa') || texto.includes('american') || texto.includes('latam')) &&
-        (texto.includes('opção 1') || texto.includes('companhia'))
+        (texto.includes('internacional') || texto.includes('exterior') ||
+         texto.includes('europa') || texto.includes('estados unidos') ||
+         texto.includes('miami') || texto.includes('orlando') || 
+         texto.includes('lisboa') || texto.includes('paris') ||
+         texto.includes('madrid') || texto.includes('londres')) &&
+        (texto.includes('opção') || texto.includes('múltiplas') || 
+         texto.includes('companhias'))
       );
     },
     
-    template: (data) => `*OPÇÃO 1 - ${data.companhia_1} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida_1} / ${data.aeroporto_destino} ${data.hora_chegada_ida_1} (${data.tipo_voo_ida_1})
---
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta_1} / ${data.aeroporto_origem} ${data.hora_chegada_volta_1} (${data.tipo_voo_volta_1})
+    template: (data) => `🌍 *VOOS INTERNACIONAIS* - ${data.destino ? data.destino.toUpperCase() : 'DESTINO'}
+${data.periodo || 'Período consultado'}
+${data.passageiros || '1 adulto'}
 
-💰 ${data.valor_opcao_1} para ${data.passageiros}
-${data.parcelamento_1 ? `💳 ${data.parcelamento_1}` : ''}
-${data.link_1 ? `🔗 ${data.link_1}` : ''}
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1* - ${data.opcao1_companhia || 'LATAM'} 🇧🇷
+✈️ IDA: ${data.opcao1_data_ida || 'Data'}
+${data.opcao1_rota_ida || 'GRU → Destino (voo direto)'}
+${data.opcao1_horario_ida || 'Horários'}
 
-*OPÇÃO 2 - ${data.companhia_2} - ${data.origem} ✈ ${data.destino}*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida_2} / ${data.aeroporto_destino} ${data.hora_chegada_ida_2} (${data.tipo_voo_ida_2})
---
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta_2} / ${data.aeroporto_origem} ${data.hora_chegada_volta_2} (${data.tipo_voo_volta_2})
+✈️ VOLTA: ${data.opcao1_data_volta || 'Data'}
+${data.opcao1_rota_volta || 'Destino → GRU (voo direto)'}
+${data.opcao1_horario_volta || 'Horários'}
 
-💰 ${data.valor_opcao_2} para ${data.passageiros}
-${data.parcelamento_2 ? `💳 ${data.parcelamento_2}` : ''}
-${data.link_2 ? `🔗 ${data.link_2}` : ''}
+💰 ${data.opcao1_valor || 'USD 0.000,00 (R$ 0.000,00)'}
+💳 ${data.opcao1_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao1_bagagem || '2 malas de 23kg + mão'}
+🍽️ ${data.opcao1_servico || 'Refeições e entretenimento inclusos'}
+📋 ${data.opcao1_documentacao || 'Passaporte + Visto/ESTA necessário'}
 
-🏷️ ${data.reembolso || 'Não reembolsável'}
-Valores sujeitos a confirmação e disponibilidade`
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2* - ${data.opcao2_companhia || 'TAP'} 🇵🇹
+✈️ IDA: ${data.opcao2_data_ida || 'Data'}
+${data.opcao2_rota_ida || 'GRU → LIS → Destino'}
+${data.opcao2_horario_ida || 'Horários com conexão'}
+
+✈️ VOLTA: ${data.opcao2_data_volta || 'Data'}
+${data.opcao2_rota_volta || 'Destino → LIS → GRU'}
+${data.opcao2_horario_volta || 'Horários com conexão'}
+
+💰 ${data.opcao2_valor || 'EUR 0.000,00 (R$ 0.000,00)'}
+💳 ${data.opcao2_parcelamento || 'Em até 10x sem juros'}
+✅ ${data.opcao2_bagagem || '1 mala de 23kg + mão'}
+🍽️ ${data.opcao2_servico || 'Refeições inclusas'}
+📋 ${data.opcao2_documentacao || 'Passaporte válido por 6 meses'}
+
+━━━━━━━━━━━━━━━━━━
+📱 *DOCUMENTAÇÃO NECESSÁRIA:*
+${data.documentacao || '• Passaporte válido (mínimo 6 meses)\n• Visto ou autorização eletrônica\n• Certificado Internacional de Vacinas\n• Seguro viagem obrigatório'}
+
+💡 *Recomendamos reservar com antecedência!*`
   },
 
-  // 🚢 8. CRUZEIRO
+  // 🚢 8. CRUZEIRO MARÍTIMO
   'cruzeiro': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        texto.includes('cruzeiro') && 
-        (texto.includes('navio') || texto.includes('cabine') || texto.includes('porto') || 
-         texto.includes('msc') || texto.includes('costa') || texto.includes('sinfonia'))
+        texto.includes('cruzeiro') || 
+        texto.includes('navio') ||
+        texto.includes('cabine') ||
+        texto.includes('msc') || 
+        texto.includes('costa') ||
+        texto.includes('royal caribbean') ||
+        texto.includes('navegação') ||
+        texto.includes('all inclusive marítimo')
       );
     },
     
-    template: (data) => `🚢 *Cruzeiro ${data.navio || 'MSC Sinfonia'}* – ${data.duracao || '7'} noites
-${data.passageiros}
-📅 Embarque: ${data.data_embarque} (${data.dia_semana || 'Sábado'})
-📍 Saída e chegada: ${data.porto || 'Santos'}
-🌊 Roteiro incrível pelo litoral brasileiro!
+    template: (data) => `🚢 *CRUZEIRO ${data.nome_cruzeiro || 'COSTA FASCINOSA'}*
+${data.rota || 'Santos → Búzios → Salvador → Ilhéus → Santos'}
+${data.duracao || '7 noites'} | ${data.data_embarque || 'Data de embarque'}
 
-💥 Tarifas disponíveis!
-(Sujeita à confirmação de cabine e categoria)
+━━━━━━━━━━━━━━━━━━
+🛏️ *CATEGORIA DA CABINE:* ${data.categoria_cabine || 'Externa com Varanda'}
+👥 *Ocupação:* ${data.passageiros || '2 adultos'}
+🏢 *Deck:* ${data.deck || 'Deck 8 - Vista para o mar'}
 
-🛏 Opções de Cabines:
-${data.opcoes_cabines || `**CABINE INTERNA** - ${data.valor_interna || 'R$ 2.500,00'}
-**CABINE EXTERNA** - ${data.valor_externa || 'R$ 3.200,00'}  
-**CABINE VARANDA** - ${data.valor_varanda || 'R$ 4.100,00'}`}
+━━━━━━━━━━━━━━━━━━
+📅 *ROTEIRO COMPLETO:*
+${data.roteiro_detalhado || `Dia 1: Santos - Embarque a partir das 13h
+Dia 2: Navegação - Aproveite o navio
+Dia 3: Búzios - 08h às 18h
+Dia 4: Salvador - 08h às 18h
+Dia 5: Ilhéus - 08h às 17h
+Dia 6: Navegação - Dia no mar
+Dia 7: Santos - Desembarque às 08h`}
 
-${data.link ? `📎 Link para ver fotos, detalhes e reservar:
-${data.link}` : ''}
+━━━━━━━━━━━━━━━━━━
+✅ *O CRUZEIRO INCLUI:*
+• Hospedagem em cabine ${data.tipo_cabine || 'com varanda'}
+• Pensão completa (café, almoço e jantar)
+• Entretenimento e shows a bordo
+• Academia, piscinas e áreas de lazer
+• Kids Club e recreação infantil
+• Taxas portuárias inclusas
 
-✅ Inclui: hospedagem a bordo, pensão completa
-🚫 Não inclui: taxas, bebidas, excursões
+❌ *NÃO INCLUI:*
+• Bebidas alcoólicas e refrigerantes
+• Serviços de SPA e salão
+• Excursões em terra (opcionais)
+• Taxa de serviço (USD 14 por dia/pessoa)
+• Internet e telefone a bordo
 
-📲 Me chama pra garantir a sua cabine! 🌴🛳️`
+━━━━━━━━━━━━━━━━━━
+💰 *VALOR TOTAL:* ${data.valor_total || 'R$ 0.000,00'}
+${data.valor_detalhe || 'Por pessoa em cabine dupla'}
+💳 ${data.parcelamento || 'Em até 10x sem juros'}
+🎁 ${data.promocao || 'Terceiro e quarto hóspede com desconto'}
+
+📋 *DOCUMENTAÇÃO:*
+${data.documentacao || '• RG ou Passaporte\n• Menores: Documentação específica\n• Cartão de vacinas atualizado'}
+
+⚓ *Reserve já e garanta sua cabine!*`
   },
 
-  // 🏖️ 9. PACOTE COMPLETO (Aéreo + Hotel)
+  // 📦 9. PACOTE COMPLETO (AÉREO + HOTEL + TRANSFER)
   'pacote_completo': {
     detectar: (dados) => {
       const texto = dados.toLowerCase();
       return (
-        texto.includes('pacote') && 
-        (texto.includes('hotel') && (texto.includes('voo') || texto.includes('aéreo'))) ||
-        texto.includes('traslado')
+        texto.includes('pacote') || 
+        (texto.includes('hotel') && texto.includes('aéreo')) ||
+        (texto.includes('hospedagem') && texto.includes('voo')) ||
+        texto.includes('all inclusive') ||
+        texto.includes('resort') ||
+        texto.includes('transfer incluído') ||
+        texto.includes('café da manhã incluído')
       );
     },
     
-    template: (data) => `*Pacote ${data.destino}*
-Embarque: ${data.data_embarque}
-Pacote para ${data.passageiros}
+    template: (data) => `📦 *PACOTE COMPLETO ${data.destino ? data.destino.toUpperCase() : 'DESTINO'}*
+${data.duracao || '5 dias / 4 noites'} | ${data.periodo || 'Período da viagem'}
+${data.passageiros || '2 adultos'}
 
-*O Pacote Inclui:*
-- Passagem Aérea ida e volta para ${data.destino}
-- Taxas de Embarque
-- ${data.traslado || 'Traslado Aeroporto / Hotel / Aeroporto'}
-${data.passeios ? `- ${data.passeios}` : ''}
-${data.seguro ? `- ${data.seguro}` : ''}
-- ${data.noites || '07'} noites de hospedagem no hotel escolhido
+━━━━━━━━━━━━━━━━━━
+✈️ *AÉREO INCLUÍDO:*
+${data.companhia_aerea || 'LATAM/GOL'}
+• IDA: ${data.voo_ida || 'São Paulo → Destino'}
+  ${data.data_ida || 'Data'} - ${data.horario_ida || 'Horários'}
+• VOLTA: ${data.voo_volta || 'Destino → São Paulo'}
+  ${data.data_volta || 'Data'} - ${data.horario_volta || 'Horários'}
+• ${data.bagagem || '1 mala de 23kg + mão incluída'}
 
-✈️ *Voos ${data.companhia || 'LATAM'}:*
-${data.data_ida} - ${data.aeroporto_origem} ${data.hora_ida} / ${data.aeroporto_destino} ${data.hora_chegada_ida} (${data.tipo_voo_ida})
---
-${data.data_volta} - ${data.aeroporto_destino} ${data.hora_volta} / ${data.aeroporto_origem} ${data.hora_chegada_volta} (${data.tipo_voo_volta})
+━━━━━━━━━━━━━━━━━━
+🏨 *HOSPEDAGEM:*
+*${data.nome_hotel || 'Resort Paradise Beach'}* ${data.categoria_hotel || '⭐⭐⭐⭐⭐'}
+📍 ${data.localizacao_hotel || 'Beira-mar, região turística'}
+🛏️ ${data.tipo_quarto || 'Quarto Duplo Vista Mar'}
+🍽️ ${data.regime || 'All Inclusive - Todas as refeições e bebidas'}
 
-**OPÇÃO 1** - ${data.hotel_1_nome}
-${data.hotel_1_endereco ? `📍 ${data.hotel_1_endereco}` : ''}
-🛏️ ${data.hotel_1_quarto} com ${data.hotel_1_regime}
-${data.hotel_1_reembolsavel ? '✅ Reembolsável conforme regras do bilhete' : ''}
-💰 ${data.hotel_1_valor} para ${data.passageiros}
-${data.hotel_1_link ? `🔗 ${data.hotel_1_link}` : ''}
+*Comodidades do Hotel:*
+${data.comodidades || `• 3 Piscinas (1 infantil)
+• Praia privativa
+• 4 Restaurantes temáticos
+• SPA e academia
+• Kids Club e recreação
+• Wi-Fi gratuito
+• Esportes aquáticos`}
 
-**OPÇÃO 2** - ${data.hotel_2_nome} ${data.hotel_2_categoria ? `⭐ ${data.hotel_2_categoria}` : ''}
-${data.hotel_2_endereco ? `📍 ${data.hotel_2_endereco}` : ''}
-🛏️ ${data.hotel_2_quarto} com ${data.hotel_2_regime}
-${data.hotel_2_reembolsavel ? '✅ Reembolsável conforme regras do bilhete' : ''}
-💰 ${data.hotel_2_valor} para ${data.passageiros}
-${data.hotel_2_link ? `🔗 ${data.hotel_2_link}` : ''}
+━━━━━━━━━━━━━━━━━━
+🚐 *TRANSFERS:*
+✅ Aeroporto → Hotel → Aeroporto
+${data.tipo_transfer || 'Transfer privativo com assistência'}
 
-${data.hotel_3_nome ? `**OPÇÃO 3** - ${data.hotel_3_nome}
-${data.hotel_3_endereco ? `📍 ${data.hotel_3_endereco}` : ''}
-🛏️ ${data.hotel_3_quarto}
-💰 ${data.hotel_3_valor} para ${data.passageiros}
-${data.hotel_3_link ? `🔗 ${data.hotel_3_link}` : ''}` : ''}
+━━━━━━━━━━━━━━━━━━
+💰 *VALOR DO PACOTE COMPLETO:*
+${data.valor_total || 'R$ 0.000,00'} ${data.valor_detalhe || 'para 2 adultos'}
+💳 ${data.parcelamento || 'Em até 10x sem juros no cartão'}
+${data.entrada ? `💵 Entrada de ${data.entrada} + saldo parcelado` : ''}
 
-Valores sujeitos a confirmação e disponibilidade`
+━━━━━━━━━━━━━━━━━━
+✅ *O PACOTE INCLUI:*
+• Passagem aérea ida e volta
+• ${data.noites || '4'} noites de hospedagem
+• ${data.regime || 'All Inclusive'}
+• Transfer aeroporto/hotel/aeroporto
+• Seguro viagem básico
+• Assistência 24h em português
+
+❌ *NÃO INCLUI:*
+• Despesas pessoais
+• Passeios opcionais
+• Upgrade de categoria
+• Seguro adicional (opcional)
+
+━━━━━━━━━━━━━━━━━━
+🎁 *PROMOÇÃO ESPECIAL:*
+${data.promocao || '• Criança até 12 anos FREE\n• 2º quarto com 30% desconto\n• Check-in antecipado cortesia'}
+
+📱 *Reserve agora e garanta essa oferta!*`
   }
 };
 
 // ================================================================================
-// 🎨 REGRAS DE FORMATAÇÃO PROFISSIONAL - CONFORME MANUAL
+// 🎨 REGRAS DE FORMATAÇÃO PROFISSIONAL
 // ================================================================================
 
 const REGRAS_FORMATACAO = {
-  
-  // Conversão de códigos de aeroporto (OBRIGATÓRIA PELO MANUAL)
-  converterAeroporto: (codigo) => {
-    const mapeamento = {
-      'CGH': 'Congonhas',
-      'GRU': 'Guarulhos', 
-      'VCP': 'Viracopos',
-      'SDU': 'Santos Dumont',
-      'GIG': 'Galeão',
-      'BSB': 'Brasília',
-      'CWB': 'Afonso Pena',
-      'POA': 'Salgado Filho',
-      'FOR': 'Pinto Martins',
-      'REC': 'Guararapes',
-      'SSA': 'Deputado Luís Eduardo',
-      'BEL': 'Val de Cans',
-      'MAO': 'Eduardo Gomes',
-      'CGB': 'Marechal Rondon',
-      'VIX': 'Eurico de Aguiar',
-      'CNF': 'Confins',
-      'NAT': 'Governador Aluízio Alves',
-      'MCZ': 'Zumbi dos Palmares',
-      'AJU': 'Santa Maria',
-      'THE': 'Senador Petrônio Portella'
-    };
-    return mapeamento[codigo] || codigo;
+  // Conversão de aeroportos
+  aeroportos: {
+    'GRU': 'Guarulhos (GRU)',
+    'CGH': 'Congonhas (CGH)',
+    'VCP': 'Viracopos (VCP)',
+    'SDU': 'Santos Dumont (SDU)',
+    'GIG': 'Galeão (GIG)',
+    'BSB': 'Brasília (BSB)',
+    'CNF': 'Confins (CNF)',
+    'POA': 'Porto Alegre (POA)',
+    'REC': 'Recife (REC)',
+    'SSA': 'Salvador (SSA)',
+    'FOR': 'Fortaleza (FOR)',
+    'MAO': 'Manaus (MAO)',
+    'CWB': 'Curitiba (CWB)',
+    'FLN': 'Florianópolis (FLN)',
+    'MCZ': 'Maceió (MCZ)',
+    'JPA': 'João Pessoa (JPA)',
+    'NAT': 'Natal (NAT)',
+    'AJU': 'Aracaju (AJU)',
+    'BEL': 'Belém (BEL)',
+    'VIX': 'Vitória (VIX)',
+    'CGB': 'Cuiabá (CGB)',
+    'GYN': 'Goiânia (GYN)',
+    'SLZ': 'São Luís (SLZ)',
+    'THE': 'Teresina (THE)',
+    'PMW': 'Palmas (PMW)',
+    // Internacionais principais
+    'MIA': 'Miami (MIA)',
+    'MCO': 'Orlando (MCO)',
+    'JFK': 'Nova York (JFK)',
+    'LAX': 'Los Angeles (LAX)',
+    'LIS': 'Lisboa (LIS)',
+    'MAD': 'Madrid (MAD)',
+    'CDG': 'Paris (CDG)',
+    'LHR': 'Londres (LHR)',
+    'FCO': 'Roma (FCO)',
+    'EZE': 'Buenos Aires (EZE)',
+    'SCL': 'Santiago (SCL)',
+    'LIM': 'Lima (LIM)',
+    'BOG': 'Bogotá (BOG)',
+    'MEX': 'Cidade do México (MEX)',
+    'CUN': 'Cancún (CUN)'
   },
-  
-  // Formatação de horários (REGRA CRÍTICA DO MANUAL)
-  formatarHorario: (horario) => {
-    if (!horario) return '';
-    // "06:20" (nunca "06: 20")
-    return horario.replace(/(\d{1,2})\s*:\s*(\d{2})/, (match, h, m) => {
-      return `${h.padStart(2, '0')}:${m}`;
-    });
+
+  // Formatação de valores monetários
+  formatarValor: (valor) => {
+    if (!valor) return 'R$ 0,00';
+    
+    // Remove tudo exceto números e vírgula/ponto
+    let limpo = valor.toString().replace(/[^\d.,]/g, '');
+    
+    // Converte para número
+    let numero = parseFloat(limpo.replace(',', '.'));
+    
+    if (isNaN(numero)) return valor;
+    
+    // Formata para moeda brasileira
+    return `R$ ${numero.toLocaleString('pt-BR', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    })}`;
   },
-  
-  // Formatação de datas (REGRA DO MANUAL)
+
+  // Formatação de datas
   formatarData: (data) => {
     if (!data) return '';
-    // Formato "15/11"
-    return data.replace(/(\d{1,2})[\/\-](\d{1,2})([\/\-](\d{2,4}))?/, (match, d, m, sep, a) => {
-      const dia = d.padStart(2, '0');
-      const mes = m.padStart(2, '0');
-      return `${dia}/${mes}`;
-    });
-  },
-  
-  // Formatação de valores (REGRA CRÍTICA DO MANUAL)
-  formatarValor: (valor) => {
-    if (!valor) return '';
-    // "R$ 1.464,02" (espaço após R$, vírgula para decimais)
-    return valor.replace(/R\$?\s*(\d+)([,.](\d{2}))?/, (match, inteiro, sep, cents) => {
-      const valorFormatado = parseInt(inteiro).toLocaleString('pt-BR');
-      return `R$ ${valorFormatado}${cents ? ',' + cents : ',00'}`;
-    });
-  },
-  
-  // Formatação de passageiros (REGRA DO MANUAL)
-  formatarPassageiros: (adultos, criancas, idades) => {
-    let resultado = '';
-    if (adultos > 0) {
-      // "02 adultos" (com zero à esquerda)
-      resultado += `${adultos.toString().padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-    }
-    if (criancas > 0) {
-      resultado += adultos > 0 ? ` + ${criancas} criança${criancas > 1 ? 's' : ''}` : `${criancas} criança${criancas > 1 ? 's' : ''}`;
-      // Se idade da criança for fornecida, incluir entre parênteses
-      if (idades && idades.length > 0) {
-        resultado += ` (${idades.join(' e ')} anos)`;
-      }
-    }
-    return resultado || '01 adulto';
-  },
-  
-  // Formatação de bagagem por tipo (REGRAS DO MANUAL)
-  formatarBagagem: (tipo, internacional = false) => {
-    if (internacional) {
-      return 'Mala de mão + bagagem despachada 23kg';
+    
+    // Se já está formatada (DD/MM ou DD/MM/AAAA)
+    if (data.includes('/')) return data;
+    
+    // Converte formatos diversos
+    const meses = {
+      'jan': '01', 'janeiro': '01',
+      'fev': '02', 'fevereiro': '02', 
+      'mar': '03', 'março': '03',
+      'abr': '04', 'abril': '04',
+      'mai': '05', 'maio': '05',
+      'jun': '06', 'junho': '06',
+      'jul': '07', 'julho': '07',
+      'ago': '08', 'agosto': '08',
+      'set': '09', 'setembro': '09',
+      'out': '10', 'outubro': '10',
+      'nov': '11', 'novembro': '11',
+      'dez': '12', 'dezembro': '12'
+    };
+    
+    // Tenta converter
+    let dataLimpa = data.toLowerCase();
+    for (const [mes, num] of Object.entries(meses)) {
+      dataLimpa = dataLimpa.replace(mes, num);
     }
     
-    switch (tipo) {
-      case 'basica':
-        return 'Só mala de mão incluída';
-      case 'completa':
-        return 'Mala de mão + bagagem despachada';
-      case 'premium':
-        return 'Mala de mão + 2 bagagens despachadas';
-      default:
-        return 'Só mala de mão incluída';
-    }
+    return dataLimpa;
   },
-  
-  // Detecção de tipo de voo (REGRA DO MANUAL)
-  detectarTipoVoo: (texto, aeroportoConexao) => {
-    if (texto.includes('direto')) {
-      return 'voo direto';
+
+  // Formatação de horários
+  formatarHorario: (horario) => {
+    if (!horario) return '';
+    
+    // Remove textos desnecessários
+    let limpo = horario.replace(/\s*(hrs?|horas?|h)\s*/gi, '');
+    
+    // Adiciona 'h' se for apenas números
+    if (/^\d{2}:\d{2}$/.test(limpo)) {
+      limpo = limpo.replace(':', 'h');
     }
-    if (aeroportoConexao) {
-      return `com conexão em ${aeroportoConexao}`;
-    }
-    if (texto.includes('conexão') || texto.includes('escala')) {
-      return 'com conexão';
-    }
-    return 'voo direto';
+    
+    return limpo;
+  },
+
+  // Formatação de companhias aéreas
+  formatarCompanhia: (companhia) => {
+    const nomes = {
+      'latam': 'LATAM',
+      'gol': 'GOL',
+      'azul': 'AZUL',
+      'tam': 'LATAM',
+      'avianca': 'Avianca',
+      'voepass': 'VoePass',
+      'tap': 'TAP',
+      'american': 'American Airlines',
+      'united': 'United Airlines',
+      'delta': 'Delta Airlines',
+      'air france': 'Air France',
+      'klm': 'KLM',
+      'lufthansa': 'Lufthansa',
+      'copa': 'Copa Airlines',
+      'aeromexico': 'Aeroméxico',
+      'iberia': 'Iberia',
+      'british': 'British Airways',
+      'emirates': 'Emirates',
+      'qatar': 'Qatar Airways'
+    };
+    
+    if (!companhia) return '';
+    const lower = companhia.toLowerCase();
+    return nomes[lower] || companhia;
   }
 };
-
-// ================================================================================
-// 🔍 DETECÇÃO AUTOMÁTICA DE LAYOUTS - MELHORADA
-// ================================================================================
-
-function detectarLayoutOrcamento(dados) {
-  console.log("🔍 Detectando layout do orçamento...");
-  
-  const texto = (dados.observacoes + ' ' + (dados.textoColado || '')).toLowerCase();
-  
-  // Testar cada template na ordem de prioridade (específicos primeiro)
-  const ordemPrioridade = [
-    'cruzeiro',
-    'multitrecho',
-    'multiplas_opcoes_3',
-    'multiplas_opcoes_2',
-    'multiplas_companhias_internacionais',
-    'aereo_somente_ida',
-    'pacote_completo',
-    'aereo_conexao_detalhada',
-    'aereo_nacional_simples'
-  ];
-  
-  for (const tipo of ordemPrioridade) {
-    const config = TEMPLATES_MANUAIS[tipo];
-    if (config && config.detectar(texto)) {
-      console.log(`✅ Layout detectado: ${tipo}`);
-      return tipo;
-    }
-  }
-  
-  // Template padrão
-  console.log("📋 Usando template padrão: aereo_nacional_simples");
-  return 'aereo_nacional_simples';
-}
 
 // ================================================================================
 // 🎯 FUNÇÃO PRINCIPAL DE APLICAÇÃO DE TEMPLATE
 // ================================================================================
 
-export function aplicarTemplateCompleto(formData, analise) {
-  console.log("🎯 Aplicando template completo do manual...");
+function aplicarTemplateCompleto(formData, analise) {
+  console.log("🎯 Aplicando template completo v9.0...");
   
+  if (!formData) {
+    console.error("❌ FormData vazio");
+    return "Erro: Dados do formulário não encontrados";
+  }
+
   try {
-    // ETAPA 1: Detectar layout
-    const layoutDetectado = detectarLayoutOrcamento(formData);
-    const templateConfig = TEMPLATES_MANUAIS[layoutDetectado];
+    // Detectar tipo de layout se houver texto colado
+    let tipoDetectado = 'generico';
     
-    // ETAPA 2: Extrair dados específicos baseado no layout
-    const dadosExtraidos = extrairDadosEspecificos(formData, layoutDetectado);
-    
-    // ETAPA 3: Aplicar regras de formatação
-    const dadosFormatados = aplicarRegraFormatacao(dadosExtraidos);
-    
-    // ETAPA 4: Gerar prompt otimizado
-    const prompt = construirPromptEspecifico(templateConfig, dadosFormatados, formData, layoutDetectado);
-    
-    console.log(`✅ Template ${layoutDetectado} aplicado com sucesso`);
-    return prompt;
-    
+    if (formData.textoColado) {
+      tipoDetectado = detectarLayoutOrcamento(formData.textoColado);
+      console.log(`📊 Tipo detectado: ${tipoDetectado}`);
+    } else if (analise && analise.tipoPrincipal) {
+      tipoDetectado = mapearTipoParaTemplate(analise.tipoPrincipal);
+      console.log(`📊 Tipo mapeado da análise: ${tipoDetectado}`);
+    }
+
+    // Aplicar template específico ou gerar prompt
+    if (TEMPLATES_MANUAIS[tipoDetectado]) {
+      console.log(`✅ Usando template manual: ${tipoDetectado}`);
+      
+      // Extrair dados do texto colado se houver
+      const dadosExtraidos = formData.textoColado ? 
+        extrairDadosDoTexto(formData.textoColado, tipoDetectado) : 
+        formData;
+      
+      // Aplicar template
+      const resultado = TEMPLATES_MANUAIS[tipoDetectado].template(dadosExtraidos);
+      
+      // Aplicar formatações finais
+      return aplicarFormatacoesFinais(resultado);
+    }
+
+    // Se não encontrou template específico, gerar prompt para IA
+    console.log("📝 Gerando prompt para template genérico");
+    return gerarPromptGenerico(formData, analise);
+
   } catch (error) {
     console.error("❌ Erro ao aplicar template:", error);
-    return construirPromptFallback(formData);
+    return gerarPromptGenerico(formData, analise);
   }
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES AUXILIARES - MELHORADAS
+// 🔍 DETECÇÃO INTELIGENTE DE LAYOUT COM PRIORIDADE
 // ================================================================================
 
-function extrairDadosEspecificos(formData, layout) {
-  const textoCompleto = formData.observacoes + ' ' + (formData.textoColado || '');
+function detectarLayoutOrcamento(textoColado) {
+  console.log("🔍 Detectando layout do orçamento v9.0...");
+  
+  if (!textoColado) {
+    console.log("⚠️ Texto vazio, retornando genérico");
+    return 'generico';
+  }
+
+  const texto = textoColado.toLowerCase();
+  
+  // Ordem de prioridade: mais específico → mais genérico
+  const ordemPrioridade = [
+    'cruzeiro',                          // Muito específico
+    'pacote_completo',                   // Específico (hotel + aéreo)
+    'multitrecho',                       // Específico (múltiplos trechos)
+    'multiplas_companhias_internacionais', // Internacional com opções
+    'multiplas_opcoes_3',                // 3 opções
+    'multiplas_opcoes_2',                // 2 opções
+    'aereo_conexao_detalhada',          // Conexão específica
+    'aereo_somente_ida',                 // One way
+    'aereo_nacional_simples'            // Mais genérico dos específicos
+  ];
+
+  // Testar cada tipo na ordem de prioridade
+  for (const tipo of ordemPrioridade) {
+    if (TEMPLATES_MANUAIS[tipo] && TEMPLATES_MANUAIS[tipo].detectar(texto)) {
+      console.log(`✅ Layout detectado: ${tipo}`);
+      return tipo;
+    }
+  }
+
+  console.log("📝 Nenhum layout específico detectado, usando genérico");
+  return 'generico';
+}
+
+// ================================================================================
+// 🗺️ MAPEAMENTO DE TIPOS DE ANÁLISE PARA TEMPLATES
+// ================================================================================
+
+function mapearTipoParaTemplate(tipoPrincipal) {
+  const mapeamento = {
+    'Aéreo Nacional': 'aereo_nacional_simples',
+    'Aéreo Internacional': 'multiplas_companhias_internacionais',
+    'Multi Destinos': 'multitrecho',
+    'Cruzeiros Marítimos': 'cruzeiro',
+    'Hotéis': 'pacote_completo',
+    'Pacotes Completos': 'pacote_completo',
+    'Pacotes Terrestres': 'pacote_completo'
+  };
+
+  return mapeamento[tipoPrincipal] || 'generico';
+}
+
+// ================================================================================
+// 📤 EXTRAÇÃO DE DADOS DO TEXTO
+// ================================================================================
+
+function extrairDadosDoTexto(texto, tipoTemplate) {
+  console.log(`📤 Extraindo dados para template: ${tipoTemplate}`);
   
   const dados = {
-    companhia: extrairCompanhia(textoCompleto),
-    origem: extrairOrigem(textoCompleto),
-    destino: formData.destino || extrairDestino(textoCompleto),
-    passageiros: REGRAS_FORMATACAO.formatarPassageiros(formData.adultos, formData.criancas, formData.idadesCriancas),
-    
-    // Datas e horários formatados
-    data_ida: REGRAS_FORMATACAO.formatarData(extrairDataIda(textoCompleto)),
-    data_volta: REGRAS_FORMATACAO.formatarData(extrairDataVolta(textoCompleto)),
-    
-    // Aeroportos convertidos
-    aeroporto_origem: REGRAS_FORMATACAO.converterAeroporto(extrairOrigem(textoCompleto)),
-    aeroporto_destino: REGRAS_FORMATACAO.converterAeroporto(formData.destino || extrairDestino(textoCompleto)),
-    
-    // Valores formatados
-    valor_total: REGRAS_FORMATACAO.formatarValor(extrairValor(textoCompleto)),
-    
-    // Informações específicas por tipo
-    bagagem: REGRAS_FORMATACAO.formatarBagagem('basica', layout.includes('internacional')),
-    reembolso: extrairReembolso(textoCompleto) || 'Não reembolsável',
-    
-    // Campos opcionais
-    conexao: extrairConexao(textoCompleto),
-    tipo_voo_ida: REGRAS_FORMATACAO.detectarTipoVoo(textoCompleto, extrairConexao(textoCompleto)),
-    tipo_voo_volta: 'voo direto'
+    textoOriginal: texto
   };
-  
+
+  // Extrações comuns
+  dados.valor_total = extrairValor(texto);
+  dados.data_ida = extrairData(texto, 'ida');
+  dados.data_volta = extrairData(texto, 'volta');
+  dados.passageiros = extrairPassageiros(texto);
+  dados.destino = extrairDestino(texto);
+
+  // Extrações específicas por tipo
+  switch (tipoTemplate) {
+    case 'cruzeiro':
+      dados.nome_cruzeiro = extrairNomeCruzeiro(texto);
+      dados.duracao = extrairDuracao(texto);
+      dados.categoria_cabine = extrairCabine(texto);
+      break;
+      
+    case 'pacote_completo':
+      dados.nome_hotel = extrairHotel(texto);
+      dados.regime = extrairRegime(texto);
+      dados.noites = extrairNoites(texto);
+      break;
+      
+    case 'multitrecho':
+      dados.trechos = extrairTrechos(texto);
+      break;
+      
+    default:
+      dados.companhia = extrairCompanhia(texto);
+      dados.horarios = extrairHorarios(texto);
+  }
+
   return dados;
 }
 
-function aplicarRegraFormatacao(dados) {
-  return {
-    ...dados,
-    data_ida: REGRAS_FORMATACAO.formatarData(dados.data_ida),
-    data_volta: REGRAS_FORMATACAO.formatarData(dados.data_volta),
-    valor_total: REGRAS_FORMATACAO.formatarValor(dados.valor_total),
-    hora_ida: REGRAS_FORMATACAO.formatarHorario(dados.hora_ida),
-    hora_volta: REGRAS_FORMATACAO.formatarHorario(dados.hora_volta)
-  };
+// Funções auxiliares de extração
+function extrairValor(texto) {
+  const match = texto.match(/R\$\s*[\d.,]+/);
+  return match ? REGRAS_FORMATACAO.formatarValor(match[0]) : 'R$ 0,00';
 }
 
-function construirPromptEspecifico(templateConfig, dados, formData, layoutDetectado) {
-  return `ORÇAMENTO CVC ITAQUA - SISTEMA PROFISSIONAL v8.2
-
-TEMPLATE DETECTADO: ${layoutDetectado.toUpperCase()}
-BASEADO NO MANUAL DE MODELOS CVC OFICIAL
-
-DADOS DA VIAGEM:
-${JSON.stringify(dados, null, 2)}
-
-REGRAS DE FORMATAÇÃO OBRIGATÓRIAS (CONFORME MANUAL):
-1. ⏰ HORÁRIOS: Formato "06:20" (nunca "06: 20") 
-2. 📅 DATAS: Formato "15/11"
-3. 🌍 AEROPORTOS: Converter códigos (CGH → Congonhas)
-4. 💰 PREÇOS: "R$ 1.464,02" (espaço após R$, vírgula decimais)
-5. 🧳 BAGAGEM NACIONAL: "Só mala de mão incluída" (básica)
-6. 🧳 BAGAGEM INTERNACIONAL: "Mala de mão + bagagem despachada 23kg"
-7. 🏷️ REEMBOLSO: "Não reembolsável" OU "Reembolsável conforme regras do bilhete"
-8. 👥 PASSAGEIROS: "02 adultos" (zero à esquerda)
-9. ➖ SEPARADOR: "--" entre ida e volta
-10. 🏢 COMPANHIA: *Nome em destaque*
-11. 👶 CRIANÇAS: "02 adultos + 01 criança (05 anos)" se idade informada
-
-INSTRUÇÕES ESPECÍFICAS PARA ${layoutDetectado.toUpperCase()}:
-${gerarInstrucoesPorTipo(layoutDetectado)}
-
-CAMPOS OPCIONAIS (usar apenas se fornecidos):
-${formData.destino ? `- Destino: ${formData.destino}` : ''}
-${formData.adultos ? `- Adultos: ${formData.adultos}` : ''}
-${formData.criancas > 0 ? `- Crianças: ${formData.criancas}` : ''}
-${formData.parcelamento?.incluirParcelamento ? '- Incluir parcelamento quando disponível' : ''}
-
-GERE O ORÇAMENTO PROFISSIONAL SEGUINDO O TEMPLATE ${layoutDetectado.toUpperCase()}:`;
-}
-
-function gerarInstrucoesPorTipo(layoutDetectado) {
-  const instrucoes = {
-    'aereo_nacional_simples': `
-- Usar separador "--" entre ida e volta
-- Bagagem padrão: "Só mala de mão incluída"
-- Formato: *Companhia - Origem ✈ Destino*`,
-    
-    'aereo_conexao_detalhada': `
-- Mostrar cada trecho da conexão separadamente
-- Incluir tempo de espera: "(conexão em Brasília - 2h05 de espera)"
-- Detalhar todos os trechos com horários`,
-    
-    'aereo_somente_ida': `
-- NÃO incluir separador "--" 
-- Adicionar aviso: "⚠️ Passagem somente de ida - sem retorno incluído"
-- Incluir texto padrão de taxas e bagagem`,
-    
-    'multiplas_opcoes_2': `
-- Mostrar OPÇÃO 1 (básica) e OPÇÃO 2 (completa)
-- OPÇÃO 1: "Só mala de mão incluída"
-- OPÇÃO 2: "Mala de mão + bagagem despachada" + serviços extras`,
-    
-    'multiplas_opcoes_3': `
-- Mostrar OPÇÃO 1, OPÇÃO 2 e OPÇÃO 3 (escalonado)
-- OPÇÃO 1: Básica / OPÇÃO 2: Intermediária / OPÇÃO 3: Premium
-- OPÇÃO 3 deve incluir: "✅ Marcação de assento"`,
-    
-    'multitrecho': `
-- Formato: *Trecho 1:* Origem → Destino
-- Mostrar duração: "(14 dias e 13 noites)"
-- Listar todos os trechos com datas e horários
-- Companhias podem ser múltiplas`,
-    
-    'multiplas_companhias_internacionais': `
-- Formato: *OPÇÃO 1 - Companhia1* e *OPÇÃO 2 - Companhia2*
-- Mostrar diferenças entre companhias (horários, conexões)
-- Preços e links separados por opção`,
-    
-    'cruzeiro': `
-- Emoji 🚢 obrigatório no início
-- Formato: *Cruzeiro Nome* – X noites
-- Incluir: "🌊 Roteiro incrível pelo litoral brasileiro!"
-- Opções de cabines com preços escalonados
-- Documentação: "RG original (máx. 10 anos) ou passaporte"`,
-    
-    'pacote_completo': `
-- Iniciar com "*Pacote Destino*"
-- Seção "*O Pacote Inclui:*" obrigatória
-- Separar "*Voos:*" e depois opções de hotéis
-- Formato: **OPÇÃO X** - Nome do Hotel
-- Incluir regime alimentar e tipo de quarto`
-  };
+function extrairData(texto, tipo) {
+  const patterns = tipo === 'ida' ? 
+    [/ida[:\s]+(\d{2}\/\d{2})/i, /saída[:\s]+(\d{2}\/\d{2})/i] :
+    [/volta[:\s]+(\d{2}\/\d{2})/i, /retorno[:\s]+(\d{2}\/\d{2})/i];
   
-  return instrucoes[layoutDetectado] || 'Seguir formato padrão do template detectado.';
-}
-
-function construirPromptFallback(formData) {
-  return `ORÇAMENTO CVC ITAQUA - FALLBACK v8.2
-
-Baseado nos dados: ${JSON.stringify(formData)}
-
-Gere um orçamento profissional seguindo o padrão CVC com as regras do manual.`;
-}
-
-// Funções de extração (implementações melhoradas)
-function extrairCompanhia(texto) {
-  const companhias = [
-    { nome: 'LATAM', variantes: ['latam', 'tam'] },
-    { nome: 'Gol', variantes: ['gol'] },
-    { nome: 'Azul', variantes: ['azul'] },
-    { nome: 'Avianca', variantes: ['avianca'] },
-    { nome: 'Copa Airlines', variantes: ['copa'] },
-    { nome: 'American Airlines', variantes: ['american'] },
-    { nome: 'TAP Portugal', variantes: ['tap'] },
-    { nome: 'MSC Cruzeiros', variantes: ['msc'] }
-  ];
-  
-  const textoLower = texto.toLowerCase();
-  for (const comp of companhias) {
-    for (const variante of comp.variantes) {
-      if (textoLower.includes(variante)) {
-        return comp.nome;
-      }
-    }
+  for (const pattern of patterns) {
+    const match = texto.match(pattern);
+    if (match) return match[1];
   }
-  return 'LATAM';
+  return '';
 }
 
-function extrairOrigem(texto) {
-  const aeroportos = [
-    { codigo: 'CGH', nomes: ['congonhas'] },
-    { codigo: 'GRU', nomes: ['guarulhos'] },
-    { codigo: 'VCP', nomes: ['viracopos', 'campinas'] },
-    { codigo: 'SDU', nomes: ['santos dumont'] },
-    { codigo: 'GIG', nomes: ['galeão'] },
-    { codigo: 'BSB', nomes: ['brasília'] }
-  ];
-  
-  const textoLower = texto.toLowerCase();
-  for (const aeroporto of aeroportos) {
-    if (textoLower.includes(aeroporto.codigo.toLowerCase())) {
-      return aeroporto.codigo;
-    }
-    for (const nome of aeroporto.nomes) {
-      if (textoLower.includes(nome)) {
-        return aeroporto.codigo;
-      }
-    }
-  }
-  return 'São Paulo';
+function extrairPassageiros(texto) {
+  const match = texto.match(/(\d+)\s*(adulto|pessoa|pax)/i);
+  return match ? `${match[1]} ${match[2]}` : '1 adulto';
 }
 
 function extrairDestino(texto) {
-  const destinos = ['porto alegre', 'salvador', 'recife', 'fortaleza', 'maceió', 'natal'];
-  const textoLower = texto.toLowerCase();
+  // Lista de destinos comuns
+  const destinos = ['Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 
+                    'João Pessoa', 'Porto Seguro', 'Florianópolis', 'Rio de Janeiro',
+                    'Búzios', 'Campos do Jordão', 'Gramado', 'Foz do Iguaçu',
+                    'Miami', 'Orlando', 'Lisboa', 'Paris', 'Madrid', 'Londres'];
   
   for (const destino of destinos) {
-    if (textoLower.includes(destino)) {
-      return destino.charAt(0).toUpperCase() + destino.slice(1);
+    if (texto.toLowerCase().includes(destino.toLowerCase())) {
+      return destino;
     }
   }
   return 'Destino';
 }
 
-function extrairDataIda(texto) {
-  const matches = texto.match(/\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/g);
-  return matches ? matches[0] : '';
-}
-
-function extrairDataVolta(texto) {
-  const matches = texto.match(/\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/g);
-  return matches && matches.length > 1 ? matches[1] : '';
-}
-
-function extrairValor(texto) {
-  const match = texto.match(/R\$?\s*[\d.]+(?:,\d{2})?/);
-  return match ? match[0] : '';
-}
-
-function extrairBagagem(texto) {
-  const textoLower = texto.toLowerCase();
-  if (textoLower.includes('despachada') || textoLower.includes('23kg')) {
-    return 'Mala de mão + bagagem despachada';
-  }
-  if (textoLower.includes('bagagem')) {
-    return 'Bagagem incluída';
-  }
-  return null;
-}
-
-function extrairReembolso(texto) {
-  const textoLower = texto.toLowerCase();
-  if (textoLower.includes('reembolsável') && !textoLower.includes('não')) {
-    return 'Reembolsável conforme regras do bilhete';
-  }
-  return null;
-}
-
-function extrairConexao(texto) {
-  const conexoes = [
-    { nome: 'Brasília', variantes: ['brasília', 'bsb'] },
-    { nome: 'Recife', variantes: ['recife', 'rec'] },
-    { nome: 'Fortaleza', variantes: ['fortaleza', 'for'] },
-    { nome: 'Salvador', variantes: ['salvador', 'ssa'] }
-  ];
-  
-  const textoLower = texto.toLowerCase();
-  for (const conexao of conexoes) {
-    for (const variante of conexao.variantes) {
-      if (textoLower.includes(variante)) {
-        return conexao.nome;
-      }
+function extrairCompanhia(texto) {
+  const companhias = ['LATAM', 'GOL', 'AZUL', 'TAP', 'American', 'United'];
+  for (const cia of companhias) {
+    if (texto.toLowerCase().includes(cia.toLowerCase())) {
+      return cia;
     }
   }
-  return null;
+  return 'Companhia Aérea';
+}
+
+function extrairHorarios(texto) {
+  const matches = texto.match(/\d{2}[h:]\d{2}/g);
+  return matches ? matches.join(' / ') : '';
+}
+
+function extrairNomeCruzeiro(texto) {
+  const nomes = ['Costa Fascinosa', 'MSC Preziosa', 'MSC Grandiosa', 'Costa Diadema'];
+  for (const nome of nomes) {
+    if (texto.toLowerCase().includes(nome.toLowerCase())) {
+      return nome;
+    }
+  }
+  return 'Cruzeiro';
+}
+
+function extrairDuracao(texto) {
+  const match = texto.match(/(\d+)\s*noites?/i);
+  return match ? `${match[1]} noites` : '7 noites';
+}
+
+function extrairCabine(texto) {
+  if (texto.toLowerCase().includes('varanda')) return 'Externa com Varanda';
+  if (texto.toLowerCase().includes('interna')) return 'Interna';
+  if (texto.toLowerCase().includes('suíte')) return 'Suíte';
+  return 'Externa';
+}
+
+function extrairHotel(texto) {
+  const match = texto.match(/hotel\s+([^\n,]+)/i);
+  return match ? match[1].trim() : 'Hotel';
+}
+
+function extrairRegime(texto) {
+  if (texto.toLowerCase().includes('all inclusive')) return 'All Inclusive';
+  if (texto.toLowerCase().includes('meia pensão')) return 'Meia Pensão';
+  if (texto.toLowerCase().includes('café da manhã')) return 'Café da manhã incluído';
+  return 'Conforme disponibilidade';
+}
+
+function extrairNoites(texto) {
+  const match = texto.match(/(\d+)\s*noites?/i);
+  return match ? match[1] : '4';
+}
+
+function extrairTrechos(texto) {
+  // Implementação simplificada para extração de trechos
+  const trechos = [];
+  const linhas = texto.split('\n');
+  
+  for (const linha of linhas) {
+    if (linha.includes('→') || linha.includes('->')) {
+      trechos.push(linha.trim());
+    }
+  }
+  
+  return trechos;
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ES6 COMPLETA - TODOS OS 9 TIPOS
+// 🎨 APLICAÇÃO DE FORMATAÇÕES FINAIS
 // ================================================================================
 
-console.log("✅ Templates v8.2 carregado:");
-console.log(`📋 ${Object.keys(TEMPLATES_MANUAIS).length} templates COMPLETOS do Manual CVC`);
-console.log("🎯 TODOS OS 9 TIPOS OBRIGATÓRIOS implementados:");
-console.log("   1. ✈️ Aéreo Nacional Simples");
-console.log("   2. ✈️ Aéreo com Conexão Detalhada");
-console.log("   3. ✈️ Aéreo Somente Ida");
-console.log("   4. 🔢 Múltiplas Opções - 2 Planos");
-console.log("   5. 🔢 Múltiplas Opções - 3 Planos");
-console.log("   6. 🗺️ Multitrecho");
-console.log("   7. 🌍 Múltiplas Companhias Internacionais");
-console.log("   8. 🚢 Cruzeiro");
-console.log("   9. 🏖️ Pacote Completo");
-console.log("🎨 Regras de formatação conforme Manual CVC");
-console.log("🔍 Detecção automática melhorada");
-console.log("🚨 EXPORTAÇÃO ES6 PURA - SISTEMA HÍBRIDO REMOVIDO");
+function aplicarFormatacoesFinais(texto) {
+  console.log("🎨 Aplicando formatações finais...");
+  
+  let formatado = texto;
+  
+  // Aplicar conversão de aeroportos
+  for (const [sigla, nome] of Object.entries(REGRAS_FORMATACAO.aeroportos)) {
+    const regex = new RegExp(`\\b${sigla}\\b`, 'g');
+    formatado = formatado.replace(regex, nome);
+  }
+  
+  // Remover espaços extras
+  formatado = formatado.replace(/\n{3,}/g, '\n\n');
+  formatado = formatado.replace(/\s+$/gm, '');
+  
+  // Garantir emojis corretos
+  formatado = formatado.replace(/airplane/gi, '✈️');
+  formatado = formatado.replace(/ship/gi, '🚢');
+  formatado = formatado.replace(/hotel/gi, '🏨');
+  
+  return formatado.trim();
+}
 
-// EXPORTAÇÃO ES6 ÚNICA E LIMPA
+// ================================================================================
+// 📝 GERAÇÃO DE PROMPT GENÉRICO
+// ================================================================================
+
+function gerarPromptGenerico(formData, analise) {
+  console.log("📝 Gerando prompt genérico para IA...");
+  
+  const tipos = formData.tipos || ['Orçamento'];
+  const destino = formData.destino || 'Destino não especificado';
+  const observacoes = formData.observacoes || '';
+  const textoColado = formData.textoColado || '';
+  
+  let prompt = `Crie um orçamento profissional CVC Itaquaquecetuba:
+
+TIPOS SOLICITADOS: ${tipos.join(', ')}
+DESTINO: ${destino}
+ADULTOS: ${formData.adultos || 1}
+CRIANÇAS: ${formData.criancas || 0}
+${formData.idadesCriancas ? `IDADES DAS CRIANÇAS: ${formData.idadesCriancas}` : ''}
+
+${observacoes ? `OBSERVAÇÕES DO CLIENTE:\n${observacoes}\n` : ''}
+${textoColado ? `INFORMAÇÕES ADICIONAIS:\n${textoColado}\n` : ''}
+
+FORMATO OBRIGATÓRIO:
+- Use emojis profissionais (✈️ 🏨 💰 📅 ✅)
+- Destaque com *negrito* informações importantes
+- Separe seções com linhas (━━━━━)
+- Inclua valores, datas e horários
+- Termine com call-to-action
+
+Gere o orçamento completo e formatado:`;
+
+  return prompt;
+}
+
+// ================================================================================
+// 🚀 EXPORTAÇÃO ES6 COMPLETA (SEM DUPLICAÇÃO)
+// ================================================================================
+
 export {
   aplicarTemplateCompleto,
   detectarLayoutOrcamento,
   TEMPLATES_MANUAIS,
-  REGRAS_FORMATACAO
+  REGRAS_FORMATACAO,
+  mapearTipoParaTemplate,
+  extrairDadosDoTexto,
+  aplicarFormatacoesFinais,
+  gerarPromptGenerico
 };
 
-// EXPORTAÇÃO DEFAULT PARA MÁXIMA COMPATIBILIDADE
 export default {
   aplicarTemplateCompleto,
   detectarLayoutOrcamento,
   TEMPLATES_MANUAIS,
-  REGRAS_FORMATACAO
+  REGRAS_FORMATACAO,
+  mapearTipoParaTemplate,
+  extrairDadosDoTexto,
+  aplicarFormatacoesFinais,
+  gerarPromptGenerico
 };
 
-console.log("🚀 Sistema de Templates v8.2 - MANUAL CVC 100% IMPLEMENTADO!");
+console.log("✅ Templates v9.0 carregado - Sistema profissional completo");
