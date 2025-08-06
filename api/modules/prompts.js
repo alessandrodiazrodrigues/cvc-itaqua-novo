@@ -143,7 +143,8 @@ function determinarEstrategia(analise) {
 // 🎯 SELEÇÃO DE PROMPT POR TIPO
 // ================================================================================
 
-// CORREÇÃO: Removido 'export' da linha abaixo
+// SUBSTITUA A FUNÇÃO 'selecionarPromptPorTipo' EXISTENTE POR ESTA VERSÃO ATUALIZADA:
+
 function selecionarPromptPorTipo(tipoDetectado, contexto, estrategia) {
   console.log(`🎯 Selecionando prompt para tipo: ${tipoDetectado}`);
   
@@ -156,6 +157,7 @@ function selecionarPromptPorTipo(tipoDetectado, contexto, estrategia) {
     multitrecho: promptMultitrecho,
     multiplas_companhias_internacionais: promptMultiplasCompanhiasInternacionais,
     pacote_completo: promptPacoteCompleto,
+    hotel_somente: promptHotelSomente, // <-- ADICIONE ESTA LINHA
     cruzeiro: promptCruzeiro
   };
   
@@ -509,6 +511,44 @@ REGRAS CRUZEIRO:
 - Chamada final para ação
 
 GERAR ORÇAMENTO DE CRUZEIRO:`;
+}
+
+// ADICIONE ESTA NOVA FUNÇÃO no seu arquivo prompts.js
+
+function promptHotelSomente(contexto, estrategia) {
+  return `ORÇAMENTO CVC ITAQUA - SOMENTE HOSPEDAGEM v8.1
+
+ANÁLISE INTELIGENTE DETECTOU:
+- Tipo: Somente Hotel/Resort
+- Confiança: ${(contexto.confianca * 100).toFixed(0)}%
+- Complexidade: ${contexto.complexidade}
+
+DADOS DA VIAGEM (Extraia as informações abaixo do texto):
+${contexto.observacoes}
+${contexto.textoColado}
+
+FORMATAÇÃO OBRIGATÓRIA - SOMENTE HOTEL:
+
+🏨 *[NOME_HOTEL] - [DESTINO]*
+⭐ [CATEGORIA_ESTRELAS]
+📍 [ENDERECO_SE_HOUVER]
+
+📅 Check-in: [DD/MM] | Check-out: [DD/MM] (${/*NOITES*/} noites)
+
+🛏️ **Acomodação:** [TIPO_QUARTO]
+🍽️ **Regime:** [REGIME_ALIMENTAR]
+👥 **Hóspedes:** ${contexto.adultos} adultos
+
+💰 **Valor Total da Hospedagem:** [VALOR_TOTAL]
+${contexto.parcelamento.incluirParcelamento ? '💳 [PARCELAMENTO]' : ''}
+🏷️ **Política:** [POLITICA_CANCELAMENTO]
+
+REGRAS CRÍTICAS:
+- É PROIBIDO INVENTAR OU INCLUIR informações de voo, aéreo ou passagens.
+- O foco é 100% na hospedagem.
+- Extraia o nome do hotel (Mavsa Resort), regime (All Inclusive), tipo de quarto (Promo Superior Master), etc., dos dados fornecidos.
+
+GERAR ORÇAMENTO DE HOSPEDAGEM:`;
 }
 
 // ================================================================================
