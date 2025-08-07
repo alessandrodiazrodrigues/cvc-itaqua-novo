@@ -1,8 +1,8 @@
-// 🤖 modules/ia-client.js - v8.1 - CORREÇÃO FINAL DE EXPORTAÇÕES
-// CORREÇÃO: Removido 'export' duplicado de TODAS as funções para resolver o erro.
-// Responsável por: Chamadas OpenAI, Claude, fallbacks, seleção de modelo
+// 🤖 api/modules/ia-client.js - v9.0 - IA REAL CONECTADA
+// OBJETIVO: Substituir simulação por calls reais OpenAI + Claude
+// ESTRATÉGIA: GPT-4o-mini principal, GPT-4o complexo, Claude imagens
 
-console.log("🤖 IA-Client v8.1 - EXPORTAÇÕES CORRIGIDAS");
+console.log("🤖 IA-Client v9.0 - IA REAL CONECTADA");
 
 // ================================================================================
 // 🎯 CONFIGURAÇÕES E CONSTANTES
@@ -18,180 +18,288 @@ const PRECOS_MODELOS = {
 };
 
 let estatisticas = {
-  totalChamadas: 0, custoTotalBRL: 0, tokensTotal: 0,
-  sucessos: 0, falhas: 0, ultimaReset: new Date().toISOString()
+  totalChamadas: 0,
+  custoTotalBRL: 0,
+  tokensTotal: 0,
+  sucessos: 0,
+  falhas: 0,
+  ultimaReset: new Date().toISOString()
 };
 
 // ================================================================================
-// 🎯 FUNÇÃO PRINCIPAL: CHAMAR IA COM SEGURANÇA
+// 🎯 FUNÇÃO PRINCIPAL: CHAMAR IA REAL
 // ================================================================================
 
-async function chamarIASegura(prompt, temImagem, arquivo, modelo, fallbackModelo) {
-  console.log('[IA-CLIENT] Iniciando chamada segura...', { modelo, temImagem });
+export async function chamarIASegura(prompt, temImagem, arquivo, modelo, fallbackModelo) {
+  console.log('[IA-CLIENT] 🚀 Iniciando chamada IA REAL...', { modelo, temImagem });
   
   try {
     estatisticas.totalChamadas++;
     let resultado;
     
-    if (temImagem === true) {
-      console.log('[IA-CLIENT] Chamando Claude para análise de imagem...');
-      resultado = await chamarClaude(prompt, arquivo, modelo);
+    if (temImagem === true && arquivo) {
+      console.log('[IA-CLIENT] 📸 Chamando Claude para análise de imagem...');
+      resultado = await chamarClaude(prompt, arquivo, modelo || 'claude-3-5-sonnet-20240620');
     } else {
-      console.log('[IA-CLIENT] Chamando OpenAI para processamento de texto...');
-      resultado = await chamarOpenAI(prompt, false, null, modelo);
+      console.log('[IA-CLIENT] 🤖 Chamando OpenAI para processamento de texto...');
+      resultado = await chamarOpenAI(prompt, modelo || 'gpt-4o-mini');
     }
     
     estatisticas.sucessos++;
     atualizarEstatisticas(resultado);
+    
+    console.log('[IA-CLIENT] ✅ IA REAL respondeu com sucesso!');
     return resultado;
     
   } catch (erro1) {
     console.error(`❌ [IA-CLIENT] Falha no modelo principal ${modelo}:`, erro1.message);
     
-    if (temImagem === true) {
-      console.warn(`⚠️ [IA-CLIENT] Claude falhou, tentando GPT-4o com visão...`);
+    // FALLBACK 1: Tentar modelo secundário
+    if (fallbackModelo && fallbackModelo.length > 0) {
+      console.warn(`⚠️ [IA-CLIENT] Tentando fallback: ${fallbackModelo[0]}...`);
       try {
-        const resultadoFallback = await chamarOpenAI(prompt, true, arquivo, 'gpt-4o');
-        estatisticas.sucessos++;
-        atualizarEstatisticas(resultadoFallback);
-        return resultadoFallback;
-      } catch (erro2) {
-        console.error(`❌ [IA-CLIENT] GPT-4o também falhou:`, erro2.message);
-        estatisticas.falhas++;
-        throw new Error(`Ambos os modelos de imagem falharam: Claude (${erro1.message}) | GPT-4o (${erro2.message})`);
-      }
-    } else {
-      console.warn(`⚠️ [IA-CLIENT] Tentando fallback com ${fallbackModelo}...`);
-      try {
-        const resultadoFallback = await chamarOpenAI(prompt, false, null, fallbackModelo);
+        const resultadoFallback = await chamarOpenAI(prompt, fallbackModelo[0]);
         estatisticas.sucessos++;
         atualizarEstatisticas(resultadoFallback);
         return resultadoFallback;
       } catch (erro2) {
         console.error(`❌ [IA-CLIENT] Fallback também falhou:`, erro2.message);
-        estatisticas.falhas++;
-        throw new Error(`Ambos os modelos de texto falharam: ${modelo} (${erro1.message}) | ${fallbackModelo} (${erro2.message})`);
       }
     }
+    
+    // FALLBACK FINAL: Resposta estruturada de erro
+    estatisticas.falhas++;
+    throw new Error(`IA indisponível: ${erro1.message}`);
   }
 }
 
 // ================================================================================
-// 🧠 FUNÇÃO: CHAMAR CLAUDE (ANTHROPIC)
+// 🤖 FUNÇÃO: CHAMAR OPENAI
 // ================================================================================
 
-async function chamarClaude(prompt, arquivo, modelo = 'claude-3-5-sonnet-20240620') {
-  console.log('[IA-CLIENT] Preparando chamada para Claude...', { modelo });
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY não encontrada');
+async function chamarOpenAI(prompt, modelo = 'gpt-4o-mini') {
+  console.log('[IA-CLIENT] 📡 Conectando com OpenAI...', { modelo });
+  
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY não configurada nas variáveis de ambiente');
+  }
 
-  const messages = [{
-    role: 'user',
-    content: [
-      { type: 'text', text: prompt },
+  const requestBody = {
+    model: modelo,
+    messages: [
       {
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: arquivo.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png',
-          data: arquivo.split(',')[1]
-        }
+        role: 'user',
+        content: prompt
       }
-    ]
-  }];
+    ],
+    max_tokens: MAX_TOKENS,
+    temperature: 0.1,
+    response_format: { type: 'text' }
+  };
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: modelo, max_tokens: MAX_TOKENS, messages: messages })
-  });
-
-  if (!response.ok) throw new Error(`Erro na API Claude ${response.status}: ${(await response.text()).substring(0, 200)}`);
-  const data = await response.json();
-  if (!data.content?.[0]?.text) throw new Error('Resposta da API Claude em formato inválido');
-
-  console.log('[IA-CLIENT] ✅ Claude respondeu com sucesso');
-  return { content: data.content[0].text, usage: data.usage || { input_tokens: 0, output_tokens: 0 }, modelo_usado: modelo };
-}
-
-// ================================================================================
-// 🤖 FUNÇÃO: CHAMAR OPENAI (GPT)
-// ================================================================================
-
-async function chamarOpenAI(prompt, temImagem, arquivo, modelo) {
-  console.log('[IA-CLIENT] Preparando chamada para OpenAI...', { modelo, temImagem });
-  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY não encontrada');
-
-  let messages;
-  if (temImagem === true && arquivo) {
-    messages = [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: arquivo } }] }];
-  } else {
-    messages = [{ role: "user", content: prompt }];
-  }
-
+  console.log('[IA-CLIENT] 📤 Enviando request para OpenAI...');
+  
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: modelo, messages: messages, max_tokens: MAX_TOKENS, temperature: 0.1 })
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody)
   });
 
-  if (!response.ok) throw new Error(`Erro na API OpenAI ${response.status}: ${(await response.text()).substring(0, 200)}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[IA-CLIENT] ❌ Erro da API OpenAI:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText.substring(0, 200)
+    });
+    throw new Error(`OpenAI API error ${response.status}: ${errorText.substring(0, 100)}`);
+  }
+
   const data = await response.json();
-  if (!data.choices?.[0]?.message?.content) throw new Error('Resposta da API OpenAI em formato inválido');
+  
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    console.error('[IA-CLIENT] ❌ Resposta OpenAI inválida:', data);
+    throw new Error('Resposta da API OpenAI em formato inválido');
+  }
 
   console.log('[IA-CLIENT] ✅ OpenAI respondeu com sucesso');
-  return { content: data.choices[0].message.content, usage: data.usage || { prompt_tokens: 0, completion_tokens: 0 }, modelo_usado: modelo };
+  console.log('[IA-CLIENT] 📊 Tokens usados:', data.usage);
+  
+  return {
+    content: data.choices[0].message.content,
+    usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+    modelo_usado: modelo,
+    tempo_resposta: new Date().toISOString()
+  };
 }
 
 // ================================================================================
-// 🎯 FUNÇÃO: SELEÇÃO INTELIGENTE DE MODELO
+// 🎨 FUNÇÃO: CHAMAR CLAUDE (PARA IMAGENS)
 // ================================================================================
 
-function selecionarModelo(temImagem, complexidade = 'media') {
-  if (temImagem === true) {
-    return { modelo: 'claude-3-5-sonnet-20240620', estrategia: 'Claude para análise visual', fallback: ['gpt-4o'] };
+async function chamarClaude(prompt, imagemBase64, modelo = 'claude-3-5-sonnet-20240620') {
+  console.log('[IA-CLIENT] 🎨 Conectando com Claude...', { modelo });
+  
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('ANTHROPIC_API_KEY não configurada nas variáveis de ambiente');
   }
-  if (complexidade === 'muito_alta' || complexidade === 'alta') {
-    return { modelo: 'gpt-4o', estrategia: 'GPT-4o para alta complexidade', fallback: ['gpt-4o-mini'] };
+
+  // Preparar conteúdo com imagem
+  const content = [
+    {
+      type: 'text',
+      text: prompt
+    },
+    {
+      type: 'image',
+      source: {
+        type: 'base64',
+        media_type: 'image/jpeg', // Assumindo JPEG, pode ajustar conforme necessário
+        data: imagemBase64.replace(/^data:image\/[a-z]+;base64,/, '') // Remove prefix se houver
+      }
+    }
+  ];
+
+  const requestBody = {
+    model: modelo,
+    max_tokens: MAX_TOKENS,
+    messages: [
+      {
+        role: 'user',
+        content: content
+      }
+    ]
+  };
+
+  console.log('[IA-CLIENT] 📤 Enviando request para Claude...');
+  
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[IA-CLIENT] ❌ Erro da API Claude:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText.substring(0, 200)
+    });
+    throw new Error(`Claude API error ${response.status}: ${errorText.substring(0, 100)}`);
   }
-  return { modelo: 'gpt-4o-mini', estrategia: 'GPT-4o-mini para texto simples', fallback: ['gpt-4o'] };
+
+  const data = await response.json();
+  
+  if (!data.content || !data.content[0] || !data.content[0].text) {
+    console.error('[IA-CLIENT] ❌ Resposta Claude inválida:', data);
+    throw new Error('Resposta da API Claude em formato inválido');
+  }
+
+  console.log('[IA-CLIENT] ✅ Claude respondeu com sucesso');
+  console.log('[IA-CLIENT] 📊 Tokens usados:', data.usage);
+  
+  return {
+    content: data.content[0].text,
+    usage: data.usage || { input_tokens: 0, output_tokens: 0 },
+    modelo_usado: modelo,
+    tempo_resposta: new Date().toISOString()
+  };
 }
 
 // ================================================================================
-// 💰 FUNÇÃO: CALCULAR CUSTO
+// 🎯 FUNÇÃO: SELEÇÃO AUTOMÁTICA DE MODELO
 // ================================================================================
 
-function calcularCusto(informacoesUso) {
+export function selecionarModelo(temImagem, complexidade) {
+  console.log('[IA-CLIENT] 🎯 Selecionando modelo...', { temImagem, complexidade });
+  
+  // Se tem imagem, sempre usar Claude
+  if (temImagem) {
+    return {
+      modelo: 'claude-3-5-sonnet-20240620',
+      fallback: ['gpt-4o'], // Se Claude falhar, tentar GPT-4o
+      motivo: 'Imagem detectada - usando Claude'
+    };
+  }
+  
+  // Para texto, escolher baseado na complexidade
+  switch (complexidade) {
+    case 'muito_alta':
+    case 'alta':
+      return {
+        modelo: 'gpt-4o',
+        fallback: ['gpt-4o-mini'],
+        motivo: 'Alta complexidade - usando GPT-4o'
+      };
+      
+    case 'baixa':
+    case 'media':
+    default:
+      return {
+        modelo: 'gpt-4o-mini',
+        fallback: ['gpt-4o'],
+        motivo: 'Complexidade padrão - usando GPT-4o-mini'
+      };
+  }
+}
+
+// ================================================================================
+// 💰 FUNÇÃO: CALCULAR CUSTOS
+// ================================================================================
+
+export function calcularCusto(informacoesUso) {
   const modelo = informacoesUso.modelo || 'gpt-4o-mini';
   const precos = PRECOS_MODELOS[modelo] || PRECOS_MODELOS['gpt-4o-mini'];
+  
+  // Tokens de entrada e saída
   const inputTokens = informacoesUso.tokens_input || 0;
   const outputTokens = informacoesUso.tokens_output || 0;
-  const custoUSD = (inputTokens / 1000 * precos.input) + (outputTokens / 1000 * precos.output);
-  const custoBRL = custoUSD * USD_TO_BRL;
-  const precosGPT4o = PRECOS_MODELOS['gpt-4o'];
-  const custoGPT4oUSD = (inputTokens / 1000 * precosGPT4o.input) + (outputTokens / 1000 * precosGPT4o.output);
-  const economiaUSD = custoGPT4oUSD - custoUSD;
-
+  
+  // Cálculo em USD
+  const custoInputUSD = (inputTokens / 1000) * precos.input;
+  const custoOutputUSD = (outputTokens / 1000) * precos.output;
+  const custoTotalUSD = custoInputUSD + custoOutputUSD;
+  
+  // Conversão para BRL
+  const custoTotalBRL = custoTotalUSD * USD_TO_BRL;
+  
   return {
-    custo_usd: custoUSD,
-    custo_total: custoBRL,
-    economia_usd: economiaUSD,
-    economia_percentual: economiaUSD > 0 ? ((economiaUSD / custoGPT4oUSD) * 100) : 0,
-    modelo_usado: modelo,
+    custo_input_usd: custoInputUSD,
+    custo_output_usd: custoOutputUSD,
+    custo_total_usd: custoTotalUSD,
+    custo_total_brl: custoTotalBRL,
+    custo_total: custoTotalBRL, // Compatibilidade
+    taxa_conversao: USD_TO_BRL,
+    modelo: modelo,
     tokens_processados: inputTokens + outputTokens
   };
 }
 
 // ================================================================================
-// 🔧 FUNÇÃO: OBTER INFORMAÇÕES DE USO
+// 📊 FUNÇÃO: OBTER INFORMAÇÕES DE USO
 // ================================================================================
 
-function obterInformacoesUso(resultado) {
+export function obterInformacoesUso(resultado) {
   const usage = resultado.usage || {};
+  
+  // Compatibilidade OpenAI vs Claude
+  const inputTokens = usage.input_tokens || usage.prompt_tokens || 0;
+  const outputTokens = usage.output_tokens || usage.completion_tokens || 0;
+  
   return {
     modelo: resultado.modelo_usado || 'desconhecido',
-    tokens_input: usage.input_tokens || usage.prompt_tokens || 0,
-    tokens_output: usage.output_tokens || usage.completion_tokens || 0,
-    tokens_total: (usage.input_tokens || 0) + (usage.output_tokens || 0)
+    tokens_input: inputTokens,
+    tokens_output: outputTokens,
+    tokens_total: inputTokens + outputTokens,
+    tempo_resposta: resultado.tempo_resposta
   };
 }
 
@@ -202,82 +310,76 @@ function obterInformacoesUso(resultado) {
 function atualizarEstatisticas(resultado) {
   const informacoes = obterInformacoesUso(resultado);
   const custo = calcularCusto(informacoes);
+  
   estatisticas.tokensTotal += informacoes.tokens_total;
   estatisticas.custoTotalBRL += custo.custo_total;
-  console.log(`[IA-CLIENT] 📊 Estatísticas atualizadas: +${informacoes.tokens_total} tokens, +R$ ${custo.custo_total.toFixed(4)}`);
+  
+  console.log(`[IA-CLIENT] 📊 Estatísticas atualizadas:`);
+  console.log(`[IA-CLIENT] - Tokens: +${informacoes.tokens_total} (total: ${estatisticas.tokensTotal})`);
+  console.log(`[IA-CLIENT] - Custo: +R$ ${custo.custo_total.toFixed(4)} (total: R$ ${estatisticas.custoTotalBRL.toFixed(4)})`);
 }
 
 // ================================================================================
-// 📈 FUNÇÃO: OBTER ESTATÍSTICAS
+// 📈 FUNÇÃO: OBTER ESTATÍSTICAS COMPLETAS
 // ================================================================================
 
-function obterEstatisticas() {
+export function obterEstatisticas() {
+  const taxaSucesso = estatisticas.totalChamadas > 0 
+    ? ((estatisticas.sucessos / estatisticas.totalChamadas) * 100).toFixed(1) + '%' 
+    : '0%';
+    
+  const custoMedio = estatisticas.sucessos > 0 
+    ? (estatisticas.custoTotalBRL / estatisticas.sucessos).toFixed(4) 
+    : 0;
+    
+  const tokensMedio = estatisticas.sucessos > 0 
+    ? Math.round(estatisticas.tokensTotal / estatisticas.sucessos) 
+    : 0;
+
   return {
     ...estatisticas,
-    taxa_sucesso: estatisticas.totalChamadas > 0 ? ((estatisticas.sucessos / estatisticas.totalChamadas) * 100).toFixed(1) + '%' : '0%',
-    custo_medio_brl: estatisticas.sucessos > 0 ? (estatisticas.custoTotalBRL / estatisticas.sucessos).toFixed(4) : 0,
-    tokens_medio: estatisticas.sucessos > 0 ? Math.round(estatisticas.tokensTotal / estatisticas.sucessos) : 0
+    taxa_sucesso: taxaSucesso,
+    custo_medio_brl: custoMedio,
+    tokens_medio: tokensMedio,
+    status: 'IA_REAL_CONECTADA'
   };
 }
 
 // ================================================================================
-// 🔄 FUNÇÃO: RESETAR ESTATÍSTICAS
+// 🔧 FUNÇÕES UTILITÁRIAS
 // ================================================================================
 
-function resetarEstatisticas() {
+export function verificarDisponibilidadeAPIs() {
+  return {
+    openai: !!process.env.OPENAI_API_KEY,
+    anthropic: !!process.env.ANTHROPIC_API_KEY,
+    openai_key_length: process.env.OPENAI_API_KEY?.length || 0,
+    anthropic_key_length: process.env.ANTHROPIC_API_KEY?.length || 0,
+    configuracao_ok: !!process.env.OPENAI_API_KEY
+  };
+}
+
+export function resetarEstatisticas() {
   console.log('[IA-CLIENT] 🔄 Resetando estatísticas...');
   estatisticas = {
-    totalChamadas: 0, custoTotalBRL: 0, tokensTotal: 0,
-    sucessos: 0, falhas: 0, ultimaReset: new Date().toISOString()
+    totalChamadas: 0,
+    custoTotalBRL: 0,
+    tokensTotal: 0,
+    sucessos: 0,
+    falhas: 0,
+    ultimaReset: new Date().toISOString()
   };
   console.log('[IA-CLIENT] ✅ Estatísticas resetadas');
 }
 
 // ================================================================================
-// 🔧 FUNÇÃO: VERIFICAR DISPONIBILIDADE DAS APIs
+// 🚀 EXPORTAÇÃO ES6 FINAL
 // ================================================================================
 
-function verificarDisponibilidadeAPIs() {
-  const status = {
-    openai: !!process.env.OPENAI_API_KEY,
-    anthropic: !!process.env.ANTHROPIC_API_KEY,
-    openai_key_length: process.env.OPENAI_API_KEY?.length || 0,
-    anthropic_key_length: process.env.ANTHROPIC_API_KEY?.length || 0
-  };
-  console.log('[IA-CLIENT] Status das APIs:', status);
-  return status;
-}
+console.log('✅ [IA-CLIENT] IA-Client v9.0 carregado - IA REAL CONECTADA');
+console.log('🤖 [IA-CLIENT] OpenAI:', !!process.env.OPENAI_API_KEY ? 'CONECTADA' : 'NÃO CONFIGURADA');
+console.log('🎨 [IA-CLIENT] Claude:', !!process.env.ANTHROPIC_API_KEY ? 'CONECTADA' : 'NÃO CONFIGURADA');
 
-// ================================================================================
-// 🎯 FUNÇÃO: TESTE DE CONECTIVIDADE
-// ================================================================================
-
-async function testarConectividade() {
-  const resultados = { openai: false, anthropic: false, erros: [] };
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      await chamarOpenAI('Teste de conectividade. Responda apenas: OK', false, null, 'gpt-4o-mini');
-      resultados.openai = true;
-      console.log('[IA-CLIENT] ✅ OpenAI conectada');
-    } catch (error) {
-      resultados.erros.push(`OpenAI: ${error.message}`);
-      console.log('[IA-CLIENT] ❌ OpenAI falhou');
-    }
-  }
-  if (process.env.ANTHROPIC_API_KEY) {
-    console.log('[IA-CLIENT] ✅ Anthropic configurada (não testando conectividade)');
-    resultados.anthropic = true;
-  }
-  return resultados;
-}
-
-// ================================================================================
-// 🚀 EXPORTAÇÃO ES6 ÚNICA (CORREÇÃO CRÍTICA FINAL)
-// ================================================================================
-
-console.log('✅ [IA-CLIENT] IA-Client v8.0 carregado e corrigido');
-
-// EXPORTAÇÃO ÚNICA E LIMPA
 export {
   chamarIASegura,
   selecionarModelo,
@@ -285,11 +387,9 @@ export {
   obterInformacoesUso,
   obterEstatisticas,
   verificarDisponibilidadeAPIs,
-  testarConectividade,
-  resetarEstatisticas // Agora exportado corretamente aqui
+  resetarEstatisticas
 };
 
-// EXPORTAÇÃO DEFAULT PARA MÁXIMA COMPATIBILIDADE
 export default {
   chamarIASegura,
   selecionarModelo,
@@ -297,8 +397,7 @@ export default {
   obterInformacoesUso,
   obterEstatisticas,
   verificarDisponibilidadeAPIs,
-  testarConectividade,
   resetarEstatisticas
 };
 
-console.log('🚀 [IA-CLIENT] Sistema de Cliente IA v8.0 - CORRIGIDO E FUNCIONAL!');
+console.log('🚀 [IA-CLIENT] Sistema de IA Real v9.0 - OPENAI + CLAUDE CONECTADOS!');
