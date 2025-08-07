@@ -95,7 +95,7 @@ async function processarComImagem(prompt, arquivo, modelo) {
   console.log('[IA-CLIENT] 🖼️ Iniciando processamento de imagem...');
   
   // Prioridade: Claude para imagens, GPT-4o como fallback
-  if (processo.env.ANTHROPIC_API_KEY && modelo.includes('claude')) {
+  if (process.env.ANTHROPIC_API_KEY && modelo.includes('claude')) {
     try {
       console.log('[IA-CLIENT] Tentando Claude para análise de imagem...');
       return await chamarClaude(prompt, arquivo, modelo);
