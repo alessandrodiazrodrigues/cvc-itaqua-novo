@@ -781,29 +781,30 @@ function extrairPassageirosCompleto(texto) {
     bebes: 0
   };
   
-  // Padrão para detectar: "Total (2 Adultos, 1 Bebê e 1 Criança)"
+  // Padrão para detectar: "Total (4 Adultos e 1 Bebê)"
   const padraoCompleto = /Total\s*\(([^)]+)\)/gi;
   const matchCompleto = padraoCompleto.exec(texto);
   
   if (matchCompleto) {
-    const textoPassageiros = matchCompleto[1].toLowerCase();
+    const textoPassageiros = matchCompleto[1];
+    console.log("📝 Texto de passageiros encontrado:", textoPassageiros);
     
-    // Extrair adultos
-    const matchAdultos = textoPassageiros.match(/(\d+)\s*adulto/gi);
+    // Extrair adultos - CORRIGIDO para pegar número antes da palavra
+    const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dulto/);
     if (matchAdultos) {
-      passageiros.adultos = parseInt(matchAdultos[0].match(/\d+/)[0]);
+      passageiros.adultos = parseInt(matchAdultos[1]);
     }
     
-    // Extrair crianças
-    const matchCriancas = textoPassageiros.match(/(\d+)\s*criança/gi);
+    // Extrair crianças - CORRIGIDO
+    const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]riança/);
     if (matchCriancas) {
-      passageiros.criancas = parseInt(matchCriancas[0].match(/\d+/)[0]);
+      passageiros.criancas = parseInt(matchCriancas[1]);
     }
     
-    // Extrair bebês
-    const matchBebes = textoPassageiros.match(/(\d+)\s*bebê/gi);
+    // Extrair bebês - CORRIGIDO para aceitar singular e plural
+    const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebê/);
     if (matchBebes) {
-      passageiros.bebes = parseInt(matchBebes[0].match(/\d+/)[0]);
+      passageiros.bebes = parseInt(matchBebes[1]);
     }
     
     console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
@@ -819,7 +820,6 @@ function extrairPassageirosCompleto(texto) {
   
   return passageiros;
 }
-
 // ================================================================================
 // 13. 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
 // ================================================================================
