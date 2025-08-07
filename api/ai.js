@@ -1,28 +1,24 @@
-// 🚀 api/ai.js - v8.6 - VERSÃO HÍBRIDA FUNCIONAL  
-// ESTRATÉGIA: Módulos especializados + IA simulada temporariamente
-// OBJETIVO: Sistema funcionando 100% com arquitetura correta
+// 🚀 api/ai.js - v8.7 - IA REAL CONECTADA
+// MUDANÇA: Removida simulação, usando OpenAI + Claude reais
+// OBJETIVO: Sistema modular completo com IA real funcionando
 
-console.log("🚀 CVC ITAQUA API v8.6 - VERSÃO HÍBRIDA FUNCIONAL");
+console.log("🚀 CVC ITAQUA API v8.7 - IA REAL CONECTADA");
 
 export default async function handler(req, res) {
     const inicio = Date.now();
     console.log(`📊 Método: ${req.method} | Timestamp: ${new Date().toISOString()}`);
 
-    // ================================================================================
-    // 🔧 CORS E VALIDAÇÃO DE MÉTODO
-    // ================================================================================
-    
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v8.6-HIBRIDA');
+    res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v8.7-IA-REAL');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') {
         return res.status(405).json({ 
             success: false, 
             error: 'Método não permitido',
-            versao: '8.6-hibrida'
+            versao: '8.7-ia-real'
         });
     }
 
@@ -42,10 +38,10 @@ export default async function handler(req, res) {
             import('./modules/utils.js').catch(() => null)
         ]);
         
-        console.log("✅ Todos os módulos carregados (com fallback)");
+        console.log("✅ Todos os módulos carregados");
 
         // ================================================================================
-        // 🔧 NORMALIZAÇÃO DE DADOS (USANDO UTILS COM FALLBACK)
+        // 🔧 NORMALIZAÇÃO DE DADOS
         // ================================================================================
         
         let formData, tipo;
@@ -60,11 +56,9 @@ export default async function handler(req, res) {
                 formData = resultado.formData;
                 tipo = resultado.tipo;
             } else {
-                // Fallback manual
                 formData = req.body.formData || req.body;
                 tipo = req.body.tipo || 'orcamento';
                 
-                // Normalização básica
                 if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
                     formData.tipos = ['Aéreo Nacional'];
                 }
@@ -78,7 +72,6 @@ export default async function handler(req, res) {
         }
         
         console.log(`🎯 Dados normalizados para tipo: ${tipo}`);
-        console.log(`📊 FormData: tipos=${formData.tipos?.length}, destino=${!!formData.destino}`);
 
         // ================================================================================
         // 🎯 ORQUESTRAÇÃO BASEADA NO TIPO
@@ -89,69 +82,69 @@ export default async function handler(req, res) {
 
         switch (tipo) {
             case 'orcamento':
-                resultado = await orquestrarOrcamentoHibrido(formData, modulos);
+                resultado = await orquestrarOrcamentoReal(formData, modulos);
                 break;
             case 'ranking':
-                resultado = await orquestrarRankingHibrido(formData, modulos);
+                resultado = await orquestrarRankingReal(formData, modulos);
                 break;
             case 'dicas':
-                resultado = await orquestrarDicasHibrido(formData, modulos);
+                resultado = await orquestrarDicasReal(formData, modulos);
                 break;
             default:
                 throw new Error(`Tipo de operação não suportado: ${tipo}`);
         }
 
         // ================================================================================
-        // 📊 RESPOSTA FINAL COM MÉTRICAS
+        // 📊 RESPOSTA FINAL COM IA REAL
         // ================================================================================
         
         const tempoTotal = Date.now() - inicio;
-        console.log(`✅ Orquestração concluída em ${tempoTotal}ms`);
+        console.log(`✅ Orquestração IA REAL concluída em ${tempoTotal}ms`);
 
         return res.status(200).json({
             success: true,
             result: resultado.conteudo,
-            versao: '8.6-hibrida-funcional',
+            versao: '8.7-ia-real-conectada',
             timestamp: new Date().toISOString(),
             debug: {
                 tempoProcessamento: `${tempoTotal}ms`,
-                fluxoCompleto: 'Análise → Prompt → IA-Híbrida → Processamento → Resposta',
+                fluxoCompleto: 'Análise → Prompt → IA-REAL → Processamento → Resposta',
+                iaReal: true,
                 modulosUtilizados: Object.keys(modulos).filter(k => modulos[k]),
-                modulosCarregados: Object.keys(modulos).map(k => ({ [k]: !!modulos[k] })),
                 ...resultado.debug
             }
         });
 
     } catch (error) {
         const tempoTotal = Date.now() - inicio;
-        console.error("❌ Erro fatal no orquestrador:", error);
+        console.error("❌ Erro fatal na IA REAL:", error);
         
         return res.status(500).json({
             success: false,
             error: error.message,
-            versao: '8.6-hibrida-erro',
+            versao: '8.7-ia-real-erro',
             timestamp: new Date().toISOString(),
             debug: {
                 tempoProcessamento: `${tempoTotal}ms`,
                 errorStack: error.stack?.split('\n').slice(0, 4),
-                tipoErro: error.name || 'erro_orquestrador_hibrido'
+                iaReal: true,
+                tipoErro: error.name || 'erro_ia_real'
             }
         });
     }
 }
 
 // ================================================================================
-// 🎯 ORQUESTRAÇÃO DE ORÇAMENTO HÍBRIDA (COM IA SIMULADA)
+// 🎯 ORQUESTRAÇÃO DE ORÇAMENTO COM IA REAL
 // ================================================================================
 
-async function orquestrarOrcamentoHibrido(formData, modulos) {
-    console.log("🎯 Orquestrando fluxo HÍBRIDO de ORÇAMENTO...");
-    console.log("🔄 FLUXO: Análise → Prompt → IA-Simulada → Processamento → Resposta");
+async function orquestrarOrcamentoReal(formData, modulos) {
+    console.log("🎯 Orquestrando fluxo com IA REAL...");
+    console.log("🔄 FLUXO: Análise → Prompt → IA-REAL → Processamento → Resposta");
 
     try {
-        // ETAPA 1: ANÁLISE DO TEXTO DE ENTRADA (analysis.js)
+        // ETAPA 1: ANÁLISE DO TEXTO
         console.log("📊 ETAPA 1: Análise do texto...");
-        
         let analise;
         try {
             if (modulos.analysis?.analisarTextoCompleto) {
@@ -159,28 +152,21 @@ async function orquestrarOrcamentoHibrido(formData, modulos) {
             } else if (modulos.analysis?.default?.analisarTextoCompleto) {
                 analise = modulos.analysis.default.analisarTextoCompleto(formData);
             } else {
-                console.log("📊 Usando análise básica (módulo não disponível)");
                 analise = {
-                    tipoDetectado: 'aereo_nacional_simples',
+                    tipoDetectado: 'generico',
                     complexidade: 'media',
-                    confiancaDeteccao: 0.8,
-                    numeroOpcoes: 1
+                    confiancaDeteccao: 0.8
                 };
             }
         } catch (analiseError) {
-            console.warn("⚠️ Erro na análise, usando padrão:", analiseError.message);
-            analise = {
-                tipoDetectado: 'generico',
-                complexidade: 'media',
-                confiancaDeteccao: 0.7
-            };
+            console.warn("⚠️ Erro na análise:", analiseError.message);
+            analise = { tipoDetectado: 'generico', complexidade: 'media', confiancaDeteccao: 0.7 };
         }
         
-        console.log(`✅ Análise concluída. Tipo detectado: ${analise?.tipoDetectado || 'generico'}`);
+        console.log(`✅ Análise: ${analise?.tipoDetectado}, complexidade: ${analise?.complexidade}`);
 
-        // ETAPA 2: GERAÇÃO DO PROMPT OTIMIZADO (prompts.js)
-        console.log("📋 ETAPA 2: Geração de prompt especializado...");
-        
+        // ETAPA 2: GERAÇÃO DO PROMPT
+        console.log("📋 ETAPA 2: Geração de prompt...");
         let prompt;
         try {
             if (modulos.prompts?.gerarPromptOtimizado) {
@@ -188,34 +174,63 @@ async function orquestrarOrcamentoHibrido(formData, modulos) {
             } else if (modulos.prompts?.default?.gerarPromptOtimizado) {
                 prompt = modulos.prompts.default.gerarPromptOtimizado(formData, analise);
             } else {
-                console.log("📋 Usando prompt básico (módulo não disponível)");
-                prompt = `Gere um orçamento CVC profissional para ${formData.tipos?.join(', ') || 'viagem'} para ${formData.destino || 'destino informado'}.`;
+                prompt = gerarPromptBasico(formData, analise);
             }
         } catch (promptError) {
-            console.warn("⚠️ Erro na geração de prompt, usando básico:", promptError.message);
-            prompt = `Gere um orçamento CVC para: ${JSON.stringify(formData)}`;
+            console.warn("⚠️ Erro na geração de prompt:", promptError.message);
+            prompt = gerarPromptBasico(formData, analise);
         }
         
-        console.log(`✅ Prompt gerado com ${prompt?.length || 0} caracteres`);
+        console.log(`✅ Prompt gerado: ${prompt?.length} caracteres`);
 
-        // ETAPA 3: SIMULAÇÃO DA IA (TEMPORÁRIA - PARA TESTAR ARQUITETURA)
-        console.log("🤖 ETAPA 3: IA Simulada (para testes)...");
-        
-        const respostaIA = {
-            content: gerarOrcamentoSimulado(formData, analise),
-            modelo_usado: 'simulado-v8.6',
-            usage: {
-                input_tokens: Math.ceil(prompt.length / 4),
-                output_tokens: 150,
-                total_tokens: Math.ceil(prompt.length / 4) + 150
+        // ETAPA 3: SELEÇÃO DE MODELO
+        console.log("🤖 ETAPA 3: Seleção de modelo IA...");
+        let modeloInfo = { modelo: 'gpt-4o-mini', fallback: ['gpt-4o'] };
+        try {
+            if (modulos.iaClient?.selecionarModelo) {
+                modeloInfo = modulos.iaClient.selecionarModelo(!!formData.imagemBase64, analise?.complexidade);
+            } else if (modulos.iaClient?.default?.selecionarModelo) {
+                modeloInfo = modulos.iaClient.default.selecionarModelo(!!formData.imagemBase64, analise?.complexidade);
             }
-        };
+        } catch (selecaoError) {
+            console.warn("⚠️ Erro na seleção de modelo:", selecaoError.message);
+        }
         
-        console.log(`🤖 IA simulada respondeu com ${respostaIA.content.length} caracteres`);
+        console.log(`✅ Modelo selecionado: ${modeloInfo.modelo} (motivo: ${modeloInfo.motivo})`);
 
-        // ETAPA 4: PÓS-PROCESSAMENTO DA RESPOSTA (processing.js)
-        console.log("🎨 ETAPA 4: Processamento final da resposta...");
+        // ETAPA 4: CHAMADA PARA IA REAL
+        console.log("🧠 ETAPA 4: Chamada para IA REAL...");
+        let respostaIA;
+        try {
+            if (modulos.iaClient?.chamarIASegura) {
+                respostaIA = await modulos.iaClient.chamarIASegura(
+                    prompt, 
+                    !!formData.imagemBase64, 
+                    formData.imagemBase64, 
+                    modeloInfo.modelo, 
+                    modeloInfo.fallback
+                );
+            } else if (modulos.iaClient?.default?.chamarIASegura) {
+                respostaIA = await modulos.iaClient.default.chamarIASegura(
+                    prompt, 
+                    !!formData.imagemBase64, 
+                    formData.imagemBase64, 
+                    modeloInfo.modelo, 
+                    modeloInfo.fallback
+                );
+            } else {
+                throw new Error("Módulo ia-client.js não disponível - IA real não pode ser executada");
+            }
+        } catch (iaError) {
+            console.error("❌ ERRO CRÍTICO na IA REAL:", iaError.message);
+            throw new Error(`Falha na IA Real: ${iaError.message}`);
+        }
         
+        console.log(`✅ IA REAL respondeu: ${respostaIA?.content?.length} caracteres`);
+        console.log(`🎯 Modelo usado: ${respostaIA?.modelo_usado}`);
+
+        // ETAPA 5: PROCESSAMENTO
+        console.log("🎨 ETAPA 5: Processamento final...");
         let conteudoFinal;
         try {
             if (modulos.processing?.processarRespostaCompleta) {
@@ -231,172 +246,259 @@ async function orquestrarOrcamentoHibrido(formData, modulos) {
                     formData
                 );
             } else {
-                console.log("🎨 Usando conteúdo bruto (módulo de processamento não disponível)");
                 conteudoFinal = respostaIA.content;
             }
         } catch (processError) {
-            console.warn("⚠️ Erro no processamento, usando conteúdo bruto:", processError.message);
+            console.warn("⚠️ Erro no processamento:", processError.message);
             conteudoFinal = respostaIA.content;
         }
+
+        // ETAPA 6: MÉTRICAS
+        console.log("📊 ETAPA 6: Cálculo de métricas...");
+        let custo = { custo_total: 0 };
+        let informacoesUso = { tokens_total: 0 };
         
-        console.log(`✅ Resposta final processada`);
+        try {
+            if (modulos.iaClient?.obterInformacoesUso && modulos.iaClient?.calcularCusto) {
+                informacoesUso = modulos.iaClient.obterInformacoesUso(respostaIA);
+                custo = modulos.iaClient.calcularCusto(informacoesUso);
+            } else if (modulos.iaClient?.default?.obterInformacoesUso && modulos.iaClient?.default?.calcularCusto) {
+                informacoesUso = modulos.iaClient.default.obterInformacoesUso(respostaIA);
+                custo = modulos.iaClient.default.calcularCusto(informacoesUso);
+            }
+        } catch (errorMetricas) {
+            console.warn("⚠️ Erro ao calcular métricas:", errorMetricas.message);
+        }
+
+        console.log(`✅ Orçamento IA REAL processado com sucesso!`);
 
         // RESULTADO FINAL
         return {
             conteudo: conteudoFinal,
             debug: {
-                fluxoExecutado: 'Análise → Prompt → IA-Simulada → Processamento → Métricas',
-                modeloUsado: 'simulado-v8.6',
+                fluxoExecutado: 'Análise → Prompt → IA-REAL → Processamento → Métricas',
+                modeloUsado: respostaIA?.modelo_usado || modeloInfo.modelo,
                 templateUsado: analise?.tipoDetectado || 'generico',
-                tokensUsados: respostaIA.usage.total_tokens,
+                custoBRL: custo?.custo_total ? `R$ ${custo.custo_total.toFixed(4)}` : 'Não calculado',
+                tokensUsados: informacoesUso?.tokens_total || 0,
+                tempoIA: respostaIA?.tempo_resposta || 'Não medido',
                 complexidadeAnalise: analise?.complexidade || 'media',
-                sistemaHibrido: true,
-                modulosUtilizados: {
-                    analysis: !!modulos.analysis,
-                    prompts: !!modulos.prompts,
-                    processing: !!modulos.processing
-                }
+                iaReal: true,
+                motivoModelo: modeloInfo?.motivo || 'Padrão'
             }
         };
 
     } catch (error) {
-        console.error("❌ Erro na orquestração híbrida do orçamento:", error);
+        console.error("❌ Erro na orquestração IA REAL:", error);
         return {
-            conteudo: `ERRO HÍBRIDO CAPTURADO: ${error.message}
-            
-Sistema híbrido detectou falha na arquitetura modular.
+            conteudo: `❌ ERRO NA IA REAL: ${error.message}
+
+O sistema detectou uma falha na conexão com a inteligência artificial.
+
+Possíveis causas:
+• APIs não configuradas corretamente
+• Limite de tokens excedido  
+• Erro de conectividade
+• Problema nos módulos especializados
+
 Detalhes técnicos: ${error.stack?.split('\n')[0]}
 
-Verifique os módulos especializados.`,
+Contate o suporte técnico se o problema persistir.`,
             debug: {
                 erro: error.message,
                 fluxoInterrompido: true,
-                sistemaHibrido: true
+                iaReal: true,
+                erroTipo: error.name
             }
         };
     }
 }
 
 // ================================================================================
-// 🎯 GERAÇÃO DE ORÇAMENTO SIMULADO (BASEADO NOS DADOS REAIS)
+// 🏨 ORQUESTRAÇÃO DE RANKING COM IA REAL
 // ================================================================================
 
-function gerarOrcamentoSimulado(formData, analise) {
-    const destino = formData.destino || 'Rio de Janeiro';
-    const origem = 'São Paulo';
-    const adultos = formData.adultos || 1;
-    const tipos = formData.tipos?.join(', ') || 'Aéreo Nacional';
+async function orquestrarRankingReal(formData, modulos) {
+    console.log("🏨 Orquestrando ranking com IA REAL...");
     
-    // Preços simulados baseados no destino
-    const precoBase = destino.toLowerCase().includes('internacional') ? 2500 : 800;
-    const precoTotal = (precoBase + Math.random() * 500) * adultos;
-    
-    return `*${origem.toUpperCase()} → ${destino.toUpperCase()}*
-${tipos} | ${adultos} adulto${adultos > 1 ? 's' : ''}
+    try {
+        const destino = formData.destino || 'destino informado';
+        
+        // Prompt específico para ranking
+        const prompt = `Crie um ranking profissional dos 5 melhores hotéis em ${destino}.
 
-✈️ *Voos LATAM*
-15/07 - GRU 08:30 / ${destino === 'Rio de Janeiro' ? 'GIG' : 'aeroporto'} 10:15 (voo direto)
---
-22/07 - ${destino === 'Rio de Janeiro' ? 'GIG' : 'aeroporto'} 16:45 / GRU 18:30 (voo direto)
+FORMATO OBRIGATÓRIO:
+🏨 *RANKING DE HOTÉIS - ${destino.toUpperCase()}*
 
-💰 *R$ ${precoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}* para ${adultos} adulto${adultos > 1 ? 's' : ''}
-💳 Em até 10x sem juros
-✅ Só mala de mão incluída  
-🏷️ Não reembolsável
+🥇 *1º LUGAR - [Nome do Hotel]*
+⭐ [X] estrelas | [Localização]
+💰 R$ [preço]/noite | [Regime]
+✅ [3 principais comodidades]
 
-${formData.observacoes ? `📋 *Observações:*\n${formData.observacoes}\n\n` : ''}📱 *Sistema CVC Itaqua v8.6 - Arquitetura Modular Funcionando!*
+🥈 *2º LUGAR - [Nome do Hotel]*
+⭐ [X] estrelas | [Localização]  
+💰 R$ [preço]/noite | [Regime]
+✅ [3 principais comodidades]
 
----
-✅ Análise: ${analise.tipoDetectado}
-✅ Complexidade: ${analise.complexidade}
-✅ Confiança: ${(analise.confiancaDeteccao * 100).toFixed(0)}%
----
+(Continuar até o 5º lugar)
 
-*Este orçamento foi gerado usando os módulos especializados com IA simulada para testes. A arquitetura modular está funcionando corretamente!*`;
-}
+💡 *Dica:* [Dica de reserva ou melhor época]
 
-// ================================================================================
-// 🏨 ORQUESTRAÇÃO DE RANKING HÍBRIDA
-// ================================================================================
+Use preços realistas para ${destino} e hotéis reais quando possível.`;
 
-async function orquestrarRankingHibrido(formData, modulos) {
-    console.log("🏨 Orquestrando ranking híbrido...");
-    
-    const destino = formData.destino || 'destino informado';
-    
-    const conteudo = `🏨 *RANKING DE HOTÉIS - ${destino.toUpperCase()}*
-
-🥇 *1º LUGAR - Hotel Premium*
-⭐ 5 estrelas | Centro da cidade
-💰 R$ 450,00/noite | Café da manhã incluso
-✅ Piscina, Spa, Academia
-
-🥈 *2º LUGAR - Resort Familiar*  
-⭐ 4 estrelas | Beira-mar
-💰 R$ 320,00/noite | All inclusive disponível
-✅ Kids Club, 3 Piscinas
-
-🥉 *3º LUGAR - Hotel Executivo*
-⭐ 4 estrelas | Centro de negócios  
-💰 R$ 280,00/noite | Business center
-✅ Sala de reuniões, Wi-Fi premium
-
-💡 *Sistema CVC Itaqua v8.6 - Módulos Especializados Ativos*`;
-
-    return {
-        conteudo,
-        debug: {
-            fluxoExecutado: 'Ranking-Híbrido → Template → Resposta',
-            tipo: 'ranking',
-            sistemaHibrido: true
+        // Chamada IA REAL
+        let respostaIA;
+        if (modulos.iaClient?.chamarIASegura) {
+            respostaIA = await modulos.iaClient.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o']);
+        } else if (modulos.iaClient?.default?.chamarIASegura) {
+            respostaIA = await modulos.iaClient.default.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o']);
+        } else {
+            throw new Error("IA Real não disponível para ranking");
         }
-    };
+
+        // Processamento
+        let conteudoFinal;
+        if (modulos.processing?.processarRespostaCompleta) {
+            conteudoFinal = modulos.processing.processarRespostaCompleta(
+                respostaIA.content,
+                { tipoDetectado: 'ranking', complexidade: 'baixa' },
+                formData
+            );
+        } else {
+            conteudoFinal = respostaIA.content;
+        }
+
+        return {
+            conteudo: conteudoFinal,
+            debug: {
+                fluxoExecutado: 'Ranking → Prompt → IA-REAL → Processamento',
+                tipo: 'ranking',
+                modeloUsado: respostaIA?.modelo_usado,
+                iaReal: true
+            }
+        };
+
+    } catch (error) {
+        console.error("❌ Erro no ranking IA REAL:", error);
+        return {
+            conteudo: `❌ Erro ao gerar ranking com IA REAL: ${error.message}`,
+            debug: { erro: error.message, tipo: 'ranking', iaReal: true }
+        };
+    }
 }
 
 // ================================================================================
-// 💡 ORQUESTRAÇÃO DE DICAS HÍBRIDA
+// 💡 ORQUESTRAÇÃO DE DICAS COM IA REAL
 // ================================================================================
 
-async function orquestrarDicasHibrido(formData, modulos) {
-    console.log("💡 Orquestrando dicas híbridas...");
+async function orquestrarDicasReal(formData, modulos) {
+    console.log("💡 Orquestrando dicas com IA REAL...");
     
-    const destino = formData.destino || 'destino informado';
-    
-    const conteudo = `💡 *DICAS DE VIAGEM - ${destino.toUpperCase()}*
+    try {
+        const destino = formData.destino || 'destino informado';
+        
+        // Prompt específico para dicas
+        const prompt = `Forneça dicas práticas e atualizadas de viagem para ${destino}.
+
+FORMATO OBRIGATÓRIO:
+💡 *DICAS DE VIAGEM - ${destino.toUpperCase()}*
 
 📅 *MELHOR ÉPOCA*
-• Alta temporada: Dezembro a Março
-• Menor movimento: Abril a Junho  
-• Preços melhores: Maio e Setembro
+• [Período recomendado e motivos]
+• [Época a evitar e motivos]
 
 🎒 *O QUE LEVAR*
-• Roupas leves e protetor solar
-• Calçados confortáveis
-• Medicamentos pessoais
-• Carregador portátil
+• [5-6 itens essenciais específicos para o destino]
 
 🗺️ *PONTOS TURÍSTICOS*
-• Centro histórico
-• Museus locais
-• Praias principais
-• Mercados tradicionais
+• [Top 5 atrações principais]
 
 💰 *ORÇAMENTO DIÁRIO*
-• Econômico: R$ 150-250/dia
-• Médio: R$ 300-500/dia
-• Premium: R$ 600+/dia
+• Econômico: R$ [X]-[Y]/dia
+• Médio: R$ [X]-[Y]/dia  
+• Premium: R$ [X]+/dia
 
-🚀 *Sistema CVC Itaqua v8.6 - Arquitetura Modular Ativa*`;
+📱 *APPS E DICAS EXTRAS*
+• [2-3 aplicativos úteis]
+• [Dicas locais importantes]
 
-    return {
-        conteudo,
-        debug: {
-            fluxoExecutado: 'Dicas-Híbridas → Template → Resposta', 
-            tipo: 'dicas',
-            sistemaHibrido: true
+Use informações atualizadas e preços realistas para ${destino}.`;
+
+        // Chamada IA REAL
+        let respostaIA;
+        if (modulos.iaClient?.chamarIASegura) {
+            respostaIA = await modulos.iaClient.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o']);
+        } else if (modulos.iaClient?.default?.chamarIASegura) {
+            respostaIA = await modulos.iaClient.default.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o']);
+        } else {
+            throw new Error("IA Real não disponível para dicas");
         }
-    };
+
+        // Processamento
+        let conteudoFinal;
+        if (modulos.processing?.processarRespostaCompleta) {
+            conteudoFinal = modulos.processing.processarRespostaCompleta(
+                respostaIA.content,
+                { tipoDetectado: 'dicas', complexidade: 'baixa' },
+                formData
+            );
+        } else {
+            conteudoFinal = respostaIA.content;
+        }
+
+        return {
+            conteudo: conteudoFinal,
+            debug: {
+                fluxoExecutado: 'Dicas → Prompt → IA-REAL → Processamento',
+                tipo: 'dicas',
+                modeloUsado: respostaIA?.modelo_usado,
+                iaReal: true
+            }
+        };
+
+    } catch (error) {
+        console.error("❌ Erro nas dicas IA REAL:", error);
+        return {
+            conteudo: `❌ Erro ao gerar dicas com IA REAL: ${error.message}`,
+            debug: { erro: error.message, tipo: 'dicas', iaReal: true }
+        };
+    }
 }
 
-console.log("✅ API v8.6 HÍBRIDA carregada - SISTEMA MODULAR + IA SIMULADA FUNCIONANDO!");
-console.log("🎯 PRÓXIMO PASSO: Substituir IA simulada por IA real quando APIs estiverem configuradas");
+// ================================================================================
+// 🔧 FUNÇÃO AUXILIAR: PROMPT BÁSICO
+// ================================================================================
+
+function gerarPromptBasico(formData, analise) {
+    return `Você é um consultor especializado da CVC Itaqua. Gere um orçamento profissional e detalhado baseado nas informações abaixo.
+
+DADOS DA SOLICITAÇÃO:
+- Tipos: ${formData.tipos?.join(', ') || 'Não informado'}
+- Destino: ${formData.destino || 'Não informado'}
+- Adultos: ${formData.adultos || 1}
+- Crianças: ${formData.criancas || 0}
+${formData.observacoes ? `- Observações: ${formData.observacoes}` : ''}
+
+ANÁLISE DETECTADA:
+- Tipo: ${analise.tipoDetectado}
+- Complexidade: ${analise.complexidade}
+
+FORMATO OBRIGATÓRIO:
+- Use formatação profissional com emojis
+- Inclua valores em R$ (moeda brasileira)
+- Adicione informações sobre parcelamento
+- Especifique bagagens incluídas
+- Mantenha tom profissional mas atrativo
+- Se houver informações de voos/hotéis nas observações, use-as
+
+INSTRUÇÕES IMPORTANTES:
+- Analise cuidadosamente as observações para extrair dados de voos, preços, datas
+- Se detectar múltiplos trechos, formate como roteiro multitrecho
+- Para voos internacionais, inclua informações sobre documentação
+- Sempre inclua informações sobre bagagem e condições de reembolso
+
+Gere o orçamento completo e profissional:`;
+}
+
+console.log("✅ API v8.7 IA REAL carregada - OPENAI + CLAUDE CONECTADOS!");
+console.log("🎯 Sistema modular completo com inteligência artificial real funcionando!");
