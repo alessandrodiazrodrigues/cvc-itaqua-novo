@@ -773,51 +773,56 @@ function extrairTipoVoo(texto) {
 }
 
 function extrairPassageirosCompleto(texto) {
-  console.log("👥 Extraindo passageiros completo...");
+  console.log("👥 Extraindo passageiros com lógica aprimorada v2...");
   
   const passageiros = {
     adultos: 0,
     criancas: 0,
     bebes: 0
   };
-  
-  // Padrão para detectar: "Total (4 Adultos e 1 Bebê)"
-  const padraoCompleto = /Total\s*\(([^)]+)\)/gi;
-  const matchCompleto = padraoCompleto.exec(texto);
-  
-  if (matchCompleto) {
-    const textoPassageiros = matchCompleto[1];
+
+  // CORREÇÃO: Padrão robusto que ignora tudo após o parênteses
+  const padraoContainer = /Total\s*\(([^)]+)\)/i;
+  const matchContainer = texto.match(padraoContainer);
+
+  if (matchContainer && matchContainer[1]) {
+    const textoPassageiros = matchContainer[1];
     console.log("📝 Texto de passageiros encontrado:", textoPassageiros);
     
-    // Extrair adultos - CORRIGIDO para pegar número antes da palavra
-    const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dulto/);
+    // Extrair adultos - MELHORADO para plural/singular
+    const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dultos?/);
     if (matchAdultos) {
-      passageiros.adultos = parseInt(matchAdultos[1]);
+      passageiros.adultos = parseInt(matchAdultos[1], 10);
     }
-    
-    // Extrair crianças - CORRIGIDO
-    const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]riança/);
+
+    // Extrair crianças - MELHORADO para plural/singular
+    const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]rianças?/);
     if (matchCriancas) {
-      passageiros.criancas = parseInt(matchCriancas[1]);
+      passageiros.criancas = parseInt(matchCriancas[1], 10);
     }
-    
-    // Extrair bebês - CORRIGIDO para aceitar singular e plural
-    const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebê/);
+
+    // Extrair bebês - MELHORADO para singular/plural
+    const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebês?/);
     if (matchBebes) {
-      passageiros.bebes = parseInt(matchBebes[1]);
+      passageiros.bebes = parseInt(matchBebes[1], 10);
     }
     
     console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
   } else {
-    // Fallback para padrão simples
-    const padraoSimples = /Total\s*\((\d+)\s*(Adulto|Adult)/gi;
-    const matchSimples = padraoSimples.exec(texto);
-    if (matchSimples) {
-      passageiros.adultos = parseInt(matchSimples[1]);
-      console.log(`✅ Passageiros simples: ${passageiros.adultos} adulto(s)`);
+    // Fallback: busca direta por números + adulto
+    const matchAdultosSimples = texto.match(/(\d+)\s*[Aa]dultos?/i);
+    if (matchAdultosSimples) {
+      passageiros.adultos = parseInt(matchAdultosSimples[1], 10);
+      console.log(`⚠️ Padrão "Total" não encontrado. Usando fallback: ${passageiros.adultos} adulto(s)`);
     }
   }
   
+  // Garantia: pelo menos 1 adulto
+  if (passageiros.adultos === 0 && passageiros.criancas === 0 && passageiros.bebes === 0) {
+    passageiros.adultos = 1;
+    console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
+  }
+
   return passageiros;
 }
 // ================================================================================
