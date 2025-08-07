@@ -1,13 +1,14 @@
 // 🔍 analysis.js - SISTEMA COMPLETO DE ANÁLISE v11.0
+// CORREÇÃO FINAL: Removido 'export' duplicado de todas as constantes e da função principal.
 // Baseado em padrões reais: GOL, LATAM, Azul + CVC
-// Extração precisa de dados de voos nacionais e internacionais
-// NOVO: Suporte completo para múltiplas opções de hotéis
 
 console.log("🔍 Analysis v11.0 - SISTEMA COMPLETO DE ANÁLISE CARREGADO");
 
 // ================================================================================
-// 🎯 PADRÕES DE DETECÇÃO ESPECIALIZADOS
+// 1. 🎯 CONSTANTES (PADRÕES DE DETECÇÃO ESPECIALIZADOS)
 // ================================================================================
+
+// CORREÇÃO: A palavra 'export' foi removida da frente de todas as constantes abaixo.
 
 const PADROES_COMPANHIAS = {
   'gol': { nome: 'GOL', tipo: 'nacional', cor: 'laranja' },
@@ -21,7 +22,6 @@ const PADROES_COMPANHIAS = {
   'klm': { nome: 'KLM', tipo: 'internacional', cor: 'azul' },
   'emirates': { nome: 'Emirates', tipo: 'internacional', cor: 'dourado' },
   'american': { nome: 'American Airlines', tipo: 'internacional', cor: 'vermelho' },
-  // CRUZEIROS
   'costa': { nome: 'Costa Cruzeiros', tipo: 'cruzeiro', cor: 'amarelo' },
   'msc': { nome: 'MSC Cruzeiros', tipo: 'cruzeiro', cor: 'azul' },
   'disney': { nome: 'Disney Cruise Line', tipo: 'cruzeiro', cor: 'azul' },
@@ -167,10 +167,11 @@ const PADROES_VOOS = {
 };
 
 // ================================================================================
-// 🎯 FUNÇÃO PRINCIPAL DE ANÁLISE
+// 2. 🎯 FUNÇÃO PRINCIPAL DE ANÁLISE
 // ================================================================================
 
-export function analisarTextoCompleto(formData) {
+// CORREÇÃO: Removido 'export' da linha abaixo
+function analisarTextoCompleto(formData) {
   console.log("🔍 === ANÁLISE COMPLETA v11.0 INICIADA ===");
   
   const textoCompleto = construirTextoAnalise(formData);
@@ -232,7 +233,7 @@ export function analisarTextoCompleto(formData) {
 }
 
 // ================================================================================
-// 🎯 EXTRAÇÃO DE DADOS HTML COM PRIORIDADE
+// 3. 🎯 EXTRAÇÃO DE DADOS HTML COM PRIORIDADE
 // ================================================================================
 
 function extrairDadosHTML(formData) {
@@ -281,7 +282,7 @@ function aplicarPrioridadeHTML(analise, dadosHTML) {
 }
 
 // ================================================================================
-// 🌍 DETECÇÃO DE MULTITRECHO AVANÇADO
+// 4. 🌍 DETECÇÃO DE MULTITRECHO AVANÇADO
 // ================================================================================
 
 function detectarMultitrechoAvancado(texto) {
@@ -295,14 +296,12 @@ function detectarMultitrechoAvancado(texto) {
     aeroportosInternacionais: []
   };
   
-  // Contar trechos explícitos
   const trechosExplicitos = texto.match(/trecho\s*\d+/gi) || [];
   multitrecho.numeroTrechos = trechosExplicitos.length;
   
   if (multitrecho.numeroTrechos > 1) {
     console.log(`✅ ${multitrecho.numeroTrechos} trechos explícitos detectados`);
     
-    // Extrair cada trecho
     for (let i = 1; i <= multitrecho.numeroTrechos; i++) {
       const trecho = extrairTrechoEspecifico(texto, i);
       if (trecho) {
@@ -310,7 +309,6 @@ function detectarMultitrechoAvancado(texto) {
       }
     }
     
-    // Detectar se é internacional
     const aeroportosInternacionais = Object.keys(AEROPORTOS_INTERNACIONAIS);
     const aeroportosDetectados = aeroportosInternacionais.filter(codigo => 
       texto.toLowerCase().includes(codigo.toLowerCase())
@@ -322,7 +320,6 @@ function detectarMultitrechoAvancado(texto) {
       console.log(`✅ Multitrecho internacional - Aeroportos: ${aeroportosDetectados.join(', ')}`);
     }
     
-    // Detectar companhia principal
     const companhias = Object.keys(PADROES_COMPANHIAS);
     multitrecho.companhiaPrincipal = companhias.find(comp => 
       texto.toLowerCase().includes(comp)
@@ -334,15 +331,12 @@ function detectarMultitrechoAvancado(texto) {
 
 function extrairTrechoEspecifico(texto, numeroTrecho) {
   console.log(`✈️ Extraindo trecho ${numeroTrecho}...`);
-  
-  // Regex para encontrar trecho específico
   const padraoTrecho = new RegExp(`trecho\\s*${numeroTrecho}[\\s\\S]*?(?=trecho\\s*${numeroTrecho + 1}|fácil|não reembolsável|total|$)`, 'gi');
   const matchTrecho = padraoTrecho.exec(texto);
   
   if (!matchTrecho) return null;
   
   const textoTrecho = matchTrecho[0];
-  
   const trecho = {
     numero: numeroTrecho,
     horarioSaida: extrairHorario(textoTrecho, 'primeiro'),
@@ -378,6 +372,10 @@ function extrairDataTrecho(texto) {
   return match ? match[1] : null;
 }
 
+// ================================================================================
+// 5. 🛫 DETECÇÃO DE TIPOS
+// ================================================================================
+
 function detectarTipoViagem(texto) {
   console.log("🛫 Detectando tipo de viagem...");
   
@@ -390,7 +388,6 @@ function detectarTipoViagem(texto) {
     isPacote: false
   };
   
-  // Detectar voos por aeroportos
   const aeroportosBrasileiros = Object.keys(AEROPORTOS_BRASILEIROS);
   const aeroportosInternacionais = Object.keys(AEROPORTOS_INTERNACIONAIS);
   
@@ -404,15 +401,12 @@ function detectarTipoViagem(texto) {
   
   if (aeroportosBrasDetectados.length > 0) {
     tipos.isVooNacional = true;
-    console.log(`✅ Aeroportos brasileiros: ${aeroportosBrasDetectados.join(', ')}`);
   }
   
   if (aeroportosIntDetectados.length > 0) {
     tipos.isVooInternacional = true;
-    console.log(`✅ Aeroportos internacionais: ${aeroportosIntDetectados.join(', ')}`);
   }
   
-  // Detectar companhias
   const companhiasDetectadas = [];
   Object.keys(PADROES_COMPANHIAS).forEach(companhia => {
     if (texto.toLowerCase().includes(companhia)) {
@@ -423,28 +417,14 @@ function detectarTipoViagem(texto) {
     }
   });
   
-  // Detectar multitrecho
   const trechos = (texto.match(/trecho\s*\d+/gi) || []).length;
   if (trechos > 1) {
     tipos.isMultitrecho = true;
-    console.log(`✅ Multitrecho detectado - ${trechos} trechos`);
   }
   
-  // Detectar outros tipos
-  if (detectarCruzeiro(texto)) {
-    tipos.isCruzeiro = true;
-    console.log("✅ Cruzeiro detectado");
-  }
-  
-  if (detectarPacote(texto)) {
-    tipos.isPacote = true;
-    console.log("✅ Pacote detectado");
-  }
-  
-  if (detectarHotel(texto)) {
-    tipos.isHotel = true;
-    console.log("✅ Hotel detectado");
-  }
+  if (detectarCruzeiro(texto)) tipos.isCruzeiro = true;
+  if (detectarPacote(texto)) tipos.isPacote = true;
+  if (detectarHotel(texto)) tipos.isHotel = true;
   
   console.log("🛫 Tipos detectados:", tipos);
   return {
@@ -455,40 +435,25 @@ function detectarTipoViagem(texto) {
 }
 
 // ================================================================================
-// 🚢 DETECÇÃO ESPECÍFICA DE CRUZEIROS
+// 6. 🚢 DETECÇÃO ESPECÍFICA DE CRUZEIROS
 // ================================================================================
 
 function detectarCruzeiro(texto) {
   console.log("🚢 Detectando cruzeiros...");
-  
-  // Palavras-chave específicas de cruzeiros
   const palavrasChaveCruzeiro = [
     'embarque:', 'desembarque:', 'navio', 'cruzeiro', 'cabine', 'suite',
     'my cruise', 'all inclusive', 'costa diadema', 'msc', 'noites •',
     'em navegação', 'porto', 'itinerário'
   ];
-  
-  // Navios conhecidos
   const naviosDetectados = Object.keys(NAVIOS_CONHECIDOS).filter(navio => 
     texto.toLowerCase().includes(navio.toLowerCase())
   );
-  
-  // Companhias de cruzeiro
-  const companhiasCruzeiro = ['costa', 'msc', 'disney', 'royal', 'norwegian'];
-  const companhiasCruzeiroDetectadas = companhiasCruzeiro.filter(comp => 
+  const companhiasCruzeiroDetectadas = ['costa', 'msc', 'disney', 'royal', 'norwegian'].filter(comp => 
     texto.toLowerCase().includes(comp)
   );
-  
-  // Portos de cruzeiro
   const portosDetectados = Object.keys(PORTOS_CRUZEIROS).filter(porto => 
     texto.toLowerCase().includes(porto.toLowerCase())
   );
-  
-  // Tipos de cabine
-  const tiposCabineDetectados = Object.keys(TIPOS_CABINE_CRUZEIRO).filter(tipo => 
-    texto.toLowerCase().includes(tipo)
-  );
-  
   const isCruzeiro = 
     palavrasChaveCruzeiro.some(palavra => texto.toLowerCase().includes(palavra.toLowerCase())) ||
     naviosDetectados.length > 0 ||
@@ -496,74 +461,34 @@ function detectarCruzeiro(texto) {
     (portosDetectados.length > 0 && texto.includes('embarque'));
   
   if (isCruzeiro) {
-    console.log("✅ Indicadores de cruzeiro encontrados:");
-    if (naviosDetectados.length > 0) console.log(`   - Navios: ${naviosDetectados.join(', ')}`);
-    if (companhiasCruzeiroDetectadas.length > 0) console.log(`   - Companhias: ${companhiasCruzeiroDetectadas.join(', ')}`);
-    if (portosDetectados.length > 0) console.log(`   - Portos: ${portosDetectados.join(', ')}`);
-    if (tiposCabineDetectados.length > 0) console.log(`   - Cabines: ${tiposCabineDetectados.join(', ')}`);
+    console.log("✅ Indicadores de cruzeiro encontrados");
   }
-  
   return isCruzeiro;
 }
 
 // ================================================================================
-// 📦 DETECÇÃO ESPECÍFICA DE PACOTES
+// 7. 📦 DETECÇÃO ESPECÍFICA DE PACOTES
 // ================================================================================
 
 function detectarPacote(texto) {
   console.log("📦 Detectando pacotes...");
-  
-  // Indicadores de pacote (hotel + voo no mesmo texto)
-  const temHotel = Object.keys(TIPOS_HOSPEDAGEM).some(tipo => 
-    texto.toLowerCase().includes(tipo)
-  );
-  
-  const temVoo = texto.includes('ida') && texto.includes('volta') && 
-                 (texto.includes('gru') || texto.includes('cgh') || texto.includes('vcp'));
-  
-  const temServicosInclusos = Object.keys(SERVICOS_PACOTE).some(servico => 
-    texto.toLowerCase().includes(servico)
-  );
-  
-  // Padrões específicos de pacote
+  const temHotel = Object.keys(TIPOS_HOSPEDAGEM).some(tipo => texto.toLowerCase().includes(tipo));
+  const temVoo = texto.includes('ida') && texto.includes('volta') && (texto.includes('gru') || texto.includes('cgh') || texto.includes('vcp'));
+  const temServicosInclusos = Object.keys(SERVICOS_PACOTE).some(servico => texto.toLowerCase().includes(servico));
   const temDesconto = /-\d+%/.test(texto) || /~~R\$/.test(texto);
   const temDiarias = /\d+\s*diárias?/.test(texto);
-  const temRegime = Object.keys(REGIMES_HOSPEDAGEM).some(regime => 
-    texto.toLowerCase().includes(regime)
-  );
-  
-  // Palavras-chave de pacote
-  const palavrasChavePacote = [
-    'serviços inclusos', 'transporte aéreo', 'hospedagem',
-    'city tour', 'by night', 'receptivo', 'transfer',
-    'aeroporto / hotel', 'cafe da manha', 'standard promo'
-  ];
-  
-  const temPalavrasChave = palavrasChavePacote.some(palavra => 
-    texto.toLowerCase().includes(palavra.toLowerCase())
-  );
-  
-  const isPacote = 
-    (temHotel && temVoo) ||
-    (temHotel && temServicosInclusos) ||
-    (temVoo && temDiarias) ||
-    (temDesconto && temRegime) ||
-    temPalavrasChave;
-  
+  const temRegime = Object.keys(REGIMES_HOSPEDAGEM).some(regime => texto.toLowerCase().includes(regime));
+  const palavrasChavePacote = ['serviços inclusos', 'transporte aéreo', 'hospedagem', 'city tour', 'by night', 'receptivo', 'transfer', 'aeroporto / hotel', 'cafe da manha', 'standard promo'];
+  const temPalavrasChave = palavrasChavePacote.some(palavra => texto.toLowerCase().includes(palavra.toLowerCase()));
+  const isPacote = (temHotel && temVoo) || (temHotel && temServicosInclusos) || (temVoo && temDiarias) || (temDesconto && temRegime) || temPalavrasChave;
   if (isPacote) {
-    console.log("✅ Indicadores de pacote encontrados:");
-    if (temHotel) console.log("   - Hotel detectado");
-    if (temVoo) console.log("   - Voos detectados");
-    if (temServicosInclusos) console.log("   - Serviços inclusos detectados");
-    if (temDesconto) console.log("   - Desconto detectado");
-    if (temRegime) console.log("   - Regime de hospedagem detectado");
+    console.log("✅ Indicadores de pacote encontrados");
   }
-  
   return isPacote;
 }
 
 // ================================================================================
-// 🏨 DETECÇÃO ESPECÍFICA DE HOTEL
+// 8. 🏨 DETECÇÃO ESPECÍFICA DE HOTEL
 // ================================================================================
 
 function detectarHotel(texto) {
@@ -615,7 +540,7 @@ function detectarHotel(texto) {
 }
 
 // ================================================================================
-// ✈️ EXTRAÇÃO DE DADOS DE VOO
+// 9. ✈️ EXTRAÇÃO DE DADOS DE VOO
 // ================================================================================
 
 function extrairDadosVoo(texto) {
@@ -710,7 +635,7 @@ function extrairDadosVooTrecho(texto, tipoTrecho) {
 }
 
 // ================================================================================
-// 💰 ANÁLISE DE PREÇOS CVC
+// 10. 💰 ANÁLISE DE PREÇOS CVC
 // ================================================================================
 
 function analisarPrecosCVC(texto) {
@@ -760,7 +685,7 @@ function analisarPrecosCVC(texto) {
 }
 
 // ================================================================================
-// 🔄 DETECÇÃO DE MÚLTIPLAS OPÇÕES
+// 11. 🔄 DETECÇÃO DE MÚLTIPLAS OPÇÕES
 // ================================================================================
 
 function detectarMultiplasOpcoes(texto) {
@@ -803,7 +728,7 @@ function detectarMultiplasOpcoes(texto) {
 }
 
 // ================================================================================
-// 🧮 FUNÇÕES AUXILIARES DE EXTRAÇÃO
+// 12. 🧮 FUNÇÕES AUXILIARES DE EXTRAÇÃO
 // ================================================================================
 
 function extrairHorario(texto, posicao = 'primeiro') {
@@ -896,7 +821,7 @@ function extrairPassageirosCompleto(texto) {
 }
 
 // ================================================================================
-// 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
+// 13. 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
 // ================================================================================
 
 function extrairDadosCruzeiro(texto) {
@@ -980,7 +905,6 @@ function extrairItinerarioCruzeiro(texto) {
   
   const itinerario = [];
   
-  // Padrão para dias do itinerário: "1. qui. 16.04.26", "Santos, Brasil", "Saída 16:30"
   const padrãoItinerario = /(\d+)\.\s*(\w+)\.\s*(\d{2}\.\d{2}\.\d{2})\s*([^]*?)(?=\d+\.\s*\w+\.\s*\d{2}\.\d{2}\.\d{2}|$)/gi;
   
   let match;
@@ -992,14 +916,12 @@ function extrairItinerarioCruzeiro(texto) {
       detalhes: match[4].trim()
     };
     
-    // Extrair porto e horários dos detalhes
     const detalhes = match[4];
     const linhas = detalhes.split('\n').filter(linha => linha.trim());
     
     if (linhas.length > 0) {
       dia.porto = linhas[0].replace(/\*\*/g, '').trim();
       
-      // Buscar horários de chegada e saída
       const chegadaMatch = detalhes.match(/chegada\s*(\d{2}:\d{2})/gi);
       const saidaMatch = detalhes.match(/saída\s*(\d{2}:\d{2})/gi);
       
@@ -1019,7 +941,6 @@ function extrairPrecosCabines(texto) {
   
   const precos = {};
   
-  // Buscar padrões como "Interna R$ 5.634,00", "Externa R$ 5.918,00"
   const tiposCabine = Object.keys(TIPOS_CABINE_CRUZEIRO);
   
   tiposCabine.forEach(tipo => {
@@ -1036,7 +957,7 @@ function extrairPrecosCabines(texto) {
 }
 
 // ================================================================================
-// 📦 EXTRAÇÃO DE DADOS DE PACOTE
+// 14. 📦 EXTRAÇÃO DE DADOS DE PACOTE
 // ================================================================================
 
 function extrairDadosPacote(texto) {
@@ -1058,7 +979,6 @@ function extrairDadosPacote(texto) {
     atividadesInclusas: []
   };
   
-  // Extrair nome do hotel
   const padraoHotel = /\*\*([^*]+hotel[^*]*)\*\*/gi;
   const matchHotel = padraoHotel.exec(texto);
   if (matchHotel) {
@@ -1066,7 +986,6 @@ function extrairDadosPacote(texto) {
     console.log(`✅ Hotel: ${dadosPacote.nomeHotel}`);
   }
   
-  // Extrair endereço
   const linhas = texto.split('\n');
   const linhaHotel = linhas.findIndex(linha => 
     linha.toLowerCase().includes('hotel') && linha.includes('**')
@@ -1080,24 +999,20 @@ function extrairDadosPacote(texto) {
     }
   }
   
-  // Extrair tipo de quarto
   const tiposQuarto = Object.keys(TIPOS_QUARTO_HOTEL);
   dadosPacote.tipoQuarto = tiposQuarto.find(tipo => 
     texto.toLowerCase().includes(tipo)
   );
   
-  // Extrair regime
   const regimes = Object.keys(REGIMES_HOSPEDAGEM);
   dadosPacote.regime = regimes.find(regime => 
     texto.toLowerCase().includes(regime)
   );
   
-  // Extrair serviços inclusos
   dadosPacote.servicosInclusos = Object.keys(SERVICOS_PACOTE).filter(servico => 
     texto.toLowerCase().includes(servico)
   ).map(servico => SERVICOS_PACOTE[servico]);
   
-  // Extrair preços com desconto
   const padraoPrecoRiscado = /~~R\$\s*([\d.,]+)~~.*?R\$\s*([\d.,]+)/gi;
   const matchPrecoDesconto = padraoPrecoRiscado.exec(texto);
   
@@ -1106,7 +1021,6 @@ function extrairDadosPacote(texto) {
     dadosPacote.precoFinal = matchPrecoDesconto[2];
     dadosPacote.temDesconto = true;
     
-    // Calcular desconto
     const original = parseFloat(dadosPacote.precoOriginal.replace(/\./g, '').replace(',', '.'));
     const final = parseFloat(dadosPacote.precoFinal.replace(/\./g, '').replace(',', '.'));
     const descontoCalc = Math.round(((original - final) / original) * 100);
@@ -1114,7 +1028,6 @@ function extrairDadosPacote(texto) {
     
     console.log(`✅ Preços: De R$ ${dadosPacote.precoOriginal} por R$ ${dadosPacote.precoFinal} (${dadosPacote.desconto})`);
   } else {
-    // Preço normal sem desconto
     const padraoPreco = /Total.*?R\$\s*([\d.,]+)/gi;
     const matchPreco = padraoPreco.exec(texto);
     if (matchPreco) {
@@ -1122,7 +1035,6 @@ function extrairDadosPacote(texto) {
     }
   }
   
-  // Extrair desconto explícito
   const padraoDesconto = /-(\d+)%/g;
   const matchDesconto = padraoDesconto.exec(texto);
   if (matchDesconto) {
@@ -1130,16 +1042,13 @@ function extrairDadosPacote(texto) {
     dadosPacote.temDesconto = true;
   }
   
-  // Detectar incluso voo
   dadosPacote.vooIncluido = texto.includes('ida') && texto.includes('volta');
   
-  // Detectar transfer incluso
   dadosPacote.transferIncluido = 
     texto.toLowerCase().includes('transfer') || 
     texto.toLowerCase().includes('aeroporto / hotel') ||
     texto.toLowerCase().includes('transporte');
   
-  // Extrair atividades específicas
   if (texto.toLowerCase().includes('city tour')) {
     dadosPacote.atividadesInclusas.push('City Tour');
   }
@@ -1151,8 +1060,9 @@ function extrairDadosPacote(texto) {
   return { dadosPacote };
 }
 
+
 // ================================================================================
-// 🏨 EXTRAÇÃO APRIMORADA DE DADOS DE HOTEL
+// 15. 🏨 EXTRAÇÃO DE DADOS DE HOTEL
 // ================================================================================
 
 function extrairDadosHotel(texto) {
@@ -1205,7 +1115,7 @@ function extrairDadosHotel(texto) {
       politicaCancelamento: null,
       passageiros: null,
       precoTotal: null
-};
+    };
     
     // Extrair categoria (Preferencial, etc)
     const matchCategoria = /\*\*(Preferencial|Executivo|Luxo|Econômico)\*\*/gi.exec(bloco);
@@ -1280,7 +1190,7 @@ function extrairDadosHotel(texto) {
 }
 
 // ================================================================================
-// 📊 ANÁLISE DE COMPLEXIDADE E CONTEXTO  
+// 16. 📊 ANÁLISE DE COMPLEXIDADE E CONTEXTO
 // ================================================================================
 
 function calcularComplexidade(textoCompleto) {
@@ -1316,7 +1226,7 @@ function extrairContextoCompleto(formData) {
 }
 
 // ================================================================================
-// 🎯 DETERMINAÇÃO DO TIPO PRINCIPAL E CONFIANÇA
+// 17. 🎯 DETERMINAÇÃO DO TIPO PRINCIPAL
 // ================================================================================
 
 function determinarTipoPrincipal(analise) {
@@ -1347,7 +1257,7 @@ function determinarTipoPrincipal(analise) {
   if (analise.isMultitrechoInternacional || 
       (analise.isMultitrecho && analise.isVooInternacional)) {
     const companhia = analise.companhiaPrincipal || 
-                     analise.companhiasDetectadas?.[0]?.toLowerCase().replace(/\s+/g, '_');
+                      analise.companhiasDetectadas?.[0]?.toLowerCase().replace(/\s+/g, '_');
     return `multitrecho_internacional_${companhia || 'generico'}`;
   }
   
@@ -1374,31 +1284,27 @@ function determinarTipoPrincipal(analise) {
 function calcularConfiancaDeteccao(analise) {
   let confianca = 0.5; // base
   
-  // Fatores que aumentam confiança
   if (analise.companhiasDetectadas?.length > 0) confianca += 0.2;
   if (analise.aeroportosDetectados?.length > 0) confianca += 0.15;
   if (analise.dadosVoo?.periodo) confianca += 0.1;
   if (analise.precosCVC?.precoTotal) confianca += 0.1;
   if (analise.dadosVoo?.origem && analise.dadosVoo?.destino) confianca += 0.1;
   
-  // Bônus para multitrecho bem detectado
   if (analise.numeroTrechos > 1 && analise.trechosDetalhados?.length > 1) {
     confianca += 0.2;
   }
   
-  // Bônus para hotéis com múltiplas opções
   if (analise.dadosHotel?.opcoes?.length > 0) {
     confianca += 0.15 + (analise.dadosHotel.opcoes.length * 0.05);
   }
   
-  // Bônus para dados HTML prioritários
   if (analise.destinoHTML || analise.adultosHTML) confianca += 0.05;
   
   return Math.min(confianca, 0.98); // máximo 98%
 }
 
 // ================================================================================
-// 📊 LOG DE ANÁLISE COMPLETA
+// 18. 📊 LOG DE ANÁLISE COMPLETA
 // ================================================================================
 
 function logAnaliseCompleta(analise) {
@@ -1411,14 +1317,12 @@ function logAnaliseCompleta(analise) {
   console.log(`💰 Preço detectado: ${analise.precosCVC?.precoTotal ? 'R$ ' + analise.precosCVC.precoTotal : 'não detectado'}`);
   console.log(`🔄 Múltiplas opções: ${analise.temMultiplasOpcoes ? `SIM (${analise.numeroOpcoes})` : 'NÃO'}`);
   
-  // Log de multitrecho avançado
   if (analise.numeroTrechos > 1) {
     console.log(`🌍 Multitrecho: ${analise.numeroTrechos} trechos`);
     console.log(`   Internacional: ${analise.isMultitrechoInternacional ? 'SIM' : 'NÃO'}`);
     console.log(`   Aeroportos internacionais: ${analise.aeroportosInternacionais?.join(', ') || 'nenhum'}`);
   }
   
-  // Log de passageiros
   if (analise.dadosVoo?.numeroPassageiros || analise.dadosVoo?.numeroCriancas || analise.dadosVoo?.numeroBebes) {
     const adultos = analise.dadosVoo.numeroPassageiros || 0;
     const criancas = analise.dadosVoo.numeroCriancas || 0;
@@ -1426,7 +1330,6 @@ function logAnaliseCompleta(analise) {
     console.log(`👥 Passageiros: ${adultos} adulto(s), ${criancas} criança(s), ${bebes} bebê(s)`);
   }
   
-  // Log de dados HTML prioritários
   if (analise.destinoHTML || analise.adultosHTML) {
     console.log("🎯 Dados HTML prioritários:");
     if (analise.destinoHTML) console.log(`   Destino: ${analise.destinoHTML}`);
@@ -1438,7 +1341,6 @@ function logAnaliseCompleta(analise) {
     console.log(`🗺️ Rota extraída: ${analise.dadosVoo.origem} → ${analise.dadosVoo.destino}`);
   }
   
-  // Log de hotéis
   if (analise.isHotel && analise.dadosHotel) {
     console.log("🏨 Dados de hotéis:");
     if (analise.dadosHotel.periodo) {
@@ -1463,7 +1365,6 @@ function logAnaliseCompleta(analise) {
     }
   }
   
-  // Log de pacotes
   if (analise.isPacote && analise.dadosPacote) {
     console.log("📦 Dados do pacote:");
     if (analise.dadosPacote.nomeHotel) console.log(`   - Hotel: ${analise.dadosPacote.nomeHotel}`);
@@ -1481,7 +1382,6 @@ function logAnaliseCompleta(analise) {
     console.log(`   - Transfer incluso: ${analise.dadosPacote.transferIncluido ? 'SIM' : 'NÃO'}`);
   }
   
-  // Log de cruzeiros
   if (analise.isCruzeiro && analise.dadosCruzeiro) {
     console.log("🚢 Dados do cruzeiro:");
     if (analise.dadosCruzeiro.navio) console.log(`   - Navio: ${analise.dadosCruzeiro.navio}`);
@@ -1503,7 +1403,7 @@ function logAnaliseCompleta(analise) {
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES AUXILIARES
+// 19. 🔧 FUNÇÕES AUXILIARES
 // ================================================================================
 
 function construirTextoAnalise(formData) {
@@ -1516,7 +1416,7 @@ function construirTextoAnalise(formData) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÕES
+// 20. 🚀 EXPORTAÇÕES
 // ================================================================================
 
 export {
@@ -1557,9 +1457,12 @@ export default {
   SERVICOS_PACOTE
 };
 
+// ================================================================================
+// 21. CONSOLE.LOGS FINAIS
+// ================================================================================
+
 console.log("✅ Analysis v11.0 - SISTEMA COMPLETO CARREGADO E PRONTO!");
 console.log("🎯 Suporte completo: VOOS, MULTITRECHOS, CRUZEIROS, PACOTES, PREÇOS CVC");
 console.log("🚢 Cruzeiros: Costa, MSC, Disney, Royal Caribbean + itinerários detalhados");
 console.log("📦 Pacotes: Hotel + Voo + Serviços inclusos + Descontos automáticos");
 console.log("🏨 NOVO: Suporte para múltiplas opções de hotéis com extração completa!");
-
