@@ -170,62 +170,35 @@ const PADROES_VOOS = {
 // 2. 🎯 FUNÇÃO PRINCIPAL DE ANÁLISE
 // ================================================================================
 
-// CORREÇÃO: Removido 'export' da linha abaixo
+// CORREÇÃO: Removida a palavra 'export' da linha abaixo
 function analisarTextoCompleto(formData) {
   console.log("🔍 === ANÁLISE COMPLETA v11.0 INICIADA ===");
   
   const textoCompleto = construirTextoAnalise(formData);
   console.log(`📋 Texto para análise: ${textoCompleto.length} caracteres`);
   
-  // PRIORIDADE: Dados HTML sobre extração
   const dadosHTML = extrairDadosHTML(formData);
   console.log("🎯 Dados HTML prioritários:", dadosHTML);
   
-  // Análise em múltiplas camadas
   let analise = {
-    // Dados HTML com prioridade
     ...dadosHTML,
-    
-    // Detecção básica
     ...detectarTipoViagem(textoCompleto),
-    
-    // Extração de dados específicos
     ...extrairDadosVoo(textoCompleto),
-    
-    // Extração de dados de cruzeiros
     ...extrairDadosCruzeiro(textoCompleto),
-    
-    // Extração de dados de pacotes
     ...extrairDadosPacote(textoCompleto),
-    
-    // Extração de dados de hotéis
     ...extrairDadosHotel(textoCompleto),
-    
-    // Análise de preços CVC
     ...analisarPrecosCVC(textoCompleto),
-    
-    // Detecção de múltiplas opções
     ...detectarMultiplasOpcoes(textoCompleto),
-    
-    // Detecção de multitrechos avançados
     ...detectarMultitrechoAvancado(textoCompleto),
-    
-    // Análise de complexidade
     ...calcularComplexidade(textoCompleto),
-    
-    // Contexto adicional
     contexto: extrairContextoCompleto(formData),
     timestamp: new Date().toISOString()
   };
   
-  // Aplicar prioridade HTML sobre extração
   analise = aplicarPrioridadeHTML(analise, dadosHTML);
-  
-  // Determinar tipo principal e confiança
   analise.tipoDetectado = determinarTipoPrincipal(analise);
   analise.confiancaDeteccao = calcularConfiancaDeteccao(analise);
   
-  // Log detalhado da análise
   logAnaliseCompleta(analise);
   
   console.log("🔍 === ANÁLISE COMPLETA FINALIZADA ===");
@@ -254,14 +227,12 @@ function extrairDadosHTML(formData) {
 function aplicarPrioridadeHTML(analise, dadosHTML) {
   console.log("🎯 Aplicando prioridade HTML sobre extração...");
   
-  // Destino: HTML prevalece
   if (dadosHTML.destinoHTML) {
     analise.dadosVoo = analise.dadosVoo || {};
     analise.dadosVoo.destinoFinal = dadosHTML.destinoHTML;
     console.log(`✅ Destino HTML usado: ${dadosHTML.destinoHTML}`);
   }
   
-  // Passageiros: HTML prevalece
   if (dadosHTML.adultosHTML) {
     analise.numeroPassageirosHTML = dadosHTML.adultosHTML;
     console.log(`✅ Adultos HTML: ${dadosHTML.adultosHTML}`);
@@ -272,7 +243,6 @@ function aplicarPrioridadeHTML(analise, dadosHTML) {
     console.log(`✅ Crianças HTML: ${dadosHTML.criancasHTML}`);
   }
   
-  // Tipos: HTML prevalece
   if (dadosHTML.tiposHTML?.length > 0) {
     analise.tiposHTMLSelecionados = dadosHTML.tiposHTML;
     console.log(`✅ Tipos HTML: ${dadosHTML.tiposHTML.join(', ')}`);
@@ -781,7 +751,6 @@ function extrairPassageirosCompleto(texto) {
     bebes: 0
   };
 
-  // CORREÇÃO: Padrão robusto que ignora tudo após o parênteses
   const padraoContainer = /Total\s*\(([^)]+)\)/i;
   const matchContainer = texto.match(padraoContainer);
 
@@ -789,19 +758,16 @@ function extrairPassageirosCompleto(texto) {
     const textoPassageiros = matchContainer[1];
     console.log("📝 Texto de passageiros encontrado:", textoPassageiros);
     
-    // Extrair adultos - MELHORADO para plural/singular
     const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dultos?/);
     if (matchAdultos) {
       passageiros.adultos = parseInt(matchAdultos[1], 10);
     }
 
-    // Extrair crianças - MELHORADO para plural/singular
     const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]rianças?/);
     if (matchCriancas) {
       passageiros.criancas = parseInt(matchCriancas[1], 10);
     }
 
-    // Extrair bebês - MELHORADO para singular/plural
     const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebês?/);
     if (matchBebes) {
       passageiros.bebes = parseInt(matchBebes[1], 10);
@@ -809,7 +775,6 @@ function extrairPassageirosCompleto(texto) {
     
     console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
   } else {
-    // Fallback: busca direta por números + adulto
     const matchAdultosSimples = texto.match(/(\d+)\s*[Aa]dultos?/i);
     if (matchAdultosSimples) {
       passageiros.adultos = parseInt(matchAdultosSimples[1], 10);
@@ -817,7 +782,6 @@ function extrairPassageirosCompleto(texto) {
     }
   }
   
-  // Garantia: pelo menos 1 adulto
   if (passageiros.adultos === 0 && passageiros.criancas === 0 && passageiros.bebes === 0) {
     passageiros.adultos = 1;
     console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
@@ -825,6 +789,7 @@ function extrairPassageirosCompleto(texto) {
 
   return passageiros;
 }
+
 // ================================================================================
 // 13. 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
 // ================================================================================
@@ -880,12 +845,12 @@ function extrairDadosCruzeiro(texto) {
   // Extrair itinerário
   dadosCruzeiro.itinerario = extrairItinerarioCruzeiro(texto);
   
-  // Extrair tipos de cabine disponíveis
+  // Extrair tipos de cabine
   dadosCruzeiro.tiposCabine = Object.keys(TIPOS_CABINE_CRUZEIRO).filter(tipo => 
     texto.toLowerCase().includes(tipo)
   );
   
-  // Extrair planos disponíveis
+  // Extrair planos
   dadosCruzeiro.planosDisponiveis = Object.keys(PLANOS_CRUZEIRO).filter(plano => 
     texto.toLowerCase().includes(plano)
   );
@@ -907,11 +872,8 @@ function extrairDadosCruzeiro(texto) {
 
 function extrairItinerarioCruzeiro(texto) {
   console.log("🗺️ Extraindo itinerário de cruzeiro...");
-  
   const itinerario = [];
-  
   const padrãoItinerario = /(\d+)\.\s*(\w+)\.\s*(\d{2}\.\d{2}\.\d{2})\s*([^]*?)(?=\d+\.\s*\w+\.\s*\d{2}\.\d{2}\.\d{2}|$)/gi;
-  
   let match;
   while ((match = padrãoItinerario.exec(texto)) !== null) {
     const dia = {
@@ -920,44 +882,33 @@ function extrairItinerarioCruzeiro(texto) {
       data: match[3],
       detalhes: match[4].trim()
     };
-    
     const detalhes = match[4];
     const linhas = detalhes.split('\n').filter(linha => linha.trim());
-    
     if (linhas.length > 0) {
       dia.porto = linhas[0].replace(/\*\*/g, '').trim();
-      
       const chegadaMatch = detalhes.match(/chegada\s*(\d{2}:\d{2})/gi);
       const saidaMatch = detalhes.match(/saída\s*(\d{2}:\d{2})/gi);
-      
       if (chegadaMatch) dia.chegada = chegadaMatch[0].replace(/chegada\s*/gi, '');
       if (saidaMatch) dia.saida = saidaMatch[0].replace(/saída\s*/gi, '');
     }
-    
     itinerario.push(dia);
   }
-  
   console.log(`✅ Itinerário extraído: ${itinerario.length} dias`);
   return itinerario;
 }
 
 function extrairPrecosCabines(texto) {
   console.log("💰 Extraindo preços das cabines...");
-  
   const precos = {};
-  
   const tiposCabine = Object.keys(TIPOS_CABINE_CRUZEIRO);
-  
   tiposCabine.forEach(tipo => {
     const regex = new RegExp(`${tipo}[^R]*R\\$\\s*([\\d.,]+)`, 'gi');
     const match = regex.exec(texto);
-    
     if (match) {
       precos[tipo] = match[1];
       console.log(`✅ ${tipo}: R$ ${match[1]}`);
     }
   });
-  
   return precos;
 }
 
@@ -967,7 +918,6 @@ function extrairPrecosCabines(texto) {
 
 function extrairDadosPacote(texto) {
   console.log("📦 Extraindo dados de pacote...");
-  
   const dadosPacote = {
     nomeHotel: null,
     enderecoHotel: null,
@@ -983,19 +933,14 @@ function extrairDadosPacote(texto) {
     transferIncluido: false,
     atividadesInclusas: []
   };
-  
   const padraoHotel = /\*\*([^*]+hotel[^*]*)\*\*/gi;
   const matchHotel = padraoHotel.exec(texto);
   if (matchHotel) {
     dadosPacote.nomeHotel = matchHotel[1].trim();
     console.log(`✅ Hotel: ${dadosPacote.nomeHotel}`);
   }
-  
   const linhas = texto.split('\n');
-  const linhaHotel = linhas.findIndex(linha => 
-    linha.toLowerCase().includes('hotel') && linha.includes('**')
-  );
-  
+  const linhaHotel = linhas.findIndex(linha => linha.toLowerCase().includes('hotel') && linha.includes('**'));
   if (linhaHotel >= 0 && linhas[linhaHotel + 1]) {
     const proximaLinha = linhas[linhaHotel + 1].trim();
     if (!proximaLinha.includes('**') && proximaLinha.length > 10) {
@@ -1003,34 +948,21 @@ function extrairDadosPacote(texto) {
       console.log(`✅ Endereço: ${dadosPacote.enderecoHotel}`);
     }
   }
-  
   const tiposQuarto = Object.keys(TIPOS_QUARTO_HOTEL);
-  dadosPacote.tipoQuarto = tiposQuarto.find(tipo => 
-    texto.toLowerCase().includes(tipo)
-  );
-  
+  dadosPacote.tipoQuarto = tiposQuarto.find(tipo => texto.toLowerCase().includes(tipo));
   const regimes = Object.keys(REGIMES_HOSPEDAGEM);
-  dadosPacote.regime = regimes.find(regime => 
-    texto.toLowerCase().includes(regime)
-  );
-  
-  dadosPacote.servicosInclusos = Object.keys(SERVICOS_PACOTE).filter(servico => 
-    texto.toLowerCase().includes(servico)
-  ).map(servico => SERVICOS_PACOTE[servico]);
-  
+  dadosPacote.regime = regimes.find(regime => texto.toLowerCase().includes(regime));
+  dadosPacote.servicosInclusos = Object.keys(SERVICOS_PACOTE).filter(servico => texto.toLowerCase().includes(servico)).map(servico => SERVICOS_PACOTE[servico]);
   const padraoPrecoRiscado = /~~R\$\s*([\d.,]+)~~.*?R\$\s*([\d.,]+)/gi;
   const matchPrecoDesconto = padraoPrecoRiscado.exec(texto);
-  
   if (matchPrecoDesconto) {
     dadosPacote.precoOriginal = matchPrecoDesconto[1];
     dadosPacote.precoFinal = matchPrecoDesconto[2];
     dadosPacote.temDesconto = true;
-    
     const original = parseFloat(dadosPacote.precoOriginal.replace(/\./g, '').replace(',', '.'));
     const final = parseFloat(dadosPacote.precoFinal.replace(/\./g, '').replace(',', '.'));
     const descontoCalc = Math.round(((original - final) / original) * 100);
     dadosPacote.desconto = `${descontoCalc}%`;
-    
     console.log(`✅ Preços: De R$ ${dadosPacote.precoOriginal} por R$ ${dadosPacote.precoFinal} (${dadosPacote.desconto})`);
   } else {
     const padraoPreco = /Total.*?R\$\s*([\d.,]+)/gi;
@@ -1039,28 +971,20 @@ function extrairDadosPacote(texto) {
       dadosPacote.precoFinal = matchPreco[1];
     }
   }
-  
   const padraoDesconto = /-(\d+)%/g;
   const matchDesconto = padraoDesconto.exec(texto);
   if (matchDesconto) {
     dadosPacote.desconto = matchDesconto[0];
     dadosPacote.temDesconto = true;
   }
-  
   dadosPacote.vooIncluido = texto.includes('ida') && texto.includes('volta');
-  
-  dadosPacote.transferIncluido = 
-    texto.toLowerCase().includes('transfer') || 
-    texto.toLowerCase().includes('aeroporto / hotel') ||
-    texto.toLowerCase().includes('transporte');
-  
+  dadosPacote.transferIncluido = texto.toLowerCase().includes('transfer') || texto.toLowerCase().includes('aeroporto / hotel') || texto.toLowerCase().includes('transporte');
   if (texto.toLowerCase().includes('city tour')) {
     dadosPacote.atividadesInclusas.push('City Tour');
   }
   if (texto.toLowerCase().includes('by night')) {
     dadosPacote.atividadesInclusas.push('By Night');
   }
-  
   console.log("📦 Dados de pacote extraídos:", dadosPacote);
   return { dadosPacote };
 }
@@ -1105,11 +1029,10 @@ function extrairDadosHotel(texto) {
   }
   
   // Dividir texto em blocos de opções
-  // Cada opção começa com a data
   const blocos = texto.split(/(?=\*\*\d{1,2}\s+de\s+\w+\s*-\s*\d{1,2}\s+de\s+\w+.*?\*\*)/);
   
   blocos.forEach((bloco, index) => {
-    if (index === 0 && !bloco.includes('**')) return; // Pular cabeçalho vazio
+    if (index === 0 && !bloco.includes('**')) return;
     
     const opcao = {
       categoria: null,
@@ -1122,33 +1045,23 @@ function extrairDadosHotel(texto) {
       precoTotal: null
     };
     
-    // Extrair categoria (Preferencial, etc)
     const matchCategoria = /\*\*(Preferencial|Executivo|Luxo|Econômico)\*\*/gi.exec(bloco);
     if (matchCategoria) opcao.categoria = matchCategoria[1];
     
-    // Extrair nome do hotel
     const linhas = bloco.split('\n');
     for (let i = 0; i < linhas.length; i++) {
       const linha = linhas[i];
       
-      // Nome do hotel vem após categoria
-      if (opcao.categoria && linha.includes('**') && 
-          !linha.includes(opcao.categoria) && 
-          !linha.includes(' de ') &&
-          !linha.includes('Reembolsável') &&
-          !linha.includes('R$')) {
+      if (opcao.categoria && linha.includes('**') && !linha.includes(opcao.categoria) && !linha.includes(' de ') && !linha.includes('Reembolsável') && !linha.includes('R$')) {
         const hotelMatch = linha.match(/\*\*([^*]+)\*\*/);
         if (hotelMatch) {
           opcao.nomeHotel = hotelMatch[1].trim();
-          
-          // Próxima linha é o endereço
           if (linhas[i + 1] && !linhas[i + 1].includes('**')) {
             opcao.endereco = linhas[i + 1].trim();
           }
         }
       }
       
-      // Tipo de quarto (padrão: **1 Standard Frete** ou **1 S2c - Apartamento...**)
       if (linha.match(/\*\*\d+\s+[^*]+\*\*/)) {
         const quartoMatch = linha.match(/\*\*\d+\s+([^*]+)\*\*/);
         if (quartoMatch) {
@@ -1156,12 +1069,10 @@ function extrairDadosHotel(texto) {
         }
       }
       
-      // Regime
       if (linha.toLowerCase().match(/café da manhã|meia pensão|pensão completa|all inclusive/)) {
         opcao.regime = linha.trim();
       }
       
-      // Política de cancelamento
       if (linha.match(/\*\*(Reembolsável|Não reembolsável)\*\*/)) {
         const cancelMatch = linha.match(/\*\*([^*]+)\*\*/);
         if (cancelMatch) {
@@ -1169,7 +1080,6 @@ function extrairDadosHotel(texto) {
         }
       }
       
-      // Passageiros e preço
       if (linha.includes('Total')) {
         const matchPassageiros = /Total\s*\(([^)]+)\)/gi.exec(linha);
         if (matchPassageiros) opcao.passageiros = matchPassageiros[1];
@@ -1179,7 +1089,6 @@ function extrairDadosHotel(texto) {
       }
     }
     
-    // Adicionar opção se tiver dados válidos
     if (opcao.nomeHotel && opcao.precoTotal) {
       dadosHotel.opcoes.push(opcao);
       console.log(`✅ Hotel ${dadosHotel.opcoes.length}: ${opcao.nomeHotel} - R$ ${opcao.precoTotal}`);
@@ -1201,7 +1110,6 @@ function extrairDadosHotel(texto) {
 function calcularComplexidade(textoCompleto) {
   let pontuacaoComplexidade = 0;
   
-  // Fatores que aumentam complexidade
   if ((textoCompleto.match(/conexão|escala/gi) || []).length > 0) pontuacaoComplexidade += 20;
   if ((textoCompleto.match(/trecho/gi) || []).length > 1) pontuacaoComplexidade += 30;
   if ((textoCompleto.match(/R\$/gi) || []).length > 2) pontuacaoComplexidade += 15;
@@ -1237,47 +1145,38 @@ function extrairContextoCompleto(formData) {
 function determinarTipoPrincipal(analise) {
   console.log("🎯 Determinando tipo principal...");
   
-  // Prioridade 1: Hotéis com múltiplas opções
   if (analise.isHotel && analise.dadosHotel?.opcoes?.length > 0) {
     const numOpcoes = analise.dadosHotel.opcoes.length;
     const categoria = analise.dadosHotel.opcoes[0]?.categoria?.toLowerCase().replace(/\s+/g, '_') || 'generico';
     return `hotel_${categoria}_${numOpcoes}_opcoes`;
   }
   
-  // Prioridade 2: Pacotes (hotel + voo)
   if (analise.isPacote) {
     const nomeHotel = analise.dadosPacote?.nomeHotel?.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') || 'generico';
     const temDesconto = analise.dadosPacote?.temDesconto ? 'promocional' : 'regular';
     return `pacote_${nomeHotel.substring(0, 20)}_${temDesconto}`;
   }
   
-  // Prioridade 3: Cruzeiros
   if (analise.isCruzeiro) {
     const companhiaCruzeiro = analise.dadosCruzeiro?.companhiaCruzeiro?.toLowerCase().replace(/\s+/g, '_') || 'generico';
     const navio = analise.dadosCruzeiro?.navio?.toLowerCase().replace(/\s+/g, '_') || 'generico';
     return `cruzeiro_${companhiaCruzeiro}_${navio}`;
   }
   
-  // Prioridade 4: Multitrecho internacional
-  if (analise.isMultitrechoInternacional || 
-      (analise.isMultitrecho && analise.isVooInternacional)) {
-    const companhia = analise.companhiaPrincipal || 
-                      analise.companhiasDetectadas?.[0]?.toLowerCase().replace(/\s+/g, '_');
+  if (analise.isMultitrechoInternacional || (analise.isMultitrecho && analise.isVooInternacional)) {
+    const companhia = analise.companhiaPrincipal || analise.companhiasDetectadas?.[0]?.toLowerCase().replace(/\s+/g, '_');
     return `multitrecho_internacional_${companhia || 'generico'}`;
   }
   
-  // Prioridade 5: Multitrecho nacional
   if (analise.isMultitrecho) {
     return 'multitrecho_nacional';
   }
   
-  // Prioridade 6: Voo internacional
   if (analise.isVooInternacional) {
     const companhia = analise.companhiasDetectadas?.[0]?.toLowerCase().replace(/\s+/g, '_');
     return `aereo_internacional_${companhia || 'generico'}`;
   }
   
-  // Prioridade 7: Voo nacional
   if (analise.isVooNacional) {
     const companhia = analise.companhiasDetectadas?.[0]?.toLowerCase();
     return `aereo_nacional_${companhia || 'simples'}`;
@@ -1287,25 +1186,18 @@ function determinarTipoPrincipal(analise) {
 }
 
 function calcularConfiancaDeteccao(analise) {
-  let confianca = 0.5; // base
+  let confianca = 0.5;
   
   if (analise.companhiasDetectadas?.length > 0) confianca += 0.2;
   if (analise.aeroportosDetectados?.length > 0) confianca += 0.15;
   if (analise.dadosVoo?.periodo) confianca += 0.1;
   if (analise.precosCVC?.precoTotal) confianca += 0.1;
   if (analise.dadosVoo?.origem && analise.dadosVoo?.destino) confianca += 0.1;
-  
-  if (analise.numeroTrechos > 1 && analise.trechosDetalhados?.length > 1) {
-    confianca += 0.2;
-  }
-  
-  if (analise.dadosHotel?.opcoes?.length > 0) {
-    confianca += 0.15 + (analise.dadosHotel.opcoes.length * 0.05);
-  }
-  
+  if (analise.numeroTrechos > 1 && analise.trechosDetalhados?.length > 1) confianca += 0.2;
+  if (analise.dadosHotel?.opcoes?.length > 0) confianca += 0.15 + (analise.dadosHotel.opcoes.length * 0.05);
   if (analise.destinoHTML || analise.adultosHTML) confianca += 0.05;
   
-  return Math.min(confianca, 0.98); // máximo 98%
+  return Math.min(confianca, 0.98);
 }
 
 // ================================================================================
