@@ -1,8 +1,8 @@
-// 🔍 analysis.js - SISTEMA COMPLETO DE ANÁLISE v11.1
-// CORREÇÃO LÓGICA: Detecção de Múltiplas Opções e Extração de Passageiros aprimoradas.
+// 🔍 analysis.js - SISTEMA COMPLETO DE ANÁLISE v11.0
+// CORREÇÃO FINAL: Removido 'export' duplicado de todas as constantes e da função principal.
 // Baseado em padrões reais: GOL, LATAM, Azul + CVC
 
-console.log("🔍 Analysis v11.1 - LÓGICA DE EXTRAÇÃO E DETECÇÃO CORRIGIDA");
+console.log("🔍 Analysis v11.0 - SISTEMA COMPLETO DE ANÁLISE CARREGADO");
 
 // ================================================================================
 // 1. 🎯 CONSTANTES (PADRÕES DE DETECÇÃO ESPECIALIZADOS)
@@ -169,7 +169,7 @@ const PADROES_VOOS = {
 // ================================================================================
 
 function analisarTextoCompleto(formData) {
-  console.log("🔍 === ANÁLISE COMPLETA v11.1 INICIADA ===");
+  console.log("🔍 === ANÁLISE COMPLETA v11.0 INICIADA ===");
   
   const textoCompleto = construirTextoAnalise(formData);
   console.log(`📋 Texto para análise: ${textoCompleto.length} caracteres`);
@@ -208,7 +208,6 @@ function analisarTextoCompleto(formData) {
 
 function extrairDadosHTML(formData) {
   console.log("🎯 Extraindo dados HTML com prioridade...");
-  
   const dadosHTML = {
     destinoHTML: formData.destino?.trim() || null,
     adultosHTML: formData.adultos || null,
@@ -216,35 +215,25 @@ function extrairDadosHTML(formData) {
     tiposHTML: formData.tipos || [],
     temImagemHTML: !!formData.imagemBase64
   };
-  
   console.log("🎯 Dados HTML extraídos:", dadosHTML);
   return dadosHTML;
 }
 
 function aplicarPrioridadeHTML(analise, dadosHTML) {
   console.log("🎯 Aplicando prioridade HTML sobre extração...");
-  
   if (dadosHTML.destinoHTML) {
     analise.dadosVoo = analise.dadosVoo || {};
     analise.dadosVoo.destinoFinal = dadosHTML.destinoHTML;
-    console.log(`✅ Destino HTML usado: ${dadosHTML.destinoHTML}`);
   }
-  
   if (dadosHTML.adultosHTML) {
     analise.numeroPassageirosHTML = dadosHTML.adultosHTML;
-    console.log(`✅ Adultos HTML: ${dadosHTML.adultosHTML}`);
   }
-  
   if (dadosHTML.criancasHTML) {
     analise.numeroCriancasHTML = dadosHTML.criancasHTML;
-    console.log(`✅ Crianças HTML: ${dadosHTML.criancasHTML}`);
   }
-  
   if (dadosHTML.tiposHTML?.length > 0) {
     analise.tiposHTMLSelecionados = dadosHTML.tiposHTML;
-    console.log(`✅ Tipos HTML: ${dadosHTML.tiposHTML.join(', ')}`);
   }
-  
   return analise;
 }
 
@@ -254,7 +243,6 @@ function aplicarPrioridadeHTML(analise, dadosHTML) {
 
 function detectarMultitrechoAvancado(texto) {
   console.log("🌍 Detectando multitrecho avançado...");
-  
   const multitrecho = {
     isMultitrechoInternacional: false,
     numeroTrechos: 0,
@@ -262,37 +250,22 @@ function detectarMultitrechoAvancado(texto) {
     companhiaPrincipal: null,
     aeroportosInternacionais: []
   };
-  
   const trechosExplicitos = texto.match(/trecho\s*\d+/gi) || [];
   multitrecho.numeroTrechos = trechosExplicitos.length;
-  
   if (multitrecho.numeroTrechos > 1) {
-    console.log(`✅ ${multitrecho.numeroTrechos} trechos explícitos detectados`);
-    
     for (let i = 1; i <= multitrecho.numeroTrechos; i++) {
       const trecho = extrairTrechoEspecifico(texto, i);
-      if (trecho) {
-        multitrecho.trechosDetalhados.push(trecho);
-      }
+      if (trecho) multitrecho.trechosDetalhados.push(trecho);
     }
-    
     const aeroportosInternacionais = Object.keys(AEROPORTOS_INTERNACIONAIS);
-    const aeroportosDetectados = aeroportosInternacionais.filter(codigo => 
-      texto.toLowerCase().includes(codigo.toLowerCase())
-    );
-    
+    const aeroportosDetectados = aeroportosInternacionais.filter(codigo => texto.toLowerCase().includes(codigo.toLowerCase()));
     if (aeroportosDetectados.length > 0) {
       multitrecho.isMultitrechoInternacional = true;
       multitrecho.aeroportosInternacionais = aeroportosDetectados;
-      console.log(`✅ Multitrecho internacional - Aeroportos: ${aeroportosDetectados.join(', ')}`);
     }
-    
     const companhias = Object.keys(PADROES_COMPANHIAS);
-    multitrecho.companhiaPrincipal = companhias.find(comp => 
-      texto.toLowerCase().includes(comp)
-    );
+    multitrecho.companhiaPrincipal = companhias.find(comp => texto.toLowerCase().includes(comp));
   }
-  
   return multitrecho;
 }
 
@@ -300,9 +273,7 @@ function extrairTrechoEspecifico(texto, numeroTrecho) {
   console.log(`✈️ Extraindo trecho ${numeroTrecho}...`);
   const padraoTrecho = new RegExp(`trecho\\s*${numeroTrecho}[\\s\\S]*?(?=trecho\\s*${numeroTrecho + 1}|fácil|não reembolsável|total|$)`, 'gi');
   const matchTrecho = padraoTrecho.exec(texto);
-  
   if (!matchTrecho) return null;
-  
   const textoTrecho = matchTrecho[0];
   const trecho = {
     numero: numeroTrecho,
@@ -314,8 +285,6 @@ function extrairTrechoEspecifico(texto, numeroTrecho) {
     tipoVoo: extrairTipoVoo(textoTrecho),
     data: extrairDataTrecho(textoTrecho)
   };
-  
-  console.log(`✅ Trecho ${numeroTrecho} extraído:`, trecho);
   return trecho;
 }
 
@@ -323,13 +292,8 @@ function extrairAeroportoTodos(texto, posicao = 'primeiro') {
   const todosAeroportos = Object.keys(TODOS_AEROPORTOS);
   const regex = new RegExp(`\\b(${todosAeroportos.join('|')})\\b`, 'gi');
   const matches = [...texto.matchAll(regex)];
-  
-  if (posicao === 'primeiro' && matches.length > 0) {
-    return matches[0][1].toUpperCase();
-  } else if (posicao === 'segundo' && matches.length > 1) {
-    return matches[1][1].toUpperCase();
-  }
-  
+  if (posicao === 'primeiro' && matches.length > 0) return matches[0][1].toUpperCase();
+  if (posicao === 'segundo' && matches.length > 1) return matches[1][1].toUpperCase();
   return null;
 }
 
@@ -345,60 +309,26 @@ function extrairDataTrecho(texto) {
 
 function detectarTipoViagem(texto) {
   console.log("🛫 Detectando tipo de viagem...");
-  
   const tipos = {
-    isVooNacional: false,
-    isVooInternacional: false,
-    isMultitrecho: false,
-    isCruzeiro: false,
-    isHotel: false,
-    isPacote: false
+    isVooNacional: false, isVooInternacional: false, isMultitrecho: false,
+    isCruzeiro: false, isHotel: false, isPacote: false
   };
-  
-  const aeroportosBrasileiros = Object.keys(AEROPORTOS_BRASILEIROS);
-  const aeroportosInternacionais = Object.keys(AEROPORTOS_INTERNACIONAIS);
-  
-  const aeroportosBrasDetectados = aeroportosBrasileiros.filter(codigo => 
-    texto.toLowerCase().includes(codigo.toLowerCase())
-  );
-  
-  const aeroportosIntDetectados = aeroportosInternacionais.filter(codigo => 
-    texto.toLowerCase().includes(codigo.toLowerCase())
-  );
-  
-  if (aeroportosBrasDetectados.length > 0) {
-    tipos.isVooNacional = true;
-  }
-  
-  if (aeroportosIntDetectados.length > 0) {
-    tipos.isVooInternacional = true;
-  }
-  
+  const aeroportosBrasDetectados = Object.keys(AEROPORTOS_BRASILEIROS).filter(codigo => texto.toLowerCase().includes(codigo.toLowerCase()));
+  const aeroportosIntDetectados = Object.keys(AEROPORTOS_INTERNACIONAIS).filter(codigo => texto.toLowerCase().includes(codigo.toLowerCase()));
+  if (aeroportosBrasDetectados.length > 0) tipos.isVooNacional = true;
+  if (aeroportosIntDetectados.length > 0) tipos.isVooInternacional = true;
   const companhiasDetectadas = [];
   Object.keys(PADROES_COMPANHIAS).forEach(companhia => {
     if (texto.toLowerCase().includes(companhia)) {
       companhiasDetectadas.push(PADROES_COMPANHIAS[companhia].nome);
-      if (PADROES_COMPANHIAS[companhia].tipo.includes('internacional')) {
-        tipos.isVooInternacional = true;
-      }
+      if (PADROES_COMPANHIAS[companhia].tipo.includes('internacional')) tipos.isVooInternacional = true;
     }
   });
-  
-  const trechos = (texto.match(/trecho\s*\d+/gi) || []).length;
-  if (trechos > 1) {
-    tipos.isMultitrecho = true;
-  }
-  
+  if ((texto.match(/trecho\s*\d+/gi) || []).length > 1) tipos.isMultitrecho = true;
   if (detectarCruzeiro(texto)) tipos.isCruzeiro = true;
   if (detectarPacote(texto)) tipos.isPacote = true;
   if (detectarHotel(texto)) tipos.isHotel = true;
-  
-  console.log("🛫 Tipos detectados:", tipos);
-  return {
-    ...tipos,
-    companhiasDetectadas,
-    aeroportosDetectados: [...aeroportosBrasDetectados, ...aeroportosIntDetectados]
-  };
+  return { ...tipos, companhiasDetectadas, aeroportosDetectados: [...aeroportosBrasDetectados, ...aeroportosIntDetectados] };
 }
 
 // ================================================================================
@@ -406,31 +336,11 @@ function detectarTipoViagem(texto) {
 // ================================================================================
 
 function detectarCruzeiro(texto) {
-  console.log("🚢 Detectando cruzeiros...");
-  const palavrasChaveCruzeiro = [
-    'embarque:', 'desembarque:', 'navio', 'cruzeiro', 'cabine', 'suite',
-    'my cruise', 'all inclusive', 'costa diadema', 'msc', 'noites •',
-    'em navegação', 'porto', 'itinerário'
-  ];
-  const naviosDetectados = Object.keys(NAVIOS_CONHECIDOS).filter(navio => 
-    texto.toLowerCase().includes(navio.toLowerCase())
-  );
-  const companhiasCruzeiroDetectadas = ['costa', 'msc', 'disney', 'royal', 'norwegian'].filter(comp => 
-    texto.toLowerCase().includes(comp)
-  );
-  const portosDetectados = Object.keys(PORTOS_CRUZEIROS).filter(porto => 
-    texto.toLowerCase().includes(porto.toLowerCase())
-  );
-  const isCruzeiro = 
-    palavrasChaveCruzeiro.some(palavra => texto.toLowerCase().includes(palavra.toLowerCase())) ||
-    naviosDetectados.length > 0 ||
-    companhiasCruzeiroDetectadas.length > 0 ||
-    (portosDetectados.length > 0 && texto.includes('embarque'));
-  
-  if (isCruzeiro) {
-    console.log("✅ Indicadores de cruzeiro encontrados");
-  }
-  return isCruzeiro;
+  const palavrasChaveCruzeiro = ['embarque:', 'desembarque:', 'navio', 'cruzeiro', 'cabine', 'suite', 'my cruise', 'all inclusive', 'costa diadema', 'msc', 'noites •', 'em navegação', 'porto', 'itinerário'];
+  const naviosDetectados = Object.keys(NAVIOS_CONHECIDOS).filter(navio => texto.toLowerCase().includes(navio.toLowerCase()));
+  const companhiasCruzeiroDetectadas = ['costa', 'msc', 'disney', 'royal', 'norwegian'].filter(comp => texto.toLowerCase().includes(comp));
+  const portosDetectados = Object.keys(PORTOS_CRUZEIROS).filter(porto => texto.toLowerCase().includes(porto.toLowerCase()));
+  return palavrasChaveCruzeiro.some(p => texto.toLowerCase().includes(p)) || naviosDetectados.length > 0 || companhiasCruzeiroDetectadas.length > 0 || (portosDetectados.length > 0 && texto.includes('embarque'));
 }
 
 // ================================================================================
@@ -438,7 +348,6 @@ function detectarCruzeiro(texto) {
 // ================================================================================
 
 function detectarPacote(texto) {
-  console.log("📦 Detectando pacotes...");
   const temHotel = Object.keys(TIPOS_HOSPEDAGEM).some(tipo => texto.toLowerCase().includes(tipo));
   const temVoo = texto.includes('ida') && texto.includes('volta') && (texto.includes('gru') || texto.includes('cgh') || texto.includes('vcp'));
   const temServicosInclusos = Object.keys(SERVICOS_PACOTE).some(servico => texto.toLowerCase().includes(servico));
@@ -447,13 +356,8 @@ function detectarPacote(texto) {
   const temRegime = Object.keys(REGIMES_HOSPEDAGEM).some(regime => texto.toLowerCase().includes(regime));
   const palavrasChavePacote = ['serviços inclusos', 'transporte aéreo', 'hospedagem', 'city tour', 'by night', 'receptivo', 'transfer', 'aeroporto / hotel', 'cafe da manha', 'standard promo'];
   const temPalavrasChave = palavrasChavePacote.some(palavra => texto.toLowerCase().includes(palavra.toLowerCase()));
-  const isPacote = (temHotel && temVoo) || (temHotel && temServicosInclusos) || (temVoo && temDiarias) || (temDesconto && temRegime) || temPalavrasChave;
-  if (isPacote) {
-    console.log("✅ Indicadores de pacote encontrados");
-  }
-  return isPacote;
+  return (temHotel && temVoo) || (temHotel && temServicosInclusos) || (temVoo && temDiarias) || (temDesconto && temRegime) || temPalavrasChave;
 }
-
 // ================================================================================
 // 8. 🏨 DETECÇÃO ESPECÍFICA DE HOTEL
 // ================================================================================
@@ -656,39 +560,26 @@ function analisarPrecosCVC(texto) {
 // ================================================================================
 
 function detectarMultiplasOpcoes(texto) {
-  console.log("🔄 Detectando múltiplas opções...");
+  console.log("🔄 Detectando múltiplas opções v11.1...");
   
   const multiplasOpcoes = {
     temMultiplasOpcoes: false,
     numeroOpcoes: 1,
     opcoes: []
   };
+
+  // Critérios mais fortes para detecção:
+  const temPalavraOpcao = (texto.match(/opção\s*\d+/gi) || []).length;
+  const temPrecoTotalRepetido = (texto.match(/Total\s*\([^)]+\)/gi) || []).length;
   
-  // Contar quantas companhias aparecem
-  const companhias = ['gol', 'latam', 'azul', 'iberia', 'tap'];
-  const companhiasEncontradas = companhias.filter(comp => 
-    texto.toLowerCase().includes(comp)
-  );
-  
-  // Contar quantos preços diferentes aparecem
-  const precos = [...texto.matchAll(/R\$\s*([\d.,]+)/g)];
-  const precosUnicos = [...new Set(precos.map(p => p[1]))];
-  
-  // Para hotéis, contar quantas vezes aparece o padrão de data
-  const padroesDatasHotel = (texto.match(/\*\*\d{1,2}\s+de\s+\w+\s*-\s*\d{1,2}\s+de\s+\w+/gi) || []).length;
-  
-  if (companhiasEncontradas.length > 1 || precosUnicos.length > 1 || padroesDatasHotel > 1) {
+  // É Múltiplas Opções se houver a palavra "opção" explicitamente,
+  // ou se houver múltiplos blocos "Total (...)"
+  // E NÃO for um multitrecho.
+  if ((temPalavraOpcao >= 2 || temPrecoTotalRepetido >= 2) && !texto.includes('trecho')) {
     multiplasOpcoes.temMultiplasOpcoes = true;
-    multiplasOpcoes.numeroOpcoes = Math.max(
-      companhiasEncontradas.length, 
-      precosUnicos.length,
-      padroesDatasHotel
-    );
+    multiplasOpcoes.numeroOpcoes = Math.max(temPalavraOpcao, temPrecoTotalRepetido);
     
     console.log(`✅ Múltiplas opções detectadas: ${multiplasOpcoes.numeroOpcoes} opções`);
-    if (companhiasEncontradas.length > 0) console.log(`   Companhias: ${companhiasEncontradas.join(', ')}`);
-    if (precosUnicos.length > 0) console.log(`   Preços únicos: ${precosUnicos.length}`);
-    if (padroesDatasHotel > 1) console.log(`   Opções de hotel: ${padroesDatasHotel}`);
   }
   
   return multiplasOpcoes;
@@ -740,7 +631,7 @@ function extrairTipoVoo(texto) {
 }
 
 function extrairPassageirosCompleto(texto) {
-  console.log("👥 Extraindo passageiros com lógica aprimorada v2...");
+  console.log("👥 Extraindo passageiros com lógica final aprimorada...");
   
   const passageiros = {
     adultos: 0,
@@ -748,45 +639,33 @@ function extrairPassageirosCompleto(texto) {
     bebes: 0
   };
 
+  // Padrão que captura o conteúdo dentro de "Total (...)"
   const padraoContainer = /Total\s*\(([^)]+)\)/i;
   const matchContainer = texto.match(padraoContainer);
 
   if (matchContainer && matchContainer[1]) {
-    const textoPassageiros = matchContainer[1];
-    console.log("📝 Texto de passageiros encontrado:", textoPassageiros);
+    const textoPassageiros = matchContainer[1].toLowerCase();
     
-    const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dultos?/);
-    if (matchAdultos) {
-      passageiros.adultos = parseInt(matchAdultos[1], 10);
-    }
+    const matchAdultos = textoPassageiros.match(/(\d+)\s*adulto/);
+    if (matchAdultos) passageiros.adultos = parseInt(matchAdultos[1], 10);
 
-    const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]rianças?/);
-    if (matchCriancas) {
-      passageiros.criancas = parseInt(matchCriancas[1], 10);
-    }
+    const matchCriancas = textoPassageiros.match(/(\d+)\s*criança/);
+    if (matchCriancas) passageiros.criancas = parseInt(matchCriancas[1], 10);
 
-    const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebês?/);
-    if (matchBebes) {
-      passageiros.bebes = parseInt(matchBebes[1], 10);
-    }
+    const matchBebes = textoPassageiros.match(/(\d+)\s*bebê/);
+    if (matchBebes) passageiros.bebes = parseInt(matchBebes[1], 10);
     
     console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
-  } else {
-    const matchAdultosSimples = texto.match(/(\d+)\s*[Aa]dultos?/i);
-    if (matchAdultosSimples) {
-      passageiros.adultos = parseInt(matchAdultosSimples[1], 10);
-      console.log(`⚠️ Padrão "Total" não encontrado. Usando fallback: ${passageiros.adultos} adulto(s)`);
-    }
   }
   
+  // Garantia de pelo menos 1 adulto se a extração falhar
   if (passageiros.adultos === 0 && passageiros.criancas === 0 && passageiros.bebes === 0) {
-    passageiros.adultos = 1;
-    console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
+      passageiros.adultos = 1;
+      console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
   }
 
   return passageiros;
 }
-
 // ================================================================================
 // 13. 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
 // ================================================================================
