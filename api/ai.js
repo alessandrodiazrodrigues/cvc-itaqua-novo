@@ -13,11 +13,12 @@ console.log("🚀 CVC ITAQUA API v8.1 - ORQUESTRADOR CORRIGIDO COM ÍNDICE");
 2️⃣ orquestrarOrcamento()         - Fluxo completo de orçamento (5 etapas)
 3️⃣ orquestrarRanking()           - Fluxo de ranking de hotéis
 4️⃣ orquestrarDicas()             - Fluxo de dicas de viagem
-5️⃣ configurarHeaders()           - CORS e headers de resposta
-6️⃣ validarMetodo()               - Validação de método HTTP
-7️⃣ carregarModulos()             - Carregamento dinâmico de módulos
-8️⃣ gerarRespostaFinal()          - Resposta padronizada com métricas
-9️⃣ tratarErroFatal()             - Tratamento de erros críticos
+5️⃣ orquestrarAnalise()           - Fluxo de análise de PDF (NOVO)
+6️⃣ configurarHeaders()           - CORS e headers de resposta
+7️⃣ validarMetodo()               - Validação de método HTTP
+8️⃣ carregarModulos()             - Carregamento dinâmico de módulos
+9️⃣ gerarRespostaFinal()          - Resposta padronizada com métricas
+🔟 tratarErroFatal()             - Tratamento de erros críticos
 */
 
 // ================================================================================
@@ -63,6 +64,9 @@ export default async function handler(req, res) {
                 break;
             case 'dicas':
                 resultado = await orquestrarDicas(formData, modulos);
+                break;
+            case 'analise':
+                resultado = await orquestrarAnalise(formData, modulos);
                 break;
             default:
                 throw new Error(`Tipo de operação não suportado: ${tipo}`);
@@ -307,7 +311,168 @@ async function orquestrarDicas(formData, modulos) {
 }
 
 // ================================================================================
-// 5️⃣ CONFIGURAR HEADERS E CORS
+// 5️⃣ ORQUESTRAÇÃO DE ANÁLISE DE PDF (NOVO)
+// ================================================================================
+
+async function orquestrarAnalise(formData, modulos) {
+    console.log("📄 [5] ORQUESTRANDO ANÁLISE DE PDF...");
+
+    try {
+        // Verificar se existe arquivo
+        if (!formData.arquivo && !formData.arquivoBase64) {
+            throw new Error("Nenhum arquivo PDF fornecido para análise");
+        }
+
+        const arquivoBase64 = formData.arquivo || formData.arquivoBase64;
+        const nomeArquivo = formData.nomeArquivo || 'documento.pdf';
+        
+        console.log(`📄 [5] Processando arquivo: ${nomeArquivo}`);
+
+        // ETAPA 5.1: Processar PDF usando módulo especializado
+        console.log("📄 [5.1] PROCESSAMENTO: Extraindo e analisando PDF...");
+        
+        const resultadoPDF = modulos.pdfProcessor.processarPDFCompleto 
+            ? await modulos.pdfProcessor.processarPDFCompleto(arquivoBase64, nomeArquivo)
+            : await modulos.pdfProcessor.default.processarPDFCompleto(arquivoBase64, nomeArquivo);
+        
+        if (!resultadoPDF.sucesso) {
+            throw new Error(`Falha no processamento do PDF: ${resultadoPDF.erro || 'Erro desconhecido'}`);
+        }
+
+        console.log(`✅ [5.1] PDF processado: tipo '${resultadoPDF.tipo}', ${resultadoPDF.conteudo.length} caracteres`);
+
+        // ETAPA 5.2: Análise do conteúdo extraído (usando analysis.js)
+        console.log("📄 [5.2] ANÁLISE: Analisando conteúdo extraído...");
+        
+        const formDataAnalise = {
+            ...formData,
+            textoColado: resultadoPDF.conteudo,
+            tipos: [resultadoPDF.tipo === 'orcamento_viagem' ? 'Aéreo Nacional' : 'Dicas'],
+            observacoes: `Análise de PDF: ${nomeArquivo}`
+        };
+
+        const analise = modulos.analysis.analisarTextoCompleto 
+            ? modulos.analysis.analisarTextoCompleto(formDataAnalise)
+            : modulos.analysis.default.analisarTextoCompleto(formDataAnalise);
+
+        console.log(`✅ [5.2] Análise concluída: ${analise?.tipoDetectado || 'generico'}`);
+
+        // ETAPA 5.3: Gerar prompt especializado para PDF
+        console.log("📄 [5.3] PROMPT: Criando prompt para análise de PDF...");
+        
+        let prompt;
+        if (modulos.prompts.gerarPromptAnalise) {
+            prompt = modulos.prompts.gerarPromptAnalise(resultadoPDF, analise);
+        } else if (modulos.prompts.default?.gerarPromptAnalise) {
+            prompt = modulos.prompts.default.gerarPromptAnalise(resultadoPDF, analise);
+        } else {
+            // Fallback: prompt genérico para análise
+            prompt = `Analise o seguinte documento PDF e organize as informações de forma clara e profissional:
+
+TIPO DETECTADO: ${resultadoPDF.tipo}
+ARQUIVO: ${nomeArquivo}
+CONFIANÇA: ${(resultadoPDF.dados.confianca * 100).toFixed(1)}%
+
+CONTEÚDO EXTRAÍDO:
+${resultadoPDF.conteudo}
+
+Por favor:
+1. Identifique as principais informações
+2. Organize de forma estruturada
+3. Destaque valores, datas e detalhes importantes
+4. Formate para apresentação profissional
+5. Adicione observações relevantes sobre o documento`;
+        }
+
+        console.log(`✅ [5.3] Prompt gerado: ${prompt.length} caracteres`);
+
+        // ETAPA 5.4: Chamar IA para análise inteligente
+        console.log("📄 [5.4] IA: Processando análise inteligente...");
+        
+        const modeloInfo = { modelo: 'gpt-4o-mini', fallback: ['gpt-4o'] };
+        
+        const respostaIA = modulos.iaClient.chamarIASegura 
+            ? await modulos.iaClient.chamarIASegura(prompt, false, null, modeloInfo.modelo, modeloInfo.fallback)
+            : await modulos.iaClient.default.chamarIASegura(prompt, false, null, modeloInfo.modelo, modeloInfo.fallback);
+
+        console.log(`📄 [5.4] IA respondeu: ${respostaIA?.content?.length || 0} caracteres`);
+
+        // ETAPA 5.5: Processar resposta final
+        console.log("📄 [5.5] PROCESSAMENTO: Formatando resposta final...");
+        
+        const conteudoFinal = modulos.processing.processarRespostaCompleta 
+            ? await modulos.processing.processarRespostaCompleta(
+                respostaIA?.content || resultadoPDF.conteudo, 
+                analise, 
+                formDataAnalise
+            )
+            : await modulos.processing.default.processarRespostaCompleta(
+                respostaIA?.content || resultadoPDF.conteudo, 
+                analise, 
+                formDataAnalise
+            );
+
+        console.log(`✅ [5.5] Análise finalizada`);
+
+        return { 
+            conteudo: conteudoFinal, 
+            debug: { 
+                tipoArquivo: resultadoPDF.tipo,
+                nomeArquivo: nomeArquivo,
+                confiancaPDF: resultadoPDF.dados.confianca,
+                metricasPDF: resultadoPDF.metricas,
+                fallbackUsado: resultadoPDF.dados.fallback || false,
+                metodo: 'pdf-processor.processarPDFCompleto',
+                etapas: {
+                    processamentoPDF: !!resultadoPDF,
+                    analiseTexto: !!analise,
+                    promptIA: !!prompt,
+                    respostaIA: !!respostaIA,
+                    processamentoFinal: !!conteudoFinal
+                }
+            } 
+        };
+        
+    } catch (error) {
+        console.error("❌ [5] Erro na orquestração de análise:", error);
+        
+        // Fallback: retornar análise básica
+        const nomeArquivo = formData.nomeArquivo || 'documento.pdf';
+        const conteudoFallback = `
+📄 ANÁLISE DE DOCUMENTO PDF
+
+📂 Arquivo: ${nomeArquivo}
+⚠️ Status: Processamento com limitações
+
+ERRO ENCONTRADO:
+${error.message}
+
+RECOMENDAÇÕES:
+• Verifique se o arquivo PDF está válido
+• Tente reduzir o tamanho do arquivo
+• Para melhor análise, copie e cole o conteúdo em formato texto
+• Entre em contato com o suporte se o problema persistir
+
+PRÓXIMOS PASSOS:
+1. Revisar o documento manualmente
+2. Extrair informações principais
+3. Inserir dados no formulário de orçamento
+        `.trim();
+
+        return { 
+            conteudo: conteudoFallback,
+            debug: { 
+                erro: error.message,
+                fallbackAplicado: true,
+                nomeArquivo: nomeArquivo,
+                metodo: 'orquestrarAnalise_fallback'
+            } 
+        };
+    }
+}
+
+// ================================================================================
+// 6️⃣ CONFIGURAR HEADERS E CORS
 // ================================================================================
 
 function configurarHeaders(res) {
@@ -355,19 +520,20 @@ async function carregarModulos() {
     console.log("📦 [7] Carregando módulos especializados...");
     
     try {
-        const [analysis, iaClient, processing, prompts, templates, utils] = await Promise.all([
+        const [analysis, iaClient, processing, prompts, templates, utils, pdfProcessor] = await Promise.all([
             import('./modules/analysis.js'),
             import('./modules/ia-client.js'), 
             import('./modules/processing.js'),
             import('./modules/prompts.js'),
             import('./modules/templates.js'),
-            import('./modules/utils.js')
+            import('./modules/utils.js'),
+            import('./modules/pdf-processor.js')
         ]);
         
-        console.log("✅ [7] Todos os 6 módulos carregados com sucesso");
+        console.log("✅ [7] Todos os 7 módulos carregados com sucesso");
         
         // Retornar módulos organizados
-        return { analysis, iaClient, processing, prompts, templates, utils };
+        return { analysis, iaClient, processing, prompts, templates, utils, pdfProcessor };
         
     } catch (error) {
         console.error("❌ [7] Erro ao carregar módulos:", error);
