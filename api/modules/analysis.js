@@ -1,8 +1,8 @@
-// 🔍 analysis.js - SISTEMA COMPLETO DE ANÁLISE v11.0
-// CORREÇÃO FINAL: Removido 'export' duplicado de todas as constantes e da função principal.
+// 🔍 analysis.js - SISTEMA COMPLETO DE ANÁLISE v11.1
+// CORREÇÃO LÓGICA: Detecção de Múltiplas Opções e Extração de Passageiros aprimoradas.
 // Baseado em padrões reais: GOL, LATAM, Azul + CVC
 
-console.log("🔍 Analysis v11.0 - SISTEMA COMPLETO DE ANÁLISE CARREGADO");
+console.log("🔍 Analysis v11.1 - LÓGICA DE EXTRAÇÃO E DETECÇÃO CORRIGIDA");
 
 // ================================================================================
 // 1. 🎯 CONSTANTES (PADRÕES DE DETECÇÃO ESPECIALIZADOS)
@@ -570,7 +570,7 @@ function detectarMultiplasOpcoes(texto) {
 
   // Critérios mais fortes para detecção:
   const temPalavraOpcao = (texto.match(/opção\s*\d+/gi) || []).length;
-  const temPrecoTotalRepetido = (texto.match(/Total\s*\([^)]+\)/gi) || []).length;
+  const temPrecoTotalRepetido = (texto.match(/Total\s*\(([^)]+)\)/gi) || []).length;
   
   // É Múltiplas Opções se houver a palavra "opção" explicitamente,
   // ou se houver múltiplos blocos "Total (...)"
@@ -639,7 +639,6 @@ function extrairPassageirosCompleto(texto) {
     bebes: 0
   };
 
-  // Padrão que captura o conteúdo dentro de "Total (...)"
   const padraoContainer = /Total\s*\(([^)]+)\)/i;
   const matchContainer = texto.match(padraoContainer);
 
@@ -658,14 +657,19 @@ function extrairPassageirosCompleto(texto) {
     console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
   }
   
-  // Garantia de pelo menos 1 adulto se a extração falhar
   if (passageiros.adultos === 0 && passageiros.criancas === 0 && passageiros.bebes === 0) {
-      passageiros.adultos = 1;
-      console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
+      const matchAdultosSimples = texto.match(/(\d+)\s*adulto/i);
+      if(matchAdultosSimples) {
+        passageiros.adultos = parseInt(matchAdultosSimples[1], 10);
+      } else {
+        passageiros.adultos = 1;
+        console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
+      }
   }
 
   return passageiros;
 }
+
 // ================================================================================
 // 13. 🚢 EXTRAÇÃO DE DADOS DE CRUZEIRO
 // ================================================================================
@@ -740,29 +744,30 @@ function extrairDadosPacote(texto) {
     transferIncluido: false,
     atividadesInclusas: []
   };
-  // ... (toda a lógica de extração de pacote permanece aqui)
-  return { dadosPacote };
-}
+
   const padraoHotel = /\*\*([^*]+hotel[^*]*)\*\*/gi;
   const matchHotel = padraoHotel.exec(texto);
   if (matchHotel) {
     dadosPacote.nomeHotel = matchHotel[1].trim();
-    console.log(`✅ Hotel: ${dadosPacote.nomeHotel}`);
   }
+
   const linhas = texto.split('\n');
   const linhaHotel = linhas.findIndex(linha => linha.toLowerCase().includes('hotel') && linha.includes('**'));
   if (linhaHotel >= 0 && linhas[linhaHotel + 1]) {
     const proximaLinha = linhas[linhaHotel + 1].trim();
     if (!proximaLinha.includes('**') && proximaLinha.length > 10) {
       dadosPacote.enderecoHotel = proximaLinha;
-      console.log(`✅ Endereço: ${dadosPacote.enderecoHotel}`);
     }
   }
+
   const tiposQuarto = Object.keys(TIPOS_QUARTO_HOTEL);
   dadosPacote.tipoQuarto = tiposQuarto.find(tipo => texto.toLowerCase().includes(tipo));
+
   const regimes = Object.keys(REGIMES_HOSPEDAGEM);
   dadosPacote.regime = regimes.find(regime => texto.toLowerCase().includes(regime));
+
   dadosPacote.servicosInclusos = Object.keys(SERVICOS_PACOTE).filter(servico => texto.toLowerCase().includes(servico)).map(servico => SERVICOS_PACOTE[servico]);
+
   const padraoPrecoRiscado = /~~R\$\s*([\d.,]+)~~.*?R\$\s*([\d.,]+)/gi;
   const matchPrecoDesconto = padraoPrecoRiscado.exec(texto);
   if (matchPrecoDesconto) {
@@ -773,7 +778,6 @@ function extrairDadosPacote(texto) {
     const final = parseFloat(dadosPacote.precoFinal.replace(/\./g, '').replace(',', '.'));
     const descontoCalc = Math.round(((original - final) / original) * 100);
     dadosPacote.desconto = `${descontoCalc}%`;
-    console.log(`✅ Preços: De R$ ${dadosPacote.precoOriginal} por R$ ${dadosPacote.precoFinal} (${dadosPacote.desconto})`);
   } else {
     const padraoPreco = /Total.*?R\$\s*([\d.,]+)/gi;
     const matchPreco = padraoPreco.exec(texto);
@@ -781,24 +785,26 @@ function extrairDadosPacote(texto) {
       dadosPacote.precoFinal = matchPreco[1];
     }
   }
+
   const padraoDesconto = /-(\d+)%/g;
   const matchDesconto = padraoDesconto.exec(texto);
   if (matchDesconto) {
     dadosPacote.desconto = matchDesconto[0];
     dadosPacote.temDesconto = true;
   }
+
   dadosPacote.vooIncluido = texto.includes('ida') && texto.includes('volta');
   dadosPacote.transferIncluido = texto.toLowerCase().includes('transfer') || texto.toLowerCase().includes('aeroporto / hotel') || texto.toLowerCase().includes('transporte');
+
   if (texto.toLowerCase().includes('city tour')) {
     dadosPacote.atividadesInclusas.push('City Tour');
   }
   if (texto.toLowerCase().includes('by night')) {
     dadosPacote.atividadesInclusas.push('By Night');
   }
-  console.log("📦 Dados de pacote extraídos:", dadosPacote);
+  
   return { dadosPacote };
 }
-
 
 // ================================================================================
 // 15. 🏨 EXTRAÇÃO DE DADOS DE HOTEL
