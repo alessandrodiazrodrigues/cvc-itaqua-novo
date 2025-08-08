@@ -1,525 +1,440 @@
-// 🚀 api/ai.js - v10.0 - INTEGRAÇÃO CORRIGIDA COM IA-CLIENT
-// CORREÇÃO: Importação e uso correto do módulo ia-client.js
-// MANTER: Análise básica atual (será evoluída depois)
+// 🚀 api/ai.js - v8.1 - ORQUESTRADOR CORRIGIDO COM ÍNDICE E NUMERAÇÃO
+// CORREÇÃO CRÍTICA: processarRespostaCompleta agora recebe 3 argumentos
+// CORREÇÃO CRÍTICA: Compatibilidade ES6 completa
+// ARQUITETURA: 100% modular - apenas orquestra, nunca implementa
 
-console.log("🚀 CVC ITAQUA API v10.0 - IA REAL INTEGRADA E CORRIGIDA");
+console.log("🚀 CVC ITAQUA API v8.1 - ORQUESTRADOR CORRIGIDO COM ÍNDICE");
+
+// ================================================================================
+// 📋 ÍNDICE DE FUNÇÕES
+// ================================================================================
+/* 
+1️⃣ handler()                     - Função principal da API
+2️⃣ orquestrarOrcamento()         - Fluxo completo de orçamento (5 etapas)
+3️⃣ orquestrarRanking()           - Fluxo de ranking de hotéis
+4️⃣ orquestrarDicas()             - Fluxo de dicas de viagem
+5️⃣ configurarHeaders()           - CORS e headers de resposta
+6️⃣ validarMetodo()               - Validação de método HTTP
+7️⃣ carregarModulos()             - Carregamento dinâmico de módulos
+8️⃣ gerarRespostaFinal()          - Resposta padronizada com métricas
+9️⃣ tratarErroFatal()             - Tratamento de erros críticos
+*/
+
+// ================================================================================
+// 📦 IMPORTAÇÃO COMPLETA DE TODOS OS MÓDULOS (ES6)
+// ================================================================================
+
+// ⚠️ IMPORTANTE: Todas as importações dinâmicas serão feitas dentro das funções
+// para evitar problemas de compatibilidade ES6/CommonJS
+
+// ================================================================================
+// 1️⃣ FUNÇÃO PRINCIPAL DA API
+// ================================================================================
 
 export default async function handler(req, res) {
     const inicio = Date.now();
-    console.log(`📊 Método: ${req.method} | Timestamp: ${new Date().toISOString()}`);
-
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v10.0-Corrigido');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') {
-        return res.status(405).json({ 
-            success: false, 
-            error: 'Método não permitido',
-            versao: '10.0-corrigido'
-        });
-    }
+    console.log(`📊 [1] HANDLER INICIADO | Método: ${req.method} | ${new Date().toISOString()}`);
 
     try {
-        // ================================================================================
-        // 📦 CARREGAMENTO DO IA-CLIENT COM CORREÇÃO
-        // ================================================================================
+        // 5️⃣ Configurar headers e CORS
+        configurarHeaders(res);
         
-        console.log("📦 Carregando módulo ia-client...");
-        
-        const iaClientModule = await import('./modules/ia-client.js');
-        
-        // Extrair funções corretamente (suporta tanto named quanto default export)
-        const chamarIASegura = iaClientModule.chamarIASegura || iaClientModule.default?.chamarIASegura;
-        const selecionarModelo = iaClientModule.selecionarModelo || iaClientModule.default?.selecionarModelo;
-        const obterInformacoesUso = iaClientModule.obterInformacoesUso || iaClientModule.default?.obterInformacoesUso;
-        
-        console.log("✅ Módulo ia-client carregado com sucesso");
-        console.log("🤖 Verificando disponibilidade de funções...");
-        console.log(`   - chamarIASegura: ${chamarIASegura ? '✅' : '❌'}`);
-        console.log(`   - selecionarModelo: ${selecionarModelo ? '✅' : '❌'}`);
-        console.log(`   - obterInformacoesUso: ${obterInformacoesUso ? '✅' : '❌'}`);
+        // 6️⃣ Validar método HTTP
+        const validacaoMetodo = validarMetodo(req, res);
+        if (validacaoMetodo) return validacaoMetodo;
 
-        // Verificar se IA real está disponível
-        const iaRealDisponivel = !!chamarIASegura && !!process.env.OPENAI_API_KEY;
-
-        console.log(`🎯 IA Real disponível: ${iaRealDisponivel ? 'SIM ✅' : 'NÃO ❌'}`);
-        console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY ? 'CONFIGURADA ✅' : 'AUSENTE ❌'}`);
-        console.log(`🔑 Anthropic API Key: ${process.env.ANTHROPIC_API_KEY ? 'CONFIGURADA ✅' : 'AUSENTE ❌'}`);
-
-        // ================================================================================
-        // 🔧 NORMALIZAÇÃO BÁSICA DE DADOS
-        // ================================================================================
+        // 7️⃣ Carregar todos os módulos especializados
+        const modulos = await carregarModulos();
         
-        const formData = req.body.formData || req.body;
-        const tipo = req.body.tipo || 'orcamento';
+        // Normalizar entrada usando utils.js (CORREÇÃO CRÍTICA)
+        console.log("🔧 [1] Normalizando dados de entrada...");
+        const { formData, tipo } = modulos.utils.normalizarEntrada(req.body);
         
-        // Garantir dados básicos
-        if (!formData.tipos || !Array.isArray(formData.tipos) || formData.tipos.length === 0) {
-            formData.tipos = ['Aéreo Nacional'];
-        }
-        formData.observacoes = formData.observacoes || '';
-        formData.destino = formData.destino || '';
-        formData.adultos = formData.adultos || 1;
-        formData.criancas = formData.criancas || 0;
+        console.log(`🎯 [1] Dados normalizados | Tipo: ${tipo} | Tipos: ${formData.tipos?.length}`);
 
-        console.log(`🎯 Processando tipo: ${tipo}`);
-        console.log(`📊 Dados recebidos:`, {
-            tipos: formData.tipos,
-            destino: formData.destino,
-            adultos: formData.adultos,
-            criancas: formData.criancas,
-            temObservacoes: !!formData.observacoes,
-            temImagem: !!formData.imagemBase64
-        });
-
-        // ================================================================================
-        // 🎯 ORQUESTRAÇÃO COM IA REAL
-        // ================================================================================
-        
+        // Orquestrar baseado no tipo
         let resultado;
-
         switch (tipo) {
             case 'orcamento':
-                resultado = await orquestrarOrcamentoComIAReal(
-                    formData, 
-                    { chamarIASegura, selecionarModelo, obterInformacoesUso },
-                    iaRealDisponivel
-                );
+                resultado = await orquestrarOrcamento(formData, modulos);
                 break;
             case 'ranking':
-                resultado = await orquestrarRankingSimples(formData);
+                resultado = await orquestrarRanking(formData, modulos);
                 break;
             case 'dicas':
-                resultado = await orquestrarDicasSimples(formData);
+                resultado = await orquestrarDicas(formData, modulos);
                 break;
             default:
                 throw new Error(`Tipo de operação não suportado: ${tipo}`);
         }
 
-        // ================================================================================
-        // 📊 RESPOSTA FINAL
-        // ================================================================================
-        
-        const tempoTotal = Date.now() - inicio;
-        console.log(`✅ Processamento concluído em ${tempoTotal}ms`);
-
-        return res.status(200).json({
-            success: true,
-            result: resultado.conteudo,
-            versao: '10.0-ia-real-corrigida',
-            timestamp: new Date().toISOString(),
-            debug: {
-                tempoProcessamento: `${tempoTotal}ms`,
-                iaRealUsada: resultado.debug?.iaRealUsada || false,
-                modeloUsado: resultado.debug?.modeloUsado || 'nao-informado',
-                tipoAnalise: resultado.debug?.tipoAnalise || 'basica',
-                ...resultado.debug
-            }
-        });
+        // 8️⃣ Gerar resposta final com métricas
+        return gerarRespostaFinal(res, resultado, inicio);
 
     } catch (error) {
-        const tempoTotal = Date.now() - inicio;
-        console.error("❌ Erro fatal:", error);
-        
-        return res.status(500).json({
-            success: false,
-            error: error.message,
-            versao: '10.0-erro',
-            timestamp: new Date().toISOString(),
-            debug: {
-                tempoProcessamento: `${tempoTotal}ms`,
-                errorStack: error.stack?.split('\n').slice(0, 4),
-                tipoErro: error.name || 'erro_processamento'
-            }
-        });
+        // 9️⃣ Tratar erro fatal
+        return tratarErroFatal(res, error, inicio);
     }
 }
 
 // ================================================================================
-// 🎯 ORQUESTRAÇÃO DE ORÇAMENTO COM IA REAL (CORRIGIDA)
+// 2️⃣ ORQUESTRAÇÃO DE ORÇAMENTO (FLUXO COMPLETO EM 5 ETAPAS)
 // ================================================================================
 
-async function orquestrarOrcamentoComIAReal(formData, iaFunctions, iaRealDisponivel) {
-    console.log("🎯 Orquestrando orçamento com IA REAL...");
-    console.log(`🤖 IA Real disponível: ${iaRealDisponivel ? 'SIM' : 'NÃO'}`);
-
-    const { chamarIASegura, selecionarModelo, obterInformacoesUso } = iaFunctions;
+async function orquestrarOrcamento(formData, modulos) {
+    console.log("🎯 [2] ORQUESTRANDO FLUXO COMPLETO DE ORÇAMENTO...");
+    console.log("🔄 [2] FLUXO: Análise → Prompt → IA → Processamento → Métricas");
 
     try {
-        // ETAPA 1: ANÁLISE BÁSICA (temporária - será substituída por analysis.js)
-        console.log("📊 ETAPA 1: Análise básica temporária...");
-        const analise = analisarTextoBasicoTemporario(formData);
-        console.log(`✅ Análise concluída:`, {
-            tipo: analise.tipoDetectado,
-            complexidade: analise.complexidade,
-            confianca: analise.confiancaDeteccao
-        });
-
-        // ETAPA 2: PROMPT BÁSICO (temporário - será substituído por prompts.js)
-        console.log("📋 ETAPA 2: Geração de prompt básico...");
-        const prompt = gerarPromptBasicoTemporario(formData, analise);
-        console.log(`✅ Prompt gerado: ${prompt.length} caracteres`);
-
-        // ETAPA 3: IA REAL - CHAMADA CORRIGIDA!
-        console.log("🤖 ETAPA 3: Chamando IA REAL via ia-client...");
+        // ETAPA 2.1: ANÁLISE DO TEXTO DE ENTRADA (analysis.js)
+        console.log("📊 [2.1] ANÁLISE: Detectando tipo e complexidade...");
         
-        let respostaIA;
-        let iaRealUsada = false;
-        let modeloUsado = 'nenhum';
+        const analise = modulos.analysis.analisarTextoCompleto 
+            ? modulos.analysis.analisarTextoCompleto(formData)
+            : modulos.analysis.default.analisarTextoCompleto(formData);
+        
+        console.log(`✅ [2.1] Análise concluída | Tipo: ${analise?.tipoDetectado || 'generico'}`);
 
-        if (iaRealDisponivel) {
-            try {
-                // Selecionar modelo usando a função do ia-client
-                let modeloInfo;
-                if (selecionarModelo) {
-                    console.log("🎯 Usando selecionarModelo do ia-client...");
-                    modeloInfo = selecionarModelo(!!formData.imagemBase64, analise.complexidade);
-                } else {
-                    console.log("🎯 Usando seleção básica de modelo...");
-                    modeloInfo = selecionarModeloBasico(formData, analise);
-                }
-                
-                console.log(`🎯 Modelo selecionado: ${modeloInfo.modelo}`);
-                console.log(`🎯 Fallbacks: ${modeloInfo.fallback?.join(', ') || 'nenhum'}`);
+        // ETAPA 2.2: GERAÇÃO DO PROMPT OTIMIZADO (prompts.js)
+        console.log("📋 [2.2] PROMPT: Gerando prompt especializado...");
+        
+        const prompt = modulos.prompts.gerarPromptOtimizado 
+            ? modulos.prompts.gerarPromptOtimizado(formData, analise)
+            : modulos.prompts.default.gerarPromptOtimizado(formData, analise);
+        
+        console.log(`✅ [2.2] Prompt gerado | ${prompt?.length || 0} caracteres`);
 
-                // CHAMADA CORRIGIDA - Usar a função extraída
-                console.log("🚀 Chamando IA real...");
-                respostaIA = await chamarIASegura(
-                    prompt, 
-                    !!formData.imagemBase64, 
-                    formData.imagemBase64 || null, 
-                    modeloInfo.modelo, 
-                    modeloInfo.fallback || []
-                );
-                
-                iaRealUsada = true;
-                modeloUsado = respostaIA?.modelo_usado || modeloInfo.modelo;
-                
-                console.log("✅ IA REAL respondeu com sucesso!");
-                console.log(`🎯 Modelo usado: ${modeloUsado}`);
-                console.log(`📊 Resposta: ${respostaIA?.content?.length || 0} caracteres`);
-                
-                // Obter informações de uso se disponível
-                if (obterInformacoesUso && respostaIA) {
-                    const infoUso = obterInformacoesUso(respostaIA);
-                    console.log(`📊 Tokens usados: ${infoUso.tokens_total}`);
-                }
-                
-            } catch (iaError) {
-                console.error("❌ IA REAL falhou:", iaError.message);
-                throw new Error(`IA Real falhou: ${iaError.message}`);
+        // ETAPA 2.3: SELEÇÃO INTELIGENTE DO MODELO (ia-client.js)
+        console.log("🤖 [2.3] MODELO: Selecionando IA otimizada...");
+        
+        const modeloInfo = modulos.iaClient.selecionarModelo 
+            ? modulos.iaClient.selecionarModelo(!!formData.imagemBase64, analise?.complexidade)
+            : modulos.iaClient.default.selecionarModelo(!!formData.imagemBase64, analise?.complexidade);
+        
+        console.log(`✅ [2.3] Modelo selecionado: ${modeloInfo.modelo}`);
+
+        // ETAPA 2.4: CHAMADA PARA A IA (ia-client.js)
+        console.log("🧠 [2.4] IA: Executando chamada inteligente...");
+        
+        const respostaIA = modulos.iaClient.chamarIASegura 
+            ? await modulos.iaClient.chamarIASegura(
+                prompt, 
+                !!formData.imagemBase64, 
+                formData.imagemBase64, 
+                modeloInfo.modelo, 
+                modeloInfo.fallback
+            )
+            : await modulos.iaClient.default.chamarIASegura(
+                prompt, 
+                !!formData.imagemBase64, 
+                formData.imagemBase64, 
+                modeloInfo.modelo, 
+                modeloInfo.fallback
+            );
+        
+        console.log(`🧠 [2.4] IA respondeu | ${respostaIA?.content?.length || 0} caracteres`);
+
+        // ETAPA 2.5: PÓS-PROCESSAMENTO FINAL (processing.js) - CORREÇÃO CRÍTICA!
+        console.log("🎨 [2.5] PROCESSAMENTO: Formatação final...");
+        
+        const conteudoFinal = modulos.processing.processarRespostaCompleta 
+            ? await modulos.processing.processarRespostaCompleta(
+                respostaIA?.content || respostaIA?.conteudo || '', 
+                analise, 
+                formData  // ← CORREÇÃO CRÍTICA: 3º ARGUMENTO ADICIONADO
+            )
+            : await modulos.processing.default.processarRespostaCompleta(
+                respostaIA?.content || respostaIA?.conteudo || '', 
+                analise, 
+                formData  // ← CORREÇÃO CRÍTICA: 3º ARGUMENTO ADICIONADO
+            );
+        
+        console.log(`✅ [2.5] Processamento concluído`);
+
+        // ETAPA 2.6: CÁLCULO DE MÉTRICAS (ia-client.js)
+        console.log("📊 [2.6] MÉTRICAS: Calculando custos...");
+        
+        let custo = { custo_total: 0 };
+        let informacoesUso = { tokens_total: 0 };
+        
+        try {
+            if (modulos.iaClient.obterInformacoesUso && modulos.iaClient.calcularCusto) {
+                informacoesUso = modulos.iaClient.obterInformacoesUso(respostaIA);
+                custo = modulos.iaClient.calcularCusto(informacoesUso);
             }
-        } else {
-            // SE IA NÃO DISPONÍVEL, FALHAR EXPLICITAMENTE
-            const motivoIndisponivel = !chamarIASegura ? 
-                "Função chamarIASegura não encontrada no módulo ia-client" : 
-                "OPENAI_API_KEY não configurada";
-                
-            throw new Error(`IA Real indisponível: ${motivoIndisponivel}`);
+        } catch (errorMetricas) {
+            console.warn("⚠️ [2.6] Erro ao calcular métricas:", errorMetricas.message);
         }
 
-        // ETAPA 4: PROCESSAMENTO BÁSICO (temporário - será substituído por processing.js)
-        console.log("🎨 ETAPA 4: Processamento básico temporário...");
-        const conteudoFinal = processarRespostaBasicoTemporario(respostaIA.content, analise, formData);
-
+        // RESULTADO FINAL DO ORÇAMENTO
         return {
             conteudo: conteudoFinal,
             debug: {
-                fluxoExecutado: 'Análise-Básica → Prompt-Básico → IA-REAL → Processamento-Básico',
-                iaRealUsada: iaRealUsada,
-                modeloUsado: modeloUsado,
-                tipoAnalise: analise.tipoDetectado,
-                complexidade: analise.complexidade,
-                promptLength: prompt.length,
-                responseLength: respostaIA?.content?.length || 0,
-                tokens: respostaIA?.usage?.total_tokens || 0
+                fluxoExecutado: '5 Etapas: Análise → Prompt → IA → Processamento → Métricas',
+                modeloUsado: respostaIA?.modelo_usado || modeloInfo.modelo,
+                templateUsado: analise?.tipoDetectado || 'generico',
+                custoBRL: custo?.custo_total ? `R$ ${custo.custo_total.toFixed(4)}` : 'R$ 0,0000',
+                tokensUsados: informacoesUso?.tokens_total || 0,
+                etapas: {
+                    analise: !!analise,
+                    prompt: !!prompt,
+                    ia: !!respostaIA,
+                    processamento: !!conteudoFinal,
+                    metricas: !!custo
+                }
             }
         };
 
     } catch (error) {
-        console.error("❌ Erro na orquestração com IA real:", error);
-        throw new Error(`Falha na orquestração: ${error.message}`);
+        console.error("❌ [2] Erro na orquestração de orçamento:", error);
+        throw new Error(`Falha na orquestração de orçamento: ${error.message}`);
     }
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES BÁSICAS TEMPORÁRIAS (serão substituídas pelos módulos)
+// 3️⃣ ORQUESTRAÇÃO DE RANKING DE HOTÉIS
 // ================================================================================
 
-function analisarTextoBasicoTemporario(formData) {
-    const texto = (formData.observacoes || '').toLowerCase();
-    const destino = (formData.destino || '').toLowerCase();
-    
-    let tipoDetectado = 'generico';
-    let complexidade = 'media';
-    
-    // Detecção melhorada baseada em padrões
-    if (texto.includes('multitrecho') || texto.includes('múltiplos') || 
-        texto.includes('trecho 1') || texto.includes('trecho 2')) {
-        tipoDetectado = 'multitrecho';
-        complexidade = 'alta';
-    } else if (texto.includes('iberia') || texto.includes('tap') || texto.includes('lufthansa')) {
-        tipoDetectado = 'aereo_internacional';
-        complexidade = texto.includes('trecho') ? 'alta' : 'media';
-    } else if (texto.includes('cruzeiro') || texto.includes('navio') || texto.includes('cabine')) {
-        tipoDetectado = 'cruzeiro';
-        complexidade = 'media';
-    } else if (texto.includes('hotel') || texto.includes('hospedagem') || 
-               texto.includes('resort') || texto.includes('pousada')) {
-        tipoDetectado = 'hotel';
-        complexidade = 'baixa';
-    } else if (texto.includes('pacote') || (texto.includes('hotel') && texto.includes('voo'))) {
-        tipoDetectado = 'pacote';
-        complexidade = 'media';
-    } else if (formData.tipos?.includes('Aéreo Internacional')) {
-        tipoDetectado = 'aereo_internacional';
-        complexidade = 'media';
-    } else if (formData.tipos?.includes('Aéreo Nacional')) {
-        tipoDetectado = 'aereo_nacional';
-        complexidade = 'baixa';
-    }
-    
-    // Ajustar complexidade baseado em outros fatores
-    if (texto.length > 1000) complexidade = 'alta';
-    if (formData.imagemBase64) complexidade = 'media';
-    
-    return {
-        tipoDetectado,
-        complexidade,
-        confiancaDeteccao: texto.length > 100 ? 0.8 : 0.6
-    };
-}
+async function orquestrarRanking(formData, modulos) {
+    console.log("🏨 [3] ORQUESTRANDO RANKING DE HOTÉIS...");
 
-function gerarPromptBasicoTemporario(formData, analise) {
-    const tipoViagem = analise.tipoDetectado.replace(/_/g, ' ').toUpperCase();
-    
-    return `Você é um consultor especializado da CVC Itaqua. Analise CUIDADOSAMENTE as informações fornecidas e gere um orçamento profissional baseado nos DADOS REAIS.
+    try {
+        // Verificar se existe destino ou usar análise
+        const destino = formData.destino || 'destino popular';
+        console.log(`🏨 [3] Gerando ranking para: ${destino}`);
 
-🎯 TIPO DE VIAGEM DETECTADO: ${tipoViagem}
-
-📋 INFORMAÇÕES DO CLIENTE:
-- Tipos solicitados: ${formData.tipos?.join(', ') || 'Não informado'}
-- Destino: ${formData.destino || 'Não informado'}
-- Adultos: ${formData.adultos || 1}
-- Crianças: ${formData.criancas || 0}
-
-📊 DADOS DETALHADOS FORNECIDOS:
-${formData.observacoes || 'Nenhuma informação adicional fornecida'}
-
-⚙️ ANÁLISE AUTOMÁTICA:
-- Tipo detectado: ${analise.tipoDetectado}
-- Complexidade: ${analise.complexidade}
-- Confiança: ${(analise.confiancaDeteccao * 100).toFixed(0)}%
-
-📌 INSTRUÇÕES CRÍTICAS:
-1. USE APENAS OS DADOS REAIS fornecidos nas informações detalhadas
-2. Se há companhias aéreas mencionadas (Iberia, TAP, LATAM, GOL, Azul), USE-AS EXATAMENTE
-3. Se há preços mencionados (R$ valores), USE-OS EXATAMENTE como base
-4. Se há códigos de aeroportos (GRU, FCO, CDG, MAD), USE-OS CORRETAMENTE
-5. Se há datas específicas mencionadas, USE-AS PRECISAMENTE
-6. Para multitrechos, organize CLARAMENTE por segmentos (TRECHO 1, TRECHO 2, etc.)
-7. Se há informações de hotéis, USE nome, endereço e categoria EXATOS
-
-✨ FORMATO OBRIGATÓRIO DO ORÇAMENTO:
-- Título claro com tipo de viagem
-- Use emojis profissionais (✈️ 🏨 🚢 📅 💰 ✅)
-- Valores sempre em R$ (reais brasileiros)
-- Especifique TODAS as condições de pagamento mencionadas
-- Detalhe informações sobre bagagem quando disponível
-- Inclua políticas de cancelamento se mencionadas
-- Mantenha tom profissional mas acolhedor
-
-⚠️ IMPORTANTE: 
-- Analise TODO o conteúdo fornecido minuciosamente
-- Extraia e use TODAS as informações específicas disponíveis
-- NÃO invente dados genéricos se há informações específicas
-- Se algo não está claro, indique que precisa de confirmação
-- Para valores não mencionados, indique "A confirmar" ou "Sob consulta"
-
-Agora, gere o orçamento completo e detalhado baseado EXCLUSIVAMENTE nas informações reais fornecidas:`;
-}
-
-function selecionarModeloBasico(formData, analise) {
-    // Fallback caso a função do ia-client não esteja disponível
-    if (formData.imagemBase64) {
-        return { 
-            modelo: 'gpt-4o', 
-            fallback: ['gpt-4o-mini'] 
+        // Usar análise simples para ranking
+        const analise = { 
+            tipoDetectado: 'ranking',
+            complexidade: 'media',
+            destino: destino
         };
-    }
-    
-    switch (analise.complexidade) {
-        case 'alta':
-            return { 
-                modelo: 'gpt-4o', 
-                fallback: ['gpt-4o-mini'] 
-            };
-        case 'media':
-            return { 
-                modelo: 'gpt-4o-mini', 
-                fallback: ['gpt-4o'] 
-            };
-        case 'baixa':
-        default:
-            return { 
-                modelo: 'gpt-4o-mini', 
-                fallback: [] 
-            };
-    }
-}
 
-function processarRespostaBasicoTemporario(conteudo, analise, formData) {
-    if (!conteudo) return "❌ Erro: Resposta da IA vazia";
-    
-    // Processamento básico - limpeza e formatação
-    let processado = conteudo.trim();
-    
-    // Adicionar rodapé com informações do sistema
-    processado += `\n\n---\n`;
-    processado += `💼 *CVC Itaqua - Agência Especializada*\n`;
-    processado += `📍 Rua João Tibiriçá Ramos, 17 - Itaquaquecetuba/SP\n`;
-    processado += `📞 Contato: (11) 9.5396-7741\n`;
-    processado += `✨ Sistema v10.0 - IA Real Integrada`;
-    
-    // Se há observações muito longas que não foram incluídas, adicionar nota
-    if (formData.observacoes && formData.observacoes.length > 1000 && 
-        !processado.includes(formData.observacoes.substring(0, 50))) {
-        processado += `\n\n📋 *Observação:* Orçamento baseado em ${formData.observacoes.length} caracteres de dados fornecidos.`;
+        // Gerar prompt específico para ranking
+        const prompt = modulos.prompts.gerarPromptRanking 
+            ? modulos.prompts.gerarPromptRanking(destino, formData)
+            : modulos.prompts.default.gerarPromptRanking 
+            ? modulos.prompts.default.gerarPromptRanking(destino, formData)
+            : `Crie um ranking detalhado dos 5 melhores hotéis em ${destino} com avaliações, preços e diferenciais.`;
+
+        // Chamar IA com modelo otimizado
+        const modeloInfo = { modelo: 'gpt-4o-mini', fallback: ['gpt-4o'] };
+        
+        const respostaIA = modulos.iaClient.chamarIASegura 
+            ? await modulos.iaClient.chamarIASegura(prompt, false, null, modeloInfo.modelo, modeloInfo.fallback)
+            : await modulos.iaClient.default.chamarIASegura(prompt, false, null, modeloInfo.modelo, modeloInfo.fallback);
+
+        // Processar resposta - CORREÇÃO CRÍTICA: 3 ARGUMENTOS
+        const conteudoFinal = modulos.processing.processarRespostaCompleta 
+            ? await modulos.processing.processarRespostaCompleta(
+                respostaIA?.content || '', 
+                analise, 
+                formData  // ← CORREÇÃO CRÍTICA: 3º ARGUMENTO
+            )
+            : await modulos.processing.default.processarRespostaCompleta(
+                respostaIA?.content || '', 
+                analise, 
+                formData  // ← CORREÇÃO CRÍTICA: 3º ARGUMENTO
+            );
+
+        return { 
+            conteudo: conteudoFinal, 
+            debug: { 
+                templateUsado: 'ranking_hoteis',
+                destinoUsado: destino,
+                metodo: 'prompts.gerarPromptRanking'
+            } 
+        };
+        
+    } catch (error) {
+        console.error("❌ [3] Erro na orquestração de ranking:", error);
+        throw new Error(`Falha na orquestração de ranking: ${error.message}`);
     }
-    
-    return processado;
 }
 
 // ================================================================================
-// 🏨 FUNÇÕES SIMPLES PARA RANKING E DICAS (temporárias)
+// 4️⃣ ORQUESTRAÇÃO DE DICAS DE VIAGEM
 // ================================================================================
 
-async function orquestrarRankingSimples(formData) {
-    const destino = formData.destino || 'seu destino';
-    
-    const conteudo = `🏨 *RANKING DE HOTÉIS - ${destino.toUpperCase()}*
+async function orquestrarDicas(formData, modulos) {
+    console.log("💡 [4] ORQUESTRANDO DICAS DE VIAGEM...");
 
-🥇 *1º LUGAR - Hotel Premium Excellence*
-⭐⭐⭐⭐⭐ 5 estrelas | Centro da cidade
-💰 Diária a partir de R$ 450,00 | Café da manhã incluso
-✅ Piscina aquecida, Spa completo, Academia 24h
-📍 Localização privilegiada com vista panorâmica
+    try {
+        const destino = formData.destino || 'viagem geral';
+        console.log(`💡 [4] Gerando dicas para: ${destino}`);
 
-🥈 *2º LUGAR - Resort Familiar Paradise*  
-⭐⭐⭐⭐ 4 estrelas | Frente para o mar
-💰 Diária a partir de R$ 320,00 | All inclusive disponível
-✅ Kids Club, 3 Piscinas, Entretenimento diário
-🏖️ Acesso direto à praia privativa
+        // Verificar se templates tem dicas estáticas
+        let conteudo;
+        
+        if (modulos.templates.gerarDicasViagem) {
+            conteudo = modulos.templates.gerarDicasViagem(destino, formData);
+            console.log("✅ [4] Usando template estático de dicas");
+        } else if (modulos.templates.default?.gerarDicasViagem) {
+            conteudo = modulos.templates.default.gerarDicasViagem(destino, formData);
+            console.log("✅ [4] Usando template estático de dicas (default)");
+        } else {
+            // Fallback: usar IA para gerar dicas
+            console.log("🤖 [4] Usando IA para gerar dicas...");
+            
+            const prompt = `Crie dicas essenciais de viagem para ${destino}, incluindo: 
+            - Melhor época para visitar
+            - Documentação necessária
+            - Dicas de bagagem
+            - Principais atrações
+            - Gastronomia local
+            - Dicas de segurança`;
 
-🥉 *3º LUGAR - Hotel Executivo Business*
-⭐⭐⭐⭐ 4 estrelas | Distrito empresarial  
-💰 Diária a partir de R$ 280,00 | Business center 24h
-✅ Salas de reunião equipadas, Wi-Fi premium, Transfer aeroporto
-🏢 Ideal para viagens corporativas
+            const respostaIA = modulos.iaClient.chamarIASegura 
+                ? await modulos.iaClient.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o'])
+                : await modulos.iaClient.default.chamarIASegura(prompt, false, null, 'gpt-4o-mini', ['gpt-4o']);
 
-📊 *4º LUGAR - Pousada Charme Local*
-⭐⭐⭐ 3 estrelas | Centro histórico
-💰 Diária a partir de R$ 180,00 | Café colonial
-✅ Decoração regional, Ambiente acolhedor
-🎨 Experiência cultural autêntica
-
-🌟 *5º LUGAR - Hostel Econômico Central*
-⭐⭐ 2 estrelas | Área central
-💰 Diária a partir de R$ 80,00 | Cozinha compartilhada
-✅ Wi-Fi grátis, Lockers individuais
-👥 Ideal para mochileiros e jovens
-
----
-💼 *CVC Itaqua - Sua melhor escolha em hospedagem*
-📞 Reservas: (11) 9.5396-7741
-✨ Sistema v10.0 - Rankings atualizados`;
-
-    return {
-        conteudo,
-        debug: {
-            tipo: 'ranking_hoteis',
-            iaRealUsada: false,
-            metodo: 'template_basico'
+            conteudo = respostaIA?.content || 'Dicas de viagem indisponíveis';
         }
-    };
+
+        return { 
+            conteudo, 
+            debug: { 
+                templateUsado: 'dicas_estatico',
+                destinoUsado: destino,
+                metodo: 'templates.gerarDicasViagem'
+            } 
+        };
+        
+    } catch (error) {
+        console.error("❌ [4] Erro na orquestração de dicas:", error);
+        throw new Error(`Falha na orquestração de dicas: ${error.message}`);
+    }
 }
 
-async function orquestrarDicasSimples(formData) {
-    const destino = formData.destino || 'seu destino';
+// ================================================================================
+// 5️⃣ CONFIGURAR HEADERS E CORS
+// ================================================================================
+
+function configurarHeaders(res) {
+    console.log("🔒 [5] Configurando headers CORS...");
     
-    const conteudo = `💡 *DICAS ESSENCIAIS DE VIAGEM - ${destino.toUpperCase()}*
-
-📅 *MELHOR ÉPOCA PARA VIAJAR*
-• ☀️ Alta temporada: Dezembro a Março (preços mais altos)
-• 🌤️ Média temporada: Abril a Junho (clima agradável)
-• 💰 Baixa temporada: Maio e Setembro (melhores preços)
-• 🌧️ Evitar: Período de chuvas intensas
-
-🎒 *O QUE LEVAR NA MALA*
-• 👕 Roupas leves e confortáveis
-• 🧴 Protetor solar FPS 50+ e repelente
-• 👟 Calçados confortáveis para caminhada
-• 💊 Kit farmácia pessoal
-• 🔌 Adaptador universal e carregador portátil
-• 📷 Câmera ou celular com boa memória
-
-🗺️ *PRINCIPAIS ATRAÇÕES*
-• 🏛️ Centro histórico e museus
-• 🏖️ Praias e paisagens naturais
-• 🛍️ Mercados e feiras locais
-• 🍴 Restaurantes típicos
-• 🎭 Eventos culturais e festivais
-
-💰 *ORÇAMENTO DIÁRIO SUGERIDO*
-• 💵 Econômico: R$ 150-250/dia
-• 💳 Intermediário: R$ 300-500/dia
-• 💎 Premium: R$ 600+ /dia
-
-🚖 *TRANSPORTE LOCAL*
-• 🚌 Transporte público: Mais econômico
-• 🚗 Aluguel de carro: Maior liberdade
-• 📱 Apps de transporte: Praticidade
-• 🚶 A pé: Melhor para conhecer o centro
-
-🍽️ *GASTRONOMIA*
-• 🥘 Pratos típicos imperdíveis
-• 💧 Beba sempre água mineral
-• 🍹 Cuidado com gelo em bebidas
-• 🥗 Prefira alimentos cozidos
-
-📱 *APLICATIVOS ÚTEIS*
-• 🗺️ Google Maps (offline)
-• 🌐 Google Tradutor
-• 💱 Conversor de moedas
-• ☁️ Previsão do tempo
-• 📸 Instagram para inspirações
-
-⚠️ *CUIDADOS IMPORTANTES*
-• 📄 Documentos sempre em local seguro
-• 💳 Cartões em locais separados
-• 📞 Tenha contatos de emergência
-• 🏥 Seguro viagem é fundamental
-• 📸 Fotos dos documentos no celular
-
----
-💼 *CVC Itaqua - Transformando viagens em experiências*
-📞 Consultoria: (11) 9.5396-7741
-✨ Sistema v10.0 - Dicas personalizadas`;
-
-    return {
-        conteudo,
-        debug: {
-            tipo: 'dicas_viagem',
-            iaRealUsada: false,
-            metodo: 'template_basico'
-        }
-    };
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('X-Powered-By', 'CVC-Itaqua-AI-v8.1-Corrigido');
+    res.setHeader('X-Architecture', 'Modular-ES6');
+    
+    console.log("✅ [5] Headers configurados");
 }
 
-console.log("✅ API v10.0 carregada - CORREÇÕES IMPLEMENTADAS!");
-console.log("🎯 Importação do ia-client.js corrigida");
-console.log("📊 Pronto para integração com analysis.js");
-console.log("🚀 Sistema funcionando com IA REAL!");
+// ================================================================================
+// 6️⃣ VALIDAR MÉTODO HTTP
+// ================================================================================
+
+function validarMetodo(req, res) {
+    console.log(`🔍 [6] Validando método: ${req.method}`);
+    
+    if (req.method === 'OPTIONS') {
+        console.log("✅ [6] OPTIONS request - respondendo 200");
+        return res.status(200).end();
+    }
+    
+    if (req.method !== 'POST') {
+        console.log(`❌ [6] Método ${req.method} não permitido`);
+        return res.status(405).json({ 
+            success: false, 
+            error: 'Método não permitido. Use POST.',
+            versao: '8.1-corrigido'
+        });
+    }
+    
+    console.log("✅ [6] Método POST validado");
+    return null; // Continuar processamento
+}
+
+// ================================================================================
+// 7️⃣ CARREGAR MÓDULOS DINAMICAMENTE
+// ================================================================================
+
+async function carregarModulos() {
+    console.log("📦 [7] Carregando módulos especializados...");
+    
+    try {
+        const [analysis, iaClient, processing, prompts, templates, utils] = await Promise.all([
+            import('./modules/analysis.js'),
+            import('./modules/ia-client.js'), 
+            import('./modules/processing.js'),
+            import('./modules/prompts.js'),
+            import('./modules/templates.js'),
+            import('./modules/utils.js')
+        ]);
+        
+        console.log("✅ [7] Todos os 6 módulos carregados com sucesso");
+        
+        // Retornar módulos organizados
+        return { analysis, iaClient, processing, prompts, templates, utils };
+        
+    } catch (error) {
+        console.error("❌ [7] Erro ao carregar módulos:", error);
+        throw new Error(`Falha no carregamento de módulos: ${error.message}`);
+    }
+}
+
+// ================================================================================
+// 8️⃣ GERAR RESPOSTA FINAL COM MÉTRICAS
+// ================================================================================
+
+function gerarRespostaFinal(res, resultado, inicio) {
+    const tempoTotal = Date.now() - inicio;
+    console.log(`✅ [8] Orquestração concluída em ${tempoTotal}ms`);
+
+    const resposta = {
+        success: true,
+        result: resultado.conteudo,
+        versao: '8.1-corrigido-com-indices',
+        timestamp: new Date().toISOString(),
+        debug: {
+            tempoProcessamento: `${tempoTotal}ms`,
+            arquiteturaModular: '100% respeitada',
+            funcaoCorrigida: 'processarRespostaCompleta agora recebe 3 argumentos',
+            modulosCarregados: ['analysis', 'ia-client', 'processing', 'prompts', 'templates', 'utils'],
+            ...resultado.debug
+        }
+    };
+
+    return res.status(200).json(resposta);
+}
+
+// ================================================================================
+// 9️⃣ TRATAR ERRO FATAL
+// ================================================================================
+
+function tratarErroFatal(res, error, inicio) {
+    const tempoTotal = Date.now() - inicio;
+    console.error("❌ [9] ERRO FATAL no orquestrador:", error);
+    
+    const resposta = {
+        success: false,
+        error: error.message,
+        versao: '8.1-corrigido-com-indices',
+        timestamp: new Date().toISOString(),
+        debug: {
+            tempoProcessamento: `${tempoTotal}ms`,
+            errorStack: error.stack?.split('\n').slice(0, 4),
+            tipoErro: 'erro_orquestrador_corrigido',
+            correcaoAplicada: 'processarRespostaCompleta com 3 argumentos'
+        }
+    };
+
+    return res.status(500).json(resposta);
+}
+
+// ================================================================================
+// 🚀 LOGS E INICIALIZAÇÃO
+// ================================================================================
+
+console.log("🚀 CVC API v8.1 - ORQUESTRADOR CORRIGIDO INICIALIZADO");
+console.log("✅ CORREÇÕES IMPLEMENTADAS:");
+console.log("- 🔧 processarRespostaCompleta agora recebe 3 argumentos (formData)");
+console.log("- 📦 Compatibilidade ES6 100% corrigida");
+console.log("- 📋 Índice e numeração de funções implementado");
+console.log("- 🔄 Fluxo completo: Análise → Prompt → IA → Processamento");
+console.log("- 🏗️ Arquitetura modular 100% respeitada");
+console.log("- 📊 Métricas e custos calculados");
+console.log("- 🛡️ Fallbacks robustos em todas as etapas");
+console.log("- 🎯 Todos os módulos especializados utilizados corretamente");
