@@ -191,10 +191,27 @@ function fusaoInteligentePassageiros(formData, analise, fontesDisponiveis) {
   
   // PRIORIDADE: TEXTO/PDF > HTML > PADRÃO
   
-  // 1º: Tentar extrair do texto/análise
-  const adultosTexto = analise.dadosVoo?.numeroPassageiros || 0;
-  const criancasTexto = analise.dadosVoo?.numeroCriancas || 0;
-  const bebesTexto = analise.dadosVoo?.numeroBebes || 0;
+  // 1º: Tentar extrair do texto/análise usando a nova função
+  let adultosTexto = 0, criancasTexto = 0, bebesTexto = 0;
+  
+  // Usar a função extrairPassageirosCompleto se disponível no texto
+  if (formData.observacoes || formData.textoColado) {
+    const textoCompleto = (formData.observacoes || '') + ' ' + (formData.textoColado || '');
+    const passageirosExtraidos = extrairPassageirosCompleto(textoCompleto);
+    
+    if (passageirosExtraidos) {
+      adultosTexto = passageirosExtraidos.adultos || 0;
+      criancasTexto = passageirosExtraidos.criancas || 0;
+      bebesTexto = passageirosExtraidos.bebes || 0;
+    }
+  }
+  
+  // Fallback para dados da análise
+  if (adultosTexto === 0 && criancasTexto === 0 && bebesTexto === 0) {
+    adultosTexto = analise.dadosVoo?.numeroPassageiros || 0;
+    criancasTexto = analise.dadosVoo?.numeroCriancas || 0;
+    bebesTexto = analise.dadosVoo?.numeroBebes || 0;
+  }
   
   // 2º: Usar dados do HTML se disponíveis
   const adultosHTML = parseInt(formData.adultos) || 0;
@@ -241,6 +258,58 @@ function fusaoInteligentePassageiros(formData, analise, fontesDisponiveis) {
     fonte: fonte,
     log: log
   };
+}
+
+// Função extrairPassageirosCompleto integrada
+function extrairPassageirosCompleto(texto) {
+  console.log("👥 Extraindo passageiros com lógica final aprimorada...");
+  
+  const passageiros = {
+    adultos: 0,
+    criancas: 0,
+    bebes: 0
+  };
+
+  // Padrão robusto para encontrar o bloco "Total (...)"
+  const padraoContainer = /Total\s*\(([^)]+)\)/i;
+  const matchContainer = texto.match(padraoContainer);
+
+  if (matchContainer && matchContainer[1]) {
+    const textoPassageiros = matchContainer[1].toLowerCase();
+    console.log("📝 Texto de passageiros encontrado:", textoPassageiros);
+    
+    // Expressões regulares aprimoradas que buscam cada tipo individualmente
+    const matchAdultos = textoPassageiros.match(/(\d+)\s*adulto/);
+    if (matchAdultos) {
+      passageiros.adultos = parseInt(matchAdultos[1], 10);
+    }
+
+    const matchCriancas = textoPassageiros.match(/(\d+)\s*criança/);
+    if (matchCriancas) {
+      passageiros.criancas = parseInt(matchCriancas[1], 10);
+    }
+
+    const matchBebes = textoPassageiros.match(/(\d+)\s*bebê/);
+    if (matchBebes) {
+      passageiros.bebes = parseInt(matchBebes[1], 10);
+    }
+    
+    console.log(`✅ Passageiros extraídos: ${passageiros.adultos} adulto(s), ${passageiros.criancas} criança(s), ${passageiros.bebes} bebê(s)`);
+  }
+  
+  // Garantia de pelo menos 1 adulto se a extração falhar completamente
+  if (passageiros.adultos === 0 && passageiros.criancas === 0 && passageiros.bebes === 0) {
+      // Tenta um último fallback antes de assumir 1
+      const matchAdultosSimples = texto.match(/(\d+)\s*adulto/i);
+      if(matchAdultosSimples) {
+        passageiros.adultos = parseInt(matchAdultosSimples[1], 10);
+      } else {
+        passageiros.adultos = 1;
+        console.log("⚠️ Nenhum passageiro detectado, definindo 1 adulto como padrão.");
+      }
+  }
+
+  return passageiros;
 }
 
 function fusaoInteligentePrecos(formData, analise, fontesDisponiveis) {
