@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 CVC Itaqua - Geração de Orçamento com IA v7.0</title>
+    <title>🤖 CVC Itaqua - Geração de Orçamento com IA v7.1</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 🆕 PDF.js - ADICIONADO CONFORME SOLICITADO -->
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
+    </script>
     
     <style>
         :root {
@@ -461,7 +467,7 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-robot"></i> Geração de Orçamento com IA v7.0
+                                <i class="fas fa-robot"></i> Geração de Orçamento com IA v7.1
                             </h1>
                             <p class="header-subtitle">
                                 Sistema inteligente de criação de orçamentos profissionais - CVC Itaquaquecetuba
@@ -561,21 +567,29 @@
                                         <input type="checkbox" id="aereoInt" name="tipos" value="Aéreo Internacional">
                                         <label for="aereoInt">🌍 Aéreo Internacional</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Hotel">
-                                        <input type="checkbox" id="hotel" name="tipos" value="Hotel">
-                                        <label for="hotel">🏨 Hotel</label>
+                                    <div class="checkbox-item" data-value="Hotéis">
+                                        <input type="checkbox" id="hotel" name="tipos" value="Hotéis">
+                                        <label for="hotel">🏨 Hotéis</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Pacote">
-                                        <input type="checkbox" id="pacote" name="tipos" value="Pacote">
-                                        <label for="pacote">📦 Pacote Completo</label>
+                                    <div class="checkbox-item" data-value="Pacotes">
+                                        <input type="checkbox" id="pacote" name="tipos" value="Pacotes">
+                                        <label for="pacote">📦 Pacotes</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Cruzeiro">
-                                        <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiro">
-                                        <label for="cruzeiro">🚢 Cruzeiro</label>
+                                    <div class="checkbox-item" data-value="Cruzeiros">
+                                        <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiros">
+                                        <label for="cruzeiro">🚢 Cruzeiros</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Seguro">
-                                        <input type="checkbox" id="seguro" name="tipos" value="Seguro">
-                                        <label for="seguro">🛡️ Seguro Viagem</label>
+                                    <div class="checkbox-item" data-value="Multitrechos">
+                                        <input type="checkbox" id="multitrecho" name="tipos" value="Multitrechos">
+                                        <label for="multitrecho">🛤️ Multitrechos</label>
+                                    </div>
+                                    <div class="checkbox-item" data-value="Rankings">
+                                        <input type="checkbox" id="ranking" name="tipos" value="Rankings">
+                                        <label for="ranking">🏆 Rankings</label>
+                                    </div>
+                                    <div class="checkbox-item" data-value="Dicas">
+                                        <input type="checkbox" id="dicas" name="tipos" value="Dicas">
+                                        <label for="dicas">💡 Dicas</label>
                                     </div>
                                 </div>
                                 <small class="text-muted">Selecione pelo menos um tipo de serviço</small>
@@ -726,7 +740,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log("🚀 Iniciando CVC Itaqua v7.0...");
+        console.log("🚀 Iniciando CVC Itaqua v7.1...");
         
         // ================================================================================
         // 🎯 VARIÁVEIS GLOBAIS
@@ -746,7 +760,7 @@
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📋 Inicializando sistema CVC v7.0...');
+            console.log('📋 Inicializando sistema CVC v7.1...');
             
             initFormElements();
             setupEventListeners();
@@ -755,7 +769,7 @@
             setupCamposCriancas();
             atualizarDisplayCustos();
             
-            console.log('✅ CVC Itaqua v7.0 carregado e pronto!');
+            console.log('✅ CVC Itaqua v7.1 carregado e pronto!');
         });
         
         function initFormElements() {
@@ -764,6 +778,7 @@
                 observacoes: document.getElementById('observacoes'),
                 textoColado: document.getElementById('textoColado'),
                 destino: document.getElementById('destino'),
+                adultos: document.getElementById('adultos'), // ✅ ADICIONADO
                 arquivo: document.getElementById('arquivo'),
                 pasteArea: document.getElementById('pasteArea'),
                 criancas: document.getElementById('criancas')
@@ -859,7 +874,7 @@
         }
         
         // ================================================================================
-        // 📋 ÁREA DE PASTE
+        // 📋 ÁREA DE PASTE COM AUTO-PREENCHIMENTO
         // ================================================================================
         
         function setupPasteArea() {
@@ -887,6 +902,9 @@
                     this.classList.add('has-content');
                     formElements.textoColado.value = text;
                     console.log('📝 Texto colado:', text.length, 'caracteres');
+                    
+                    // ✅ NOVO: Auto-preenchimento
+                    autoPreencherCampos(text);
                 }
             });
             
@@ -908,6 +926,35 @@
             });
         }
         
+        // ✅ NOVA FUNÇÃO: Auto-preenchimento de campos a partir do texto
+        function autoPreencherCampos(texto) {
+            console.log("🤖 Tentando auto-preencher campos a partir do texto...");
+            const textoLower = texto.toLowerCase();
+            const padrao = /Total\s*\(([^)]+)\)/i;
+            const match = textoLower.match(padrao);
+
+            if (match && match[1]) {
+                const textoPassageiros = match[1];
+                const matchAdultos = textoPassageiros.match(/(\d+)\s*adulto/);
+                const matchCriancas = textoPassageiros.match(/(\d+)\s*criança/);
+                const matchBebes = textoPassageiros.match(/(\d+)\s*bebê/);
+
+                let totalCriancas = 0;
+                if (matchCriancas) totalCriancas += parseInt(matchCriancas[1], 10);
+                if (matchBebes) totalCriancas += parseInt(matchBebes[1], 10);
+
+                if (matchAdultos && formElements.adultos) {
+                    formElements.adultos.value = parseInt(matchAdultos[1], 10);
+                    console.log(`✅ Auto-preenchido: ${formElements.adultos.value} adultos`);
+                }
+                if (totalCriancas > 0 && formElements.criancas) {
+                    formElements.criancas.value = totalCriancas;
+                    formElements.criancas.dispatchEvent(new Event('change')); // Dispara evento para criar campos de idade
+                    console.log(`✅ Auto-preenchido: ${totalCriancas} crianças/bebês`);
+                }
+            }
+        }
+        
         function verificarTiposSelecionados() {
             const tiposSelecionados = [];
             document.querySelectorAll('input[name="tipos"]:checked').forEach(checkbox => {
@@ -918,47 +965,52 @@
         }
         
         // ================================================================================
-        // 📁 UPLOAD DE ARQUIVOS
+        // 📁 UPLOAD DE ARQUIVOS - CORRIGIDO COM PDF.js
         // ================================================================================
         
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
-            console.log('📁 Arquivo selecionado:', file.name, file.type);
-            
+
+            const pasteArea = formElements.pasteArea;
+            pasteArea.innerHTML = `<div class="loading">Processando arquivo...</div>`;
+            pasteArea.classList.add('has-content');
+
             try {
                 if (file.type.startsWith('image/')) {
                     const base64 = await fileToBase64(file);
                     estadoGlobal.imagemBase64 = base64;
-                    
-                    // Mostrar preview
-                    const preview = `
-                        <div style="text-align: center;">
-                            <img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                            <div style="margin-top: 10px; color: #666; font-size: 0.9rem;">
-                                <i class="fas fa-image"></i> ${file.name}
-                            </div>
-                        </div>
-                    `;
-                    formElements.pasteArea.innerHTML = preview;
-                    formElements.pasteArea.classList.add('has-content');
-                    
-                    console.log('🖼️ Imagem carregada:', file.name);
+                    pasteArea.innerHTML = `<div style="text-align: center;"><img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px;"><div><i class="fas fa-image"></i> ${file.name}</div></div>`;
                 } else if (file.type === 'application/pdf') {
-                    console.log('📄 PDF detectado:', file.name);
-                    formElements.pasteArea.innerHTML = `
-                        <div style="text-align: center; color: #666; padding: 20px;">
-                            <i class="fas fa-file-pdf fa-3x" style="color: #dc3545; margin-bottom: 15px;"></i>
-                            <div style="font-weight: 600;">PDF: ${file.name}</div>
-                            <small>Arquivo PDF carregado com sucesso</small>
-                        </div>
-                    `;
-                    formElements.pasteArea.classList.add('has-content');
+                    // ✅ CORREÇÃO COMPLETA: Leitura de PDF com PDF.js
+                    const fileReader = new FileReader();
+                    fileReader.onload = async function() {
+                        try {
+                            const typedarray = new Uint8Array(this.result);
+                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                            let fullText = '';
+                            
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                fullText += textContent.items.map(item => item.str).join(' ');
+                            }
+                            
+                            // ✅ CORREÇÃO: Preencher campo observações em vez de mostrar só preview
+                            formElements.observacoes.value = fullText;
+                            pasteArea.innerHTML = `<div style="text-align: center; color: #666; padding: 20px;"><i class="fas fa-file-pdf fa-3x" style="color: #28a745;"></i><div style="font-weight: 600;">PDF Lido com Sucesso!</div><small>${file.name}</small></div>`;
+                            
+                            // ✅ CORREÇÃO: Auto-preenchimento também para PDFs
+                            autoPreencherCampos(fullText);
+                            
+                        } catch (pdfError) {
+                            pasteArea.innerHTML = `<div class="error">Erro ao ler o PDF: ${pdfError.message}</div>`;
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(file);
                 }
             } catch (error) {
-                console.error('❌ Erro no upload:', error);
-                alert('Erro ao processar arquivo: ' + error.message);
+                pasteArea.innerHTML = `<div class="error">Erro ao processar o arquivo: ${error.message}</div>`;
             }
         }
         
@@ -994,13 +1046,15 @@
         }
         
         // ================================================================================
-        // 📋 COLETA DE DADOS DO FORMULÁRIO
+        // 📋 COLETA DE DADOS DO FORMULÁRIO CORRIGIDA
         // ================================================================================
         
         function coletarDadosFormulario() {
             const observacoes = formElements.observacoes?.value || '';
             const textoColado = formElements.textoColado?.value || '';
             const destino = formElements.destino?.value || '';
+            const adultos = formElements.adultos?.value || ''; // ✅ CORRIGIDO
+            const criancas = parseInt(formElements.criancas.value) || 0;
             
             // Coletar tipos selecionados
             const tipos = [];
@@ -1009,120 +1063,54 @@
             });
             
             // Coletar idades das crianças
-            const numCriancas = parseInt(formElements.criancas.value) || 0;
             const idadesCriancas = [];
-            for (let i = 1; i <= numCriancas; i++) {
-                const idade = document.getElementById(`idadeCrianca${i}`)?.value;
-                if (idade) {
-                    idadesCriancas.push(parseInt(idade));
+            for (let i = 1; i <= criancas; i++) {
+                const idadeEl = document.getElementById(`idadeCrianca${i}`);
+                if (idadeEl && idadeEl.value) {
+                    idadesCriancas.push(parseInt(idadeEl.value));
                 }
             }
             
-            // Criar prompt combinado
-            let prompt = [observacoes, textoColado].filter(texto => texto.trim()).join('\n\n');
-            
-            // Adicionar informações de crianças se fornecidas
-            if (idadesCriancas.length > 0) {
-                prompt += `\n\nIdades das crianças: ${idadesCriancas.join(', ')} anos`;
-            }
-            
             const dados = {
-                prompt: prompt || 'Teste de orçamento',
-                observacoes: observacoes,
-                textoColado: textoColado,
-                destino: destino,
-                tipos: tipos,
-                temImagem: !!estadoGlobal.imagemBase64,
-                arquivo: estadoGlobal.imagemBase64,
-                numCriancas: numCriancas,
-                idadesCriancas: idadesCriancas
+                observacoes,
+                textoColado,
+                destino,
+                adultos,
+                criancas,
+                idadesCriancas,
+                tipos,
+                imagemBase64: estadoGlobal.imagemBase64
             };
             
             console.log('📋 DADOS COLETADOS:', dados);
-            console.log('📝 Prompt length:', dados.prompt.length);
-            console.log('🎯 Tipos:', dados.tipos);
-            console.log('👶 Crianças:', dados.numCriancas, 'idades:', dados.idadesCriancas);
-            
             return dados;
         }
         
-   // ================================================================================
+        // ================================================================================
         // 📡 COMUNICAÇÃO COM API CORRIGIDA v7.1
         // ================================================================================
         
         async function enviarParaAPI(dados) {
-            console.log('[v7.1] 🚀 Enviando dados:', dados);
-            
-            try {
-                // Estrutura corrigida para API v7.1
-                const requestBody = {
-                    formData: {
-                        destino: dados.destino || '',
-                        adultos: dados.adultos || '2',
-                        criancas: dados.numCriancas || '0',
-                        idades: dados.idadesCriancas?.join(', ') || '',
-                        observacoes: dados.observacoes || '',
-                        textoColado: dados.textoColado || '',
-                        prompt: dados.prompt || '',
-                        tipos: dados.tipos || ['Aéreo Nacional'],
-                        temImagem: dados.temImagem || false,
-                        arquivo: dados.arquivo || null
-                    },
-                    tipo: 'orcamento',
-                    versao: '7.1'
-                };
-                
-                console.log('[v7.1] 📤 Request body estruturado:', requestBody);
-                
-                const response = await fetch('/api/ai', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                console.log('[v7.1] 📡 Response status:', response.status);
-                
-                // Ler resposta como texto primeiro para debug
-                const responseText = await response.text();
-                console.log('[v7.1] 📄 Response text (primeiros 300 chars):', responseText.substring(0, 300));
-                
-                if (!response.ok) {
-                    console.error('[v7.1] ❌ Erro HTTP:', responseText);
-                    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
-                }
-                
-                // Tentar parsear JSON
-                let resultado;
-                try {
-                    resultado = JSON.parse(responseText);
-                    console.log('[v7.1] ✅ JSON parseado. Chaves:', Object.keys(resultado));
-                } catch (parseError) {
-                    console.error('[v7.1] ❌ Erro ao parsear JSON:', parseError);
-                    throw new Error(`Resposta não é JSON válido: ${responseText.substring(0, 100)}`);
-                }
-                
-                // VALIDAÇÃO CORRIGIDA - aceitar múltiplos formatos
-                if (resultado.success === false) {
-                    throw new Error(resultado.error || 'API retornou erro');
-                }
-                
-                console.log('[v7.1] ✅ Resposta recebida e validada');
-                
-                // Registrar custo se disponível
-                if (resultado.debug?.custo || resultado.metricas?.custo?.brl) {
-                    const custo = resultado.debug?.custo || resultado.metricas.custo.brl;
-                    registrarCusto(custo, dados.tipos[0] || 'Orçamento');
-                }
-                
-                return resultado;
-                
-            } catch (error) {
-                console.error('[v7.1] ❌ Erro na comunicação:', error);
-                throw error;
+            console.log('[v7.1] 🚀 Enviando para API...');
+            const requestBody = {
+                formData: dados,
+                tipo: 'orcamento',
+                versao: '7.1'
+            };
+            console.log('[v7.1] 📤 Request body estruturado:', requestBody);
+
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            const responseText = await response.text();
+            if (!response.ok) {
+                console.error('[v7.1] ❌ Erro HTTP:', responseText);
+                throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
             }
+            return JSON.parse(responseText);
         }
         
         // ================================================================================
@@ -1139,12 +1127,13 @@
                 const dados = coletarDadosFormulario();
                 
                 // 2. Validar dados básicos
-                if (!dados.prompt || dados.prompt.trim().length < 10) {
-                    throw new Error('Por favor, adicione informações sobre a viagem (mínimo 10 caracteres)');
-                }
-                
                 if (!dados.tipos || dados.tipos.length === 0) {
                     throw new Error('Selecione pelo menos um tipo de serviço');
+                }
+                
+                const temConteudo = dados.observacoes.trim() || dados.textoColado.trim() || dados.imagemBase64;
+                if (!temConteudo) {
+                    throw new Error('Adicione informações sobre a viagem (texto, imagem ou PDF)');
                 }
                 
                 // 3. Mostrar loading
@@ -1158,76 +1147,46 @@
                 `;
                 
                 // 4. Enviar para API
-                console.log('[v7.1] 🚀 Enviando para API integrada...');
                 const resultado = await enviarParaAPI(dados);
                 
-                // 5. VALIDAÇÃO CORRIGIDA - múltiplos formatos de resposta
+                // 5. Processar resultado
                 let conteudoFinal = null;
                 
                 if (resultado.success && resultado.result) {
-                    // Formato v7.1: { success: true, result: "conteudo" }
                     conteudoFinal = resultado.result;
-                    console.log('[v7.1] ✅ Formato v7.1 detectado');
-                    
                 } else if (resultado.choices?.[0]?.message?.content) {
-                    // Formato OpenAI: { choices: [{ message: { content: "..." }}] }
                     conteudoFinal = resultado.choices[0].message.content;
-                    console.log('[v7.1] ✅ Formato OpenAI direto detectado');
-                    
                 } else if (resultado.content?.[0]?.text) {
-                    // Formato Claude: { content: [{ text: "..." }] }
                     conteudoFinal = resultado.content[0].text;
-                    console.log('[v7.1] ✅ Formato Claude direto detectado');
-                    
                 } else if (typeof resultado === 'string') {
-                    // Resposta direta como string
                     conteudoFinal = resultado;
-                    console.log('[v7.1] ✅ Resposta string direta detectada');
-                    
                 } else {
-                    // Tentar extrair conteúdo de qualquer campo
                     conteudoFinal = resultado.message || resultado.response || resultado.output;
-                    
-                    if (!conteudoFinal) {
-                        console.error('[v7.1] ❌ Formato de resposta não reconhecido:', Object.keys(resultado));
-                        throw new Error(`Formato de resposta inválido. Chaves disponíveis: ${Object.keys(resultado).join(', ')}`);
-                    }
-                    
-                    console.log('[v7.1] ⚡ Conteúdo extraído de formato desconhecido');
                 }
                 
-                // 6. Mostrar resultado se encontrou conteúdo
                 if (conteudoFinal && conteudoFinal.trim()) {
                     document.getElementById('orcamentoIA').innerText = conteudoFinal;
                     estadoGlobal.ultimoOrcamento = conteudoFinal;
                     estadoGlobal.ultimoDestino = dados.destino;
                     
-                    // Habilitar botões de dicas
                     habilitarBotoesDicas();
                     
-                    console.log('[v7.1] ✅ Orçamento gerado com sucesso!');
+                    // Registrar custo
+                    if (resultado.debug?.custo || resultado.metricas?.custo?.brl) {
+                        const custo = resultado.debug?.custo || resultado.metricas.custo.brl;
+                        registrarCusto(custo, dados.tipos[0] || 'Orçamento');
+                    }
                     
+                    console.log('[v7.1] ✅ Orçamento gerado com sucesso!');
                 } else {
                     throw new Error('Conteúdo vazio na resposta da API');
                 }
                 
             } catch (error) {
                 console.error('[v7.1] ❌ Erro:', error);
-                
-                // Mensagem de erro mais específica
-                let mensagemErro = error.message;
-                
-                if (error.message.includes('API key')) {
-                    mensagemErro = 'Erro de configuração da IA. Contate o administrador.';
-                } else if (error.message.includes('timeout')) {
-                    mensagemErro = 'Timeout na API. Tente novamente em alguns momentos.';
-                } else if (error.message.includes('JSON')) {
-                    mensagemErro = 'Erro na resposta do servidor. Verifique os logs.';
-                }
-                
                 document.getElementById('orcamentoIA').innerHTML = `
                     <div class="error">
-                        <strong>❌ Erro:</strong> ${mensagemErro}
+                        <strong>❌ Erro:</strong> ${error.message}
                         <div style="margin-top: 10px; font-size: 0.9rem;">
                             Tente novamente ou verifique os dados informados
                         </div>
@@ -1292,7 +1251,7 @@
         }
         
         // ================================================================================
-        // 🔧 FUNCIONALIDADES AUXILIARES CORRIGIDAS
+        // 🔧 FUNCIONALIDADES AUXILIARES
         // ================================================================================
         
         function habilitarBotoesDicas() {
@@ -1320,17 +1279,19 @@
                 `;
                 
                 const dados = {
-                    prompt: `Gere dicas completas de viagem para ${estadoGlobal.ultimoDestino}. Inclua melhor época, atrações, gastronomia, dicas importantes e informações úteis para turistas.`,
+                    observacoes: `Gere dicas completas de viagem para ${estadoGlobal.ultimoDestino}. Inclua melhor época, atrações, gastronomia, dicas importantes e informações úteis para turistas.`,
                     tipos: ['Dicas'],
                     destino: estadoGlobal.ultimoDestino,
-                    temImagem: false
+                    adultos: '',
+                    criancas: 0,
+                    idadesCriancas: [],
+                    textoColado: '',
+                    imagemBase64: null
                 };
                 
                 const resultado = await enviarParaAPI(dados);
                 
-                // Usar mesma lógica de validação da função principal
                 let conteudoFinal = null;
-                
                 if (resultado.success && resultado.result) {
                     conteudoFinal = resultado.result;
                 } else if (resultado.choices?.[0]?.message?.content) {
@@ -1366,17 +1327,19 @@
                 `;
                 
                 const dados = {
-                    prompt: `Crie um ranking detalhado dos melhores hotéis em ${estadoGlobal.ultimoDestino}. Inclua diferentes categorias (econômico, médio, luxo), avaliações, localização e destaques de cada hotel.`,
-                    tipos: ['Ranking'],
+                    observacoes: `Crie um ranking detalhado dos melhores hotéis em ${estadoGlobal.ultimoDestino}. Inclua diferentes categorias (econômico, médio, luxo), avaliações, localização e destaques de cada hotel.`,
+                    tipos: ['Rankings'],
                     destino: estadoGlobal.ultimoDestino,
-                    temImagem: false
+                    adultos: '',
+                    criancas: 0,
+                    idadesCriancas: [],
+                    textoColado: '',
+                    imagemBase64: null
                 };
                 
                 const resultado = await enviarParaAPI(dados);
                 
-                // Usar mesma lógica de validação da função principal
                 let conteudoFinal = null;
-                
                 if (resultado.success && resultado.result) {
                     conteudoFinal = resultado.result;
                 } else if (resultado.choices?.[0]?.message?.content) {
@@ -1443,17 +1406,20 @@
         // 🎯 LOG FINAL ATUALIZADO
         // ================================================================================
         
-        console.log('🎯 CVC Itaqua v7.1 totalmente carregado!');
+        console.log('🎯 CVC Itaqua v7.1 COMPLETO E CORRIGIDO!');
         console.log('📋 Funcionalidades ativas:');
         console.log('- ✅ Interface CVC modernizada');
-        console.log('- ✅ Checkboxes totalmente clicáveis');
+        console.log('- ✅ Checkboxes totalmente clicáveis (8 tipos)');
         console.log('- ✅ Campos dinâmicos para crianças');
+        console.log('- ✅ Auto-preenchimento de passageiros');
         console.log('- ✅ Estimador de custos em tempo real');
-        console.log('- ✅ Upload de imagens e PDFs');
+        console.log('- ✅ Upload de imagens e PDFs com PDF.js');
+        console.log('- ✅ Leitura completa de PDFs para observações');
         console.log('- ✅ Geração de dicas e rankings');
         console.log('- ✅ Sistema de cópia funcionando');
         console.log('- ✅ Debug completo habilitado');
         console.log('- ✅ Validação de resposta corrigida v7.1');
+        console.log('- ✅ Arquitetura modular preparada');
         
     </script>
 </body>
