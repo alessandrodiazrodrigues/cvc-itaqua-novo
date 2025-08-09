@@ -1,10 +1,67 @@
-// 🚀 CVC ITAQUA v4.0 - COM MANUAL JSON
-// Lê o manual do arquivo JSON e usa os formatos corretos
+// 🚀 CVC ITAQUA v5.0 - MANUAL INCORPORADO
+// Manual integrado diretamente no código para compatibilidade total
 
-import manualCVC from '../manual-cvc.json';
+// Manual CVC incorporado
+const manualCVC = {
+  versao: "1.0",
+  ultima_atualizacao: "2024-12-12",
+  formatos: {
+    aereo_ida_volta_simples: {
+      nome: "Aéreo Ida e Volta Simples",
+      template: "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n✅ {bagagem}\n🏷️ {reembolso}",
+      exemplo: "*Gol - São Paulo ✈ Porto Alegre*\n17/09 - Congonhas 17:05 / Porto Alegre 23:40 (com conexão)\n--\n24/09 - Porto Alegre 08:00 / Congonhas 09:35 (voo direto)\n\n💰 R$ 773,37 para 01 adulto\n✅ Só mala de mão incluída\n🏷️ Não reembolsável"
+    },
+    aereo_ida_volta_conexao_detalhada: {
+      nome: "Aéreo com Conexão Detalhada",
+      template: "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoConexao} {horaChegadaConexao} (voo direto)\n(conexão em {cidadeConexao} - {tempoEspera} de espera)\n{dataIda} - {aeroportoConexao} {horaSaidaConexao} / {aeroportoDestino} {horaChegadaIda} (voo direto)\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n💳 {parcelamento}\n✅ {bagagem}\n🏷️ {reembolso}\n🔗 {link}"
+    },
+    aereo_somente_ida: {
+      nome: "Aéreo Somente Ida",
+      template: "*{companhia}*\n{data} - {origem} {horaSaida} / {destino} {horaChegada} ({tipoVoo})\n\n💰 Valor total para {passageiros} = {valor}\nValores sujeitos a confirmação e disponibilidade\nInclui taxas de embarque\nInclui 1 item pessoal + 01 mala de mão de 10kg por pessoa\n{reembolso}\n\n⚠️ Passagem somente de ida - sem retorno incluído"
+    },
+    aereo_multiplas_opcoes_2: {
+      nome: "Múltiplas Opções - 2 Planos",
+      template: "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 **OPÇÃO 1** - R$ {valor1}\n✅ Só mala de mão incluída\n💳 {parcelamento1}\n🔗 {link1}\n\n💰 **OPÇÃO 2** - R$ {valor2}\n✅ Mala de mão + bagagem despachada\n✅ Cancelamento/alteração com multas\n✅ Reembolsável conforme regras do bilhete\n💳 {parcelamento2}\n🔗 {link2}\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    aereo_multiplas_opcoes_3: {
+      nome: "Múltiplas Opções - 3 Planos",
+      template: "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 **OPÇÃO 1** - R$ {valor1}\n✅ Só mala de mão incluída\n\n💰 **OPÇÃO 2** - R$ {valor2}\n✅ Mala de mão + bagagem despachada\n✅ Cancelamento/alteração com multas\n\n💰 **OPÇÃO 3** - R$ {valor3}\n✅ Mala de mão + 2 bagagens despachadas\n✅ Cancelamento/alteração com multas\n✅ Reembolsável conforme regras do bilhete\n✅ Marcação de assento\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    multitrecho: {
+      nome: "Multitrecho",
+      template: "*Multitrecho - {companhias}*\n{dataInicio} a {dataFim} ({dias} dias e {noites} noites)\n\n*Trecho 1:* {origem1} → {destino1}\n{data1} - {aeroporto1} {hora1} / {aeroportoChegada1} {horaChegada1} ({tipoVoo1})\n\n*Trecho 2:* {origem2} → {destino2}\n{data2} - {aeroporto2} {hora2} / {aeroportoChegada2} {horaChegada2} ({tipoVoo2})\n\n*Trecho 3:* {origem3} → {destino3}\n{data3} - {aeroporto3} {hora3} / {aeroportoChegada3} {horaChegada3} ({tipoVoo3})\n\n💰 R$ {valorTotal} para {passageiros}\n💳 {parcelamento}\n✅ {bagagem}\n🏷️ {reembolso}\n🔗 {link}\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    pacote_completo: {
+      nome: "Pacote Completo (Aéreo + Hotel)",
+      template: "*Pacote {destino}*\nEmbarque: {dataEmbarque}\nPacote para {passageiros}\n\n*O Pacote Inclui:*\n- Passagem Aérea ida e volta para {destino}\n- Taxas de Embarque\n- Traslado {tipoTraslado}\n{passeios}- {noites} noites de hospedagem no hotel escolhido\n\n✈️ *Voos {companhia}:*\n{dataIda} - {origem} {horaIda} / {destino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {destino} {horaVolta} / {origem} {horaChegadaVolta} ({tipoVooVolta})\n\n{opcoesHoteis}\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    cruzeiro: {
+      nome: "Cruzeiro",
+      template: "🚢 *Cruzeiro {nomeNavio}* – {duracao} noites\n{passageiros}\n📅 Embarque: {dataEmbarque} ({diaSemana})\n📍 Saída e chegada: {porto}\n🌊 Roteiro incrível pelo litoral brasileiro!\n\n💥 Tarifas disponíveis!\n(Sujeita à confirmação de cabine e categoria)\n\n🛏 Opções de Cabines:\n{opcoesCabines}\n\n📎 Link para ver fotos, detalhes e reservar:\n{link}\n\n✅ Inclui: hospedagem a bordo, pensão completa\n🚫 Não inclui: taxas, bebidas, excursões\n\n📲 Me chama pra garantir a sua cabine! 🌴🛳️"
+    }
+  },
+  regras: {
+    passageiros: {
+      exemplos: ["01 adulto", "02 adultos", "02 adultos + 01 criança", "02 adultos + 01 criança (05 anos)"]
+    },
+    valores: {
+      exemplo: "R$ 1.464,02"
+    },
+    parcelamento: {
+      formato_simples: "{parcelas}x de R$ {valor} s/ juros no cartão"
+    },
+    reembolso: {
+      reembolsavel: "Reembolsável conforme regras do bilhete",
+      nao_reembolsavel: "Não reembolsável"
+    }
+  },
+  informacoes_fixas: {
+    aviso_valores: "Valores sujeitos a confirmação e disponibilidade"
+  }
+};
 
 export default async function handler(req, res) {
-  console.log('🤖 CVC v4.0 - Requisição recebida');
+  console.log('🤖 CVC v5.0 - Requisição recebida');
   
   // Configurar CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,8 +81,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       status: 'online',
-      version: '4.0-manual-json',
-      message: 'CVC Itaqua v4.0 - Manual JSON Integrado',
+      version: '5.0-manual-inline',
+      message: 'CVC Itaqua v5.0 - Manual Incorporado',
       manual: {
         versao: manualCVC.versao,
         formatos: Object.keys(manualCVC.formatos).length + ' formatos disponíveis',
@@ -58,11 +115,13 @@ export default async function handler(req, res) {
         temImagem: !!imagemBase64, 
         temPDF: !!pdfContent,
         tipo,
-        destino 
+        destino,
+        parcelamento 
       });
 
       // Construir prompt baseado no tipo
       let prompt = '';
+      let tipoOrcamento = null;
       
       if (tipo === 'dicas' && destino) {
         prompt = `Gere dicas em português para: ${destino}
@@ -127,7 +186,7 @@ Use EXATAMENTE este formato:
         const conteudoPrincipal = observacoes || textoColado || '';
         
         // Detectar tipo de orçamento
-        let tipoOrcamento = 'aereo_ida_volta_simples'; // default
+        tipoOrcamento = 'aereo_ida_volta_simples'; // default
         
         // Lógica de detecção
         const textoAnalise = conteudoPrincipal.toLowerCase();
@@ -173,133 +232,12 @@ ${formatoEscolhido.exemplo || 'Seguir o template acima'}
 3. MANTENHA exatamente a estrutura e emojis do template
 4. Para passageiros: use formato "${manualCVC.regras.passageiros.exemplos[1]}"
 5. Para valores: use formato "${manualCVC.regras.valores.exemplo}"
-6. Para reembolso: use "${manualCVC.regras.reembolso.nao_reembolsavel}" ou "${manualCVC.regras.reembolso.reembolsavel}"
+6. Para reembolso: Se não especificado, use "${manualCVC.regras.reembolso.nao_reembolsavel}"
 7. Reembolso: Se não especificado, use "${manualCVC.regras.reembolso.nao_reembolsavel}"
 
 **PARCELAMENTO:**
 ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualCVC.regras.parcelamento.formato_simples}"` : 
-  conteudoPrincipal.includes('x de R
-      }
-
-      // Definir conteudoPrincipal para todos os casos
-      const conteudoPrincipal = observacoes || textoColado || '';
-      
-      // Escolher modelo baseado na complexidade
-      const useClaudeFor = imagemBase64 || pdfContent || 
-                          (conteudoPrincipal && conteudoPrincipal.length > 500);
-      
-      console.log(`🤖 Usando: ${useClaudeFor ? 'Claude' : 'GPT-4o-mini'}`);
-      console.log(`📋 Formato detectado: ${tipoOrcamento || 'N/A'}`);
-      
-      let resultado = '';
-      
-      if (useClaudeFor) {
-        // Usar Claude para casos complexos
-        const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-        
-        if (!ANTHROPIC_KEY) {
-          console.warn('⚠️ Claude não configurado, usando GPT como fallback');
-          useClaudeFor = false;
-        } else {
-          const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'x-api-key': ANTHROPIC_KEY,
-              'anthropic-version': '2023-06-01',
-              'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: 'claude-3-haiku-20240307',
-              max_tokens: 1024,
-              messages: [{
-                role: 'user',
-                content: imagemBase64 ? [
-                  { type: 'text', text: prompt },
-                  { 
-                    type: 'image', 
-                    source: {
-                      type: 'base64',
-                      media_type: 'image/jpeg',
-                      data: imagemBase64.split(',')[1]
-                    }
-                  }
-                ] : prompt
-              }]
-            })
-          });
-
-          if (!claudeResponse.ok) {
-            const error = await claudeResponse.text();
-            console.error('❌ Erro Claude:', error);
-            throw new Error('Erro ao processar com Claude');
-          }
-
-          const claudeData = await claudeResponse.json();
-          resultado = claudeData.content[0].text;
-        }
-      } 
-      
-      if (!useClaudeFor) {
-        // Usar GPT-4o-mini
-        const OPENAI_KEY = process.env.OPENAI_API_KEY;
-        
-        if (!OPENAI_KEY) {
-          throw new Error('OpenAI API key não configurada. Verifique OPENAI_API_KEY no Vercel.');
-        }
-        
-        const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${OPENAI_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [{
-              role: 'user',
-              content: prompt
-            }],
-            temperature: 0.3, // Mais determinístico para seguir o formato
-            max_tokens: 1000
-          })
-        });
-
-        if (!gptResponse.ok) {
-          const error = await gptResponse.text();
-          console.error('❌ Erro GPT:', error);
-          throw new Error('Erro ao processar com GPT');
-        }
-
-        const gptData = await gptResponse.json();
-        resultado = gptData.choices[0].message.content;
-      }
-
-      console.log('✅ Processamento concluído');
-      
-      return res.status(200).json({
-        success: true,
-        result: resultado,
-        model: useClaudeFor ? 'claude' : 'gpt-4o-mini',
-        formato_usado: tipoOrcamento || tipo
-      });
-
-    } catch (error) {
-      console.error('❌ Erro no processamento:', error);
-      
-      return res.status(500).json({
-        success: false,
-        error: error.message || 'Erro ao processar orçamento',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
-    }
-  }
-  
-  // Método não suportado
-  return res.status(405).json({
-    success: false,
-    error: 'Método não suportado'
-  });
-}) || conteudoPrincipal.includes('parcelamento') ? 
+  conteudoPrincipal.includes('x de R$') || conteudoPrincipal.includes('parcelamento') ? 
   'MANTER o parcelamento que está no texto original' : 
   'NÃO INCLUIR parcelamento (não foi solicitado)'}
 
@@ -315,7 +253,7 @@ ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualC
       const conteudoPrincipal = observacoes || textoColado || '';
       
       // Escolher modelo baseado na complexidade
-      const useClaudeFor = imagemBase64 || pdfContent || 
+      let useClaudeFor = imagemBase64 || pdfContent || 
                           (conteudoPrincipal && conteudoPrincipal.length > 500);
       
       console.log(`🤖 Usando: ${useClaudeFor ? 'Claude' : 'GPT-4o-mini'}`);
@@ -331,41 +269,46 @@ ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualC
           console.warn('⚠️ Claude não configurado, usando GPT como fallback');
           useClaudeFor = false;
         } else {
-          const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'x-api-key': ANTHROPIC_KEY,
-              'anthropic-version': '2023-06-01',
-              'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: 'claude-3-haiku-20240307',
-              max_tokens: 1024,
-              messages: [{
-                role: 'user',
-                content: imagemBase64 ? [
-                  { type: 'text', text: prompt },
-                  { 
-                    type: 'image', 
-                    source: {
-                      type: 'base64',
-                      media_type: 'image/jpeg',
-                      data: imagemBase64.split(',')[1]
+          try {
+            const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'x-api-key': ANTHROPIC_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 1024,
+                messages: [{
+                  role: 'user',
+                  content: imagemBase64 ? [
+                    { type: 'text', text: prompt },
+                    { 
+                      type: 'image', 
+                      source: {
+                        type: 'base64',
+                        media_type: 'image/jpeg',
+                        data: imagemBase64.split(',')[1]
+                      }
                     }
-                  }
-                ] : prompt
-              }]
-            })
-          });
+                  ] : prompt
+                }]
+              })
+            });
 
-          if (!claudeResponse.ok) {
-            const error = await claudeResponse.text();
-            console.error('❌ Erro Claude:', error);
-            throw new Error('Erro ao processar com Claude');
+            if (claudeResponse.ok) {
+              const claudeData = await claudeResponse.json();
+              resultado = claudeData.content[0].text;
+            } else {
+              const error = await claudeResponse.text();
+              console.error('❌ Erro Claude, usando GPT:', error);
+              useClaudeFor = false;
+            }
+          } catch (error) {
+            console.error('❌ Erro ao chamar Claude, usando GPT:', error);
+            useClaudeFor = false;
           }
-
-          const claudeData = await claudeResponse.json();
-          resultado = claudeData.content[0].text;
         }
       } 
       
@@ -389,7 +332,7 @@ ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualC
               role: 'user',
               content: prompt
             }],
-            temperature: 0.3, // Mais determinístico para seguir o formato
+            temperature: 0.3,
             max_tokens: 1000
           })
         });
@@ -397,7 +340,7 @@ ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualC
         if (!gptResponse.ok) {
           const error = await gptResponse.text();
           console.error('❌ Erro GPT:', error);
-          throw new Error('Erro ao processar com GPT');
+          throw new Error('Erro ao processar com GPT: ' + error);
         }
 
         const gptData = await gptResponse.json();
