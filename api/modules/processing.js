@@ -1,8 +1,8 @@
-// 🔧 api/modules/processing.js - v9.0 - SISTEMA COMPLETO E MELHORADO
+// 🔧 api/modules/processing.js - v9.1 - SISTEMA COMPLETO E CORRIGIDO
 // Processamento especializado para CVC Itaqua
-// FOCO: Formatação WhatsApp perfeita + Múltiplas opções
+// CORREÇÕES: Extração de datas, horários e passageiros
 
-console.log("🔧 Processing v9.0 - SISTEMA MELHORADO PARA CVC ITAQUA");
+console.log("🔧 Processing v9.1 - SISTEMA CORRIGIDO PARA CVC ITAQUA");
 
 // ================================================================================
 // 📋 ÍNDICE DE FUNÇÕES
@@ -16,16 +16,16 @@ console.log("🔧 Processing v9.0 - SISTEMA MELHORADO PARA CVC ITAQUA");
 6️⃣ formatarParaWhatsApp()           - Formatação final WhatsApp
 7️⃣ validarOrcamentoFinal()          - Validação final
 8️⃣ calcularMetricasQualidade()      - Métricas de qualidade
-9️⃣ processarMultiplasOpcoes()       - NOVO: Processa múltiplas opções
-🔟 garantirFormatoWhatsApp()        - NOVO: Garante formato WhatsApp
+9️⃣ processarMultiplasOpcoes()       - Processa múltiplas opções
+🔟 garantirFormatoWhatsApp()        - Garante formato WhatsApp
 */
 
 // ================================================================================
-// 1️⃣ FUNÇÃO PRINCIPAL - PROCESSAMENTO COMPLETO (processing.js)
+// 1️⃣ FUNÇÃO PRINCIPAL - PROCESSAMENTO COMPLETO
 // ================================================================================
 
 function processarRespostaCompleta(conteudo, analise, formData) {
-  console.log("🔧 [1] Iniciando processamento completo v9.0...");
+  console.log("🔧 [1] Iniciando processamento completo v9.1...");
   
   if (!conteudo) {
     console.error("❌ [1] Conteúdo vazio para processar");
@@ -33,6 +33,7 @@ function processarRespostaCompleta(conteudo, analise, formData) {
   }
   
   let conteudoProcessado = conteudo;
+  const respostaOriginal = conteudo; // Guardar original para extração
   
   try {
     // ETAPA 1: Detectar e processar múltiplas opções PRIMEIRO
@@ -61,7 +62,10 @@ function processarRespostaCompleta(conteudo, analise, formData) {
     // ETAPA 7: Formatação final para WhatsApp
     conteudoProcessado = formatarParaWhatsApp(conteudoProcessado);
     
-    // ETAPA 8: Validação final
+    // ETAPA 8: Corrigir datas, horários e passageiros
+    conteudoProcessado = corrigirDatasHorariosPassageiros(conteudoProcessado, respostaOriginal, formData);
+    
+    // ETAPA 9: Validação final
     const validacao = validarOrcamentoFinal(conteudoProcessado, formData);
     if (!validacao.valido) {
       console.warn("⚠️ [1] Validação encontrou problemas:", validacao.problemas);
@@ -77,7 +81,114 @@ function processarRespostaCompleta(conteudo, analise, formData) {
 }
 
 // ================================================================================
-// 9️⃣ PROCESSAR MÚLTIPLAS OPÇÕES - NOVO E MELHORADO (processing.js)
+// NOVA FUNÇÃO: CORRIGIR DATAS, HORÁRIOS E PASSAGEIROS
+// ================================================================================
+
+function corrigirDatasHorariosPassageiros(resultado, respostaOriginal, formData) {
+  console.log("📅 Corrigindo datas, horários e passageiros...");
+  
+  // Extrair datas do formato original
+  const datas = extrairDatasVoo(respostaOriginal);
+  if (datas) {
+    resultado = resultado.replace(/\[DD\/MM\]/g, function(match, offset, string) {
+      const count = (string.slice(0, offset).match(/\[DD\/MM\]/g) || []).length;
+      return count === 0 ? datas.ida : datas.volta;
+    });
+  }
+  
+  // Extrair horários do formato original
+  const horariosMatch = [...respostaOriginal.matchAll(/(\d{2}:\d{2})/g)];
+  if (horariosMatch.length >= 4) {
+    let horarioIndex = 0;
+    resultado = resultado.replace(/\[HH:MM\]/g, () => {
+      if (horarioIndex < horariosMatch.length) {
+        return horariosMatch[horarioIndex++][0];
+      }
+      return '[HH:MM]';
+    });
+  }
+  
+  // Extrair informações de passageiros corretamente
+  const matchPassageiros = respostaOriginal.match(/Total\s*\(([^)]+)\)/i);
+  if (matchPassageiros && matchPassageiros[1]) {
+    const textoPassageiros = matchPassageiros[1];
+    console.log("👥 Texto de passageiros encontrado:", textoPassageiros);
+    
+    // Extrair número de adultos, crianças e bebês
+    const matchAdultos = textoPassageiros.match(/(\d+)\s*[Aa]dulto/);
+    const numeroAdultos = matchAdultos ? parseInt(matchAdultos[1]) : 1;
+    
+    const matchCriancas = textoPassageiros.match(/(\d+)\s*[Cc]riança/);
+    const numeroCriancas = matchCriancas ? parseInt(matchCriancas[1]) : 0;
+    
+    const matchBebes = textoPassageiros.match(/(\d+)\s*[Bb]ebê/);
+    const numeroBebes = matchBebes ? parseInt(matchBebes[1]) : 0;
+    
+    // Construir texto de passageiros
+    if (numeroAdultos > 1 || numeroCriancas > 0 || numeroBebes > 0) {
+      let textoPassageirosFormatado = [];
+      if (numeroAdultos > 0) textoPassageirosFormatado.push(`${numeroAdultos} adulto${numeroAdultos > 1 ? 's' : ''}`);
+      if (numeroCriancas > 0) textoPassageirosFormatado.push(`${numeroCriancas} criança${numeroCriancas > 1 ? 's' : ''}`);
+      if (numeroBebes > 0) textoPassageirosFormatado.push(`${numeroBebes} bebê${numeroBebes > 1 ? 's' : ''}`);
+      
+      // Atualizar a linha de preço
+      resultado = resultado.replace(
+        /💰 R\$ ([\d.,]+) para \d+ adulto[s]?/,
+        `💰 R$ $1 para ${textoPassageirosFormatado.join(', ')}`
+      );
+    }
+  }
+  
+  return resultado;
+}
+
+function extrairDatasVoo(texto) {
+  console.log("📅 Extraindo datas do voo...");
+  
+  // Procurar por padrões de data como "sex, 19 de dezembro"
+  const padraoData = /(\w{3}),?\s*(\d{1,2})\s+de\s+(\w+)/gi;
+  const matches = [...texto.matchAll(padraoData)];
+  
+  const meses = {
+    'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
+    'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
+    'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
+  };
+  
+  if (matches.length >= 2) {
+    const dataIda = matches[0];
+    const dataVolta = matches[1];
+    
+    const diaIda = dataIda[2].padStart(2, '0');
+    const mesIda = meses[dataIda[3].toLowerCase()] || '01';
+    
+    const diaVolta = dataVolta[2].padStart(2, '0');
+    const mesVolta = meses[dataVolta[3].toLowerCase()] || '01';
+    
+    console.log(`✅ Datas extraídas: ${diaIda}/${mesIda} - ${diaVolta}/${mesVolta}`);
+    
+    return {
+      ida: `${diaIda}/${mesIda}`,
+      volta: `${diaVolta}/${mesVolta}`
+    };
+  }
+  
+  // Fallback para formato DD/MM
+  const padraoSimples = /(\d{1,2})\/(\d{1,2})/g;
+  const matchesSimples = [...texto.matchAll(padraoSimples)];
+  
+  if (matchesSimples.length >= 2) {
+    return {
+      ida: `${matchesSimples[0][1].padStart(2, '0')}/${matchesSimples[0][2].padStart(2, '0')}`,
+      volta: `${matchesSimples[1][1].padStart(2, '0')}/${matchesSimples[1][2].padStart(2, '0')}`
+    };
+  }
+  
+  return null;
+}
+
+// ================================================================================
+// 9️⃣ PROCESSAR MÚLTIPLAS OPÇÕES - MELHORADO
 // ================================================================================
 
 function detectarMultiplasOpcoes(conteudo) {
@@ -187,13 +298,6 @@ function extrairOpcoesDoConteudo(conteudo) {
 
 function separarBlocosDeVoo(conteudo) {
   // Separar por padrões que indicam diferentes voos
-  const separadores = [
-    /total.*?R\$/gi,
-    /detalhes/gi,
-    /─+/g,
-    /\n\n\n/g
-  ];
-  
   let blocos = [conteudo];
   
   // Tentar separar por valores totais
@@ -214,7 +318,7 @@ function separarBlocosDeVoo(conteudo) {
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES AUXILIARES DE EXTRAÇÃO (processing.js)
+// 🔧 FUNÇÕES AUXILIARES DE EXTRAÇÃO
 // ================================================================================
 
 function extrairCompanhiaDoBloco(bloco) {
@@ -350,7 +454,7 @@ function extrairAeroportoDestino(bloco) {
 }
 
 // ================================================================================
-// 2️⃣ REMOÇÃO DE CABEÇALHOS TÉCNICOS (processing.js)
+// 2️⃣ REMOÇÃO DE CABEÇALHOS TÉCNICOS
 // ================================================================================
 
 function removerCabecalhosTecnicos(conteudo) {
@@ -384,7 +488,7 @@ function removerCabecalhosTecnicos(conteudo) {
 }
 
 // ================================================================================
-// 3️⃣ FORMATAÇÃO COMPLETA E PROFISSIONAL (processing.js)
+// 3️⃣ FORMATAÇÃO COMPLETA E PROFISSIONAL
 // ================================================================================
 
 function aplicarFormatacaoCompleta(conteudo) {
@@ -442,7 +546,7 @@ function aplicarFormatacaoCompleta(conteudo) {
 }
 
 // ================================================================================
-// 4️⃣ VALIDAÇÃO DE REGRAS CRÍTICAS (processing.js)
+// 4️⃣ VALIDAÇÃO DE REGRAS CRÍTICAS
 // ================================================================================
 
 function validarRegrasCriticas(conteudo) {
@@ -469,7 +573,7 @@ function validarRegrasCriticas(conteudo) {
 }
 
 // ================================================================================
-// 5️⃣ CORREÇÕES ESPECÍFICAS POR TIPO (processing.js)
+// 5️⃣ CORREÇÕES ESPECÍFICAS POR TIPO
 // ================================================================================
 
 function aplicarCorrecoesPorTipo(conteudo, analise) {
@@ -553,7 +657,7 @@ function processarOrcamentoPacote(conteudo, analise) {
 }
 
 // ================================================================================
-// 🔟 GARANTIR FORMATO WHATSAPP - NOVO (processing.js)
+// 🔟 GARANTIR FORMATO WHATSAPP
 // ================================================================================
 
 function garantirFormatoWhatsApp(conteudo) {
@@ -584,7 +688,7 @@ function garantirFormatoWhatsApp(conteudo) {
 }
 
 // ================================================================================
-// 6️⃣ FORMATAÇÃO FINAL PARA WHATSAPP (processing.js)
+// 6️⃣ FORMATAÇÃO FINAL PARA WHATSAPP
 // ================================================================================
 
 function formatarParaWhatsApp(conteudo) {
@@ -608,7 +712,7 @@ function formatarParaWhatsApp(conteudo) {
 }
 
 // ================================================================================
-// 7️⃣ VALIDAÇÃO FINAL DO ORÇAMENTO (processing.js)
+// 7️⃣ VALIDAÇÃO FINAL DO ORÇAMENTO
 // ================================================================================
 
 function validarOrcamentoFinal(conteudo, formData) {
@@ -654,7 +758,7 @@ function validarOrcamentoFinal(conteudo, formData) {
 }
 
 // ================================================================================
-// 8️⃣ MÉTRICAS DE QUALIDADE (processing.js)
+// 8️⃣ MÉTRICAS DE QUALIDADE
 // ================================================================================
 
 function calcularMetricasQualidade(conteudoOriginal, conteudoProcessado) {
@@ -721,7 +825,7 @@ function contarEmojisAdicionados(conteudo) {
 }
 
 // ================================================================================
-// 🎨 FORMATAÇÃO BÁSICA - FALLBACK (processing.js)
+// 🎨 FORMATAÇÃO BÁSICA - FALLBACK
 // ================================================================================
 
 function aplicarFormatacaoBasica(conteudo) {
@@ -743,16 +847,18 @@ function aplicarFormatacaoBasica(conteudo) {
 }
 
 // ================================================================================
-// 🚀 EXPORTAÇÃO ES6 - v9.0 COMPLETA
+// 🚀 EXPORTAÇÃO ES6 - v9.1 COMPLETA
 // ================================================================================
 
-console.log("✅ Processing v9.0 carregado com sucesso!");
+console.log("✅ Processing v9.1 carregado com sucesso!");
 console.log("🎯 Funcionalidades ativas:");
 console.log("- ✅ Processamento de múltiplas opções");
 console.log("- ✅ Formatação WhatsApp garantida");
 console.log("- ✅ Conversão completa de aeroportos");
 console.log("- ✅ Validação CVC rigorosa");
 console.log("- ✅ Métricas de qualidade");
+console.log("- ✅ Extração correta de datas e horários");
+console.log("- ✅ Extração correta de passageiros (4 adultos)");
 
 // Exportação nomeada
 export {
@@ -762,7 +868,9 @@ export {
   formatarParaWhatsApp,
   calcularMetricasQualidade,
   processarMultiplasOpcoes,
-  garantirFormatoWhatsApp
+  garantirFormatoWhatsApp,
+  extrairDatasVoo,
+  corrigirDatasHorariosPassageiros
 };
 
 // Exportação default
@@ -773,7 +881,9 @@ export default {
   formatarParaWhatsApp,
   calcularMetricasQualidade,
   processarMultiplasOpcoes,
-  garantirFormatoWhatsApp
+  garantirFormatoWhatsApp,
+  extrairDatasVoo,
+  corrigirDatasHorariosPassageiros
 };
 
-console.log("🚀 Sistema de Processamento v9.0 - OTIMIZADO PARA CVC ITAQUA!");
+console.log("🚀 Sistema de Processamento v9.1 - CORRIGIDO PARA CVC ITAQUA!");
