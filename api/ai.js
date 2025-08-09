@@ -115,39 +115,39 @@ Use EXATAMENTE este formato:
         // Orçamento normal
         const conteudoPrincipal = observacoes || textoColado || 'Criar orçamento padrão';
         
-        prompt = `CONSULTE O MANUAL DA CVC ITAQUA e processe este pedido de orçamento.
+        prompt = `VOCÊ DEVE OBRIGATORIAMENTE CONSULTAR O MANUAL DA CVC ITAQUA NO GOOGLE DOCS.
 
-**DADOS DO CLIENTE:**
+O manual contém TODOS os formatos padrão que DEVEM ser seguidos EXATAMENTE.
+
+**INSTRUÇÕES CRÍTICAS:**
+1. CONSULTE o manual no Google Docs PRIMEIRO
+2. IDENTIFIQUE o tipo de orçamento (aéreo, hotel, pacote, cruzeiro, etc)
+3. USE EXATAMENTE o formato que está no manual para esse tipo
+4. NÃO INVENTE formato próprio
+5. COPIE a estrutura do manual e preencha com os dados fornecidos
+
+**DADOS FORNECIDOS PELO CLIENTE:**
 ${conteudoPrincipal}
 
 ${destino ? `Destino: ${destino}` : ''}
 ${adultos ? `Adultos: ${adultos}` : ''}
 ${criancas > 0 ? `Crianças: ${criancas}` : ''}
 ${tipos.length > 0 ? `Tipos solicitados: ${tipos.join(', ')}` : ''}
+${parcelamento ? `Parcelamento solicitado: ${parcelamento}` : ''}
 
-**FORMATO OBRIGATÓRIO DO MANUAL:**
+**PROCESSO OBRIGATÓRIO:**
+1. Leia o manual da CVC no Google Docs
+2. Encontre o formato correto para este tipo de orçamento
+3. Use EXATAMENTE esse formato
+4. Preencha com os dados fornecidos
+5. Mantenha todos os emojis e estrutura do manual
 
-✈️ **CVC ITAQUA - ORÇAMENTO**
-📍 **Destino:** [local]
-📅 **Período:** [datas]
-👥 **Passageiros:** [qtd adultos + crianças com idades]
+**IMPORTANTE:**
+- O manual tem formatos para: Aéreo, Hotel, Pacote, Cruzeiro, Multitrechos
+- Cada formato tem sua estrutura específica
+- SIGA O MANUAL À RISCA
 
-[detalhes do voo/hotel/pacote conforme o manual]
-
-💰 **VALORES:**
-• Por pessoa: R$ X.XXX,XX
-• Total: R$ X.XXX,XX
-
-${parcelamento ? `📳 **PARCELAMENTO:**
-• ${parcelamento === '10x' ? '10x de R$ XXX,XX' : ''}
-${parcelamento === '12x' ? '12x de R$ XXX,XX' : ''}
-${parcelamento === '15x' ? '15x de R$ XXX,XX' : ''}` : ''}
-
-📞 **RESERVAS:**
-WhatsApp: (11) 94025-4949
-Consultor: Jorge - CVC Itaquá
-
-⏰ **Válido por 24h**`;
+O manual está disponível e DEVE ser consultado para garantir o formato correto.`;
       }
 
       // Definir conteudoPrincipal para todos os casos
