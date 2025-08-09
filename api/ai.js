@@ -8,7 +8,7 @@ const manualCVC = {
   formatos: {
     aereo_ida_volta_simples: {
       nome: "Aéreo Ida e Volta Simples",
-      template: "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n✅ {bagagem}\n🏷️ {reembolso}",
+      template: "*{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n✅ {bagagem}\n🏷️ {reembolso}",
       exemplo: "*Gol - São Paulo ✈ Porto Alegre*\n17/09 - Congonhas 17:05 / Porto Alegre 23:40 (com conexão)\n--\n24/09 - Porto Alegre 08:00 / Congonhas 09:35 (voo direto)\n\n💰 R$ 773,37 para 01 adulto\n✅ Só mala de mão incluída\n🏷️ Não reembolsável"
     },
     aereo_ida_volta_conexao_detalhada: {
@@ -220,33 +220,183 @@ ${criancas > 0 ? `Crianças: ${criancas}` : ''}
 
 **FORMATO DETECTADO:** ${formatoEscolhido.nome}
 
-**TEMPLATE A SEGUIR:**
-${formatoEscolhido.template}
+**REGRAS CRÍTICAS DE FORMATAÇÃO:**
 
-**EXEMPLO DO FORMATO:**
-${formatoEscolhido.exemplo || 'Seguir o template acima'}
+1. TÍTULO: Use sempre "*[Companhia] - [Cidade Origem] ✈ [Cidade Destino]*"
+   - Use NOMES DE CIDADES, não códigos de aeroporto
+   - Exemplos: "São Paulo ✈ Rio de Janeiro", "Salvador ✈ Porto Alegre"
+   - NUNCA: "GRU ✈ SDU" ou "Guarulhos ✈ Santos Dumont"
 
-**REGRAS OBRIGATÓRIAS:**
-1. EXTRAIA todos os dados do texto fornecido (datas, horários, valores, companhias, etc)
-2. SUBSTITUA as variáveis {campo} pelos dados reais extraídos
-3. MANTENHA exatamente a estrutura e emojis do template
-4. Para passageiros: use formato "${manualCVC.regras.passageiros.exemplos[1]}"
-5. Para valores: use formato "${manualCVC.regras.valores.exemplo}"
-6. Para reembolso: Se não especificado, use "${manualCVC.regras.reembolso.nao_reembolsavel}"
-7. Reembolso: Se não especificado, use "${manualCVC.regras.reembolso.nao_reembolsavel}"
+2. AEROPORTOS: Use nome completo quando relevante
+   - Guarulhos, Congonhas, Santos Dumont, Galeão
+   - Formato: "29/12 - Guarulhos 12:15 / Santos Dumont 13:15"
+   - NUNCA use apenas códigos como GRU, SDU, GIG
+
+3. CONVERSÃO DE CÓDIGOS:
+   - GRU = Guarulhos
+   - CGH = Congonhas  
+   - SDU = Santos Dumont
+   - GIG = Galeão
+   - VCP = Viracopos
+   - BSB = Brasília
+   - CNF = Confins
+   - GYN = Goiânia
+   - SSA = Salvador
+   - POA = Porto Alegre
+
+4. FORMATO DE LINHA DE VOO:
+   "[Data] - [Aeroporto Origem] [Hora] / [Aeroporto Destino] [Hora] ([tipo voo])"
+   Exemplo: "29/12 - Guarulhos 12:15 / Santos Dumont 13:15 (voo direto)"
+
+5. PASSAGEIROS: Use formato "${manualCVC.regras.passageiros.exemplos[1]}"
+
+6. VALORES: Use formato "${manualCVC.regras.valores.exemplo}"
+
+7. REEMBOLSO: Use "${manualCVC.regras.reembolso.nao_reembolsavel}" ou "${manualCVC.regras.reembolso.reembolsavel}"
+
+8. BAGAGEM: 
+   - "✅ Só mala de mão incluída" (se incluir)
+   - "✅ Não inclui bagagem" (se não incluir)
 
 **PARCELAMENTO:**
 ${parcelamento ? `INCLUIR parcelamento ${parcelamento} usando formato "${manualCVC.regras.parcelamento.formato_simples}"` : 
-  conteudoPrincipal.includes('x de R$') || conteudoPrincipal.includes('parcelamento') ? 
+  conteudoPrincipal.includes('x de R
+      }
+
+      // Definir conteudoPrincipal para todos os casos
+      const conteudoPrincipal = observacoes || textoColado || '';
+      
+      // Escolher modelo baseado na complexidade
+      let useClaudeFor = imagemBase64 || pdfContent || 
+                          (conteudoPrincipal && conteudoPrincipal.length > 500);
+      
+      console.log(`🤖 Usando: ${useClaudeFor ? 'Claude' : 'GPT-4o-mini'}`);
+      console.log(`📋 Formato detectado: ${tipoOrcamento || 'N/A'}`);
+      
+      let resultado = '';
+      
+      if (useClaudeFor) {
+        // Usar Claude para casos complexos
+        const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+        
+        if (!ANTHROPIC_KEY) {
+          console.warn('⚠️ Claude não configurado, usando GPT como fallback');
+          useClaudeFor = false;
+        } else {
+          try {
+            const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'x-api-key': ANTHROPIC_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 1024,
+                messages: [{
+                  role: 'user',
+                  content: imagemBase64 ? [
+                    { type: 'text', text: prompt },
+                    { 
+                      type: 'image', 
+                      source: {
+                        type: 'base64',
+                        media_type: 'image/jpeg',
+                        data: imagemBase64.split(',')[1]
+                      }
+                    }
+                  ] : prompt
+                }]
+              })
+            });
+
+            if (claudeResponse.ok) {
+              const claudeData = await claudeResponse.json();
+              resultado = claudeData.content[0].text;
+            } else {
+              const error = await claudeResponse.text();
+              console.error('❌ Erro Claude, usando GPT:', error);
+              useClaudeFor = false;
+            }
+          } catch (error) {
+            console.error('❌ Erro ao chamar Claude, usando GPT:', error);
+            useClaudeFor = false;
+          }
+        }
+      } 
+      
+      if (!useClaudeFor) {
+        // Usar GPT-4o-mini
+        const OPENAI_KEY = process.env.OPENAI_API_KEY;
+        
+        if (!OPENAI_KEY) {
+          throw new Error('OpenAI API key não configurada. Verifique OPENAI_API_KEY no Vercel.');
+        }
+        
+        const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            temperature: 0.3,
+            max_tokens: 1000
+          })
+        });
+
+        if (!gptResponse.ok) {
+          const error = await gptResponse.text();
+          console.error('❌ Erro GPT:', error);
+          throw new Error('Erro ao processar com GPT: ' + error);
+        }
+
+        const gptData = await gptResponse.json();
+        resultado = gptData.choices[0].message.content;
+      }
+
+      console.log('✅ Processamento concluído');
+      
+      return res.status(200).json({
+        success: true,
+        result: resultado,
+        model: useClaudeFor ? 'claude' : 'gpt-4o-mini',
+        formato_usado: tipoOrcamento || tipo
+      });
+
+    } catch (error) {
+      console.error('❌ Erro no processamento:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Erro ao processar orçamento',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+  
+  // Método não suportado
+  return res.status(405).json({
+    success: false,
+    error: 'Método não suportado'
+  });
+}) || conteudoPrincipal.includes('parcelamento') ? 
   'MANTER o parcelamento que está no texto original' : 
   'NÃO INCLUIR parcelamento (não foi solicitado)'}
 
-**REGRA IMPORTANTE:**
-- NÃO adicione informações de contato (WhatsApp, telefone)
-- NÃO adicione validade do orçamento
-- Use APENAS os dados fornecidos no texto
-- Mantenha links se fornecidos
-- Termine com: "Valores sujeitos a confirmação e disponibilidade"`;
+**TEMPLATE EXATO A SEGUIR:**
+${formatoEscolhido.template}
+
+**REGRA FINAL:**
+- Termine SEMPRE com: "Valores sujeitos a confirmação e disponibilidade"
+- NÃO adicione WhatsApp, telefone ou validade
+- Use APENAS os dados fornecidos no texto`;
       }
 
       // Definir conteudoPrincipal para todos os casos
