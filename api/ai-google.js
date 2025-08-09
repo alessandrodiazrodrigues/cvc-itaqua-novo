@@ -1,15 +1,20 @@
-// 🚀 CVC ITAQUA v6.0 - GOOGLE DOCS API
-// Lê o manual diretamente do Google Docs
-
+// 🚀 CVC ITAQUA v6.0 - GOOGLE DOCS API (COM CACHE)
 import { google } from 'googleapis';
 
-// Bloco de autenticação corrigido que usa a variável de ambiente única
-const credentialsJsonString = process.env.GOOGLE_CREDENTIALS_JSON;
+// --- INÍCIO DA LÓGICA DE CACHE ---
+let cache = {
+  manual: null,
+  timestamp: 0,
+};
+const CACHE_DURATION = 10 * 60 * 1000; // Cache válido por 10 minutos
+// --- FIM DA LÓGICA DE CACHE ---
 
+// Bloco de autenticação que lê a variável de ambiente única
+const credentialsJsonString = process.env.GOOGLE_CREDENTIALS_JSON;
 if (!credentialsJsonString) {
+  // Trava a aplicação se a variável essencial não for encontrada
   throw new Error('A variável de ambiente GOOGLE_CREDENTIALS_JSON não foi definida.');
 }
-
 const credentials = JSON.parse(credentialsJsonString);
 
 const auth = new google.auth.GoogleAuth({
@@ -20,13 +25,21 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/documents.readonly'],
 });
 
-// Função para ler o Google Docs
+// Função para ler o Google Docs COM CACHE
 async function lerManualGoogleDocs() {
-  // ... (a função lerManualGoogleDocs continua a mesma, não precisa alterar)
+  const agora = Date.now();
+  
+  if (cache.manual && (agora - cache.timestamp < CACHE_DURATION)) {
+    console.log('✅ Manual carregado do CACHE');
+    return cache.manual;
+  }
+
   try {
+    console.log('🔄 Baixando novo manual do Google Docs...');
     const docs = google.docs({ version: 'v1', auth });
     const documentId = process.env.GOOGLE_DOCS_ID || '1J6luZmr0Q_ldqsmEJ4kuMEfA7BYt3DInd7-Tt98hInY';
     const response = await docs.documents.get({ documentId });
+    
     let manualTexto = '';
     const content = response.data.body?.content || [];
     content.forEach(element => {
@@ -38,8 +51,13 @@ async function lerManualGoogleDocs() {
         });
       }
     });
-    console.log('✅ Manual carregado do Google Docs:', manualTexto.length, 'caracteres');
+    
+    cache.manual = manualTexto;
+    cache.timestamp = agora;
+    
+    console.log('✅ Novo manual carregado do Google Docs e salvo no cache:', manualTexto.length, 'caracteres');
     return manualTexto;
+    
   } catch (error) {
     console.error('❌ Erro ao ler Google Docs:', error.message);
     throw new Error(`Erro ao conectar com Google Docs: ${error.message}`);
@@ -47,16 +65,32 @@ async function lerManualGoogleDocs() {
 }
 
 export default async function handler(req, res) {
-  // ... (o início do handler continua o mesmo: CORS, GET, etc.)
-
-  // POST - Processar orçamento
+  console.log('🤖 CVC v6.0 Google Docs - Requisição recebida');
+  
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  if (req.method === 'GET') {
+    // (O GET continua o mesmo, apenas para checagem de status)
+    return res.status(200).json({ status: 'online', version: '6.0-cache' });
+  }
+  
   if (req.method === 'POST') {
     try {
       const { 
         observacoes = '', 
         textoColado = '', 
         destino = '',
-        // ... (resto da desestruturação)
+        adultos = '',
+        criancas = 0,
+        parcelamento = null,
+        imagemBase64 = null,
+        tipo = 'orcamento'
       } = req.body;
 
       const manualCompleto = await lerManualGoogleDocs();
@@ -64,15 +98,11 @@ export default async function handler(req, res) {
       
       let prompt = '';
       
-      // Lógica para Dicas e Ranking continua a mesma
-      if (req.body.tipo === 'dicas' && destino) {
-        // ... prompt para dicas
-      } else if (req.body.tipo === 'ranking' && destino) {
-        // ... prompt para ranking
+      if (tipo === 'dicas' || tipo === 'ranking') {
+          // Lógica para dicas e ranking
+          prompt = `Use o manual para gerar ${tipo} para ${destino}. MANUAL: ${manualCompleto}`;
       } else {
-        // ======================================================================
-        // PROMPT COMPLETO E FINAL PARA ORÇAMENTOS
-        // ======================================================================
+        // PROMPT INTELIGENTE E DEFINITIVO PARA ORÇAMENTOS
         prompt = `Você é um assistente especialista da CVC Itaqua. Sua única função é receber DADOS de um cliente e um MANUAL de formatação e retornar um orçamento perfeitamente formatado, seguindo a lógica de decisão abaixo.
 
 **MANUAL COMPLETO (Use para consultar os templates exatos):**
@@ -101,7 +131,7 @@ ${conteudoPrincipal}
     * **SENÃO** (para todos os outros casos de voo ida e volta), **ENTÃO** use o template padrão "✈️ 1. AÉREO IDA E VOLTA SIMPLES".
 
 3.  **REGRA ESPECIAL PARA MÚLTIPLOS ORÇAMENTOS:**
-    * **SE** os "DADOS DO CLIENTE" contiverem orçamentos claramente distintos e não relacionados (ex: um voo Salvador-Rio e outro Guarulhos-Rio), **ENTÃO** aplique a lógica de decisão acima para **CADA ORÇAMENTO SEPARADAMENTE** e apresente os resultados formatados um abaixo do outro.
+    * **SE** os "DADOS DO CLIENTE" contiverem orçamentos claramente distintos e não relacionados, **ENTÃO** aplique a lógica de decisão acima para **CADA ORÇAMENTO SEPARADAMENTE** e apresente os resultados formatados um abaixo do outro.
 
 4.  **REGRAS FINAIS DE FORMATAÇÃO (APLIQUE APÓS ESCOLHER O TEMPLATE):**
     * Use estritamente as regras de formatação de datas, horários, valores e passageiros descritas no manual.
@@ -111,12 +141,52 @@ ${conteudoPrincipal}
     * Sempre termine a resposta com "Valores sujeitos a confirmação e disponibilidade", se o modelo escolhido incluir essa frase.`;
       }
       
-      // ... (Resto do código para chamar a IA, que permanece o mesmo)
-      // ...
+      let resultado = '';
+      const OPENAI_KEY = process.env.OPENAI_API_KEY;
+      if (!OPENAI_KEY) {
+        throw new Error('OpenAI API key não configurada.');
+      }
+      
+      const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.2,
+          max_tokens: 1500
+        })
+      });
+
+      if (!gptResponse.ok) {
+        const errorText = await gptResponse.text();
+        throw new Error(`Erro ao processar com GPT: ${errorText}`);
+      }
+
+      const gptData = await gptResponse.json();
+      resultado = gptData.choices[0].message.content;
+
+      console.log('✅ Processamento concluído');
+      
+      return res.status(200).json({
+        success: true,
+        result: resultado
+      });
+
     } catch (error) {
-      // ... (bloco catch permanece o mesmo)
+      console.error('❌ Erro no processamento:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Erro desconhecido ao processar orçamento'
+      });
     }
   }
   
-  // ... (resto do handler para métodos não suportados)
+  return res.status(405).json({
+    success: false,
+    error: 'Método não suportado'
+  });
 }
