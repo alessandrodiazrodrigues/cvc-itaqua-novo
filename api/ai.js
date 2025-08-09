@@ -101,12 +101,12 @@ export default async function handler(req, res) {
 }
 
 // ================================================================================
-// 2️⃣ ORQUESTRAÇÃO DE ORÇAMENTO (FLUXO COMPLETO EM 5 ETAPAS)
+// 2️⃣ ORQUESTRAÇÃO DE ORÇAMENTO (FLUXO COMPLETO EM 6 ETAPAS)
 // ================================================================================
 
 async function orquestrarOrcamento(formData, modulos) {
     console.log("🎯 [2] ORQUESTRANDO FLUXO COMPLETO DE ORÇAMENTO...");
-    console.log("🔄 [2] FLUXO: Análise → Prompt → IA → Processamento → Métricas");
+    console.log("🔄 [2] FLUXO: Análise → Template → Prompt → IA → Processamento → Métricas");
 
     try {
         // ETAPA 2.1: ANÁLISE DO TEXTO DE ENTRADA (analysis.js)
@@ -118,26 +118,46 @@ async function orquestrarOrcamento(formData, modulos) {
         
         console.log(`✅ [2.1] Análise concluída | Tipo: ${analise?.tipoDetectado || 'generico'}`);
 
-        // ETAPA 2.2: GERAÇÃO DO PROMPT OTIMIZADO (prompts.js)
-        console.log("📋 [2.2] PROMPT: Gerando prompt especializado...");
+        // ETAPA 2.2: APLICAÇÃO DE TEMPLATE ESPECIALIZADO (templates.js) - CORREÇÃO CRÍTICA!
+        console.log("🎯 [2.2] TEMPLATE: Aplicando template especializado...");
+        
+        let template;
+        // ✅ CORREÇÃO: Se tem imagem, pular template inicial (aplicar depois da IA)
+        if (formData.imagemBase64) {
+            console.log("🖼️ [2.2] Imagem detectada - template será aplicado após resposta da IA");
+            template = null; // Template será aplicado após IA responder
+        } else {
+            // Aplicar template baseado no texto
+            if (modulos.templates.aplicarTemplateCompleto) {
+                template = modulos.templates.aplicarTemplateCompleto(formData, analise);
+            } else if (modulos.templates.default?.aplicarTemplateCompleto) {
+                template = modulos.templates.default.aplicarTemplateCompleto(formData, analise);
+            } else {
+                throw new Error("Módulo templates.js não possui função aplicarTemplateCompleto");
+            }
+            console.log(`✅ [2.2] Template aplicado | Tipo: ${analise?.tipoDetectado || 'generico'}`);
+        }
+
+                // ETAPA 2.3: GERAÇÃO DO PROMPT OTIMIZADO (prompts.js) - BASEADO NO TEMPLATE
+        console.log("📋 [2.3] PROMPT: Gerando prompt baseado no template...");
         
         const prompt = modulos.prompts.gerarPromptOtimizado 
-            ? modulos.prompts.gerarPromptOtimizado(formData, analise)
-            : modulos.prompts.default.gerarPromptOtimizado(formData, analise);
+            ? modulos.prompts.gerarPromptOtimizado(formData, analise, template)
+            : modulos.prompts.default.gerarPromptOtimizado(formData, analise, template);
         
-        console.log(`✅ [2.2] Prompt gerado | ${prompt?.length || 0} caracteres`);
+        console.log(`✅ [2.3] Prompt gerado | ${prompt?.length || 0} caracteres`);
 
-        // ETAPA 2.3: SELEÇÃO INTELIGENTE DO MODELO (ia-client.js)
-        console.log("🤖 [2.3] MODELO: Selecionando IA otimizada...");
+        // ETAPA 2.4: SELEÇÃO INTELIGENTE DO MODELO (ia-client.js)
+        console.log("🤖 [2.4] MODELO: Selecionando IA otimizada...");
         
         const modeloInfo = modulos.iaClient.selecionarModelo 
             ? modulos.iaClient.selecionarModelo(!!formData.imagemBase64, analise?.complexidade)
             : modulos.iaClient.default.selecionarModelo(!!formData.imagemBase64, analise?.complexidade);
         
-        console.log(`✅ [2.3] Modelo selecionado: ${modeloInfo.modelo}`);
+        console.log(`✅ [2.4] Modelo selecionado: ${modeloInfo.modelo}`);
 
-        // ETAPA 2.4: CHAMADA PARA A IA (ia-client.js)
-        console.log("🧠 [2.4] IA: Executando chamada inteligente...");
+        // ETAPA 2.5: CHAMADA PARA A IA (ia-client.js)
+        console.log("🧠 [2.5] IA: Executando chamada inteligente...");
         
         const respostaIA = modulos.iaClient.chamarIASegura 
             ? await modulos.iaClient.chamarIASegura(
@@ -155,10 +175,31 @@ async function orquestrarOrcamento(formData, modulos) {
                 modeloInfo.fallback
             );
         
-        console.log(`🧠 [2.4] IA respondeu | ${respostaIA?.content?.length || 0} caracteres`);
+        console.log(`🧠 [2.5] IA respondeu | ${respostaIA?.content?.length || 0} caracteres`);
 
-        // ETAPA 2.5: PÓS-PROCESSAMENTO FINAL (processing.js) - CORREÇÃO CRÍTICA!
-        console.log("🎨 [2.5] PROCESSAMENTO: Formatação final...");
+        // 🆕 ETAPA 2.5.1: APLICAR TEMPLATE PÓS-IA (PARA IMAGENS)
+        let templateFinal = template;
+        if (formData.imagemBase64 && respostaIA?.content) {
+            console.log("🎯 [2.5.1] TEMPLATE PÓS-IA: Detectando tipo baseado na resposta...");
+            
+            // Criar formData temporário com resposta da IA para detecção
+            const formDataComResposta = {
+                ...formData,
+                textoColado: respostaIA.content,
+                observacoes: formData.observacoes + '\n\n' + respostaIA.content
+            };
+            
+            if (modulos.templates.aplicarTemplateCompleto) {
+                templateFinal = modulos.templates.aplicarTemplateCompleto(formDataComResposta, analise);
+            } else if (modulos.templates.default?.aplicarTemplateCompleto) {
+                templateFinal = modulos.templates.default.aplicarTemplateCompleto(formDataComResposta, analise);
+            }
+            
+            console.log(`✅ [2.5.1] Template pós-IA aplicado baseado na resposta`);
+        }
+
+        // ETAPA 2.6: PÓS-PROCESSAMENTO FINAL (processing.js) - CORREÇÃO CRÍTICA!
+        console.log("🎨 [2.6] PROCESSAMENTO: Formatação final...");
         
         const conteudoFinal = modulos.processing.processarRespostaCompleta 
             ? await modulos.processing.processarRespostaCompleta(
@@ -172,10 +213,10 @@ async function orquestrarOrcamento(formData, modulos) {
                 formData  // ← CORREÇÃO CRÍTICA: 3º ARGUMENTO ADICIONADO
             );
         
-        console.log(`✅ [2.5] Processamento concluído`);
+        console.log(`✅ [2.6] Processamento concluído`);
 
-        // ETAPA 2.6: CÁLCULO DE MÉTRICAS (ia-client.js)
-        console.log("📊 [2.6] MÉTRICAS: Calculando custos...");
+        // ETAPA 2.7: CÁLCULO DE MÉTRICAS (ia-client.js)
+        console.log("📊 [2.7] MÉTRICAS: Calculando custos...");
         
         let custo = { custo_total: 0 };
         let informacoesUso = { tokens_total: 0 };
@@ -186,20 +227,21 @@ async function orquestrarOrcamento(formData, modulos) {
                 custo = modulos.iaClient.calcularCusto(informacoesUso);
             }
         } catch (errorMetricas) {
-            console.warn("⚠️ [2.6] Erro ao calcular métricas:", errorMetricas.message);
+            console.warn("⚠️ [2.7] Erro ao calcular métricas:", errorMetricas.message);
         }
 
         // RESULTADO FINAL DO ORÇAMENTO
         return {
             conteudo: conteudoFinal,
             debug: {
-                fluxoExecutado: '5 Etapas: Análise → Prompt → IA → Processamento → Métricas',
+                fluxoExecutado: '6 Etapas: Análise → Template → Prompt → IA → Processamento → Métricas',
                 modeloUsado: respostaIA?.modelo_usado || modeloInfo.modelo,
                 templateUsado: analise?.tipoDetectado || 'generico',
                 custoBRL: custo?.custo_total ? `R$ ${custo.custo_total.toFixed(4)}` : 'R$ 0,0000',
                 tokensUsados: informacoesUso?.tokens_total || 0,
                 etapas: {
                     analise: !!analise,
+                    template: !!template,
                     prompt: !!prompt,
                     ia: !!respostaIA,
                     processamento: !!conteudoFinal,
