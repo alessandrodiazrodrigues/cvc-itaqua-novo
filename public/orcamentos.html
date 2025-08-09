@@ -561,25 +561,17 @@
                                     Tipos de Serviços
                                 </label>
                                 <div class="checkbox-group">
-                                    <div class="checkbox-item" data-value="Aéreo Nacional">
-                                        <input type="checkbox" id="aereo" name="tipos" value="Aéreo Nacional">
-                                        <label for="aereo">✈️ Aéreo Nacional</label>
+                                    <div class="checkbox-item" data-value="Aéreo">
+                                        <input type="checkbox" id="aereo" name="tipos" value="Aéreo">
+                                        <label for="aereo">✈️ Aéreo</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Aéreo Internacional">
-                                        <input type="checkbox" id="aereoInt" name="tipos" value="Aéreo Internacional">
-                                        <label for="aereoInt">🌍 Aéreo Internacional</label>
+                                    <div class="checkbox-item" data-value="Hotel">
+                                        <input type="checkbox" id="hotel" name="tipos" value="Hotel">
+                                        <label for="hotel">🏨 Hotel</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Hotéis">
-                                        <input type="checkbox" id="hotel" name="tipos" value="Hotéis">
-                                        <label for="hotel">🏨 Hotéis</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Pacotes">
-                                        <input type="checkbox" id="pacote" name="tipos" value="Pacotes">
-                                        <label for="pacote">📦 Pacotes</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Cruzeiros">
-                                        <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiros">
-                                        <label for="cruzeiro">🚢 Cruzeiros</label>
+                                    <div class="checkbox-item" data-value="Cruzeiro">
+                                        <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiro">
+                                        <label for="cruzeiro">🚢 Cruzeiro</label>
                                     </div>
                                     <div class="checkbox-item" data-value="Multitrechos">
                                         <input type="checkbox" id="multitrecho" name="tipos" value="Multitrechos">
@@ -644,7 +636,7 @@
                                     <i class="fas fa-pencil-alt"></i>
                                     Observações e dados da viagem
                                 </label>
-                                <textarea class="form-control textarea-large" id="observacoes" 
+                                <textarea class="form-control textarea-large" id="observacoes" rows="12"
                                           placeholder="Cole aqui as informações do orçamento (horários, preços, passageiros, etc.)"></textarea>
                                 <small class="text-muted">
                                     💡 Dica: Cole prints de orçamentos ou informações detalhadas aqui
@@ -1251,7 +1243,27 @@
                 if (conteudoFinal && conteudoFinal.trim()) {
                     // Corrigir placeholders antes de exibir
                     const textoOriginal = dados.observacoes || dados.textoColado || '';
-                    const orcamentoFormatado = corrigirPlaceholders(conteudoFinal, textoOriginal);
+                    let orcamentoFormatado = corrigirPlaceholders(conteudoFinal, textoOriginal);
+                    
+                    // Aplicar parcelamento APENAS se selecionado ou detectado no texto
+                    if (dados.parcelamento) {
+                        // Se tem parcelamento selecionado, garantir que aparece
+                        if (!orcamentoFormatado.includes('💳')) {
+                            orcamentoFormatado = orcamentoFormatado.replace(
+                                /💰 R\$ ([\d.,]+)/,
+                                `💰 R$ $1\n💳 Em até ${dados.parcelamento} sem juros`
+                            );
+                        } else {
+                            // Substituir parcelamento existente pelo selecionado
+                            orcamentoFormatado = orcamentoFormatado.replace(
+                                /💳 Em até \d+x sem juros/,
+                                `💳 Em até ${dados.parcelamento} sem juros`
+                            );
+                        }
+                    } else if (!textoOriginal.match(/\d+x|parcela|parcelamento/i)) {
+                        // Se não tem parcelamento selecionado NEM no texto, remover linha de parcelamento
+                        orcamentoFormatado = orcamentoFormatado.replace(/\n💳 Em até \d+x sem juros/, '');
+                    }
                     
                     document.getElementById('orcamentoIA').innerText = orcamentoFormatado;
                     estadoGlobal.ultimoOrcamento = orcamentoFormatado;
