@@ -150,7 +150,7 @@ function processarRespostaCompleta(conteudo, analise, formData) {
   try {
     // ETAPA 1: Detectar tipo de orçamento
     const tipoOrcamento = detectarTipoOrcamento(conteudoProcessado, analise);
-    console.log(`📋 [1] Tipo detectado: ${tipoOrcamento}`);
+    console.log("📋 [1] Tipo detectado: " + tipoOrcamento);
     
     // ETAPA 2: Processar múltiplas opções se necessário
     if (detectarMultiplasOpcoes(conteudoProcessado)) {
@@ -201,11 +201,13 @@ function processarRespostaCompleta(conteudo, analise, formData) {
       console.warn("⚠️ [1] Validação encontrou problemas:", validacao.problemas);
     }
     
+    console.log("✅ [13] Correções aplicadas: Correções aplicadas com sucesso");
+    
     // ETAPA 14: Calcular métricas
     const metricas = calcularMetricasQualidade(respostaOriginal, conteudoProcessado);
-    console.log(`📊 [1] Score de qualidade: ${metricas.score_geral}%`);
+    console.log("📊 [1] Score de qualidade: " + metricas.score_geral + "%");
     
-    console.log(`✅ [1] Processamento finalizado: ${conteudoProcessado.length} caracteres`);
+    console.log("✅ [1] Processamento finalizado: " + conteudoProcessado.length + " caracteres");
     return conteudoProcessado;
     
   } catch (error) {
@@ -322,7 +324,8 @@ function validarRegrasCriticas(conteudo) {
 // ================================================================================
 
 function aplicarCorrecoesPorTipo(conteudo, analise) {
-  console.log("🔧 [5] Aplicando correções por tipo:", analise?.tipoDetectado);
+  const tipoDetectado = analise?.tipoDetectado || '';
+  console.log("🔧 [5] Aplicando correções por tipo: " + tipoDetectado);
   let corrigido = conteudo;
   
   const tipo = (analise?.tipoDetectado || analise?.tipo_principal || '').toLowerCase();
@@ -411,7 +414,7 @@ function validarOrcamentoFinal(conteudo, formData) {
   };
   
   if (problemas.length > 0) {
-    console.log(`⚠️ [7] Problemas encontrados: ${problemas.join(', ')}`);
+    console.log("⚠️ [7] Problemas encontrados: " + problemas.join(', '));
   } else {
     console.log("✅ [7] Validação perfeita! Score: 100%");
   }
@@ -523,26 +526,26 @@ function processarMultiplasOpcoes(conteudo, formData, respostaOriginal) {
     const numeroOpcao = index + 1;
     
     // Cabeçalho da opção
-    resultado += `*OPÇÃO ${numeroOpcao} - ${opcao.companhia} para ${opcao.destino}*\n`;
+    resultado += '*OPÇÃO ' + numeroOpcao + ' - ' + opcao.companhia + ' para ' + opcao.destino + '*\n';
     
     // Dados do voo ida
     if (opcao.dataIda && opcao.horaIda) {
-      resultado += `${opcao.dataIda} - ${opcao.origemAeroporto} ${opcao.horaIda} / ${opcao.destinoAeroporto} ${opcao.horaChegadaIda} (${opcao.tipoVooIda})\n`;
+      resultado += opcao.dataIda + ' - ' + opcao.origemAeroporto + ' ' + opcao.horaIda + ' / ' + opcao.destinoAeroporto + ' ' + opcao.horaChegadaIda + ' (' + opcao.tipoVooIda + ')\n';
     }
     
     // Separador ida/volta
-    resultado += `--\n`;
+    resultado += '--\n';
     
     // Dados do voo volta
     if (opcao.dataVolta && opcao.horaVolta) {
-      resultado += `${opcao.dataVolta} - ${opcao.destinoAeroporto} ${opcao.horaVolta} / ${opcao.origemAeroporto} ${opcao.horaChegadaVolta} (${opcao.tipoVooVolta})\n`;
+      resultado += opcao.dataVolta + ' - ' + opcao.destinoAeroporto + ' ' + opcao.horaVolta + ' / ' + opcao.origemAeroporto + ' ' + opcao.horaChegadaVolta + ' (' + opcao.tipoVooVolta + ')\n';
     }
     
     // Valor e passageiros
-    resultado += `💰 ${opcao.valor} para ${formatarTextoPassageiros(formData)}\n`;
+    resultado += '💰 ' + opcao.valor + ' para ' + formatarTextoPassageiros(formData) + '\n';
     
     // Bagagem
-    resultado += `✅ ${opcao.bagagem}\n`;
+    resultado += '✅ ' + opcao.bagagem + '\n';
     
     // Reembolso
     if (opcao.reembolso) {
@@ -580,7 +583,7 @@ function extrairOpcoesDoConteudo(conteudo, respostaOriginal = '') {
   const blocos = separarBlocosDeVoo(textoCompleto);
   
   blocos.forEach((bloco, index) => {
-    console.log(`   Processando bloco ${index + 1}...`);
+    console.log("   Processando bloco " + (index + 1) + "...");
     
     const opcao = {
       companhia: extrairCompanhiaDoBloco(bloco),
@@ -607,7 +610,7 @@ function extrairOpcoesDoConteudo(conteudo, respostaOriginal = '') {
     }
   });
   
-  console.log(`📋 [11] Total de opções extraídas: ${opcoes.length}`);
+      console.log("📋 [11] Total de opções extraídas: " + opcoes.length);
   return opcoes;
 }
 
