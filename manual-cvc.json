@@ -1,0 +1,110 @@
+{
+  "versao": "1.0",
+  "ultima_atualizacao": "2024-12-12",
+  "formatos": {
+    "aereo_ida_volta_simples": {
+      "nome": "Aéreo Ida e Volta Simples",
+      "template": "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n✅ {bagagem}\n🏷️ {reembolso}",
+      "exemplo": "*Gol - São Paulo ✈ Porto Alegre*\n17/09 - Congonhas 17:05 / Porto Alegre 23:40 (com conexão)\n--\n24/09 - Porto Alegre 08:00 / Congonhas 09:35 (voo direto)\n\n💰 R$ 773,37 para 01 adulto\n✅ Só mala de mão incluída\n🏷️ Não reembolsável"
+    },
+    "aereo_ida_volta_conexao_detalhada": {
+      "nome": "Aéreo com Conexão Detalhada",
+      "template": "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoConexao} {horaChegadaConexao} (voo direto)\n(conexão em {cidadeConexao} - {tempoEspera} de espera)\n{dataIda} - {aeroportoConexao} {horaSaidaConexao} / {aeroportoDestino} {horaChegadaIda} (voo direto)\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 R$ {valorTotal} para {passageiros}\n💳 {parcelamento}\n✅ {bagagem}\n🏷️ {reembolso}\n🔗 {link}"
+    },
+    "aereo_somente_ida": {
+      "nome": "Aéreo Somente Ida",
+      "template": "*{companhia}*\n{data} - {origem} {horaSaida} / {destino} {horaChegada} ({tipoVoo})\n\n💰 Valor total para {passageiros} = {valor}\nValores sujeitos a confirmação e disponibilidade\nInclui taxas de embarque\nInclui 1 item pessoal + 01 mala de mão de 10kg por pessoa\n{reembolso}\n\n⚠️ Passagem somente de ida - sem retorno incluído"
+    },
+    "aereo_multiplas_opcoes_2": {
+      "nome": "Múltiplas Opções - 2 Planos",
+      "template": "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 **OPÇÃO 1** - R$ {valor1}\n✅ Só mala de mão incluída\n💳 {parcelamento1}\n🔗 {link1}\n\n💰 **OPÇÃO 2** - R$ {valor2}\n✅ Mala de mão + bagagem despachada\n✅ Cancelamento/alteração com multas\n✅ Reembolsável conforme regras do bilhete\n💳 {parcelamento2}\n🔗 {link2}\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    "aereo_multiplas_opcoes_3": {
+      "nome": "Múltiplas Opções - 3 Planos",
+      "template": "*{companhia} - {origem} ✈ {destino}*\n{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {aeroportoDestinoVolta} {horaVolta} / {aeroportoOrigemVolta} {horaChegadaVolta} ({tipoVooVolta})\n\n💰 **OPÇÃO 1** - R$ {valor1}\n✅ Só mala de mão incluída\n\n💰 **OPÇÃO 2** - R$ {valor2}\n✅ Mala de mão + bagagem despachada\n✅ Cancelamento/alteração com multas\n\n💰 **OPÇÃO 3** - R$ {valor3}\n✅ Mala de mão + 2 bagagens despachadas\n✅ Cancelamento/alteração com multas\n✅ Reembolsável conforme regras do bilhete\n✅ Marcação de assento\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    "multitrecho": {
+      "nome": "Multitrecho",
+      "template": "*Multitrecho - {companhias}*\n{dataInicio} a {dataFim} ({dias} dias e {noites} noites)\n\n*Trecho 1:* {origem1} → {destino1}\n{data1} - {aeroporto1} {hora1} / {aeroportoChegada1} {horaChegada1} ({tipoVoo1})\n\n*Trecho 2:* {origem2} → {destino2}\n{data2} - {aeroporto2} {hora2} / {aeroportoChegada2} {horaChegada2} ({tipoVoo2})\n\n*Trecho 3:* {origem3} → {destino3}\n{data3} - {aeroporto3} {hora3} / {aeroportoChegada3} {horaChegada3} ({tipoVoo3})\n\n💰 R$ {valorTotal} para {passageiros}\n💳 {parcelamento}\n✅ {bagagem}\n🏷️ {reembolso}\n🔗 {link}\n\nValores sujeitos a confirmação e disponibilidade"
+    },
+    "multiplas_companhias_internacionais": {
+      "nome": "Múltiplas Companhias Internacionais",
+      "template": "*OPÇÃO 1 - {companhia1} - {origem} ✈ {destino}*\n{dataIda1} - {aeroportoOrigem1} {horaIda1} / {aeroportoDestino1} {horaChegada1} ({tipoVoo1})\n--\n{dataVolta1} - {aeroportoVolta1} {horaVolta1} / {aeroportoChegadaVolta1} {horaChegadaVolta1} ({tipoVooVolta1})\n\n💰 R$ {valor1} para {passageiros}\n💳 {parcelamento1}\n🔗 {link1}\n\n*OPÇÃO 2 - {companhia2} - {origem} ✈ {destino}*\n{dataIda2} - {aeroportoOrigem2} {horaIda2} / {aeroportoDestino2} {horaChegada2} ({tipoVoo2})\n--\n{dataVolta2} - {aeroportoVolta2} {horaVolta2} / {aeroportoChegadaVolta2} {horaChegadaVolta2} ({tipoVooVolta2})\n\n💰 R$ {valor2} para {passageiros}\n💳 {parcelamento2}\n🔗 {link2}\n\n🏷️ {reembolso}\nValores sujeitos a confirmação e disponibilidade"
+    },
+    "pacote_completo": {
+      "nome": "Pacote Completo (Aéreo + Hotel)",
+      "template": "*Pacote {destino}*\nEmbarque: {dataEmbarque}\nPacote para {passageiros}\n\n*O Pacote Inclui:*\n- Passagem Aérea ida e volta para {destino}\n- Taxas de Embarque\n- Traslado {tipoTraslado}\n{passeios}- {noites} noites de hospedagem no hotel escolhido\n\n✈️ *Voos {companhia}:*\n{dataIda} - {origem} {horaIda} / {destino} {horaChegadaIda} ({tipoVooIda})\n--\n{dataVolta} - {destino} {horaVolta} / {origem} {horaChegadaVolta} ({tipoVooVolta})\n\n{opcoesHoteis}\n\nValores sujeitos a confirmação e disponibilidade",
+      "template_hotel": "**OPÇÃO {numero}** - {nomeHotel}{categoria}\n{endereco}🛏️ {tipoQuarto} com {regime}\n{reembolsavel}💰 R$ {valor} para {passageiros}\n🔗 {link}"
+    },
+    "cruzeiro": {
+      "nome": "Cruzeiro",
+      "template": "🚢 *Cruzeiro {nomeNavio}* – {duracao} noites\n{passageiros}\n📅 Embarque: {dataEmbarque} ({diaSemana})\n📍 Saída e chegada: {porto}\n🌊 Roteiro incrível pelo litoral brasileiro!\n\n💥 Tarifas disponíveis!\n(Sujeita à confirmação de cabine e categoria)\n\n🛏 Opções de Cabines:\n{opcoesCabines}\n\n📎 Link para ver fotos, detalhes e reservar:\n{link}\n\n✅ Inclui: hospedagem a bordo, pensão completa\n🚫 Não inclui: taxas, bebidas, excursões\n\n📲 Me chama pra garantir a sua cabine! 🌴🛳️"
+    }
+  },
+  "regras": {
+    "passageiros": {
+      "formato_adultos": "{numero} adulto{plural}",
+      "formato_criancas": "{numero} criança{plural}",
+      "formato_com_idade": "{numero} criança{plural} ({idades})",
+      "usar_zero_esquerda": true,
+      "exemplos": [
+        "01 adulto",
+        "02 adultos",
+        "02 adultos + 01 criança",
+        "02 adultos + 01 criança (05 anos)",
+        "02 adultos + 02 crianças (05 e 07 anos)"
+      ]
+    },
+    "valores": {
+      "formato": "R$ {valor}",
+      "separador_decimal": ",",
+      "separador_milhar": ".",
+      "exemplo": "R$ 1.464,02"
+    },
+    "parcelamento": {
+      "formato_simples": "{parcelas}x de R$ {valor} s/ juros no cartão",
+      "formato_com_entrada": "Parcelamento em até {parcelas}x sem juros no cartão, sendo a primeira parcela de R$ {entrada} + {restante}x de R$ {valor} s/ juros",
+      "nunca_usar_palavra_entrada": true
+    },
+    "datas": {
+      "formato": "DD/MM",
+      "chegada_dia_seguinte": "HH:MM (DD/MM)",
+      "exemplo": "15/11",
+      "exemplo_dia_seguinte": "00:15 (16/12)"
+    },
+    "horarios": {
+      "formato": "HH:MM",
+      "sempre_24h": true,
+      "sem_espacos": true,
+      "exemplo": "06:20"
+    },
+    "bagagem": {
+      "opcao1": "Só mala de mão incluída",
+      "opcao2": "Mala de mão + bagagem despachada",
+      "opcao3": "Mala de mão + 2 bagagens despachadas",
+      "internacional": "Mala de mão + bagagem despachada 23kg"
+    },
+    "reembolso": {
+      "reembolsavel": "Reembolsável conforme regras do bilhete",
+      "nao_reembolsavel": "Não reembolsável",
+      "nunca_usar_percentual": true
+    }
+  },
+  "deteccao_automatica": {
+    "identificar_tipo": {
+      "somente_ida": ["sem volta", "apenas ida", "one way", "somente ida"],
+      "ida_volta": ["ida e volta", "round trip", "retorno"],
+      "multitrecho": ["multitrecho", "múltiplos trechos", "stopover"],
+      "conexao": ["com conexão", "escala", "parada"],
+      "direto": ["voo direto", "sem escala", "non-stop"]
+    },
+    "identificar_layout": {
+      "multiplas_opcoes": ["OPÇÃO 1", "OPÇÃO 2", "Plano 1", "Plano 2"],
+      "pacote": ["O Pacote Inclui", "noites de hospedagem", "traslado"],
+      "cruzeiro": ["cruzeiro", "navio", "cabine", "embarque marítimo"]
+    }
+  },
+  "informacoes_fixas": {
+    "aviso_valores": "Valores sujeitos a confirmação e disponibilidade"
+  }
+}
