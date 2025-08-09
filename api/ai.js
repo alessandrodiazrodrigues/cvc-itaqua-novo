@@ -141,6 +141,9 @@ Consultor: Jorge - CVC Itaquá
 ⏰ **Válido por 24h**`;
       }
 
+      // Definir conteudoPrincipal para todos os casos
+      const conteudoPrincipal = observacoes || textoColado || '';
+      
       // Escolher modelo baseado na complexidade
       const useClaudeFor = imagemBase64 || pdfContent || 
                           (conteudoPrincipal && conteudoPrincipal.length > 500);
