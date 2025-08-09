@@ -17,11 +17,20 @@ export default async function handler(req, res) {
   
   // GET - Status da API
   if (req.method === 'GET') {
+    // Verificar variáveis de ambiente (modo debug)
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+    
     return res.status(200).json({
       success: true,
       status: 'online',
       version: '2.0-simplificado',
-      message: 'CVC Itaqua v2.0 - Manual Google Docs'
+      message: 'CVC Itaqua v2.0 - Manual Google Docs',
+      config: {
+        openai: hasOpenAI ? 'Configurada ✅' : 'Não configurada ❌',
+        anthropic: hasAnthropic ? 'Configurada ✅' : 'Não configurada ❌',
+        envVars: Object.keys(process.env).filter(k => k.includes('_API_') || k.includes('OPENAI') || k.includes('ANTHROPIC')).map(k => k + ': ' + (process.env[k] ? '✅' : '❌'))
+      }
     });
   }
   
@@ -200,8 +209,13 @@ Consultor: Jorge - CVC Itaquá
         // Usar GPT-4o-mini para casos simples
         const OPENAI_KEY = process.env.OPENAI_API_KEY;
         
+        // Debug para verificar se a chave existe
+        console.log('🔑 Verificando OPENAI_API_KEY:', OPENAI_KEY ? 'Encontrada' : 'NÃO encontrada');
+        console.log('🔑 Primeiros chars:', OPENAI_KEY ? OPENAI_KEY.substring(0, 7) + '...' : 'N/A');
+        
         if (!OPENAI_KEY) {
-          throw new Error('OpenAI API key não configurada');
+          console.error('❌ Variáveis de ambiente disponíveis:', Object.keys(process.env).filter(k => k.includes('API')));
+          throw new Error('OpenAI API key não configurada. Verifique OPENAI_API_KEY no Vercel.');
         }
         
         const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
