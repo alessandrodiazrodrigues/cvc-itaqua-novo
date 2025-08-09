@@ -199,7 +199,7 @@
         }
         
         .textarea-large {
-            min-height: 120px;
+            min-height: 280px;
             resize: vertical;
         }
         
@@ -585,16 +585,30 @@
                                         <input type="checkbox" id="multitrecho" name="tipos" value="Multitrechos">
                                         <label for="multitrecho">🛤️ Multitrechos</label>
                                     </div>
-                                    <div class="checkbox-item" data-value="Rankings">
-                                        <input type="checkbox" id="ranking" name="tipos" value="Rankings">
-                                        <label for="ranking">🏆 Rankings</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Dicas">
-                                        <input type="checkbox" id="dicas" name="tipos" value="Dicas">
-                                        <label for="dicas">💡 Dicas</label>
-                                    </div>
                                 </div>
                                 <small class="text-muted">Selecione pelo menos um tipo de serviço</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-credit-card"></i>
+                                    Opções de Parcelamento (opcional)
+                                </label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item" data-value="10x">
+                                        <input type="checkbox" id="parc10" name="parcelamento" value="10x">
+                                        <label for="parc10">💳 10x sem juros</label>
+                                    </div>
+                                    <div class="checkbox-item" data-value="12x">
+                                        <input type="checkbox" id="parc12" name="parcelamento" value="12x">
+                                        <label for="parc12">💳 12x sem juros</label>
+                                    </div>
+                                    <div class="checkbox-item" data-value="15x">
+                                        <input type="checkbox" id="parc15" name="parcelamento" value="15x">
+                                        <label for="parc15">💳 15x sem juros</label>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Selecione apenas se houver parcelamento disponível</small>
                             </div>
                             
                             <div class="form-group">
@@ -1123,6 +1137,12 @@
                 tipos.push(checkbox.value);
             });
             
+            // Coletar parcelamento selecionado
+            let parcelamento = null;
+            document.querySelectorAll('input[name="parcelamento"]:checked').forEach(checkbox => {
+                parcelamento = checkbox.value;
+            });
+            
             // Coletar idades das crianças
             const idadesCriancas = [];
             for (let i = 1; i <= criancas; i++) {
@@ -1140,6 +1160,7 @@
                 criancas,
                 idadesCriancas,
                 tipos,
+                parcelamento,
                 imagemBase64: estadoGlobal.imagemBase64
             };
             
