@@ -139,36 +139,78 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
+        const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
+        
+        // Tentar extrair o período da viagem do orçamento
+        const periodoViagem = conteudoPrincipal ? `
+        IMPORTANTE: Analise o orçamento e identifique o período da viagem (mês/data).
+        Se encontrar, foque as dicas NESSE PERÍODO ESPECÍFICO.` : '';
+        
+        // Detectar se há crianças na viagem
+        const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || conteudoPrincipal.toLowerCase().includes('crianças');
+        const dicasCriancas = temCriancas ? `
+        ATENÇÃO: Esta viagem inclui CRIANÇAS! 
+        Adapte TODAS as dicas para famílias com crianças.
+        Inclua atrações infantis, restaurantes family-friendly, cuidados especiais.` : '';
+        
         prompt = `Você é um especialista em viagens da CVC Itaqua. 
         Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
+        ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
+        ${periodoViagem}
+        ${dicasCriancas}
         
         Use este formato EXATO:
         
-        🌟 DICAS SOBRE [DESTINO] 🌟
+        🌟 DICAS SOBRE [DESTINO] ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
         
-        📍 MELHOR ÉPOCA PARA VISITAR:
-        [Informação sobre clima e temporadas]
+        📅 SOBRE SUA VIAGEM EM [MÊS/PERÍODO]:
+        [O que esperar do clima e o que aproveitar NESTE período específico da viagem]
+        [Eventos ou atrações especiais deste período]
+        ${temCriancas ? '[Mencione atividades ideais para crianças neste período]' : ''}
+        
+        ${temCriancas ? `👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS COM CRIANÇAS:
+        [Atrações específicas para crianças]
+        [Horários mais adequados para passeios com pequenos]
+        [Restaurantes com área kids ou menu infantil]
+        [Cuidados especiais com sol, hidratação e descanso]
+        ` : ''}
         
         💰 DICAS DE ECONOMIA:
-        [3-4 dicas para economizar]
+        [3-4 dicas práticas - NÃO mencionar comprar pela internet]
+        ${temCriancas ? '[Mencione gratuidades ou descontos para crianças]' : ''}
+        [Mencionar vantagens dos pacotes CVC]
         
         🍽️ GASTRONOMIA LOCAL:
-        [Pratos típicos e onde comer]
+        [Pratos típicos que vale a pena experimentar]
+        ${temCriancas ? '[Indicar pratos que crianças costumam gostar]' : ''}
+        [Restaurantes parceiros CVC com desconto, se aplicável]
         
         🎯 PRINCIPAIS ATRAÇÕES:
         [Top 5 lugares imperdíveis]
+        ${temCriancas ? '[Destacar quais são mais adequadas para crianças]' : ''}
+        [Mencionar que a CVC vende todos os passeios com segurança]
         
-        💡 DICAS IMPORTANTES:
-        [Documentação, moeda, fuso horário, etc.]
+        💡 DOCUMENTAÇÃO NECESSÁRIA:
+        ${isNacional ? 
+        `RG original em bom estado (máximo 10 anos) ou CNH válida.${temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original. Menores desacompanhados de um dos pais precisam de autorização judicial com firma reconhecida.' : ''}` : 
+        `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório. Menores precisam de autorização de ambos os pais se viajarem desacompanhados de um deles.' : ''}`}
         
         🚕 TRANSPORTE:
-        [Como se locomover na cidade]
+        [Como se locomover - destacar transfers CVC disponíveis]
+        ${temCriancas ? '[Mencionar necessidade de cadeirinha/assento infantil]' : ''}
         
-        🛍️ COMPRAS:
-        [O que comprar e onde]
+        🎁 O QUE TRAZER:
+        [Sugestões de lembrancinhas típicas]
+        ${temCriancas ? '[Sugestões de presentes infantis locais]' : ''}
         
-        ⚠️ CUIDADOS:
-        [Avisos de segurança e saúde]`;
+        📌 OUTRAS ÉPOCAS DO ANO:
+        [Breve menção sobre o que muda em outras estações]
+        
+        ⚠️ DICAS DE SEGURANÇA:
+        [Cuidados básicos com pertences e saúde]
+        ${temCriancas ? '[Atenção especial: pulseiras de identificação, protetor solar infantil, repelente adequado]' : ''}
+        
+        📞 IMPORTANTE: A CVC Itaqua oferece todos os passeios com receptivos locais confiáveis, transfers seguros${temCriancas ? ', cadeirinhas para crianças' : ''} e assistência 24h durante sua viagem!`;
       }
       // ================================================================================
       // 🏆 PROMPT PARA RANKING
@@ -319,8 +361,12 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **PARCELAMENTO - REGRAS IMPORTANTES:**
 - COM ENTRADA: "Em até Xx sem juros no cartão, sendo a primeira de R$ xxx + (X-1)x de R$ xxx"
-- Exemplo: "Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73"
-- NUNCA usar a palavra "Entrada", sempre "primeira parcela" ou "sendo a primeira"
+- CÁLCULO DO TOTAL: Se tem "Entrada de R$ X + Yx", o total de parcelas é Y+1
+- Exemplos corretos:
+  * "Entrada de R$ 1.288,99 + 9x de R$ 576,73" → "Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73"
+  * "Entrada de R$ 225,72 + 8x de R$ 77,53" → "Em até 9x sem juros no cartão, sendo a primeira de R$ 225,72 + 8x de R$ 77,53"
+  * "Entrada de R$ 500,00 + 11x de R$ 100,00" → "Em até 12x sem juros no cartão, sendo a primeira de R$ 500,00 + 11x de R$ 100,00"
+- NUNCA usar a palavra "Entrada" no resultado final, sempre "primeira parcela" ou "sendo a primeira"
 - SEM ENTRADA: "10x de R$ xxx s/ juros no cartão"
 
 **CASOS ESPECIAIS:**
