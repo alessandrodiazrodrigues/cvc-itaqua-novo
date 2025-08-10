@@ -829,6 +829,12 @@ ${tabelaAeroportos}
       // ================================================================================
       console.log('✅ Processamento concluído com', iaUsada);
       
+      // Debug: mostrar resposta completa no console para análise
+      if (imagemBase64) {
+        console.log('📋 RESPOSTA COMPLETA DA IMAGEM:');
+        console.log(resultado);
+      }
+      
       return res.status(200).json({
         success: true,
         result: resultado,
