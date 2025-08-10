@@ -326,47 +326,42 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
-        // Guardar o último destino processado
-        let destinoParaDicas = '';
+        // Extrair destino do conteúdo de forma inteligente
+        let destinoReal = '';
         
-        // Tentar extrair destino do último orçamento gerado
-        const ultimoOrcamento = req.body.ultimoOrcamento || '';
-        
-        // Procurar por cidades no conteúdo ou no último orçamento
-        const textoParaBusca = ultimoOrcamento || conteudoPrincipal || destino || '';
-        
-        // Lista de cidades para buscar
-        const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
-                                 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
-                                 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
-                                 'Búzios', 'Ilhéus', 'Santos', 'Porto Seguro', 'Angra dos Reis', 
-                                 'Cabo Frio', 'Paraty', 'Arraial do Cabo'];
-        
-        // Buscar cidade no texto
-        for (const cidade of cidadesNacionais) {
-          if (textoParaBusca.includes(cidade)) {
-            destinoParaDicas = cidade;
-            break;
-          }
+        // Primeiro, tentar o campo destino do HTML
+        if (destino && destino !== 'Destino' && destino !== '') {
+          destinoReal = destino;
         }
         
-        // Se não encontrou, usar destino do campo HTML ou genérico
-        if (!destinoParaDicas) {
-          destinoParaDicas = destino || 'o destino';
+        // Se não tem no campo, pedir para IA extrair do conteúdo
+        if (!destinoReal) {
+          // A IA vai identificar o destino do texto/imagem
+          destinoReal = 'EXTRAIR_DO_CONTEUDO';
         }
         
-        const isCruzeiro = textoParaBusca.toLowerCase().includes('msc') || 
-                          textoParaBusca.toLowerCase().includes('cruzeiro');
+        const temCriancas = conteudoPrincipal.toLowerCase().includes('criança') || 
+                          conteudoPrincipal.toLowerCase().includes('crianças');
+        
+        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('msc') || 
+                          conteudoPrincipal.toLowerCase().includes('cruzeiro');
         
         prompt = `Você é um especialista em viagens da CVC Itaqua.
         
-        ${destinoParaDicas === 'o destino' ? 
-        'ATENÇÃO: Não foi possível identificar o destino específico.' :
-        `Crie dicas ESPECÍFICAS para ${destinoParaDicas}.`}
+        ${destinoReal === 'EXTRAIR_DO_CONTEUDO' ? 
+        `PRIMEIRO: Identifique o destino mencionado no conteúdo abaixo.
+        DEPOIS: Crie dicas específicas para esse destino.
+        
+        Se não conseguir identificar o destino, crie dicas gerais de viagem.` :
+        `Crie dicas ESPECÍFICAS para ${destinoReal}.`}
         
         ${isCruzeiro ? 
-        'Este é um CRUZEIRO. Foque em dicas de vida a bordo, cabines, refeições.' :
-        `Foque em dicas práticas sobre ${destinoParaDicas}.`}
+        'Este é um CRUZEIRO. Foque em dicas de vida a bordo, cabines, refeições.' : ''}
+        
+        ${temCriancas ? 'A viagem inclui CRIANÇAS. Adapte as dicas para famílias.' : ''}
+        
+        CONTEÚDO PARA ANÁLISE:
+        ${conteudoPrincipal}
         
         Use este formato EXATO:
         
@@ -465,37 +460,35 @@ export default async function handler(req, res) {
       // 🏆 PROMPT PARA RANKING
       // ================================================================================
       else if (isRanking) {
-        // Tentar detectar destino do último orçamento
-        let destinoRanking = destino || '';
+        // Extrair destino de forma inteligente
+        let destinoRanking = '';
         
-        // Buscar cidade no conteúdo
-        const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
-                                 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
-                                 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
-                                 'Búzios', 'Ilhéus', 'Santos', 'Porto Seguro', 'Angra dos Reis'];
-        
-        for (const cidade of cidadesNacionais) {
-          if (conteudoPrincipal.includes(cidade)) {
-            destinoRanking = cidade;
-            break;
-          }
+        // Primeiro, tentar o campo destino do HTML
+        if (destino && destino !== 'Destino' && destino !== '') {
+          destinoRanking = destino;
         }
         
-        // Se não encontrou, NÃO inventar
+        // Se não tem no campo, pedir para IA extrair
         if (!destinoRanking) {
-          destinoRanking = 'o destino escolhido';
+          destinoRanking = 'EXTRAIR_DO_CONTEUDO';
         }
         
         prompt = `Você é um especialista em hotéis da CVC Itaqua.
         
-        ${destinoRanking === 'o destino escolhido' ?
-        'ATENÇÃO: Não foi identificado um destino específico. Use exemplos genéricos.' :
+        ${destinoRanking === 'EXTRAIR_DO_CONTEUDO' ?
+        `PRIMEIRO: Identifique o destino/cidade mencionado no conteúdo abaixo.
+        DEPOIS: Crie um ranking dos TOP 5 hotéis REAIS dessa cidade.
+        
+        Se não conseguir identificar a cidade, liste os TOP 5 destinos mais procurados do Brasil.` :
         `Crie um ranking dos TOP 5 hotéis REAIS em ${destinoRanking}.`}
         
-        IMPORTANTE: 
-        - Use apenas hotéis que REALMENTE EXISTEM na cidade
-        - Se não souber hotéis reais, diga que precisa de mais informações
-        - NUNCA invente nomes de hotéis
+        IMPORTANTE:
+        - Use apenas hotéis que REALMENTE EXISTEM
+        - Inclua variedade de categorias (luxo, médio, econômico)
+        - Se não conhecer hotéis da cidade, seja honesto
+        
+        CONTEÚDO PARA ANÁLISE:
+        ${conteudoPrincipal}
         
         Use este formato EXATO:
         
