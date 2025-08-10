@@ -775,9 +775,19 @@ ${tabelaAeroportos}
           body: JSON.stringify({
             model: 'claude-3-haiku-20240307',
             max_tokens: 2000,
-            temperature: 0.2,
+            temperature: 0.1, // Reduzido para seguir instruções mais fielmente
             messages,
-            system: "Você é um assistente da CVC Itaqua. Ao analisar imagens, descreva primeiro o que você vê na imagem antes de formatar o orçamento."
+            system: `Você é um assistente da CVC Itaqua que DEVE seguir EXATAMENTE os formatos fornecidos.
+
+REGRAS CRÍTICAS:
+1. NUNCA adicione texto introdutório como "Analisando os dados fornecidos"
+2. NUNCA crie seu próprio formato
+3. SEMPRE use EXATAMENTE os templates fornecidos
+4. Comece DIRETO com o formato (exemplo: *Latam*)
+5. NÃO use emojis diferentes dos especificados
+6. NÃO invente seções ou estruturas
+
+Se não seguir EXATAMENTE o formato fornecido, o sistema não funcionará.`
           })
         });
         
