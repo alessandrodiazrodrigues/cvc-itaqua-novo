@@ -310,8 +310,12 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
 5. PASSAGEIROS: "02 adultos" (zero à esquerda)
 6. SEPARADOR IDA/VOLTA: Sempre usar "--"
-7. LINKS: Se houver URL no texto, adicionar linha: "🔗 [URL]"
-8. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
+7. LINKS: Se houver URL no texto, adicionar linha: 🔗 URL (SEM colchetes)
+8. BAGAGEM: SEMPRE incluir informação de bagagem:
+   - Padrão (quando não informado): "✅ Inclui 1 item pessoal + 1 mala de mão 10kg"
+   - Com despachada: "✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 1 mala despachada 23kg"
+   - Internacional específico: Seguir o que estiver descrito
+9. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
 
 **PARCELAMENTO - REGRAS IMPORTANTES:**
 - COM ENTRADA: "Em até Xx sem juros no cartão, sendo a primeira de R$ xxx + (X-1)x de R$ xxx"
@@ -323,24 +327,28 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - Crianças: idade em ANOS (2-11 anos)
 - Bebês: idade em MESES (0-23 meses)
 - Chegada dia seguinte: "23:30 (15/11)"
-- Links: Procurar por URLs começando com http/https e incluir
+- Múltiplos voos: Cada um pode ter seu próprio link e parcelamento
 
 **INSTRUÇÃO FINAL:**
 - Use EXATAMENTE o formato do template escolhido
 - NÃO invente informações não fornecidas
 - MANTENHA todos os emojis do template
+- SEMPRE inclua informação de bagagem (se não houver, use o padrão)
 - Responda APENAS com o orçamento formatado, sem explicações adicionais
 
-**EXEMPLO DE MÚLTIPLOS VOOS (IMPORTANTE):**
-Se receber 2 voos diferentes, formate assim:
+**EXEMPLO DE MÚLTIPLOS VOOS COM TODOS OS DETALHES:**
+Se receber 2 voos diferentes com parcelamento e links, formate assim:
 
 *OPÇÃO 1 - Latam*
 29/12 - Guarulhos 12:15 / Santos Dumont 13:15 (voo direto)
 --
 04/01 - Galeão 14:00 / Guarulhos 15:10 (voo direto)
 
-💰 R$ 6.041,10 para 01 adulto
+💰 R$ 6.479,56 para 01 adulto
+✅ Inclui 1 item pessoal + 1 mala de mão 10kg
+💳 Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73
 🏷️ Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/68989c87bd7224e8db4acfb6
 
 *OPÇÃO 2 - Latam*
 18/09 - Salvador 05:00 / Galeão 07:10 (voo direto)
@@ -348,7 +356,10 @@ Se receber 2 voos diferentes, formate assim:
 25/09 - Galeão 22:30 / Salvador 00:30 (voo direto)
 
 💰 R$ 845,96 para 01 adulto
+✅ Inclui 1 item pessoal + 1 mala de mão 10kg
+💳 Em até 9x sem juros no cartão, sendo a primeira de R$ 225,72 + 8x de R$ 77,53
 🏷️ Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/68989d6121c4f74e9d1e9fd5
 
 Valores sujeitos a confirmação e disponibilidade`;
       }
