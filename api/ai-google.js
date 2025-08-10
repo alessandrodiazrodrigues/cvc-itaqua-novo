@@ -333,38 +333,31 @@ export default async function handler(req, res) {
                                  'Búzios', 'Ilhéus', 'Santos', 'Angra dos Reis', 'Cabo Frio',
                                  'Paraty', 'Porto Seguro', 'Arraial do Cabo'];
         
-        // Tentar detectar o destino real do orçamento
-        let destinoReal = destino || '';
+        // Sempre tentar detectar o destino real
+        let destinoReal = '';
         
-        // Se for cruzeiro, pegar o porto de embarque ou os destinos do roteiro
-        if (conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
-            conteudoPrincipal.toLowerCase().includes('msc') || 
-            conteudoPrincipal.toLowerCase().includes('embarque')) {
+        // PRIORIDADE: Se for cruzeiro MSC
+        if (conteudoPrincipal.toLowerCase().includes('msc') || 
+            conteudoPrincipal.toLowerCase().includes('cruzeiro')) {
+          destinoReal = 'Cruzeiro MSC pelo litoral brasileiro';
           
-          // Tentar extrair porto de embarque
-          const embarqueMatch = conteudoPrincipal.match(/embarque:\s*([^,\n]+)/i);
-          if (embarqueMatch) {
-            destinoReal = embarqueMatch[1].trim();
-            
-            // Se for cruzeiro, focar nas dicas do roteiro completo
-            const roteiros = [];
-            const buziosMatch = conteudoPrincipal.match(/búzios/i);
-            const salvadorMatch = conteudoPrincipal.match(/salvador/i);
-            const ilheusMatch = conteudoPrincipal.match(/ilhéus/i);
-            
-            if (buziosMatch) roteiros.push('Búzios');
-            if (salvadorMatch) roteiros.push('Salvador');
-            if (ilheusMatch) roteiros.push('Ilhéus');
-            
-            if (roteiros.length > 0) {
-              destinoReal = `Cruzeiro pelo litoral brasileiro com paradas em ${roteiros.join(', ')}`;
-            }
+          // Detectar os portos específicos
+          const portos = [];
+          if (conteudoPrincipal.includes('Búzios')) portos.push('Búzios');
+          if (conteudoPrincipal.includes('Salvador')) portos.push('Salvador');
+          if (conteudoPrincipal.includes('Ilhéus')) portos.push('Ilhéus');
+          if (conteudoPrincipal.includes('Rio de Janeiro')) portos.push('Rio de Janeiro');
+          
+          if (portos.length > 0) {
+            destinoReal = `Cruzeiro MSC com paradas em ${portos.join(', ')}`;
           }
+        } 
+        // Se não for cruzeiro, usar o destino fornecido
+        else if (destino) {
+          destinoReal = destino;
         }
-        
-        // Se ainda não tem destino, tentar extrair do conteúdo
-        if (!destinoReal && conteudoPrincipal) {
-          // Procurar por cidades conhecidas no texto
+        // Tentar extrair do conteúdo
+        else {
           for (const cidade of cidadesNacionais) {
             if (conteudoPrincipal.includes(cidade)) {
               destinoReal = cidade;
@@ -373,32 +366,23 @@ export default async function handler(req, res) {
           }
         }
         
-        const isNacional = destinoReal && cidadesNacionais.some(cidade => destinoReal.includes(cidade));
-        const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || 
-                          conteudoPrincipal.toLowerCase().includes('crianças') ||
-                          conteudoPrincipal.toLowerCase().includes('chd');
+        const isNacional = true; // Forçar nacional para cruzeiros brasileiros
+        const temCriancas = conteudoPrincipal.includes('criança') || 
+                          conteudoPrincipal.includes('2 e 12 anos');
         
-        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
-                          conteudoPrincipal.toLowerCase().includes('msc');
+        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('msc') || 
+                          conteudoPrincipal.toLowerCase().includes('cruzeiro');
         
         prompt = `Você é um especialista em viagens da CVC Itaqua. 
         ${isCruzeiro ? 
-        `Este é um CRUZEIRO MSC saindo do ${destinoReal || 'Brasil'}. 
-        NÃO gere dicas sobre Paris ou outros destinos aleatórios!
-        Crie dicas ESPECÍFICAS para este cruzeiro com paradas em ${destinoReal}.
-        Foque em:
-        - Vida a bordo do MSC Armonia
-        - Como funcionam as refeições (self-service e à la carte)
-        - Diferença entre cabines (interna, externa, varanda)
-        - O que levar na mala para cruzeiro
-        - Dicas sobre Búzios, Salvador e Ilhéus
-        - Como economizar a bordo
-        - Documentação para cruzeiro nacional` :
-        `Crie dicas práticas e úteis sobre ${destinoReal || 'o destino'}.`}
-        ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
-        ${temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS (2 e 12 anos)! Adapte TODAS as dicas para famílias com crianças.' : ''}
+        `Este é um CRUZEIRO MSC ARMONIA pelo litoral brasileiro.
+        IMPORTANTE: NÃO fale sobre Paris, Tóquio ou qualquer outro destino!
         
-        IMPORTANTE: NÃO gere dicas sobre Paris, Europa ou qualquer outro destino que não seja o mencionado acima!
+        Crie dicas ESPECÍFICAS para este cruzeiro com paradas em Búzios, Salvador e Ilhéus.
+        
+        Use EXATAMENTE este formato:` :
+        `Crie dicas práticas sobre ${destinoReal}.
+        Use este formato:`}
         
         Use este formato EXATO:
         
