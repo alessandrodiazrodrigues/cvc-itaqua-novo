@@ -317,19 +317,12 @@ ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
 **ANÁLISE PRIORITÁRIA:**
 
 1. **CRUZEIRO**
-   - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa", "noites•", "Embarque:", "Desembarque:", "Em navegação"
-   - FORMATO OBRIGATÓRIO:
-     * Título: 🚢 *Cruzeiro [Nome do Navio]* – X noites
-     * INCLUIR ROTEIRO DIA A DIA (MUITO IMPORTANTE!)
-     * Formato do roteiro:
-       Dia 1 (DD/MM) - [Porto] - Saída HH:MM
-       Dia 2 (DD/MM) - [Destino] - HH:MM às HH:MM
-       Dia 3 (DD/MM) - [Destino] - HH:MM às HH:MM
-       Dia 4 (DD/MM) - Em navegação
-       Dia 5 (DD/MM) - [Porto] - Chegada HH:MM
-     * Listar TODAS as categorias de cabines
-     * Usar valores totais com taxas
-     * Incluir link original
+   - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa", "noites•", "Embarque:", "Desembarque:"
+   - REGRAS CRÍTICAS:
+     * NUNCA INVENTE ROTEIRO - só inclua se houver itinerário nos dados
+     * NUNCA INVENTE CABINES - só liste as que foram fornecidas
+     * Use SEMPRE o valor total fornecido (com taxas)
+     * Se houver promoção (ex: "3º E 4º GRATIS"), mencione
 
 2. **MÚLTIPLOS VOOS**
    - SE houver 2+ voos diferentes
@@ -344,36 +337,24 @@ ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
    - Título: *Companhia*
 
 // =================================================================
-// TEMPLATE ESPECÍFICO PARA CRUZEIROS
+// TEMPLATE PARA CRUZEIROS
 // =================================================================
 
-Para CRUZEIROS, use EXATAMENTE este formato:
+**FORMATO BÁSICO (SEM ROTEIRO):**
 
 🚢 *Cruzeiro [Nome do Navio]* – [X] noites
 [XX] passageiros
 📅 Embarque: [DD/MM/AAAA] ([dia da semana])
 📍 Saída e chegada: [Porto]
 
-🗺️ ROTEIRO:
-Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
-Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 4 ([DD/MM]) - Em navegação
-Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
+[SE houver promoção, adicione:]
+🎯 [TEXTO DA PROMOÇÃO]
 
 💥 Tarifas disponíveis!
 (Sujeita à confirmação de cabine e categoria)
 
 🛏 Opções de Cabines:
-
-**CABINE INTERNA** - [Categoria] ([Código])
-💰 R$ [valor total com taxas]
-
-**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
-💰 R$ [valor total com taxas]
-
-**CABINE COM VARANDA** - [Categoria] ([Código])
-💰 R$ [valor total com taxas]
+[LISTAR APENAS AS CABINES FORNECIDAS COM VALORES TOTAIS]
 
 🔗 [link]
 
@@ -382,6 +363,39 @@ Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
 📲 Me chama pra garantir a sua cabine! 🌴🛳️
 
 Valores sujeitos a confirmação e disponibilidade
+
+**FORMATO COM ROTEIRO (APENAS SE FORNECIDO):**
+
+🚢 *Cruzeiro [Nome do Navio]* – [X] noites
+[XX] passageiros
+📅 Embarque: [DD/MM/AAAA] ([dia da semana])
+📍 Saída e chegada: [Porto]
+
+🗺️ ROTEIRO:
+[COPIAR EXATAMENTE O ROTEIRO FORNECIDO]
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+[LISTAR APENAS AS CABINES FORNECIDAS COM VALORES TOTAIS]
+
+🔗 [link]
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade
+
+**REGRAS ABSOLUTAS PARA CRUZEIROS:**
+1. NUNCA invente paradas/roteiro - se não houver, NÃO inclua a seção ROTEIRO
+2. NUNCA invente cabines - liste APENAS as fornecidas
+3. Use SEMPRE o "Total a pagar" como valor da cabine
+4. Se houver promoção (OFERTA RELAMPAGO, 3º E 4º GRATIS, etc), inclua após a data
+5. Para cabines fornecidas, use o formato:
+   **CABINE [TIPO]** - [Categoria] ([Código])
+   💰 R$ [valor total]
 
 // =================================================================
 // CONVERSÃO DE AEROPORTOS
