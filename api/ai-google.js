@@ -213,10 +213,69 @@ export default async function handler(req, res) {
       
       // Formatar informações de passageiros com idades
       let infoPassageiros = '';
-      if (adultos || criancas > 0) {
-        const adultosNum = parseInt(adultos) || 0;
-        const criancasNum = parseInt(criancas) || 0;
+      
+      // Primeiro verificar se há informação no conteúdo principal
+      const conteudoLower = conteudoPrincipal.toLowerCase();
+      
+      // Detectar padrões de passageiros no texto principal
+      if (conteudoLower.includes('adt') || conteudoLower.includes('chd') || conteudoLower.includes('inf')) {
+        // Extrair números de adultos
+        const adtMatch = conteudoPrincipal.match(/(\d+)\s*(?:adt|adts|adulto)/i);
+        const chdMatch = conteudoPrincipal.match(/(\d+)\s*(?:chd|chds|criança)/i);
+        const infMatch = conteudoPrincipal.match(/(\d+)\s*(?:inf|bebê)/i);
         
+        let partes = [];
+        if (adtMatch) {
+          const num = parseInt(adtMatch[1]);
+          partes.push(`${String(num).padStart(2, '0')} ${num === 1 ? 'adulto' : 'adultos'}`);
+        }
+        if (chdMatch) {
+          const num = parseInt(chdMatch[1]);
+          // Tentar extrair idades entre parênteses ou após vírgula
+          const idadesMatch = conteudoPrincipal.match(/chds?\s*[\(\[]?\s*([\d\s,e]+)\s*[\)\]]?/i);
+          let textoCriancas = `${String(num).padStart(2, '0')} ${num === 1 ? 'criança' : 'crianças'}`;
+          if (idadesMatch && idadesMatch[1]) {
+            textoCriancas += ` (${idadesMatch[1].trim()} anos)`;
+          }
+          partes.push(textoCriancas);
+        }
+        if (infMatch) {
+          const num = parseInt(infMatch[1]);
+          partes.push(`${String(num).padStart(2, '0')} ${num === 1 ? 'bebê' : 'bebês'}`);
+        }
+        
+        if (partes.length > 0) {
+          infoPassageiros = partes.join(' + ');
+        }
+      }
+      
+      // Verificar também nos campos do formulário (adultos e criancas)
+      if (!infoPassageiros) {
+        // Verificar se o campo adultos tem "adt" ou número
+        let adultosNum = 0;
+        let criancasNum = 0;
+        
+        if (adultos) {
+          // Se tem "adt" no campo adultos
+          if (adultos.toLowerCase().includes('adt')) {
+            const match = adultos.match(/(\d+)\s*(?:adt|adts)/i);
+            if (match) adultosNum = parseInt(match[1]);
+          } else if (!isNaN(parseInt(adultos))) {
+            adultosNum = parseInt(adultos);
+          }
+        }
+        
+        if (criancas) {
+          // Se tem "chd" no campo criancas
+          if (typeof criancas === 'string' && criancas.toLowerCase().includes('chd')) {
+            const match = criancas.match(/(\d+)\s*(?:chd|chds)/i);
+            if (match) criancasNum = parseInt(match[1]);
+          } else if (!isNaN(parseInt(criancas))) {
+            criancasNum = parseInt(criancas);
+          }
+        }
+        
+        // Montar o texto de passageiros
         let partes = [];
         if (adultosNum > 0) {
           partes.push(`${String(adultosNum).padStart(2, '0')} ${adultosNum === 1 ? 'adulto' : 'adultos'}`);
@@ -247,18 +306,141 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
-        const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
+        // Tentar detectar o destino real do orçamento
+        let destinoReal = destino || '';
         
-        const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || conteudoPrincipal.toLowerCase().includes('crianças');
+        // Se for cruzeiro, pegar o porto de embarque ou os destinos do roteiro
+        if (conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
+            conteudoPrincipal.toLowerCase().includes('msc') || 
+            conteudoPrincipal.toLowerCase().includes('embarque')) {
+          
+          // Tentar extrair porto de embarque
+          const embarqueMatch = conteudoPrincipal.match(/embarque:\s*([^,\n]+)/i);
+          if (embarqueMatch) {
+            destinoReal = embarqueMatch[1].trim();
+            
+            // Se for cruzeiro, focar nas dicas do roteiro completo
+            const roteiros = [];
+            const buziosMatch = conteudoPrincipal.match(/búzios/i);
+            const salvadorMatch = conteudoPrincipal.match(/salvador/i);
+            const ilheusMatch = conteudoPrincipal.match(/ilhéus/i);
+            
+            if (buziosMatch) roteiros.push('Búzios');
+            if (salvadorMatch) roteiros.push('Salvador');
+            if (ilheusMatch) roteiros.push('Ilhéus');
+            
+            if (roteiros.length > 0) {
+              destinoReal = `Cruzeiro pelo litoral brasileiro com paradas em ${roteiros.join(', ')}`;
+            }
+          }
+        }
+        
+        // Se ainda não tem destino, tentar extrair do conteúdo
+        if (!destinoReal && conteudoPrincipal) {
+          // Procurar por cidades conhecidas no texto
+          const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
+                                   'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
+                                   'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
+                                   'Búzios', 'Ilhéus', 'Santos'];
+          
+          for (const cidade of cidadesNacionais) {
+            if (conteudoPrincipal.includes(cidade)) {
+              destinoReal = cidade;
+              break;
+            }
+          }
+        }
+        
+        const isNacional = destinoReal && cidadesNacionais.some(cidade => destinoReal.includes(cidade));
+        const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || 
+                          conteudoPrincipal.toLowerCase().includes('crianças') ||
+                          conteudoPrincipal.toLowerCase().includes('chd');
+        
+        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
+                          conteudoPrincipal.toLowerCase().includes('msc');
         
         prompt = `Você é um especialista em viagens da CVC Itaqua. 
-        Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
+        ${isCruzeiro ? 
+        `Este é um CRUZEIRO. Crie dicas específicas para ${destinoReal || 'o cruzeiro'}.
+        Foque em:
+        - Dicas para aproveitar o navio
+        - O que levar na mala para cruzeiro
+        - Dicas sobre os destinos do roteiro
+        - Como economizar a bordo
+        - Documentação para cruzeiro nacional` :
+        `Crie dicas práticas e úteis sobre ${destinoReal || 'o destino'}.`}
         ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
         ${temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS! Adapte TODAS as dicas para famílias com crianças.' : ''}
         
         Use este formato EXATO:
         
-        🌟 DICAS SOBRE [DESTINO] ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
+        ${isCruzeiro ? 
+        `🚢 DICAS PARA SEU CRUZEIRO ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🚢
+        
+        📅 SOBRE SEU CRUZEIRO:
+        [Informações sobre a época do ano, clima nos destinos]
+        [Dicas sobre a vida a bordo]
+        ${temCriancas ? '[Atividades infantis no navio - MSC Kids Club]' : ''}
+        
+        🍽️ COMO FUNCIONAM AS REFEIÇÕES A BORDO:
+        ☕ CAFÉ DA MANHÃ: Self-service no buffet principal (geralmente das 7h às 10h)
+        🍝 ALMOÇO: Self-service no buffet com grande variedade (12h às 15h)
+        🍷 JANTAR: Duas opções incluídas:
+           • Buffet self-service (horário livre)
+           • Restaurante à la carte com serviço de mesa (dois horários: 18h30 ou 21h)
+        🍰 LANCHES: Pizza e lanches disponíveis em horários específicos
+        ⚠️ BEBIDAS: Água, suco, café e chá incluídos nas refeições principais
+        💡 DICA: Restaurantes de especialidades são pagos à parte
+        
+        🛏️ DIFERENÇA ENTRE AS CABINES:
+        📦 CABINE INTERNA:
+        - Sem janela, mais econômica
+        - Mesmos serviços e conforto
+        - Ideal para quem só usa para dormir
+        - Tamanho: aproximadamente 13m²
+        
+        🪟 CABINE EXTERNA:
+        - Com janela para o mar (não abre)
+        - Entrada de luz natural
+        - Vista do oceano
+        - Tamanho: aproximadamente 16-22m²
+        
+        🌅 CABINE COM VARANDA:
+        - Varanda privativa com cadeiras
+        - Porta de vidro que abre
+        - Perfeita para apreciar o nascer/pôr do sol
+        - Mais espaço e privacidade
+        - Tamanho: aproximadamente 16m² + varanda
+        
+        💰 DICAS DE ECONOMIA NO CRUZEIRO:
+        [Pacotes de bebidas - vale a pena?]
+        [Internet a bordo - compre pacotes, não use avulso]
+        [Excursões - compare preços do navio vs. locais]
+        [Spa e cassino - estabeleça limites]
+        
+        🧳 O QUE LEVAR NA MALA:
+        [Roupas para diferentes ocasiões no navio]
+        [Itens essenciais: protetor solar, remédio enjoo, adaptador tomada]
+        ${temCriancas ? '[Itens para crianças: boias de braço, fraldas de piscina]' : ''}
+        
+        🏝️ SOBRE OS DESTINOS DO ROTEIRO:
+        [Dicas específicas de cada parada]
+        [Tempo em cada porto - aproveite bem]
+        ${temCriancas ? '[Passeios adequados para crianças em cada parada]' : ''}
+        
+        💡 DOCUMENTAÇÃO PARA CRUZEIRO NACIONAL:
+        RG original em bom estado (menos de 10 anos) ou CNH válida
+        ${temCriancas ? 'CRIANÇAS: RG ou Certidão de Nascimento original\nMenores sem um dos pais: autorização com firma reconhecida' : ''}
+        Cartão de vacina (recomendado)
+        
+        ⚠️ DICAS IMPORTANTES:
+        ⏰ Chegue ao porto 3 horas antes do embarque
+        📱 Coloque o celular em modo avião para evitar roaming
+        💊 Leve remédios em quantidade extra
+        🚢 Participe do drill de segurança (obrigatório)
+        ${temCriancas ? '👶 Cadastre as crianças no Kids Club no primeiro dia' : ''}` :
+        
+        `🌟 DICAS SOBRE ${destinoReal || '[DESTINO]'} ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
         
         📅 SOBRE SUA VIAGEM:
         [O que esperar do clima e o que aproveitar]
@@ -279,9 +461,9 @@ export default async function handler(req, res) {
         💡 DOCUMENTAÇÃO NECESSÁRIA:
         ${isNacional ? 
         `RG original em bom estado ou CNH válida.${temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original.' : ''}` : 
-        `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório.' : ''}`}
+        `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório.' : ''}`}`}
         
-        📞 IMPORTANTE: A CVC Itaqua oferece todos os passeios com receptivos locais confiáveis!`;
+        📞 IMPORTANTE: A CVC Itaqua oferece assistência completa em todos os cruzeiros e viagens!`;
       }
       // ================================================================================
       // 🏆 PROMPT PARA RANKING
@@ -345,22 +527,33 @@ ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
 1. **CRUZEIRO**
    - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa", "noites•", "Embarque:", "Desembarque:"
    - REGRAS CRÍTICAS:
-     * NUNCA INVENTE ROTEIRO - só inclua se houver itinerário nos dados
-     * NUNCA INVENTE CABINES - só liste as que foram fornecidas
-     * Use SEMPRE o valor total fornecido (com taxas)
+     * SEMPRE inclua o ROTEIRO se houver dias com portos e horários
+     * Liste TODAS as cabines fornecidas (Interna, Externa, Varanda, etc)
+     * Use SEMPRE o valor "Total a pagar" para cada cabine
+     * Parcelamento vai JUNTO com cada cabine, não no final
      * Se houver promoção (ex: "3º E 4º GRATIS"), mencione
 
-2. **MÚLTIPLOS VOOS**
+2. **ABREVIAÇÕES DE PASSAGEIROS:**
+   - adt/adts = adulto(s)
+   - chd/chds = criança(s)
+   - inf = bebê
+   - Exemplo: "2 adts + 2 chds (2 e 10)" = "02 adultos + 02 crianças (2 e 10 anos)"
+
+3. **MÚLTIPLOS VOOS**
    - SE houver 2+ voos diferentes
    - Use: *OPÇÃO 1 - Companhia*, *OPÇÃO 2 - Companhia*
 
-3. **PACOTE COMPLETO**
+4. **PACOTE COMPLETO**
    - SE contém: "pacote" OU ("hotel" E "aéreo")
    - Use template de pacote
 
-4. **VOO SIMPLES**
+5. **VOO SIMPLES**
    - Padrão para voos únicos
    - Título: *Companhia*
+
+6. **IMAGENS DE BEBIDAS/EXTRAS**
+   - NÃO rejeite - processe normalmente o orçamento principal
+   - Mencione os extras se relevante
 
 // =================================================================
 // TEMPLATE PARA CRUZEIROS
