@@ -326,63 +326,47 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
-        // Lista de cidades nacionais para referência
+        // Guardar o último destino processado
+        let destinoParaDicas = '';
+        
+        // Tentar extrair destino do último orçamento gerado
+        const ultimoOrcamento = req.body.ultimoOrcamento || '';
+        
+        // Procurar por cidades no conteúdo ou no último orçamento
+        const textoParaBusca = ultimoOrcamento || conteudoPrincipal || destino || '';
+        
+        // Lista de cidades para buscar
         const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
                                  'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
                                  'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
-                                 'Búzios', 'Ilhéus', 'Santos', 'Angra dos Reis', 'Cabo Frio',
-                                 'Paraty', 'Porto Seguro', 'Arraial do Cabo'];
+                                 'Búzios', 'Ilhéus', 'Santos', 'Porto Seguro', 'Angra dos Reis', 
+                                 'Cabo Frio', 'Paraty', 'Arraial do Cabo'];
         
-        // Sempre tentar detectar o destino real
-        let destinoReal = '';
-        
-        // PRIORIDADE: Se for cruzeiro MSC
-        if (conteudoPrincipal.toLowerCase().includes('msc') || 
-            conteudoPrincipal.toLowerCase().includes('cruzeiro')) {
-          destinoReal = 'Cruzeiro MSC pelo litoral brasileiro';
-          
-          // Detectar os portos específicos
-          const portos = [];
-          if (conteudoPrincipal.includes('Búzios')) portos.push('Búzios');
-          if (conteudoPrincipal.includes('Salvador')) portos.push('Salvador');
-          if (conteudoPrincipal.includes('Ilhéus')) portos.push('Ilhéus');
-          if (conteudoPrincipal.includes('Rio de Janeiro')) portos.push('Rio de Janeiro');
-          
-          if (portos.length > 0) {
-            destinoReal = `Cruzeiro MSC com paradas em ${portos.join(', ')}`;
-          }
-        } 
-        // Se não for cruzeiro, usar o destino fornecido
-        else if (destino) {
-          destinoReal = destino;
-        }
-        // Tentar extrair do conteúdo
-        else {
-          for (const cidade of cidadesNacionais) {
-            if (conteudoPrincipal.includes(cidade)) {
-              destinoReal = cidade;
-              break;
-            }
+        // Buscar cidade no texto
+        for (const cidade of cidadesNacionais) {
+          if (textoParaBusca.includes(cidade)) {
+            destinoParaDicas = cidade;
+            break;
           }
         }
         
-        const isNacional = true; // Forçar nacional para cruzeiros brasileiros
-        const temCriancas = conteudoPrincipal.includes('criança') || 
-                          conteudoPrincipal.includes('2 e 12 anos');
+        // Se não encontrou, usar destino do campo HTML ou genérico
+        if (!destinoParaDicas) {
+          destinoParaDicas = destino || 'o destino';
+        }
         
-        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('msc') || 
-                          conteudoPrincipal.toLowerCase().includes('cruzeiro');
+        const isCruzeiro = textoParaBusca.toLowerCase().includes('msc') || 
+                          textoParaBusca.toLowerCase().includes('cruzeiro');
         
-        prompt = `Você é um especialista em viagens da CVC Itaqua. 
+        prompt = `Você é um especialista em viagens da CVC Itaqua.
+        
+        ${destinoParaDicas === 'o destino' ? 
+        'ATENÇÃO: Não foi possível identificar o destino específico.' :
+        `Crie dicas ESPECÍFICAS para ${destinoParaDicas}.`}
+        
         ${isCruzeiro ? 
-        `Este é um CRUZEIRO MSC ARMONIA pelo litoral brasileiro.
-        IMPORTANTE: NÃO fale sobre Paris, Tóquio ou qualquer outro destino!
-        
-        Crie dicas ESPECÍFICAS para este cruzeiro com paradas em Búzios, Salvador e Ilhéus.
-        
-        Use EXATAMENTE este formato:` :
-        `Crie dicas práticas sobre ${destinoReal}.
-        Use este formato:`}
+        'Este é um CRUZEIRO. Foque em dicas de vida a bordo, cabines, refeições.' :
+        `Foque em dicas práticas sobre ${destinoParaDicas}.`}
         
         Use este formato EXATO:
         
@@ -481,8 +465,37 @@ export default async function handler(req, res) {
       // 🏆 PROMPT PARA RANKING
       // ================================================================================
       else if (isRanking) {
+        // Tentar detectar destino do último orçamento
+        let destinoRanking = destino || '';
+        
+        // Buscar cidade no conteúdo
+        const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
+                                 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
+                                 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
+                                 'Búzios', 'Ilhéus', 'Santos', 'Porto Seguro', 'Angra dos Reis'];
+        
+        for (const cidade of cidadesNacionais) {
+          if (conteudoPrincipal.includes(cidade)) {
+            destinoRanking = cidade;
+            break;
+          }
+        }
+        
+        // Se não encontrou, NÃO inventar
+        if (!destinoRanking) {
+          destinoRanking = 'o destino escolhido';
+        }
+        
         prompt = `Você é um especialista em hotéis da CVC Itaqua.
-        Crie um ranking dos TOP 5 hotéis em ${destino || 'o destino'}.
+        
+        ${destinoRanking === 'o destino escolhido' ?
+        'ATENÇÃO: Não foi identificado um destino específico. Use exemplos genéricos.' :
+        `Crie um ranking dos TOP 5 hotéis REAIS em ${destinoRanking}.`}
+        
+        IMPORTANTE: 
+        - Use apenas hotéis que REALMENTE EXISTEM na cidade
+        - Se não souber hotéis reais, diga que precisa de mais informações
+        - NUNCA invente nomes de hotéis
         
         Use este formato EXATO:
         
