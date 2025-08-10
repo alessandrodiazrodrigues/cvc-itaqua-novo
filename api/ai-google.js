@@ -1,15 +1,18 @@
 // 🚀 CVC ITAQUA v6.0 - GOOGLE DOCS API (COM CACHE)
 import { google } from 'googleapis';
 
-// --- LÓGICA DE CACHE ---
+// ================================================================================
+// 📋 SISTEMA DE CACHE DO MANUAL
+// ================================================================================
 let cache = {
   manual: null,
   timestamp: 0,
 };
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos
-// --------------------
 
-// Bloco de autenticação
+// ================================================================================
+// 🔐 AUTENTICAÇÃO GOOGLE
+// ================================================================================
 const credentialsJsonString = process.env.GOOGLE_CREDENTIALS_JSON;
 if (!credentialsJsonString) {
   throw new Error('A variável de ambiente GOOGLE_CREDENTIALS_JSON não foi definida.');
@@ -24,19 +27,26 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/documents.readonly'],
 });
 
-// Função para ler o Google Docs COM CACHE
+// ================================================================================
+// 📚 FUNÇÃO PARA LER O MANUAL DO GOOGLE DOCS
+// ================================================================================
 async function lerManualGoogleDocs() {
   const agora = Date.now();
+  
+  // Verificar cache
   if (cache.manual && (agora - cache.timestamp < CACHE_DURATION)) {
     console.log('✅ Manual carregado do CACHE');
     return cache.manual;
   }
+  
   try {
     console.log('🔄 Baixando novo manual do Google Docs...');
     const docs = google.docs({ version: 'v1', auth });
     const documentId = process.env.GOOGLE_DOCS_ID || '1J6luZmr0Q_ldqsmEJ4kuMEfA7BYt3DInd7-Tt98hInY';
+    
     const response = await docs.documents.get({ documentId });
     let manualTexto = '';
+    
     const content = response.data.body?.content || [];
     content.forEach(element => {
       if (element.paragraph) {
@@ -47,118 +57,370 @@ async function lerManualGoogleDocs() {
         });
       }
     });
+    
+    // Salvar no cache
     cache.manual = manualTexto;
     cache.timestamp = agora;
-    console.log('✅ Novo manual carregado do Google Docs e salvo no cache:', manualTexto.length, 'caracteres');
+    
+    console.log('✅ Manual carregado do Google Docs:', manualTexto.length, 'caracteres');
     return manualTexto;
+    
   } catch (error) {
     console.error('❌ Erro ao ler Google Docs:', error.message);
     throw new Error(`Erro ao conectar com Google Docs: ${error.message}`);
   }
 }
 
+// ================================================================================
+// 🎯 HANDLER PRINCIPAL DA API
+// ================================================================================
 export default async function handler(req, res) {
-  // Configuração de CORS, etc.
+  // Configuração de CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Handle OPTIONS para CORS
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  // ...
-
+  
+  // GET - Status da API
+  if (req.method === 'GET') {
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+    const hasGoogle = !!process.env.GOOGLE_CREDENTIALS_JSON;
+    
+    return res.status(200).json({
+      success: true,
+      message: 'API CVC Itaqua v6.0 - Online',
+      services: {
+        openai: hasOpenAI ? 'Configurado' : 'Não configurado',
+        anthropic: hasAnthropic ? 'Configurado' : 'Não configurado',
+        googleDocs: hasGoogle ? 'Configurado' : 'Não configurado'
+      },
+      cache: {
+        hasManual: !!cache.manual,
+        age: cache.manual ? `${Math.floor((Date.now() - cache.timestamp) / 1000)}s` : 'N/A'
+      }
+    });
+  }
+  
+  // POST - Processar orçamento
   if (req.method === 'POST') {
     try {
+      console.log('📥 Requisição recebida');
+      
       const { 
         observacoes = '', 
         textoColado = '',
-        // ... resto das variáveis
+        destino = '',
+        adultos = '',
+        criancas = 0,
+        tipos = [],
+        parcelamento = null,
+        imagemBase64 = null,
+        pdfContent = null
       } = req.body;
-
+      
+      // Buscar manual do Google Docs
       const manualCompleto = await lerManualGoogleDocs();
-      const conteudoPrincipal = observacoes || textoColado || '';
+      
+      // Determinar conteúdo principal
+      const conteudoPrincipal = observacoes || textoColado || pdfContent || '';
+      
+      // Verificar se é requisição de dicas ou ranking
+      const isDicas = tipos.includes('Dicas');
+      const isRanking = tipos.includes('Ranking');
       
       let prompt = '';
       
-      // Lógica para Dicas e Ranking continua a mesma...
-      
-      // ======================================================================
-      // PROMPT CORRIGIDO PARA ORÇAMENTOS
-      // ======================================================================
-      prompt = `Você é um assistente especialista da CVC Itaqua. Sua única função é receber DADOS de um cliente e um MANUAL de formatação e retornar um orçamento perfeitamente formatado, seguindo a lógica de decisão abaixo.
+      // ================================================================================
+      // 💡 PROMPT PARA DICAS
+      // ================================================================================
+      if (isDicas) {
+        prompt = `Você é um especialista em viagens da CVC Itaqua. 
+        Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
+        
+        Use este formato EXATO:
+        
+        🌟 DICAS SOBRE [DESTINO] 🌟
+        
+        📍 MELHOR ÉPOCA PARA VISITAR:
+        [Informação sobre clima e temporadas]
+        
+        💰 DICAS DE ECONOMIA:
+        [3-4 dicas para economizar]
+        
+        🍽️ GASTRONOMIA LOCAL:
+        [Pratos típicos e onde comer]
+        
+        🎯 PRINCIPAIS ATRAÇÕES:
+        [Top 5 lugares imperdíveis]
+        
+        💡 DICAS IMPORTANTES:
+        [Documentação, moeda, fuso horário, etc.]
+        
+        🚕 TRANSPORTE:
+        [Como se locomover na cidade]
+        
+        🛍️ COMPRAS:
+        [O que comprar e onde]
+        
+        ⚠️ CUIDADOS:
+        [Avisos de segurança e saúde]`;
+      }
+      // ================================================================================
+      // 🏆 PROMPT PARA RANKING
+      // ================================================================================
+      else if (isRanking) {
+        prompt = `Você é um especialista em hotéis da CVC Itaqua.
+        Crie um ranking dos TOP 5 hotéis em ${destino || 'o destino'}.
+        
+        Use este formato EXATO:
+        
+        🏆 TOP 5 HOTÉIS - [DESTINO] 🏆
+        
+        1️⃣ [Nome do Hotel] ⭐⭐⭐⭐⭐
+        📍 [Localização/Bairro]
+        ✨ [Principal diferencial]
+        💰 Diária média: R$ [valor]
+        
+        2️⃣ [Nome do Hotel] ⭐⭐⭐⭐⭐
+        📍 [Localização/Bairro]
+        ✨ [Principal diferencial]
+        💰 Diária média: R$ [valor]
+        
+        3️⃣ [Nome do Hotel] ⭐⭐⭐⭐
+        📍 [Localização/Bairro]
+        ✨ [Principal diferencial]
+        💰 Diária média: R$ [valor]
+        
+        4️⃣ [Nome do Hotel] ⭐⭐⭐⭐
+        📍 [Localização/Bairro]
+        ✨ [Principal diferencial]
+        💰 Diária média: R$ [valor]
+        
+        5️⃣ [Nome do Hotel] ⭐⭐⭐
+        📍 [Localização/Bairro]
+        ✨ [Boa relação custo-benefício]
+        💰 Diária média: R$ [valor]`;
+      }
+      // ================================================================================
+      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS (OTIMIZADO)
+      // ================================================================================
+      else {
+        prompt = `Você é um assistente especialista da CVC Itaqua. Sua única função é receber DADOS de um cliente e um MANUAL de formatação e retornar um orçamento perfeitamente formatado, seguindo a lógica de decisão abaixo.
 
 **MANUAL COMPLETO (Use para consultar os templates exatos):**
 ${manualCompleto}
 
 **DADOS DO CLIENTE PARA PROCESSAR:**
 ${conteudoPrincipal}
+${destino ? `\nDestino adicional informado: ${destino}` : ''}
+${adultos ? `\nAdultos: ${adultos}` : ''}
+${criancas > 0 ? `\nCrianças: ${criancas}` : ''}
+${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 // =================================================================
 // LÓGICA DE DECISÃO OBRIGATÓRIA (SIGA ESTA ÁRVORE DE DECISÃO):
 // =================================================================
 
-// --- ALTERAÇÃO FEITA AQUI ---
-**REGRA PRIORITÁRIA - MÚLTIPLOS VOOS:**
-* **SE** os "DADOS DO CLIENTE" contiverem dois ou mais blocos de orçamentos de voos distintos (mesmo que para datas ou destinos diferentes), **ENTÃO** trate-os como "OPÇÃO 1", "OPÇÃO 2", etc. Use como base o template "🌍 6. MÚLTIPLAS COMPANHIAS INTERNACIONAIS" para a estrutura geral com múltiplos títulos. Prossiga para as outras regras apenas se esta não se aplicar.
+**ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
-1.  **PRIMEIRA VERIFICAÇÃO - TIPO DE SERVIÇO:**
-    * **SE** os "DADOS DO CLIENTE" contiverem as palavras "cruzeiro", "navio" ou "cabine", **ENTÃO** use o template "🚢 6. CRUZEIRO".
-    * **SENÃO SE** os "DADOS DO CLIENTE" contiverem as palavras "pacote", "hospedagem", "hotel" ou a expressão "aéreo + hotel", **ENTÃO** use o template "🏖️ 7. PACOTE COMPLETO".
-    * **SENÃO**, prossiga para a verificação de voos.
+1. **MÚLTIPLOS VOOS DIFERENTES (Prioridade máxima)**
+   - SE existem 2+ blocos de voos com datas OU destinos OU origens diferentes
+   - E NÃO são apenas opções de tarifa do mesmo voo
+   - ENTÃO: Use template "7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS" com OPÇÃO 1, OPÇÃO 2, etc.
+   - IMPORTANTE: Cada voo diferente deve ser uma OPÇÃO separada
 
-2.  **SEGUNDA VERIFICAÇÃO - ESTRUTURA DO VOO (CASO SEJA APENAS UM):**
-    * **SE** os "DADOS DO CLIENTE" contiverem "multitrecho" ou múltiplos "Trecho 1", "Trecho 2", etc., **ENTÃO** use o template "🗺️ 5. MULTITRECHO".
-    * **SENÃO SE** os "DADOS DO CLIENTE" contiverem "opção 1", "opção 2" e "opção 3", **ENTÃO** use o template "🔢 4. MÚLTIPLAS OPÇÕES - 3 PLANOS".
-    * **SENÃO SE** os "DADOS DO CLIENTE" contiverem "opção 1" e "opção 2", **ENTÃO** use o template "🔢 3. MÚLTIPLAS OPÇÕES - 2 PLANOS".
-    * **SENÃO SE** os "DADOS DO CLIENTE" mencionarem explicitamente "conexão" junto com um tempo de espera, **ENTÃO** use o template "✈️ 2. AÉREO IDA E VOLTA COM CONEXÃO DETALHADA".
-    * **SENÃO SE** os "DADOS DO CLIENTE" contiverem as palavras "somente ida" ou "apenas ida", **ENTÃO** use o template "✈️ 2. AÉREO SOMENTE IDA".
-    * **SENÃO** (para todos os outros casos de voo ida e volta), **ENTÃO** use o template padrão "✈️ 1. AÉREO IDA E VOLTA SIMPLES".
+2. **CRUZEIRO**
+   - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa"
+   - ENTÃO: Use template "11. CRUZEIRO"
 
-3.  **REGRAS FINAIS DE FORMATAÇÃO (APLIQUE APÓS ESCOLHER O TEMPLATE):**
-    * Use estritamente as regras de formatação de datas, horários, valores e passageiros descritas no manual.
-    * Converta todos os códigos de aeroporto para nomes completos (GRU -> Guarulhos).
-    * O título deve ser sempre entre cidades (São Paulo ✈ Rio de Janeiro).
-    * A resposta final deve ser **APENAS** o orçamento formatado.
-    * Sempre termine a resposta com "Valores sujeitos a confirmação e disponibilidade", se o modelo escolhido incluir essa frase.`;
+3. **PACOTE COMPLETO**
+   - SE contém: "pacote" OU ("hotel" E "aéreo") OU "hospedagem incluída"
+   - ENTÃO: Use template "10. PACOTE COMPLETO"
+
+4. **HOTÉIS (sem aéreo)**
+   - SE contém apenas hotéis, sem menção a voos:
+     - Com datas sequenciais diferentes: Use "9. ROTEIRO DE HOTÉIS"
+     - Com mesma data, múltiplas opções: Use "8. HOTÉIS - MÚLTIPLAS OPÇÕES"
+
+5. **MULTITRECHO**
+   - SE contém: "multitrecho" OU "Trecho 1, Trecho 2, Trecho 3" 
+   - OU roteiro tipo A→B→C→D
+   - ENTÃO: Use template "6. MULTITRECHO"
+
+6. **MÚLTIPLAS OPÇÕES DO MESMO VOO**
+   - SE são 2-3 opções de tarifa para o MESMO voo (mesma data/rota):
+     - 2 opções: Use template "4. MÚLTIPLAS OPÇÕES - 2 PLANOS"
+     - 3 opções: Use template "5. MÚLTIPLAS OPÇÕES - 3 PLANOS"
+
+7. **VOO SOMENTE IDA**
+   - SE contém: "somente ida", "apenas ida", "one way" OU não tem volta
+   - ENTÃO: Use template "3. AÉREO SOMENTE IDA"
+
+8. **CONEXÃO DETALHADA**
+   - SE mostra tempo de espera E aeroporto de conexão explicitamente
+   - ENTÃO: Use template "2. AÉREO IDA E VOLTA COM CONEXÃO DETALHADA"
+
+9. **IDA E VOLTA SIMPLES (padrão)**
+   - TODOS os outros casos de voo com ida e volta
+   - Use template "1. AÉREO IDA E VOLTA SIMPLES"
+
+// =================================================================
+// REGRAS CRÍTICAS DE FORMATAÇÃO:
+// =================================================================
+
+**CONVERSÕES OBRIGATÓRIAS DE AEROPORTOS:**
+- GRU → Guarulhos
+- CGH → Congonhas  
+- SDU → Santos Dumont
+- GIG → Galeão
+- SSA → Salvador
+- REC → Recife
+- FOR → Fortaleza
+- BSB → Brasília
+- POA → Porto Alegre
+- CWB → Curitiba
+- FLN → Florianópolis
+- NAT → Natal
+- MCZ → Maceió
+- CNF → Confins
+- VCP → Viracopos
+- (veja tabela completa no manual)
+
+**FORMATAÇÃO ESSENCIAL:**
+1. TÍTULO: Sempre "*Companhia - Cidade ✈ Cidade*" (NUNCA aeroportos)
+2. DATAS: Formato "15/11" (sempre 2 dígitos)
+3. HORÁRIOS: Formato "06:20" (24h, sem espaços)
+4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
+5. PASSAGEIROS: "02 adultos" (zero à esquerda)
+6. SEPARADOR IDA/VOLTA: Sempre usar "--"
+7. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
+
+**CASOS ESPECIAIS:**
+- Crianças: idade em ANOS (2-11 anos)
+- Bebês: idade em MESES (0-23 meses)
+- Chegada dia seguinte: "23:30 (15/11)"
+- Parcelamento: só incluir se fornecido nos dados
+
+**INSTRUÇÃO FINAL:**
+- Use EXATAMENTE o formato do template escolhido
+- NÃO invente informações não fornecidas
+- MANTENHA todos os emojis do template
+- Responda APENAS com o orçamento formatado, sem explicações adicionais`;
+      }
       
-      // Resto do código para chamar a IA...
-      // ... (ele permanece o mesmo)
-      
+      // ================================================================================
+      // 🤖 DECISÃO: USAR GPT OU CLAUDE?
+      // ================================================================================
       let resultado = '';
-      const OPENAI_KEY = process.env.OPENAI_API_KEY;
-      if (!OPENAI_KEY) {
-        throw new Error('OpenAI API key não configurada.');
+      let iaUsada = 'gpt-4o-mini'; // padrão
+      
+      // Usar Claude para imagens ou casos complexos
+      const usarClaude = imagemBase64 || 
+                        (conteudoPrincipal.length > 2000) ||
+                        tipos.includes('Cruzeiro') ||
+                        tipos.includes('Multitrecho');
+      
+      if (usarClaude && process.env.ANTHROPIC_API_KEY) {
+        // ================================================================================
+        // 🤖 PROCESSAMENTO COM CLAUDE
+        // ================================================================================
+        console.log('🤖 Usando Claude 3 Haiku...');
+        iaUsada = 'claude-3-haiku';
+        
+        const messages = [{
+          role: 'user',
+          content: imagemBase64 ? [
+            { type: 'text', text: prompt },
+            { 
+              type: 'image', 
+              source: {
+                type: 'base64',
+                media_type: imagemBase64.split(';')[0].split(':')[1],
+                data: imagemBase64.split(',')[1]
+              }
+            }
+          ] : prompt
+        }];
+        
+        const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 1500,
+            temperature: 0.2,
+            messages
+          })
+        });
+        
+        if (!claudeResponse.ok) {
+          const errorText = await claudeResponse.text();
+          console.error('❌ Erro Claude:', errorText);
+          throw new Error(`Erro ao processar com Claude: ${errorText}`);
+        }
+        
+        const claudeData = await claudeResponse.json();
+        resultado = claudeData.content[0].text;
+        
+      } else {
+        // ================================================================================
+        // 🤖 PROCESSAMENTO COM GPT-4o-mini
+        // ================================================================================
+        console.log('🤖 Usando GPT-4o-mini...');
+        
+        const OPENAI_KEY = process.env.OPENAI_API_KEY;
+        if (!OPENAI_KEY) {
+          throw new Error('OpenAI API key não configurada.');
+        }
+        
+        const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.2,
+            max_tokens: 1500
+          })
+        });
+        
+        if (!gptResponse.ok) {
+          const errorText = await gptResponse.text();
+          console.error('❌ Erro GPT:', errorText);
+          throw new Error(`Erro ao processar com GPT: ${errorText}`);
+        }
+        
+        const gptData = await gptResponse.json();
+        resultado = gptData.choices[0].message.content;
       }
       
-      const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.2,
-          max_tokens: 1500
-        })
-      });
-
-      if (!gptResponse.ok) {
-        const errorText = await gptResponse.text();
-        throw new Error(`Erro ao processar com GPT: ${errorText}`);
-      }
-
-      const gptData = await gptResponse.json();
-      resultado = gptData.choices[0].message.content;
-
-      console.log('✅ Processamento concluído');
+      // ================================================================================
+      // ✅ RESPOSTA FINAL
+      // ================================================================================
+      console.log('✅ Processamento concluído com', iaUsada);
       
       return res.status(200).json({
         success: true,
-        result: resultado
+        result: resultado,
+        ia_usada: iaUsada,
+        cache_info: {
+          manual_cached: cache.manual ? true : false,
+          cache_age_seconds: cache.manual ? Math.floor((Date.now() - cache.timestamp) / 1000) : 0
+        }
       });
-
+      
     } catch (error) {
       console.error('❌ Erro no processamento:', error);
       return res.status(500).json({
@@ -168,8 +430,9 @@ ${conteudoPrincipal}
     }
   }
   
+  // Método não suportado
   return res.status(405).json({
     success: false,
-    error: 'Método não suportado'
+    error: 'Método não suportado. Use GET para status ou POST para processar.'
   });
 }
