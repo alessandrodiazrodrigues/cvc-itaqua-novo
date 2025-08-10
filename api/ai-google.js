@@ -270,21 +270,22 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
-0. **VERIFICAÇÃO INICIAL - MÚLTIPLOS BLOCOS DE VOOS**
-   - CONTE quantos blocos separados de voos existem nos dados
-   - SE houver 2 ou mais blocos com:
+0. **VERIFICAÇÃO INICIAL - VOOS IDÊNTICOS COM TARIFAS DIFERENTES**
+   - SE houver 2+ blocos com EXATAMENTE os mesmos:
+     * Mesmos horários de ida e volta
+     * Mesma companhia
+     * Mesmas datas
+     * Mas PREÇOS diferentes
+   - ENTÃO: Use formato de TARIFA A, B, C em um único bloco
+   - NÃO use OPÇÃO 1, OPÇÃO 2 para voos idênticos
+
+1. **MÚLTIPLOS VOOS DIFERENTES**
+   - SE houver 2+ blocos com:
      * Diferentes datas de viagem OU
      * Diferentes destinos OU  
      * Diferentes origens OU
-     * Separados por "Selecionar" ou "Excluir"
-   - ENTÃO: Formate CADA bloco como uma OPÇÃO separada (OPÇÃO 1, OPÇÃO 2, etc.)
-   - Use a estrutura: Um título para cada opção, depois as informações de cada voo
-
-1. **MÚLTIPLOS VOOS DIFERENTES (Prioridade máxima)**
-   - SE existem 2+ blocos de voos com datas OU destinos OU origens diferentes
-   - E NÃO são apenas opções de tarifa do mesmo voo
-   - ENTÃO: Use template "7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS" com OPÇÃO 1, OPÇÃO 2, etc.
-   - IMPORTANTE: Cada voo diferente deve ser uma OPÇÃO separada
+     * Diferentes horários
+   - ENTÃO: Formate CADA bloco como OPÇÃO 1, OPÇÃO 2, etc.
 
 2. **CRUZEIRO**
    - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa"
@@ -370,21 +371,49 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - SEM ENTRADA: "10x de R$ xxx s/ juros no cartão"
 
 **CASOS ESPECIAIS:**
-- Crianças: idade em ANOS (2-11 anos)
-- Bebês: idade em MESES (0-23 meses)
+- PASSAGEIROS: NUNCA inventar idades
+  * Bebês: apenas "01 bebê" ou "02 bebês" (SEM idade, exceto se informada)
+  * Crianças: apenas "01 criança" ou "02 crianças" (SEM idade, exceto se informada)
+  * Se a idade estiver informada: "01 bebê (10 meses)" ou "01 criança (5 anos)"
 - Chegada dia seguinte: "23:30 (15/11)"
 - Múltiplos voos: Cada um pode ter seu próprio link e parcelamento
+- Voos idênticos: Usar formato TARIFA A, B, C
 
 **INSTRUÇÃO FINAL:**
 - Use EXATAMENTE o formato do template escolhido
-- NÃO invente informações não fornecidas
+- NÃO invente informações não fornecidas (especialmente idades)
 - MANTENHA todos os emojis do template
 - SEMPRE inclua informação de bagagem (se não houver, use o padrão)
 - Responda APENAS com o orçamento formatado, sem explicações adicionais
 
-**EXEMPLO DE MÚLTIPLOS VOOS COM TODOS OS DETALHES:**
-Se receber 2 voos diferentes com parcelamento e links, formate assim:
+**EXEMPLO 1 - VOOS IDÊNTICOS (use TARIFA A, B, C):**
+*Gol - Guarulhos ✈ Salvador*
+19/09 - Guarulhos 22:10 / Salvador 00:35 (voo direto)
+--
+26/09 - Salvador 05:30 / Guarulhos 08:05 (voo direto)
 
+Para 01 adulto, 01 bebê e 01 criança
+
+💰 **TARIFA A** - R$ 2.773,68
+✅ Inclui 1 item pessoal + 1 mala de mão 10kg
+🏷️ Não reembolsável
+
+💰 **TARIFA B** - R$ 3.081,68
+✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 1 mala despachada 23kg
+💳 Em até 10x sem juros no cartão, sendo a primeira de R$ 308,16 + 9x de R$ 273,72
+🏷️ Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/xxxxx
+
+💰 **TARIFA C** - R$ 3.500,00
+✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 2 malas despachadas 23kg
+✅ Marcação de assento antecipada
+💳 Em até 12x sem juros no cartão, sendo a primeira de R$ 350,00 + 11x de R$ 286,36
+🏷️ Reembolsável conforme regras do bilhete
+🔗 https://www.cvc.com.br/carrinho-dinamico/yyyyy
+
+Valores sujeitos a confirmação e disponibilidade
+
+**EXEMPLO 2 - VOOS DIFERENTES (use OPÇÃO 1, 2):**
 *OPÇÃO 1 - Latam*
 29/12 - Guarulhos 12:15 / Santos Dumont 13:15 (voo direto)
 --
