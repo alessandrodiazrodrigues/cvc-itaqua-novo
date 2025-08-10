@@ -383,16 +383,22 @@ export default async function handler(req, res) {
         
         prompt = `Você é um especialista em viagens da CVC Itaqua. 
         ${isCruzeiro ? 
-        `Este é um CRUZEIRO. Crie dicas específicas para ${destinoReal || 'o cruzeiro'}.
+        `Este é um CRUZEIRO MSC saindo do ${destinoReal || 'Brasil'}. 
+        NÃO gere dicas sobre Paris ou outros destinos aleatórios!
+        Crie dicas ESPECÍFICAS para este cruzeiro com paradas em ${destinoReal}.
         Foque em:
-        - Dicas para aproveitar o navio
+        - Vida a bordo do MSC Armonia
+        - Como funcionam as refeições (self-service e à la carte)
+        - Diferença entre cabines (interna, externa, varanda)
         - O que levar na mala para cruzeiro
-        - Dicas sobre os destinos do roteiro
+        - Dicas sobre Búzios, Salvador e Ilhéus
         - Como economizar a bordo
         - Documentação para cruzeiro nacional` :
         `Crie dicas práticas e úteis sobre ${destinoReal || 'o destino'}.`}
         ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
-        ${temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS! Adapte TODAS as dicas para famílias com crianças.' : ''}
+        ${temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS (2 e 12 anos)! Adapte TODAS as dicas para famílias com crianças.' : ''}
+        
+        IMPORTANTE: NÃO gere dicas sobre Paris, Europa ou qualquer outro destino que não seja o mencionado acima!
         
         Use este formato EXATO:
         
