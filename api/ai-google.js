@@ -270,23 +270,28 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
-0. **VERIFICAÇÃO INICIAL - VOOS IDÊNTICOS COM TARIFAS DIFERENTES**
-   - SE houver 2+ blocos/opções com EXATAMENTE:
-     * Mesmos horários de ida e volta
-     * Mesma companhia  
-     * Mesmas datas
-     * Mas PREÇOS diferentes (ou um com "Selecionado" e outro não)
-   - ENTÃO: Use formato de TARIFA A, B, C em um único bloco
-   - IMPORTANTE: Procure por múltiplas caixas/cards na imagem ou texto repetido com valores diferentes
-   - NÃO use OPÇÃO 1, OPÇÃO 2 para voos idênticos
+0. **VERIFICAÇÃO INICIAL - COMPANHIAS DIFERENTES**
+   - SE houver voos de COMPANHIAS DIFERENTES (Gol vs Latam vs Azul, etc.)
+   - ENTÃO: SEMPRE use OPÇÃO 1, OPÇÃO 2 (mesmo que sejam datas iguais)
+   - IMPORTANTE: Companhias diferentes = voos diferentes
 
-1. **MÚLTIPLOS VOOS DIFERENTES**
+1. **VOOS IDÊNTICOS COM TARIFAS DIFERENTES**
    - SE houver 2+ blocos com:
-     * Diferentes datas de viagem OU
-     * Diferentes destinos OU  
-     * Diferentes origens OU
-     * Diferentes horários
-   - ENTÃO: Formate CADA bloco como OPÇÃO 1, OPÇÃO 2, etc.
+     * MESMA companhia E
+     * MESMOS horários exatos E
+     * MESMAS datas E
+     * Apenas preços diferentes
+   - ENTÃO: Use formato TARIFA A, B, C em um único bloco
+   - Isto é RARO - geralmente são voos diferentes
+
+2. **MÚLTIPLOS VOOS DIFERENTES (mais comum)**
+   - SE houver qualquer diferença em:
+     * Companhias diferentes OU
+     * Horários diferentes (mesmo que seja 10 minutos) OU
+     * Datas diferentes OU
+     * Destinos/origens diferentes
+   - ENTÃO: Use OPÇÃO 1, OPÇÃO 2, etc.
+   - Cada opção tem seu próprio link quando houver
 
 2. **CRUZEIRO**
    - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa"
@@ -395,29 +400,48 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - NUNCA invente tarifas adicionais ou valores
 - NUNCA use links de exemplo (xxxxx, yyyyy) - use apenas links reais fornecidos
 
-**FORMATO PARA VOOS IDÊNTICOS (diferentes tarifas):**
-Use este formato quando os voos têm mesmos horários mas preços diferentes:
+**FORMATO PARA VOOS DIFERENTES (use OPÇÃO 1, 2):**
+Quando há companhias diferentes ou horários diferentes:
+
+*OPÇÃO 1 - [Companhia1]*
+[Detalhes do voo 1]
+
+💰 R$ [valor1] para [passageiros]
+✅ [Bagagem]
+💳 [Parcelamento se houver]
+🏷️ [Reembolso]
+🔗 [Link1 se houver - específico desta opção]
+
+*OPÇÃO 2 - [Companhia2]*
+[Detalhes do voo 2]
+
+💰 R$ [valor2] para [passageiros]
+✅ [Bagagem]
+💳 [Parcelamento se houver]
+🏷️ [Reembolso]
+🔗 [Link2 se houver - específico desta opção]
+
+Valores sujeitos a confirmação e disponibilidade
+
+**FORMATO PARA VOOS IDÊNTICOS (raro - use TARIFA A, B):**
+Use APENAS quando for EXATAMENTE o mesmo voo, mesma companhia, mesmos horários:
 
 *[Companhia]*
-[Data ida] - [Origem] [Hora] / [Destino] [Hora] (tipo voo)
---
-[Data volta] - [Origem] [Hora] / [Destino] [Hora] (tipo voo)
+[Detalhes do voo - idênticos para todas tarifas]
 
 Para [passageiros]
 
-💰 **TARIFA A** - R$ [valor real]
-✅ [Bagagem informada ou padrão]
+💰 **TARIFA A** - R$ [valor1]
+✅ [Bagagem básica]
+💳 [Parcelamento1 se houver]
 🏷️ [Reembolso]
-[Se houver parcelamento, incluir]
-[Se houver link, incluir]
+🔗 [Link1 se houver]
 
-💰 **TARIFA B** - R$ [valor real]
-✅ [Bagagem informada ou padrão]
+💰 **TARIFA B** - R$ [valor2]
+✅ [Bagagem melhor]
+💳 [Parcelamento2 se houver]
 🏷️ [Reembolso]
-[Se houver parcelamento, incluir]
-[Se houver link, incluir]
-
-[Use TARIFA C apenas se existir uma terceira opção real nos dados]
+🔗 [Link2 se houver]
 
 Valores sujeitos a confirmação e disponibilidade`;
       }
