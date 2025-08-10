@@ -139,104 +139,25 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
-        // Detectar se é cruzeiro
-        const isCruzeiro = conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
-                          conteudoPrincipal.toLowerCase().includes('msc') || 
-                          conteudoPrincipal.toLowerCase().includes('costa') ||
-                          conteudoPrincipal.toLowerCase().includes('navio') ||
-                          conteudoPrincipal.toLowerCase().includes('cabine');
+        const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
         
-        if (isCruzeiro) {
-          // DICAS ESPECÍFICAS PARA CRUZEIRO
-          const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança');
-          
-          prompt = `Você é um especialista em cruzeiros da CVC Itaqua.
-          Crie dicas práticas sobre o cruzeiro mencionado.
-          ${temCriancas ? 'ATENÇÃO: Viagem com CRIANÇAS! Adapte as dicas para famílias.' : ''}
-          
-          Use este formato EXATO:
-          
-          🚢 DICAS DO SEU CRUZEIRO ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🚢
-          
-          ⚓ VIDA A BORDO:
-          [Como funciona o navio, refeições incluídas, restaurantes especiais]
-          [Horários das refeições, dress code para jantar]
-          ${temCriancas ? '[Atividades infantis, kids club, piscinas para crianças]' : '[Atividades para adultos, shows, cassino]'}
-          
-          🍹 PACOTE DE BEBIDAS:
-          💡 IMPORTANTE: Compre o pacote de bebidas ANTECIPADO com a CVC!
-          [Economia de até 40% comparado a comprar a bordo]
-          [Opções: refrigerantes, sucos, alcoólicas, premium]
-          ${temCriancas ? '[Pacotes infantis com sucos e refrigerantes ilimitados]' : ''}
-          
-          🎯 PASSEIOS NOS DESTINOS:
-          [Lista dos portos de parada]
-          💡 Compre os passeios ANTECIPADOS com a CVC:
-          - Garantia de lugar
-          - Preços melhores que a bordo
-          - Guias em português
-          ${temCriancas ? '- Passeios adequados para crianças' : ''}
-          
-          ${temCriancas ? `
-          👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS:
-          - Kids Club gratuito (verificar idades)
-          - Piscinas infantis e tobogãs
-          - Cardápio kids nos restaurantes
-          - Babysitting disponível (pago)
-          - Fraldário e berços sob solicitação` : ''}
-          
-          💰 DICAS DE ECONOMIA:
-          - Pacote de bebidas antecipado (economia de 40%)
-          - Passeios comprados com a CVC (mais baratos)
-          - Internet: compre pacote antes do embarque
-          - Spa: promoções no primeiro dia
-          
-          🍽️ GASTRONOMIA A BORDO:
-          [Restaurante principal incluído]
-          [Restaurantes de especialidades (pagos)]
-          [Buffet 24h, pizzaria, sorveteria]
-          ${temCriancas ? '[Menu infantil disponível em todos restaurantes]' : ''}
-          
-          📱 DICAS IMPORTANTES:
-          - Check-in online antecipado
-          - Leve remédios para enjoo
-          - Protetor solar indispensável
-          - Roupas formais para noites de gala
-          ${temCriancas ? '- Leve entretenimento para crianças nos trajetos' : ''}
-          
-          🛳️ O QUE ESTÁ INCLUÍDO:
-          - Acomodação e entretenimento
-          - Refeições principais
-          - Shows e atividades
-          - Academia e piscinas
-          
-          💳 CUSTOS EXTRAS A BORDO:
-          - Bebidas (exceto água, café, chá)
-          - Restaurantes de especialidades
-          - Spa e salão de beleza
-          - Cassino e bingo
-          - Fotos profissionais
-          - Loja de souvenirs
-          
-          ⚠️ DICAS DE SEGURANÇA:
-          - Participe do drill de segurança
-          - Use pulseira de identificação em crianças
-          - Álcool gel sempre à mão
-          - Seguro viagem é fundamental
-          
-          📞 IMPORTANTE: A CVC Itaqua oferece:
-          - Pacotes de bebidas com desconto
-          - Passeios em português
-          - Assistência no embarque
-          - Seguro viagem especializado para cruzeiros!`;
-          
-        } else {
-          // DICAS NORMAIS DE DESTINO (código anterior)
-          const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
-          
-          // ... resto do código de dicas normais ...
-        }
-      }
+        // Tentar extrair o período da viagem do orçamento
+        const periodoViagem = conteudoPrincipal ? `
+        IMPORTANTE: Analise o orçamento e identifique o período da viagem (mês/data).
+        Se encontrar, foque as dicas NESSE PERÍODO ESPECÍFICO.` : '';
+        
+        // Detectar se há crianças na viagem
+        const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || conteudoPrincipal.toLowerCase().includes('crianças');
+        const dicasCriancas = temCriancas ? `
+        ATENÇÃO: Esta viagem inclui CRIANÇAS! 
+        Adapte TODAS as dicas para famílias com crianças.
+        Inclua atrações infantis, restaurantes family-friendly, cuidados especiais.` : '';
+        
+        prompt = `Você é um especialista em viagens da CVC Itaqua. 
+        Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
+        ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
+        ${periodoViagem}
+        ${dicasCriancas}
         
         Use este formato EXATO:
         
