@@ -1,4 +1,4 @@
-// 🚀 CVC ITAQUA v6.0 - GOOGLE DOCS API (COM CACHE)
+// 🚀 CVC ITAQUA v6.1 - GOOGLE DOCS API (COM CACHE E CRUZEIROS)
 import { google } from 'googleapis';
 
 // ================================================================================
@@ -58,6 +58,52 @@ async function lerManualGoogleDocs() {
       }
     });
     
+    // Adicionar template de cruzeiro ao manual se não existir
+    if (!manualTexto.includes('11. CRUZEIRO')) {
+      manualTexto += `
+
+// ================================================================================
+// 11. CRUZEIRO - TEMPLATE OFICIAL
+// ================================================================================
+
+FORMATO EXATO PARA CRUZEIROS:
+
+🚢 *Cruzeiro [Nome do Navio]* – [X noites]
+[XX passageiros]
+📅 Embarque: [DD/MM/AAAA] ([dia da semana])
+📍 Saída e chegada: [Porto]
+
+🗺️ ROTEIRO:
+Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
+Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 4 ([DD/MM]) - Em navegação
+Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+
+**CABINE INTERNA** - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+**CABINE COM VARANDA** - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+🔗 [link]
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade
+`;
+    }
+    
     // Salvar no cache
     cache.manual = manualTexto;
     cache.timestamp = agora;
@@ -67,7 +113,51 @@ async function lerManualGoogleDocs() {
     
   } catch (error) {
     console.error('❌ Erro ao ler Google Docs:', error.message);
-    throw new Error(`Erro ao conectar com Google Docs: ${error.message}`);
+    
+    // Retornar manual com template de cruzeiro em caso de erro
+    const manualFallback = `
+// MANUAL FALLBACK COM TEMPLATE DE CRUZEIRO
+
+11. CRUZEIRO - TEMPLATE OFICIAL
+
+🚢 *Cruzeiro [Nome do Navio]* – [X noites]
+[XX passageiros]
+📅 Embarque: [DD/MM/AAAA] ([dia da semana])
+📍 Saída e chegada: [Porto]
+
+🗺️ ROTEIRO:
+Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
+Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 4 ([DD/MM]) - Em navegação
+Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+
+**CABINE INTERNA** - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+**CABINE COM VARANDA** - [Categoria] ([Código])
+💰 R$ [valor] (valor total com taxas)
+
+🔗 [link]
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade
+`;
+    
+    cache.manual = manualFallback;
+    cache.timestamp = Date.now();
+    return manualFallback;
   }
 }
 
@@ -93,7 +183,7 @@ export default async function handler(req, res) {
     
     return res.status(200).json({
       success: true,
-      message: 'API CVC Itaqua v6.0 - Online',
+      message: 'API CVC Itaqua v6.1 - Online (com suporte a cruzeiros)',
       services: {
         openai: hasOpenAI ? 'Configurado' : 'Não configurado',
         anthropic: hasAnthropic ? 'Configurado' : 'Não configurado',
@@ -249,7 +339,7 @@ export default async function handler(req, res) {
         💰 Diária média: R$ [valor]`;
       }
       // ================================================================================
-      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS (OTIMIZADO)
+      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS (OTIMIZADO COM CRUZEIROS)
       // ================================================================================
       else {
         prompt = `Você é um assistente especialista da CVC Itaqua. Sua única função é receber DADOS de um cliente e um MANUAL de formatação e retornar um orçamento perfeitamente formatado, seguindo a lógica de decisão abaixo.
@@ -285,47 +375,66 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
    - ENTÃO: Use formato TARIFA A, B, C em um único bloco
    - Isto é MUITO RARO
 
-2. **MÚLTIPLOS VOOS DIFERENTES (MAIS COMUM):**
+2. **CRUZEIRO (PRIORIDADE ALTA)**
+   - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa", "noites•", "Embarque:", "Desembarque:", "Em navegação"
+   - ENTÃO: Use template "11. CRUZEIRO" EXATAMENTE como está no manual
+   - IMPORTANTE: 
+     * Use o número de passageiros informado (geralmente 2)
+     * Formate o roteiro dia a dia conforme o template
+     * Liste TODAS as cabines disponíveis com seus preços totais
+     * Mantenha o link original se fornecido
+     * SEMPRE termine com "Valores sujeitos a confirmação e disponibilidade"
+
+3. **MÚLTIPLOS VOOS DIFERENTES (MAIS COMUM):**
    - QUALQUER diferença = use OPÇÃO 1, OPÇÃO 2
    - Diferentes companhias = SEMPRE opções
    - Diferentes horários = SEMPRE opções
    - Diferentes datas = SEMPRE opções
    - Cada OPÇÃO tem seu próprio título, dados e link
 
-2. **CRUZEIRO**
-   - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa"
-   - ENTÃO: Use template "11. CRUZEIRO"
-
-3. **PACOTE COMPLETO**
+4. **PACOTE COMPLETO**
    - SE contém: "pacote" OU ("hotel" E "aéreo") OU "hospedagem incluída"
    - ENTÃO: Use template "10. PACOTE COMPLETO"
 
-4. **HOTÉIS (sem aéreo)**
+5. **HOTÉIS (sem aéreo)**
    - SE contém apenas hotéis, sem menção a voos:
      - Com datas sequenciais diferentes: Use "9. ROTEIRO DE HOTÉIS"
      - Com mesma data, múltiplas opções: Use "8. HOTÉIS - MÚLTIPLAS OPÇÕES"
 
-5. **MULTITRECHO**
+6. **MULTITRECHO**
    - SE contém: "multitrecho" OU "Trecho 1, Trecho 2, Trecho 3" 
    - OU roteiro tipo A→B→C→D
    - ENTÃO: Use template "6. MULTITRECHO"
 
-6. **MÚLTIPLAS OPÇÕES DO MESMO VOO**
+7. **MÚLTIPLAS OPÇÕES DO MESMO VOO**
    - SE são 2-3 opções de tarifa para o MESMO voo (mesma data/rota):
      - 2 opções: Use template "4. MÚLTIPLAS OPÇÕES - 2 PLANOS"
      - 3 opções: Use template "5. MÚLTIPLAS OPÇÕES - 3 PLANOS"
 
-7. **VOO SOMENTE IDA**
+8. **VOO SOMENTE IDA**
    - SE contém: "somente ida", "apenas ida", "one way" OU não tem volta
    - ENTÃO: Use template "3. AÉREO SOMENTE IDA"
 
-8. **CONEXÃO DETALHADA**
+9. **CONEXÃO DETALHADA**
    - SE mostra tempo de espera E aeroporto de conexão explicitamente
    - ENTÃO: Use template "2. AÉREO IDA E VOLTA COM CONEXÃO DETALHADA"
 
-9. **IDA E VOLTA SIMPLES (padrão)**
+10. **IDA E VOLTA SIMPLES (padrão)**
    - TODOS os outros casos de voo com ida e volta
    - Use template "1. AÉREO IDA E VOLTA SIMPLES"
+
+// =================================================================
+// REGRAS ESPECÍFICAS PARA CRUZEIROS:
+// =================================================================
+
+**QUANDO DETECTAR CRUZEIRO:**
+1. Identifique: Nome do navio, número de noites, data de embarque
+2. Extraia o roteiro completo dia a dia
+3. Liste TODAS as categorias de cabines disponíveis
+4. Use valores totais (já com taxas incluídas)
+5. Mantenha o formato EXATO do template
+6. Inclua o link original se fornecido
+7. SEMPRE adicione os emojis corretos (🚢, 📅, 📍, 🗺️, 💥, 🛏, 💰, 🔗, ✅, 🚫, 📲)
 
 // =================================================================
 // REGRAS CRÍTICAS DE FORMATAÇÃO:
@@ -334,10 +443,12 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 **TÍTULO - REGRA ABSOLUTA:**
 - Para VOO ÚNICO: Use apenas "*Companhia*"
 - Para MÚLTIPLOS VOOS: Use "*OPÇÃO X - Companhia*"
+- Para CRUZEIRO: Use "*Cruzeiro [Nome do Navio]*"
 - Exemplos CORRETOS: 
   * Único: "*Gol*"
   * Múltiplo: "*OPÇÃO 1 - Gol*", "*OPÇÃO 2 - Latam*"
-- NUNCA inclua cidades no título
+  * Cruzeiro: "*Cruzeiro MSC Sinfonia*"
+- NUNCA inclua cidades no título de voos
 
 **MÚLTIPLOS VOOS - REGRA ABSOLUTA:**
 - Companhias DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2
@@ -349,6 +460,7 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - PROIBIDO inventar idades
 - Use APENAS: "01 bebê", "01 criança" (sem idades)
 - SÓ coloque idade se estiver EXPLICITAMENTE no texto original
+- Para cruzeiros: use o número de passageiros informado
 
 **CONVERSÕES OBRIGATÓRIAS DE AEROPORTOS:**
 - GRU → Guarulhos
@@ -369,20 +481,14 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - (veja tabela completa no manual)
 
 **FORMATAÇÃO ESSENCIAL:**
-1. TÍTULO: SEMPRE e SOMENTE "*Companhia*" 
-   - Correto: "*Latam*" ou "*GOL*" ou "*Azul*"
-   - ERRADO: "*Latam - São Paulo ✈ Rio*" ou "*GOL - Guarulhos ✈ Salvador*"
-   - NUNCA incluir cidades, rotas ou símbolos de avião no título
-2. DATAS: Formato "15/11" (sempre 2 dígitos)
+1. TÍTULO: SEMPRE e SOMENTE "*Companhia*" (para voos) ou "*Cruzeiro [Nome]*" (para cruzeiros)
+2. DATAS: Formato "15/11" ou "15/11/2026" (conforme o contexto)
 3. HORÁRIOS: Formato "06:20" (24h, sem espaços)
 4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
-5. PASSAGEIROS: "02 adultos" (zero à esquerda)
+5. PASSAGEIROS: "02 adultos" ou "02 passageiros" (zero à esquerda)
 6. SEPARADOR IDA/VOLTA: Sempre usar "--"
 7. LINKS: Se houver URL no texto, adicionar linha: 🔗 URL (SEM colchetes)
-8. BAGAGEM: SEMPRE incluir informação de bagagem:
-   - Padrão (quando não informado): "✅ Inclui 1 item pessoal + 1 mala de mão 10kg"
-   - Com despachada: "✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 1 mala despachada 23kg"
-   - Internacional específico: Seguir o que estiver descrito
+8. BAGAGEM: SEMPRE incluir informação de bagagem para voos
 9. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
 
 **PARCELAMENTO - REGRAS IMPORTANTES:**
@@ -409,59 +515,15 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - Responda APENAS com o orçamento formatado
 - NÃO invente informações (idades, valores, links falsos)
 - SEMPRE use OPÇÃO 1, 2 quando há múltiplos voos
-- SEMPRE use apenas nome da companhia no título
+- SEMPRE use apenas nome da companhia no título de voos
+- Para CRUZEIROS, siga EXATAMENTE o template fornecido
 - Use TARIFA A, B APENAS quando for exatamente o mesmo voo
 
 **IMPORTANTE SOBRE TARIFAS:**
 - Use TARIFA A, B, C APENAS para as opções que realmente existem nos dados
 - Se houver apenas 2 opções, use apenas TARIFA A e B
 - NUNCA invente tarifas adicionais ou valores
-- NUNCA use links de exemplo (xxxxx, yyyyy) - use apenas links reais fornecidos
-
-**FORMATO PARA VOOS DIFERENTES (use OPÇÃO 1, 2):**
-Quando há companhias diferentes ou horários diferentes:
-
-*OPÇÃO 1 - [Companhia1]*
-[Detalhes do voo 1]
-
-💰 R$ [valor1] para [passageiros]
-✅ [Bagagem]
-💳 [Parcelamento se houver]
-🏷️ [Reembolso]
-🔗 [Link1 se houver - específico desta opção]
-
-*OPÇÃO 2 - [Companhia2]*
-[Detalhes do voo 2]
-
-💰 R$ [valor2] para [passageiros]
-✅ [Bagagem]
-💳 [Parcelamento se houver]
-🏷️ [Reembolso]
-🔗 [Link2 se houver - específico desta opção]
-
-Valores sujeitos a confirmação e disponibilidade
-
-**FORMATO PARA VOOS IDÊNTICOS (raro - use TARIFA A, B):**
-Use APENAS quando for EXATAMENTE o mesmo voo, mesma companhia, mesmos horários:
-
-*[Companhia]*
-[Detalhes do voo - idênticos para todas tarifas]
-
-Para [passageiros]
-
-💰 **TARIFA A** - R$ [valor1]
-✅ [Bagagem básica]
-💳 [Parcelamento1 se houver]
-🏷️ [Reembolso]
-🔗 [Link1 se houver]
-
-💰 **TARIFA B** - R$ [valor2]
-✅ [Bagagem melhor]
-💳 [Parcelamento2 se houver]
-🏷️ [Reembolso]
-🔗 [Link2 se houver]
-
-Valores sujeitos a confirmação e disponibilidade`;
+- NUNCA use links de exemplo (xxxxx, yyyyy) - use apenas links reais fornecidos`;
       }
       
       // ================================================================================
@@ -474,7 +536,11 @@ Valores sujeitos a confirmação e disponibilidade`;
       const usarClaude = imagemBase64 || 
                         (conteudoPrincipal.length > 2000) ||
                         tipos.includes('Cruzeiro') ||
-                        tipos.includes('Multitrecho');
+                        tipos.includes('Multitrecho') ||
+                        conteudoPrincipal.toLowerCase().includes('cruzeiro') ||
+                        conteudoPrincipal.toLowerCase().includes('msc') ||
+                        conteudoPrincipal.toLowerCase().includes('costa') ||
+                        conteudoPrincipal.toLowerCase().includes('cabine');
       
       if (usarClaude && process.env.ANTHROPIC_API_KEY) {
         // ================================================================================
