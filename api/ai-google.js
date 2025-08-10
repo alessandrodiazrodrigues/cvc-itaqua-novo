@@ -381,60 +381,41 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **INSTRUÇÃO FINAL:**
 - Use EXATAMENTE o formato do template escolhido
-- NÃO invente informações não fornecidas (especialmente idades)
+- NÃO invente informações não fornecidas (especialmente idades, valores ou tarifas extras)
 - MANTENHA todos os emojis do template
 - SEMPRE inclua informação de bagagem (se não houver, use o padrão)
+- Use APENAS as tarifas/opções que existem nos dados fornecidos (não adicione tarifas extras)
 - Responda APENAS com o orçamento formatado, sem explicações adicionais
 
-**EXEMPLO 1 - VOOS IDÊNTICOS (use TARIFA A, B, C):**
-*Gol - Guarulhos ✈ Salvador*
-19/09 - Guarulhos 22:10 / Salvador 00:35 (voo direto)
+**IMPORTANTE SOBRE TARIFAS:**
+- Use TARIFA A, B, C APENAS para as opções que realmente existem nos dados
+- Se houver apenas 2 opções, use apenas TARIFA A e B
+- NUNCA invente tarifas adicionais ou valores
+- NUNCA use links de exemplo (xxxxx, yyyyy) - use apenas links reais fornecidos
+
+**FORMATO PARA VOOS IDÊNTICOS (diferentes tarifas):**
+Use este formato quando os voos têm mesmos horários mas preços diferentes:
+
+*[Companhia]*
+[Data ida] - [Origem] [Hora] / [Destino] [Hora] (tipo voo)
 --
-26/09 - Salvador 05:30 / Guarulhos 08:05 (voo direto)
+[Data volta] - [Origem] [Hora] / [Destino] [Hora] (tipo voo)
 
-Para 01 adulto, 01 bebê e 01 criança
+Para [passageiros]
 
-💰 **TARIFA A** - R$ 2.773,68
-✅ Inclui 1 item pessoal + 1 mala de mão 10kg
-🏷️ Não reembolsável
+💰 **TARIFA A** - R$ [valor real]
+✅ [Bagagem informada ou padrão]
+🏷️ [Reembolso]
+[Se houver parcelamento, incluir]
+[Se houver link, incluir]
 
-💰 **TARIFA B** - R$ 3.081,68
-✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 1 mala despachada 23kg
-💳 Em até 10x sem juros no cartão, sendo a primeira de R$ 308,16 + 9x de R$ 273,72
-🏷️ Não reembolsável
-🔗 https://www.cvc.com.br/carrinho-dinamico/xxxxx
+💰 **TARIFA B** - R$ [valor real]
+✅ [Bagagem informada ou padrão]
+🏷️ [Reembolso]
+[Se houver parcelamento, incluir]
+[Se houver link, incluir]
 
-💰 **TARIFA C** - R$ 3.500,00
-✅ Inclui 1 item pessoal + 1 mala de mão 10kg + 2 malas despachadas 23kg
-✅ Marcação de assento antecipada
-💳 Em até 12x sem juros no cartão, sendo a primeira de R$ 350,00 + 11x de R$ 286,36
-🏷️ Reembolsável conforme regras do bilhete
-🔗 https://www.cvc.com.br/carrinho-dinamico/yyyyy
-
-Valores sujeitos a confirmação e disponibilidade
-
-**EXEMPLO 2 - VOOS DIFERENTES (use OPÇÃO 1, 2):**
-*OPÇÃO 1 - Latam*
-29/12 - Guarulhos 12:15 / Santos Dumont 13:15 (voo direto)
---
-04/01 - Galeão 14:00 / Guarulhos 15:10 (voo direto)
-
-💰 R$ 6.479,56 para 01 adulto
-✅ Inclui 1 item pessoal + 1 mala de mão 10kg
-💳 Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73
-🏷️ Não reembolsável
-🔗 https://www.cvc.com.br/carrinho-dinamico/68989c87bd7224e8db4acfb6
-
-*OPÇÃO 2 - Latam*
-18/09 - Salvador 05:00 / Galeão 07:10 (voo direto)
---
-25/09 - Galeão 22:30 / Salvador 00:30 (voo direto)
-
-💰 R$ 845,96 para 01 adulto
-✅ Inclui 1 item pessoal + 1 mala de mão 10kg
-💳 Em até 9x sem juros no cartão, sendo a primeira de R$ 225,72 + 8x de R$ 77,53
-🏷️ Não reembolsável
-🔗 https://www.cvc.com.br/carrinho-dinamico/68989d6121c4f74e9d1e9fd5
+[Use TARIFA C apenas se existir uma terceira opção real nos dados]
 
 Valores sujeitos a confirmação e disponibilidade`;
       }
