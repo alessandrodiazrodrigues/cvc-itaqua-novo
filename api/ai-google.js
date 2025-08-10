@@ -1,165 +1,158 @@
-// 🚀 CVC ITAQUA v6.1 - GOOGLE DOCS API (COM CACHE E CRUZEIROS)
-import { google } from 'googleapis';
+// 🚀 CVC ITAQUA v7.0 - SEM DEPENDÊNCIA DO GOOGLE DOCS
+// Templates embutidos diretamente no código
 
 // ================================================================================
-// 📋 SISTEMA DE CACHE DO MANUAL
+// 📋 TEMPLATES DE ORÇAMENTOS
 // ================================================================================
-let cache = {
-  manual: null,
-  timestamp: 0,
+const TEMPLATES = {
+  // Template 1: Aéreo Ida e Volta Simples
+  aereo_ida_volta: `
+*{companhia}*
+{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
+--
+{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoOrigem} {horaChegadaVolta} ({tipoVooVolta})
+
+💰 R$ {valorTotal} para {passageiros}
+✅ {bagagem}
+💳 {parcelamento}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+  // Template 2: Aéreo com Conexão Detalhada
+  aereo_conexao: `
+*{companhia}*
+IDA: {dataIda}
+{aeroportoOrigem} {horaIda} / {aeroportoConexao} {horaChegadaConexao}
+Espera de {tempoEspera} em {aeroportoConexao}
+{aeroportoConexao} {horaSaidaConexao} / {aeroportoDestino} {horaChegadaDestino}
+--
+VOLTA: {dataVolta}
+{aeroportoDestino} {horaVolta} / {aeroportoConexaoVolta} {horaChegadaConexaoVolta}
+Espera de {tempoEsperaVolta} em {aeroportoConexaoVolta}
+{aeroportoConexaoVolta} {horaSaidaConexaoVolta} / {aeroportoOrigem} {horaChegadaVolta}
+
+💰 R$ {valorTotal} para {passageiros}
+✅ {bagagem}
+💳 {parcelamento}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+  // Template 3: Múltiplas Opções
+  multiplas_opcoes: `
+*OPÇÃO {numero} - {companhia}*
+{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
+--
+{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoOrigem} {horaChegadaVolta} ({tipoVooVolta})
+
+💰 R$ {valorTotal} para {passageiros}
+✅ {bagagem}
+💳 {parcelamento}
+🏷️ {reembolso}
+🔗 {link}`,
+
+  // Template 4: Cruzeiro CORRIGIDO
+  cruzeiro: `
+🚢 *Cruzeiro {nomeNavio}* – {noites} noites
+{passageiros}
+📅 Embarque: {dataEmbarque} ({diaSemana})
+📍 Saída e chegada: {porto}
+
+🗺️ ROTEIRO:
+{roteiroDias}
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+
+{opcoesCabines}
+
+🔗 {link}
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+  // Template 5: Pacote Completo
+  pacote_completo: `
+*Pacote {destino}*
+Embarque: {dataEmbarque}
+Pacote para {passageiros}
+
+*O Pacote Inclui:*
+- Passagem Aérea ida e volta para {destino}
+- Taxas de Embarque
+- Traslado {tipoTraslado}
+- {noites} noites de hospedagem no hotel escolhido
+
+✈️ *Voos {companhia}:*
+{dataIda} - {origem} {horaIda} / {destino} {horaChegadaIda} ({tipoVoo})
+--
+{dataVolta} - {destino} {horaVolta} / {origem} {horaChegadaVolta} ({tipoVooVolta})
+
+{opcoesHoteis}
+
+Valores sujeitos a confirmação e disponibilidade`
 };
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos
 
 // ================================================================================
-// 🔐 AUTENTICAÇÃO GOOGLE
+// 🗺️ TABELA DE CONVERSÃO DE AEROPORTOS
 // ================================================================================
-const credentialsJsonString = process.env.GOOGLE_CREDENTIALS_JSON;
-if (!credentialsJsonString) {
-  throw new Error('A variável de ambiente GOOGLE_CREDENTIALS_JSON não foi definida.');
-}
-const credentials = JSON.parse(credentialsJsonString);
-
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: credentials.client_email,
-    private_key: credentials.private_key,
-  },
-  scopes: ['https://www.googleapis.com/auth/documents.readonly'],
-});
-
-// ================================================================================
-// 📚 FUNÇÃO PARA LER O MANUAL DO GOOGLE DOCS
-// ================================================================================
-async function lerManualGoogleDocs() {
-  const agora = Date.now();
+const AEROPORTOS = {
+  // Brasil
+  'GRU': 'Guarulhos',
+  'CGH': 'Congonhas',
+  'VCP': 'Viracopos',
+  'SDU': 'Santos Dumont',
+  'GIG': 'Galeão',
+  'BSB': 'Brasília',
+  'CNF': 'Confins',
+  'PLU': 'Pampulha',
+  'POA': 'Porto Alegre',
+  'CWB': 'Curitiba',
+  'FLN': 'Florianópolis',
+  'SSA': 'Salvador',
+  'REC': 'Recife',
+  'FOR': 'Fortaleza',
+  'NAT': 'Natal',
+  'MCZ': 'Maceió',
+  'AJU': 'Aracaju',
+  'JPA': 'João Pessoa',
+  'THE': 'Teresina',
+  'SLZ': 'São Luís',
+  'BEL': 'Belém',
+  'MAO': 'Manaus',
+  'CGB': 'Cuiabá',
+  'CGR': 'Campo Grande',
+  'GYN': 'Goiânia',
+  'VIX': 'Vitória',
   
-  // Verificar cache
-  if (cache.manual && (agora - cache.timestamp < CACHE_DURATION)) {
-    console.log('✅ Manual carregado do CACHE');
-    return cache.manual;
-  }
-  
-  try {
-    console.log('🔄 Baixando novo manual do Google Docs...');
-    const docs = google.docs({ version: 'v1', auth });
-    const documentId = process.env.GOOGLE_DOCS_ID || '1J6luZmr0Q_ldqsmEJ4kuMEfA7BYt3DInd7-Tt98hInY';
-    
-    const response = await docs.documents.get({ documentId });
-    let manualTexto = '';
-    
-    const content = response.data.body?.content || [];
-    content.forEach(element => {
-      if (element.paragraph) {
-        element.paragraph.elements?.forEach(elem => {
-          if (elem.textRun?.content) {
-            manualTexto += elem.textRun.content;
-          }
-        });
-      }
-    });
-    
-    // Adicionar template de cruzeiro ao manual se não existir
-    if (!manualTexto.includes('11. CRUZEIRO')) {
-      manualTexto += `
-
-// ================================================================================
-// 11. CRUZEIRO - TEMPLATE OFICIAL
-// ================================================================================
-
-FORMATO EXATO PARA CRUZEIROS:
-
-🚢 *Cruzeiro [Nome do Navio]* – [X noites]
-[XX passageiros]
-📅 Embarque: [DD/MM/AAAA] ([dia da semana])
-📍 Saída e chegada: [Porto]
-
-🗺️ ROTEIRO:
-Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
-Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 4 ([DD/MM]) - Em navegação
-Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
-
-💥 Tarifas disponíveis!
-(Sujeita à confirmação de cabine e categoria)
-
-🛏 Opções de Cabines:
-
-**CABINE INTERNA** - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-**CABINE COM VARANDA** - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-🔗 [link]
-
-✅ Inclui: hospedagem a bordo, pensão completa
-🚫 Não inclui: bebidas, excursões
-📲 Me chama pra garantir a sua cabine! 🌴🛳️
-
-Valores sujeitos a confirmação e disponibilidade
-`;
-    }
-    
-    // Salvar no cache
-    cache.manual = manualTexto;
-    cache.timestamp = agora;
-    
-    console.log('✅ Manual carregado do Google Docs:', manualTexto.length, 'caracteres');
-    return manualTexto;
-    
-  } catch (error) {
-    console.error('❌ Erro ao ler Google Docs:', error.message);
-    
-    // Retornar manual com template de cruzeiro em caso de erro
-    const manualFallback = `
-// MANUAL FALLBACK COM TEMPLATE DE CRUZEIRO
-
-11. CRUZEIRO - TEMPLATE OFICIAL
-
-🚢 *Cruzeiro [Nome do Navio]* – [X noites]
-[XX passageiros]
-📅 Embarque: [DD/MM/AAAA] ([dia da semana])
-📍 Saída e chegada: [Porto]
-
-🗺️ ROTEIRO:
-Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
-Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
-Dia 4 ([DD/MM]) - Em navegação
-Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
-
-💥 Tarifas disponíveis!
-(Sujeita à confirmação de cabine e categoria)
-
-🛏 Opções de Cabines:
-
-**CABINE INTERNA** - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-**CABINE COM VARANDA** - [Categoria] ([Código])
-💰 R$ [valor] (valor total com taxas)
-
-🔗 [link]
-
-✅ Inclui: hospedagem a bordo, pensão completa
-🚫 Não inclui: bebidas, excursões
-📲 Me chama pra garantir a sua cabine! 🌴🛳️
-
-Valores sujeitos a confirmação e disponibilidade
-`;
-    
-    cache.manual = manualFallback;
-    cache.timestamp = Date.now();
-    return manualFallback;
-  }
-}
+  // Internacional
+  'EZE': 'Ezeiza - Buenos Aires',
+  'AEP': 'Aeroparque - Buenos Aires',
+  'SCL': 'Santiago',
+  'LIM': 'Lima',
+  'BOG': 'Bogotá',
+  'MEX': 'Cidade do México',
+  'CUN': 'Cancún',
+  'MIA': 'Miami',
+  'MCO': 'Orlando',
+  'JFK': 'Nova York - JFK',
+  'LAX': 'Los Angeles',
+  'LIS': 'Lisboa',
+  'OPO': 'Porto',
+  'MAD': 'Madrid',
+  'BCN': 'Barcelona',
+  'CDG': 'Paris - Charles de Gaulle',
+  'FCO': 'Roma - Fiumicino',
+  'LHR': 'Londres - Heathrow'
+};
 
 // ================================================================================
 // 🎯 HANDLER PRINCIPAL DA API
@@ -179,27 +172,28 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
-    const hasGoogle = !!process.env.GOOGLE_CREDENTIALS_JSON;
     
     return res.status(200).json({
       success: true,
-      message: 'API CVC Itaqua v6.1 - Online (com suporte a cruzeiros)',
+      message: 'API CVC Itaqua v7.0 - Online (sem dependência do Google Docs)',
+      version: '7.0',
       services: {
         openai: hasOpenAI ? 'Configurado' : 'Não configurado',
-        anthropic: hasAnthropic ? 'Configurado' : 'Não configurado',
-        googleDocs: hasGoogle ? 'Configurado' : 'Não configurado'
+        anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
       },
-      cache: {
-        hasManual: !!cache.manual,
-        age: cache.manual ? `${Math.floor((Date.now() - cache.timestamp) / 1000)}s` : 'N/A'
-      }
+      features: [
+        'Templates embutidos no código',
+        'Suporte a cruzeiros com roteiro completo',
+        'Processamento mais rápido',
+        'Sem dependências externas'
+      ]
     });
   }
   
   // POST - Processar orçamento
   if (req.method === 'POST') {
     try {
-      console.log('📥 Requisição recebida');
+      console.log('📥 Requisição recebida v7.0');
       
       const { 
         observacoes = '', 
@@ -212,9 +206,6 @@ export default async function handler(req, res) {
         imagemBase64 = null,
         pdfContent = null
       } = req.body;
-      
-      // Buscar manual do Google Docs
-      const manualCompleto = await lerManualGoogleDocs();
       
       // Determinar conteúdo principal
       const conteudoPrincipal = observacoes || textoColado || pdfContent || '';
@@ -231,76 +222,39 @@ export default async function handler(req, res) {
       if (isDicas) {
         const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
         
-        // Tentar extrair o período da viagem do orçamento
-        const periodoViagem = conteudoPrincipal ? `
-        IMPORTANTE: Analise o orçamento e identifique o período da viagem (mês/data).
-        Se encontrar, foque as dicas NESSE PERÍODO ESPECÍFICO.` : '';
-        
-        // Detectar se há crianças na viagem
         const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || conteudoPrincipal.toLowerCase().includes('crianças');
-        const dicasCriancas = temCriancas ? `
-        ATENÇÃO: Esta viagem inclui CRIANÇAS! 
-        Adapte TODAS as dicas para famílias com crianças.
-        Inclua atrações infantis, restaurantes family-friendly, cuidados especiais.` : '';
         
         prompt = `Você é um especialista em viagens da CVC Itaqua. 
         Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
         ${isNacional ? 'Este é um DESTINO NACIONAL (Brasil).' : 'Este é um DESTINO INTERNACIONAL.'}
-        ${periodoViagem}
-        ${dicasCriancas}
+        ${temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS! Adapte TODAS as dicas para famílias com crianças.' : ''}
         
         Use este formato EXATO:
         
         🌟 DICAS SOBRE [DESTINO] ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
         
-        📅 SOBRE SUA VIAGEM EM [MÊS/PERÍODO]:
-        [O que esperar do clima e o que aproveitar NESTE período específico da viagem]
-        [Eventos ou atrações especiais deste período]
-        ${temCriancas ? '[Mencione atividades ideais para crianças neste período]' : ''}
-        
-        ${temCriancas ? `👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS COM CRIANÇAS:
-        [Atrações específicas para crianças]
-        [Horários mais adequados para passeios com pequenos]
-        [Restaurantes com área kids ou menu infantil]
-        [Cuidados especiais com sol, hidratação e descanso]
-        ` : ''}
+        📅 SOBRE SUA VIAGEM:
+        [O que esperar do clima e o que aproveitar]
+        ${temCriancas ? '[Mencione atividades ideais para crianças]' : ''}
         
         💰 DICAS DE ECONOMIA:
-        [3-4 dicas práticas - NÃO mencionar comprar pela internet]
-        ${temCriancas ? '[Mencione gratuidades ou descontos para crianças]' : ''}
+        [3-4 dicas práticas]
         [Mencionar vantagens dos pacotes CVC]
         
         🍽️ GASTRONOMIA LOCAL:
         [Pratos típicos que vale a pena experimentar]
         ${temCriancas ? '[Indicar pratos que crianças costumam gostar]' : ''}
-        [Restaurantes parceiros CVC com desconto, se aplicável]
         
         🎯 PRINCIPAIS ATRAÇÕES:
         [Top 5 lugares imperdíveis]
         ${temCriancas ? '[Destacar quais são mais adequadas para crianças]' : ''}
-        [Mencionar que a CVC vende todos os passeios com segurança]
         
         💡 DOCUMENTAÇÃO NECESSÁRIA:
         ${isNacional ? 
-        `RG original em bom estado (máximo 10 anos) ou CNH válida.${temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original. Menores desacompanhados de um dos pais precisam de autorização judicial com firma reconhecida.' : ''}` : 
-        `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório. Menores precisam de autorização de ambos os pais se viajarem desacompanhados de um deles.' : ''}`}
+        `RG original em bom estado ou CNH válida.${temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original.' : ''}` : 
+        `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório.' : ''}`}
         
-        🚕 TRANSPORTE:
-        [Como se locomover - destacar transfers CVC disponíveis]
-        ${temCriancas ? '[Mencionar necessidade de cadeirinha/assento infantil]' : ''}
-        
-        🎁 O QUE TRAZER:
-        [Sugestões de lembrancinhas típicas]
-        ${temCriancas ? '[Sugestões de presentes infantis locais]' : ''}
-        
-        📌 OUTRAS ÉPOCAS DO ANO:
-        [Breve menção sobre o que muda em outras estações]
-        
-        ⚠️ DICAS DE SEGURANÇA:
-        [Cuidados básicos com pertences e saúde]
-        ${temCriancas ? '[Atenção especial: pulseiras de identificação, protetor solar infantil, repelente adequado]' : ''}
-        
-        📞 IMPORTANTE: A CVC Itaqua oferece todos os passeios com receptivos locais confiáveis, transfers seguros${temCriancas ? ', cadeirinhas para crianças' : ''} e assistência 24h durante sua viagem!`;
+        📞 IMPORTANTE: A CVC Itaqua oferece todos os passeios com receptivos locais confiáveis!`;
       }
       // ================================================================================
       // 🏆 PROMPT PARA RANKING
@@ -339,191 +293,120 @@ export default async function handler(req, res) {
         💰 Diária média: R$ [valor]`;
       }
       // ================================================================================
-      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS (OTIMIZADO COM CRUZEIROS)
+      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS
       // ================================================================================
       else {
-        prompt = `Você é um assistente especialista da CVC Itaqua. Sua única função é receber DADOS de um cliente e um MANUAL de formatação e retornar um orçamento perfeitamente formatado, seguindo a lógica de decisão abaixo.
+        // Converter a tabela de aeroportos em string para o prompt
+        const tabelaAeroportos = Object.entries(AEROPORTOS)
+          .map(([codigo, nome]) => `${codigo} → ${nome}`)
+          .join('\n');
+        
+        prompt = `Você é um assistente especialista da CVC Itaqua. Analise os dados do cliente e formate um orçamento seguindo EXATAMENTE as regras abaixo.
 
-**MANUAL COMPLETO (Use para consultar os templates exatos):**
-${manualCompleto}
-
-**DADOS DO CLIENTE PARA PROCESSAR:**
+**DADOS DO CLIENTE:**
 ${conteudoPrincipal}
-${destino ? `\nDestino adicional informado: ${destino}` : ''}
+${destino ? `\nDestino: ${destino}` : ''}
 ${adultos ? `\nAdultos: ${adultos}` : ''}
 ${criancas > 0 ? `\nCrianças: ${criancas}` : ''}
-${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
+${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
 
 // =================================================================
-// LÓGICA DE DECISÃO OBRIGATÓRIA (SIGA ESTA ÁRVORE DE DECISÃO):
+// IDENTIFICAÇÃO DO TIPO DE ORÇAMENTO
 // =================================================================
 
-**ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
+**ANÁLISE PRIORITÁRIA:**
 
-0. **REGRA UNIVERSAL PARA MÚLTIPLOS VOOS:**
-   - SE houver 2 ou mais voos/blocos no texto
-   - SEMPRE use formato: *OPÇÃO 1 - Companhia*, *OPÇÃO 2 - Companhia*
-   - Não importa se são companhias iguais ou diferentes
-   - Exceção: Use TARIFA A, B APENAS quando for literalmente o MESMO voo (mesma companhia E mesmos horários EXATOS)
-
-1. **VOOS IDÊNTICOS COM TARIFAS DIFERENTES (RARO):**
-   - SE houver 2+ blocos com:
-     * MESMA companhia E
-     * MESMOS horários EXATOS (nem 1 minuto diferente) E
-     * MESMAS datas E
-     * Apenas preços diferentes
-   - ENTÃO: Use formato TARIFA A, B, C em um único bloco
-   - Isto é MUITO RARO
-
-2. **CRUZEIRO (PRIORIDADE ALTA)**
+1. **CRUZEIRO**
    - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa", "noites•", "Embarque:", "Desembarque:", "Em navegação"
-   - ENTÃO: Use template "11. CRUZEIRO" EXATAMENTE como está no manual
-   - IMPORTANTE: 
-     * Use o número de passageiros informado (geralmente 2)
-     * Formate o roteiro dia a dia conforme o template
-     * Liste TODAS as cabines disponíveis com seus preços totais
-     * Mantenha o link original se fornecido
-     * SEMPRE termine com "Valores sujeitos a confirmação e disponibilidade"
+   - FORMATO OBRIGATÓRIO:
+     * Título: 🚢 *Cruzeiro [Nome do Navio]* – X noites
+     * INCLUIR ROTEIRO DIA A DIA (MUITO IMPORTANTE!)
+     * Formato do roteiro:
+       Dia 1 (DD/MM) - [Porto] - Saída HH:MM
+       Dia 2 (DD/MM) - [Destino] - HH:MM às HH:MM
+       Dia 3 (DD/MM) - [Destino] - HH:MM às HH:MM
+       Dia 4 (DD/MM) - Em navegação
+       Dia 5 (DD/MM) - [Porto] - Chegada HH:MM
+     * Listar TODAS as categorias de cabines
+     * Usar valores totais com taxas
+     * Incluir link original
 
-3. **MÚLTIPLOS VOOS DIFERENTES (MAIS COMUM):**
-   - QUALQUER diferença = use OPÇÃO 1, OPÇÃO 2
-   - Diferentes companhias = SEMPRE opções
-   - Diferentes horários = SEMPRE opções
-   - Diferentes datas = SEMPRE opções
-   - Cada OPÇÃO tem seu próprio título, dados e link
+2. **MÚLTIPLOS VOOS**
+   - SE houver 2+ voos diferentes
+   - Use: *OPÇÃO 1 - Companhia*, *OPÇÃO 2 - Companhia*
 
-4. **PACOTE COMPLETO**
-   - SE contém: "pacote" OU ("hotel" E "aéreo") OU "hospedagem incluída"
-   - ENTÃO: Use template "10. PACOTE COMPLETO"
+3. **PACOTE COMPLETO**
+   - SE contém: "pacote" OU ("hotel" E "aéreo")
+   - Use template de pacote
 
-5. **HOTÉIS (sem aéreo)**
-   - SE contém apenas hotéis, sem menção a voos:
-     - Com datas sequenciais diferentes: Use "9. ROTEIRO DE HOTÉIS"
-     - Com mesma data, múltiplas opções: Use "8. HOTÉIS - MÚLTIPLAS OPÇÕES"
-
-6. **MULTITRECHO**
-   - SE contém: "multitrecho" OU "Trecho 1, Trecho 2, Trecho 3" 
-   - OU roteiro tipo A→B→C→D
-   - ENTÃO: Use template "6. MULTITRECHO"
-
-7. **MÚLTIPLAS OPÇÕES DO MESMO VOO**
-   - SE são 2-3 opções de tarifa para o MESMO voo (mesma data/rota):
-     - 2 opções: Use template "4. MÚLTIPLAS OPÇÕES - 2 PLANOS"
-     - 3 opções: Use template "5. MÚLTIPLAS OPÇÕES - 3 PLANOS"
-
-8. **VOO SOMENTE IDA**
-   - SE contém: "somente ida", "apenas ida", "one way" OU não tem volta
-   - ENTÃO: Use template "3. AÉREO SOMENTE IDA"
-
-9. **CONEXÃO DETALHADA**
-   - SE mostra tempo de espera E aeroporto de conexão explicitamente
-   - ENTÃO: Use template "2. AÉREO IDA E VOLTA COM CONEXÃO DETALHADA"
-
-10. **IDA E VOLTA SIMPLES (padrão)**
-   - TODOS os outros casos de voo com ida e volta
-   - Use template "1. AÉREO IDA E VOLTA SIMPLES"
+4. **VOO SIMPLES**
+   - Padrão para voos únicos
+   - Título: *Companhia*
 
 // =================================================================
-// REGRAS ESPECÍFICAS PARA CRUZEIROS:
+// TEMPLATE ESPECÍFICO PARA CRUZEIROS
 // =================================================================
 
-**QUANDO DETECTAR CRUZEIRO:**
-1. Identifique: Nome do navio, número de noites, data de embarque
-2. Extraia o roteiro completo dia a dia
-3. Liste TODAS as categorias de cabines disponíveis
-4. Use valores totais (já com taxas incluídas)
-5. Mantenha o formato EXATO do template
-6. Inclua o link original se fornecido
-7. SEMPRE adicione os emojis corretos (🚢, 📅, 📍, 🗺️, 💥, 🛏, 💰, 🔗, ✅, 🚫, 📲)
+Para CRUZEIROS, use EXATAMENTE este formato:
+
+🚢 *Cruzeiro [Nome do Navio]* – [X] noites
+[XX] passageiros
+📅 Embarque: [DD/MM/AAAA] ([dia da semana])
+📍 Saída e chegada: [Porto]
+
+🗺️ ROTEIRO:
+Dia 1 ([DD/MM]) - [Porto] - Saída [HH:MM]
+Dia 2 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 3 ([DD/MM]) - [Destino] - [HH:MM] às [HH:MM]
+Dia 4 ([DD/MM]) - Em navegação
+Dia 5 ([DD/MM]) - [Porto] - Chegada [HH:MM]
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+
+**CABINE INTERNA** - [Categoria] ([Código])
+💰 R$ [valor total com taxas]
+
+**CABINE EXTERNA** - Vista Mar - [Categoria] ([Código])
+💰 R$ [valor total com taxas]
+
+**CABINE COM VARANDA** - [Categoria] ([Código])
+💰 R$ [valor total com taxas]
+
+🔗 [link]
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade
 
 // =================================================================
-// REGRAS CRÍTICAS DE FORMATAÇÃO:
+// CONVERSÃO DE AEROPORTOS
 // =================================================================
 
-**TÍTULO - REGRA ABSOLUTA:**
-- Para VOO ÚNICO: Use apenas "*Companhia*"
-- Para MÚLTIPLOS VOOS: Use "*OPÇÃO X - Companhia*"
-- Para CRUZEIRO: Use "*Cruzeiro [Nome do Navio]*"
-- Exemplos CORRETOS: 
-  * Único: "*Gol*"
-  * Múltiplo: "*OPÇÃO 1 - Gol*", "*OPÇÃO 2 - Latam*"
-  * Cruzeiro: "*Cruzeiro MSC Sinfonia*"
-- NUNCA inclua cidades no título de voos
+**CONVERTA TODOS OS CÓDIGOS:**
+${tabelaAeroportos}
 
-**MÚLTIPLOS VOOS - REGRA ABSOLUTA:**
-- Companhias DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2
-- Horários DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2  
-- NÃO use formato simples quando há 2+ voos
-- Cada OPÇÃO deve começar com "*OPÇÃO X - Companhia*"
+// =================================================================
+// REGRAS GERAIS DE FORMATAÇÃO
+// =================================================================
 
-**PASSAGEIROS - NUNCA INVENTE:**
-- PROIBIDO inventar idades
-- Use APENAS: "01 bebê", "01 criança" (sem idades)
-- SÓ coloque idade se estiver EXPLICITAMENTE no texto original
-- Para cruzeiros: use o número de passageiros informado
+1. **TÍTULO DE VOOS:** Sempre "*Companhia*" (sem cidades)
+2. **DATAS:** Formato DD/MM ou DD/MM/AAAA
+3. **HORÁRIOS:** Formato HH:MM (24h)
+4. **VALORES:** R$ X.XXX,XX (com espaço após R$)
+5. **PASSAGEIROS:** "02 adultos", "01 criança" (com zero à esquerda)
+6. **PARCELAMENTO:** "Xx de R$ XXX,XX s/ juros no cartão"
+7. **FINALIZAÇÃO:** Sempre "Valores sujeitos a confirmação e disponibilidade"
 
-**CONVERSÕES OBRIGATÓRIAS DE AEROPORTOS:**
-- GRU → Guarulhos
-- CGH → Congonhas  
-- SDU → Santos Dumont
-- GIG → Galeão
-- SSA → Salvador
-- REC → Recife
-- FOR → Fortaleza
-- BSB → Brasília
-- POA → Porto Alegre
-- CWB → Curitiba
-- FLN → Florianópolis
-- NAT → Natal
-- MCZ → Maceió
-- CNF → Confins
-- VCP → Viracopos
-- (veja tabela completa no manual)
-
-**FORMATAÇÃO ESSENCIAL:**
-1. TÍTULO: SEMPRE e SOMENTE "*Companhia*" (para voos) ou "*Cruzeiro [Nome]*" (para cruzeiros)
-2. DATAS: Formato "15/11" ou "15/11/2026" (conforme o contexto)
-3. HORÁRIOS: Formato "06:20" (24h, sem espaços)
-4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
-5. PASSAGEIROS: "02 adultos" ou "02 passageiros" (zero à esquerda)
-6. SEPARADOR IDA/VOLTA: Sempre usar "--"
-7. LINKS: Se houver URL no texto, adicionar linha: 🔗 URL (SEM colchetes)
-8. BAGAGEM: SEMPRE incluir informação de bagagem para voos
-9. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
-
-**PARCELAMENTO - REGRAS IMPORTANTES:**
-- COM ENTRADA: "Em até Xx sem juros no cartão, sendo a primeira de R$ xxx + (X-1)x de R$ xxx"
-- CÁLCULO DO TOTAL: Se tem "Entrada de R$ X + Yx", o total de parcelas é Y+1
-- Exemplos corretos:
-  * "Entrada de R$ 1.288,99 + 9x de R$ 576,73" → "Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73"
-  * "Entrada de R$ 225,72 + 8x de R$ 77,53" → "Em até 9x sem juros no cartão, sendo a primeira de R$ 225,72 + 8x de R$ 77,53"
-  * "Entrada de R$ 500,00 + 11x de R$ 100,00" → "Em até 12x sem juros no cartão, sendo a primeira de R$ 500,00 + 11x de R$ 100,00"
-- NUNCA usar a palavra "Entrada" no resultado final, sempre "primeira parcela" ou "sendo a primeira"
-- SEM ENTRADA: "10x de R$ xxx s/ juros no cartão"
-
-**CASOS ESPECIAIS:**
-- PASSAGEIROS: NUNCA inventar idades
-  * Bebês: apenas "01 bebê" ou "02 bebês" (SEM idade, exceto se informada)
-  * Crianças: apenas "01 criança" ou "02 crianças" (SEM idade, exceto se informada)
-  * Se a idade estiver informada: "01 bebê (10 meses)" ou "01 criança (5 anos)"
-- Chegada dia seguinte: "23:30 (15/11)"
-- Múltiplos voos: Cada um pode ter seu próprio link e parcelamento
-- Voos idênticos: Usar formato TARIFA A, B, C
-
-**INSTRUÇÃO FINAL:**
-- NUNCA adicione explicações como "De acordo com o manual..."
-- Responda APENAS com o orçamento formatado
-- NÃO invente informações (idades, valores, links falsos)
-- SEMPRE use OPÇÃO 1, 2 quando há múltiplos voos
-- SEMPRE use apenas nome da companhia no título de voos
-- Para CRUZEIROS, siga EXATAMENTE o template fornecido
-- Use TARIFA A, B APENAS quando for exatamente o mesmo voo
-
-**IMPORTANTE SOBRE TARIFAS:**
-- Use TARIFA A, B, C APENAS para as opções que realmente existem nos dados
-- Se houver apenas 2 opções, use apenas TARIFA A e B
-- NUNCA invente tarifas adicionais ou valores
-- NUNCA use links de exemplo (xxxxx, yyyyy) - use apenas links reais fornecidos`;
+**IMPORTANTE:**
+- NUNCA invente informações
+- Para cruzeiros, o ROTEIRO DIA A DIA é OBRIGATÓRIO
+- Use apenas os dados fornecidos
+- Mantenha a formatação para WhatsApp`;
       }
       
       // ================================================================================
@@ -532,7 +415,7 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
       let resultado = '';
       let iaUsada = 'gpt-4o-mini'; // padrão
       
-      // Usar Claude para imagens ou casos complexos
+      // Usar Claude para casos complexos
       const usarClaude = imagemBase64 || 
                         (conteudoPrincipal.length > 2000) ||
                         tipos.includes('Cruzeiro') ||
@@ -573,7 +456,7 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
           },
           body: JSON.stringify({
             model: 'claude-3-haiku-20240307',
-            max_tokens: 1500,
+            max_tokens: 2000,
             temperature: 0.2,
             messages
           })
@@ -609,7 +492,7 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
             model: 'gpt-4o-mini',
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.2,
-            max_tokens: 1500
+            max_tokens: 2000
           })
         });
         
@@ -632,10 +515,7 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
         success: true,
         result: resultado,
         ia_usada: iaUsada,
-        cache_info: {
-          manual_cached: cache.manual ? true : false,
-          cache_age_seconds: cache.manual ? Math.floor((Date.now() - cache.timestamp) / 1000) : 0
-        }
+        version: '7.0'
       });
       
     } catch (error) {
