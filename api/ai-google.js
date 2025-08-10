@@ -217,8 +217,28 @@ export default async function handler(req, res) {
       // Primeiro verificar se há informação no conteúdo principal
       const conteudoLower = conteudoPrincipal.toLowerCase();
       
-      // Detectar padrões de passageiros no texto principal
-      if (conteudoLower.includes('adt') || conteudoLower.includes('chd') || conteudoLower.includes('inf')) {
+      // Detectar padrões mais amplos de passageiros
+      // Padrão 1: "X adultos + Y crianças"
+      const padraoCompleto = conteudoPrincipal.match(/(\d+)\s*(?:adulto|adultos|adt|adts)\s*\+\s*(\d+)\s*(?:criança|crianças|chd|chds)(?:\s+(.+?)(?:\s+anos?)?)?/i);
+      
+      if (padraoCompleto) {
+        const numAdultos = parseInt(padraoCompleto[1]);
+        const numCriancas = parseInt(padraoCompleto[2]);
+        const idades = padraoCompleto[3];
+        
+        let textoPax = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
+        textoPax += ` + ${String(numCriancas).padStart(2, '0')} ${numCriancas === 1 ? 'criança' : 'crianças'}`;
+        
+        if (idades) {
+          // Limpar e formatar idades
+          const idadesLimpas = idades.replace(/anos?/gi, '').trim();
+          textoPax += ` (${idadesLimpas} anos)`;
+        }
+        
+        infoPassageiros = textoPax;
+      }
+      // Detectar padrões separados de passageiros no texto
+      else if (conteudoLower.includes('adt') || conteudoLower.includes('chd') || conteudoLower.includes('inf')) {
         // Extrair números de adultos
         const adtMatch = conteudoPrincipal.match(/(\d+)\s*(?:adt|adts|adulto)/i);
         const chdMatch = conteudoPrincipal.match(/(\d+)\s*(?:chd|chds|criança)/i);
@@ -306,6 +326,13 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
+        // Lista de cidades nacionais para referência
+        const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
+                                 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
+                                 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
+                                 'Búzios', 'Ilhéus', 'Santos', 'Angra dos Reis', 'Cabo Frio',
+                                 'Paraty', 'Porto Seguro', 'Arraial do Cabo'];
+        
         // Tentar detectar o destino real do orçamento
         let destinoReal = destino || '';
         
@@ -338,11 +365,6 @@ export default async function handler(req, res) {
         // Se ainda não tem destino, tentar extrair do conteúdo
         if (!destinoReal && conteudoPrincipal) {
           // Procurar por cidades conhecidas no texto
-          const cidadesNacionais = ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 
-                                   'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 
-                                   'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu',
-                                   'Búzios', 'Ilhéus', 'Santos'];
-          
           for (const cidade of cidadesNacionais) {
             if (conteudoPrincipal.includes(cidade)) {
               destinoReal = cidade;
@@ -533,11 +555,18 @@ ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
      * Parcelamento vai JUNTO com cada cabine, não no final
      * Se houver promoção (ex: "3º E 4º GRATIS"), mencione
 
-2. **ABREVIAÇÕES DE PASSAGEIROS:**
+2. **ABREVIAÇÕES E PADRÕES DE PASSAGEIROS:**
    - adt/adts = adulto(s)
    - chd/chds = criança(s)
    - inf = bebê
+   - "2 adultos + 2 crianças" = detectar e formatar
+   - Se houver idades: "2 adultos + 2 crianças (2 e 12 anos)"
    - Exemplo: "2 adts + 2 chds (2 e 10)" = "02 adultos + 02 crianças (2 e 10 anos)"
+
+3. **PACOTES DE BEBIDAS (se houver):**
+   - Detectar: "Pacote Easy", "Pacote Premium", "Pacote Não Alcoólico"
+   - Adicionar seção separada após as cabines
+   - Valores são por cabine (4 passageiros)
 
 3. **MÚLTIPLOS VOOS**
    - SE houver 2+ voos diferentes
