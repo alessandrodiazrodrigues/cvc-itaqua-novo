@@ -709,6 +709,19 @@ ${tabelaAeroportos}
       let resultado = '';
       let iaUsada = 'gpt-4o-mini'; // padrão
       
+      // Debug: verificar o que está sendo enviado
+      console.log('🔍 DEBUG - Tipo de conteúdo:');
+      console.log('- Tem imagem?', !!imagemBase64);
+      console.log('- Tamanho do texto:', conteudoPrincipal.length);
+      console.log('- Tipos selecionados:', tipos);
+      console.log('- Primeiros 200 chars do texto:', conteudoPrincipal.substring(0, 200));
+      
+      if (imagemBase64) {
+        console.log('🖼️ DEBUG - Imagem detectada:');
+        console.log('- Tipo MIME:', imagemBase64.split(';')[0]);
+        console.log('- Tamanho base64:', imagemBase64.length, 'caracteres');
+      }
+      
       // Usar Claude para casos complexos
       const usarClaude = imagemBase64 || 
                         (conteudoPrincipal.length > 2000) ||
@@ -719,11 +732,14 @@ ${tabelaAeroportos}
                         conteudoPrincipal.toLowerCase().includes('costa') ||
                         conteudoPrincipal.toLowerCase().includes('cabine');
       
+      console.log('🤖 DEBUG - IA selecionada:', usarClaude ? 'Claude' : 'GPT');
+      
       if (usarClaude && process.env.ANTHROPIC_API_KEY) {
         // ================================================================================
         // 🤖 PROCESSAMENTO COM CLAUDE
         // ================================================================================
         console.log('🤖 Usando Claude 3 Haiku...');
+        console.log('📝 Tamanho do prompt:', prompt.length, 'caracteres');
         iaUsada = 'claude-3-haiku';
         
         const messages = [{
@@ -741,6 +757,8 @@ ${tabelaAeroportos}
           ] : prompt
         }];
         
+        console.log('📤 Enviando para Claude com:', imagemBase64 ? 'texto + imagem' : 'apenas texto');
+        
         const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -752,7 +770,8 @@ ${tabelaAeroportos}
             model: 'claude-3-haiku-20240307',
             max_tokens: 2000,
             temperature: 0.2,
-            messages
+            messages,
+            system: "Você é um assistente da CVC Itaqua. Ao analisar imagens, descreva primeiro o que você vê na imagem antes de formatar o orçamento."
           })
         });
         
@@ -765,11 +784,14 @@ ${tabelaAeroportos}
         const claudeData = await claudeResponse.json();
         resultado = claudeData.content[0].text;
         
+        console.log('✅ Resposta Claude recebida:', resultado.substring(0, 200), '...');
+        
       } else {
         // ================================================================================
         // 🤖 PROCESSAMENTO COM GPT-4o-mini
         // ================================================================================
         console.log('🤖 Usando GPT-4o-mini...');
+        console.log('📝 Tamanho do prompt:', prompt.length, 'caracteres');
         
         const OPENAI_KEY = process.env.OPENAI_API_KEY;
         if (!OPENAI_KEY) {
@@ -798,6 +820,8 @@ ${tabelaAeroportos}
         
         const gptData = await gptResponse.json();
         resultado = gptData.choices[0].message.content;
+        
+        console.log('✅ Resposta GPT recebida:', resultado.substring(0, 200), '...');
       }
       
       // ================================================================================
