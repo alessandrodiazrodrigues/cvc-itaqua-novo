@@ -228,6 +228,16 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
+0. **VERIFICAÇÃO INICIAL - MÚLTIPLOS BLOCOS DE VOOS**
+   - CONTE quantos blocos separados de voos existem nos dados
+   - SE houver 2 ou mais blocos com:
+     * Diferentes datas de viagem OU
+     * Diferentes destinos OU  
+     * Diferentes origens OU
+     * Separados por "Selecionar" ou "Excluir"
+   - ENTÃO: Formate CADA bloco como uma OPÇÃO separada (OPÇÃO 1, OPÇÃO 2, etc.)
+   - Use a estrutura: Um título para cada opção, depois as informações de cada voo
+
 1. **MÚLTIPLOS VOOS DIFERENTES (Prioridade máxima)**
    - SE existem 2+ blocos de voos com datas OU destinos OU origens diferentes
    - E NÃO são apenas opções de tarifa do mesmo voo
@@ -292,25 +302,55 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - (veja tabela completa no manual)
 
 **FORMATAÇÃO ESSENCIAL:**
-1. TÍTULO: Sempre "*Companhia - Cidade ✈ Cidade*" (NUNCA aeroportos)
+1. TÍTULO: Sempre apenas "*Companhia*" (SEM cidades, SEM rotas)
+   - Correto: "*Latam*" ou "*GOL*" ou "*Azul*"
+   - ERRADO: "*Latam - São Paulo ✈ Rio*"
 2. DATAS: Formato "15/11" (sempre 2 dígitos)
 3. HORÁRIOS: Formato "06:20" (24h, sem espaços)
 4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
 5. PASSAGEIROS: "02 adultos" (zero à esquerda)
 6. SEPARADOR IDA/VOLTA: Sempre usar "--"
-7. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
+7. LINKS: Se houver URL no texto, adicionar linha: "🔗 [URL]"
+8. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
+
+**PARCELAMENTO - REGRAS IMPORTANTES:**
+- COM ENTRADA: "Em até Xx sem juros no cartão, sendo a primeira de R$ xxx + (X-1)x de R$ xxx"
+- Exemplo: "Em até 10x sem juros no cartão, sendo a primeira de R$ 1.288,99 + 9x de R$ 576,73"
+- NUNCA usar a palavra "Entrada", sempre "primeira parcela" ou "sendo a primeira"
+- SEM ENTRADA: "10x de R$ xxx s/ juros no cartão"
 
 **CASOS ESPECIAIS:**
 - Crianças: idade em ANOS (2-11 anos)
 - Bebês: idade em MESES (0-23 meses)
 - Chegada dia seguinte: "23:30 (15/11)"
-- Parcelamento: só incluir se fornecido nos dados
+- Links: Procurar por URLs começando com http/https e incluir
 
 **INSTRUÇÃO FINAL:**
 - Use EXATAMENTE o formato do template escolhido
 - NÃO invente informações não fornecidas
 - MANTENHA todos os emojis do template
-- Responda APENAS com o orçamento formatado, sem explicações adicionais`;
+- Responda APENAS com o orçamento formatado, sem explicações adicionais
+
+**EXEMPLO DE MÚLTIPLOS VOOS (IMPORTANTE):**
+Se receber 2 voos diferentes, formate assim:
+
+*OPÇÃO 1 - Latam*
+29/12 - Guarulhos 12:15 / Santos Dumont 13:15 (voo direto)
+--
+04/01 - Galeão 14:00 / Guarulhos 15:10 (voo direto)
+
+💰 R$ 6.041,10 para 01 adulto
+🏷️ Não reembolsável
+
+*OPÇÃO 2 - Latam*
+18/09 - Salvador 05:00 / Galeão 07:10 (voo direto)
+--
+25/09 - Galeão 22:30 / Salvador 00:30 (voo direto)
+
+💰 R$ 845,96 para 01 adulto
+🏷️ Não reembolsável
+
+Valores sujeitos a confirmação e disponibilidade`;
       }
       
       // ================================================================================
