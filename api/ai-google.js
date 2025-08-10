@@ -354,7 +354,11 @@ ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
 (Sujeita à confirmação de cabine e categoria)
 
 🛏 Opções de Cabines:
-[LISTAR APENAS AS CABINES FORNECIDAS COM VALORES TOTAIS]
+
+**CABINE [TIPO]** - [Categoria] ([Código])
+💰 R$ [usar o "Total a pagar"] (total com taxas)
+
+[Se houver mais cabines, repetir o formato acima]
 
 🔗 [link]
 
@@ -391,11 +395,37 @@ Valores sujeitos a confirmação e disponibilidade
 **REGRAS ABSOLUTAS PARA CRUZEIROS:**
 1. NUNCA invente paradas/roteiro - se não houver, NÃO inclua a seção ROTEIRO
 2. NUNCA invente cabines - liste APENAS as fornecidas
-3. Use SEMPRE o "Total a pagar" como valor da cabine
+3. SEMPRE use o "Total a pagar" como valor único da cabine (NÃO liste valores por passageiro)
 4. Se houver promoção (OFERTA RELAMPAGO, 3º E 4º GRATIS, etc), inclua após a data
-5. Para cabines fornecidas, use o formato:
-   **CABINE [TIPO]** - [Categoria] ([Código])
-   💰 R$ [valor total]
+5. Para cada cabine fornecida, use EXATAMENTE este formato:
+   **CABINE INTERNA** - Bella (IB)
+   💰 R$ [valor do "Total a pagar"]
+6. NÃO liste valores individuais de passageiros
+7. NÃO liste taxas separadamente - já estão incluídas no total
+
+**EXEMPLO CORRETO para seu caso:**
+🚢 *Cruzeiro MSC Sinfonia* – 4 noites
+2 passageiros
+📅 Embarque: 30/01/2026 (sexta-feira)
+📍 Saída e chegada: Santos
+
+🎯 OFERTA RELÂMPAGO - 3º E 4º GRÁTIS
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+
+**CABINE INTERNA** - Bella (IB)
+💰 R$ 5.634,00
+
+🔗 [link]
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: bebidas, excursões
+📲 Me chama pra garantir a sua cabine! 🌴🛳️
+
+Valores sujeitos a confirmação e disponibilidade
 
 // =================================================================
 // CONVERSÃO DE AEROPORTOS
@@ -416,10 +446,12 @@ ${tabelaAeroportos}
 6. **PARCELAMENTO:** "Xx de R$ XXX,XX s/ juros no cartão"
 7. **FINALIZAÇÃO:** Sempre "Valores sujeitos a confirmação e disponibilidade"
 
-**IMPORTANTE:**
-- NUNCA invente informações
-- Para cruzeiros, o ROTEIRO DIA A DIA é OBRIGATÓRIO
-- Use apenas os dados fornecidos
+**REGRAS CRÍTICAS - NUNCA INVENTE:**
+- NUNCA invente roteiros de cruzeiro - só inclua se fornecido
+- NUNCA invente cabines extras - liste APENAS as fornecidas
+- NUNCA invente valores - use EXATAMENTE os valores dados
+- Se não tiver informação, NÃO inclua
+- Para cruzeiros SEM roteiro, NÃO inclua a seção ROTEIRO
 - Mantenha a formatação para WhatsApp`;
       }
       
