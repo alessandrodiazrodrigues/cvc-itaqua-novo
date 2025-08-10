@@ -270,28 +270,27 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 
 **ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
-0. **VERIFICAÇÃO INICIAL - COMPANHIAS DIFERENTES**
-   - SE houver voos de COMPANHIAS DIFERENTES (Gol vs Latam vs Azul, etc.)
-   - ENTÃO: SEMPRE use OPÇÃO 1, OPÇÃO 2 (mesmo que sejam datas iguais)
-   - IMPORTANTE: Companhias diferentes = voos diferentes
+0. **REGRA UNIVERSAL PARA MÚLTIPLOS VOOS:**
+   - SE houver 2 ou mais voos/blocos no texto
+   - SEMPRE use formato: *OPÇÃO 1 - Companhia*, *OPÇÃO 2 - Companhia*
+   - Não importa se são companhias iguais ou diferentes
+   - Exceção: Use TARIFA A, B APENAS quando for literalmente o MESMO voo (mesma companhia E mesmos horários EXATOS)
 
-1. **VOOS IDÊNTICOS COM TARIFAS DIFERENTES**
+1. **VOOS IDÊNTICOS COM TARIFAS DIFERENTES (RARO):**
    - SE houver 2+ blocos com:
      * MESMA companhia E
-     * MESMOS horários exatos E
+     * MESMOS horários EXATOS (nem 1 minuto diferente) E
      * MESMAS datas E
      * Apenas preços diferentes
    - ENTÃO: Use formato TARIFA A, B, C em um único bloco
-   - Isto é RARO - geralmente são voos diferentes
+   - Isto é MUITO RARO
 
-2. **MÚLTIPLOS VOOS DIFERENTES (mais comum)**
-   - SE houver qualquer diferença em:
-     * Companhias diferentes OU
-     * Horários diferentes (mesmo que seja 10 minutos) OU
-     * Datas diferentes OU
-     * Destinos/origens diferentes
-   - ENTÃO: Use OPÇÃO 1, OPÇÃO 2, etc.
-   - Cada opção tem seu próprio link quando houver
+2. **MÚLTIPLOS VOOS DIFERENTES (MAIS COMUM):**
+   - QUALQUER diferença = use OPÇÃO 1, OPÇÃO 2
+   - Diferentes companhias = SEMPRE opções
+   - Diferentes horários = SEMPRE opções
+   - Diferentes datas = SEMPRE opções
+   - Cada OPÇÃO tem seu próprio título, dados e link
 
 2. **CRUZEIRO**
    - SE contém: "cruzeiro", "navio", "cabine", "MSC", "Costa"
@@ -333,10 +332,12 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 // =================================================================
 
 **TÍTULO - REGRA ABSOLUTA:**
-- SEMPRE use APENAS "*Companhia*" 
-- NUNCA "*Companhia - Cidade ✈ Cidade*"
-- Exemplos CORRETOS: "*Gol*", "*Latam*", "*Azul*"
-- Exemplos ERRADOS: "*Gol - São Paulo ✈ Rio*", "*Latam - Guarulhos ✈ Salvador*"
+- Para VOO ÚNICO: Use apenas "*Companhia*"
+- Para MÚLTIPLOS VOOS: Use "*OPÇÃO X - Companhia*"
+- Exemplos CORRETOS: 
+  * Único: "*Gol*"
+  * Múltiplo: "*OPÇÃO 1 - Gol*", "*OPÇÃO 2 - Latam*"
+- NUNCA inclua cidades no título
 
 **MÚLTIPLOS VOOS - REGRA ABSOLUTA:**
 - Companhias DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2
