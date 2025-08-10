@@ -201,6 +201,7 @@ export default async function handler(req, res) {
         destino = '',
         adultos = '',
         criancas = 0,
+        idadesCriancas = [], // Array com as idades das crianças
         tipos = [],
         parcelamento = null,
         imagemBase64 = null,
@@ -209,6 +210,32 @@ export default async function handler(req, res) {
       
       // Determinar conteúdo principal
       const conteudoPrincipal = observacoes || textoColado || pdfContent || '';
+      
+      // Formatar informações de passageiros com idades
+      let infoPassageiros = '';
+      if (adultos || criancas > 0) {
+        const adultosNum = parseInt(adultos) || 0;
+        const criancasNum = parseInt(criancas) || 0;
+        
+        let partes = [];
+        if (adultosNum > 0) {
+          partes.push(`${String(adultosNum).padStart(2, '0')} ${adultosNum === 1 ? 'adulto' : 'adultos'}`);
+        }
+        if (criancasNum > 0) {
+          // Pegar idades das crianças se fornecidas
+          const idadesCriancas = req.body.idadesCriancas || [];
+          let textoCriancas = `${String(criancasNum).padStart(2, '0')} ${criancasNum === 1 ? 'criança' : 'crianças'}`;
+          
+          if (idadesCriancas.length > 0) {
+            textoCriancas += ` (${idadesCriancas.join(' e ')} ${idadesCriancas.length === 1 ? 'ano' : 'anos'})`;
+          }
+          partes.push(textoCriancas);
+        }
+        
+        if (partes.length > 0) {
+          infoPassageiros = partes.join(' + ');
+        }
+      }
       
       // Verificar se é requisição de dicas ou ranking
       const isDicas = tipos.includes('Dicas');
@@ -306,8 +333,7 @@ export default async function handler(req, res) {
 **DADOS DO CLIENTE:**
 ${conteudoPrincipal}
 ${destino ? `\nDestino: ${destino}` : ''}
-${adultos ? `\nAdultos: ${adultos}` : ''}
-${criancas > 0 ? `\nCrianças: ${criancas}` : ''}
+${infoPassageiros ? `\nPassageiros: ${infoPassageiros}` : ''}
 ${parcelamento ? `\nParcelamento: ${parcelamento}x sem juros` : ''}
 
 // =================================================================
@@ -402,12 +428,15 @@ Valores sujeitos a confirmação e disponibilidade
    💰 R$ [valor do "Total a pagar"]
 6. NÃO liste valores individuais de passageiros
 7. NÃO liste taxas separadamente - já estão incluídas no total
+8. LINK: Se não houver URL real, NÃO inclua a linha do link
+9. PASSAGEIROS: O número antes de "Editar" indica quantidade de passageiros (ex: "4Editar" = 4 passageiros)
+   - Use esse número SEMPRE, exceto se o usuário informar adultos/crianças nos campos do formulário
 
-**EXEMPLO CORRETO para seu caso:**
-🚢 *Cruzeiro MSC Sinfonia* – 4 noites
-2 passageiros
-📅 Embarque: 30/01/2026 (sexta-feira)
-📍 Saída e chegada: Santos
+**EXEMPLO CORRETO:**
+🚢 *Cruzeiro MSC Armonia* – 6 noites
+4 passageiros
+📅 Embarque: 04/01/2026 (domingo)
+📍 Saída e chegada: Rio de Janeiro
 
 🎯 OFERTA RELÂMPAGO - 3º E 4º GRÁTIS
 
@@ -417,9 +446,7 @@ Valores sujeitos a confirmação e disponibilidade
 🛏 Opções de Cabines:
 
 **CABINE INTERNA** - Bella (IB)
-💰 R$ 5.634,00
-
-🔗 [link]
+💰 R$ 12.826,00
 
 ✅ Inclui: hospedagem a bordo, pensão completa
 🚫 Não inclui: bebidas, excursões
@@ -442,14 +469,23 @@ ${tabelaAeroportos}
 2. **DATAS:** Formato DD/MM ou DD/MM/AAAA
 3. **HORÁRIOS:** Formato HH:MM (24h)
 4. **VALORES:** R$ X.XXX,XX (com espaço após R$)
-5. **PASSAGEIROS:** "02 adultos", "01 criança" (com zero à esquerda)
+5. **PASSAGEIROS:** 
+   - Para cruzeiros: buscar número antes de "Editar" (ex: "4Editar" = 4 passageiros)
+   - Para voos: "02 adultos", "01 criança" (com zero à esquerda)
+   - SEMPRE incluir idades quando informadas:
+     * Crianças: "02 crianças (10 e 15 anos)"
+     * Bebês: "01 bebê (10 meses)"
+     * Formato: sempre entre parênteses após a quantidade
+   - Só substituir quantidade se usuário informar nos campos do formulário
 6. **PARCELAMENTO:** "Xx de R$ XXX,XX s/ juros no cartão"
-7. **FINALIZAÇÃO:** Sempre "Valores sujeitos a confirmação e disponibilidade"
+7. **LINKS:** Só incluir se houver URL real (https://...), NUNCA escrever "[link]"
+8. **FINALIZAÇÃO:** Sempre "Valores sujeitos a confirmação e disponibilidade"
 
 **REGRAS CRÍTICAS - NUNCA INVENTE:**
 - NUNCA invente roteiros de cruzeiro - só inclua se fornecido
 - NUNCA invente cabines extras - liste APENAS as fornecidas
 - NUNCA invente valores - use EXATAMENTE os valores dados
+- NUNCA escreva "[link]" se não houver URL real
 - Se não tiver informação, NÃO inclua
 - Para cruzeiros SEM roteiro, NÃO inclua a seção ROTEIRO
 - Mantenha a formatação para WhatsApp`;
