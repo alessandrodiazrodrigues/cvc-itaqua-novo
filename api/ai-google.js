@@ -271,12 +271,13 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 **ANÁLISE PRIORITÁRIA - IDENTIFIQUE O TIPO:**
 
 0. **VERIFICAÇÃO INICIAL - VOOS IDÊNTICOS COM TARIFAS DIFERENTES**
-   - SE houver 2+ blocos com EXATAMENTE os mesmos:
+   - SE houver 2+ blocos/opções com EXATAMENTE:
      * Mesmos horários de ida e volta
-     * Mesma companhia
+     * Mesma companhia  
      * Mesmas datas
-     * Mas PREÇOS diferentes
+     * Mas PREÇOS diferentes (ou um com "Selecionado" e outro não)
    - ENTÃO: Use formato de TARIFA A, B, C em um único bloco
+   - IMPORTANTE: Procure por múltiplas caixas/cards na imagem ou texto repetido com valores diferentes
    - NÃO use OPÇÃO 1, OPÇÃO 2 para voos idênticos
 
 1. **MÚLTIPLOS VOOS DIFERENTES**
@@ -345,9 +346,10 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - (veja tabela completa no manual)
 
 **FORMATAÇÃO ESSENCIAL:**
-1. TÍTULO: Sempre apenas "*Companhia*" (SEM cidades, SEM rotas)
+1. TÍTULO: SEMPRE e SOMENTE "*Companhia*" 
    - Correto: "*Latam*" ou "*GOL*" ou "*Azul*"
-   - ERRADO: "*Latam - São Paulo ✈ Rio*"
+   - ERRADO: "*Latam - São Paulo ✈ Rio*" ou "*GOL - Guarulhos ✈ Salvador*"
+   - NUNCA incluir cidades, rotas ou símbolos de avião no título
 2. DATAS: Formato "15/11" (sempre 2 dígitos)
 3. HORÁRIOS: Formato "06:20" (24h, sem espaços)
 4. VALORES: "R$ 1.234,56" (espaço após R$, vírgula decimal)
