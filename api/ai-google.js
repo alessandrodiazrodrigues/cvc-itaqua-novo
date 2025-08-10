@@ -159,31 +159,30 @@ export default async function handler(req, res) {
           🚢 DICAS DO SEU CRUZEIRO ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🚢
           
           ⚓ VIDA A BORDO:
-          [Como funciona o navio, refeições incluídas, restaurantes especiais]
-          [Horários das refeições, dress code para jantar]
-          ${temCriancas ? '[Atividades infantis, kids club, piscinas para crianças]' : '[Atividades para adultos, shows, cassino]'}
+          Como funciona o navio, refeições incluídas, restaurantes especiais
+          Horários das refeições, dress code para jantar
+          ${temCriancas ? 'Atividades infantis, kids club, piscinas para crianças' : 'Atividades para adultos, shows, cassino'}
           
           🍹 PACOTE DE BEBIDAS:
           💡 IMPORTANTE: Compre o pacote de bebidas ANTECIPADO com a CVC!
-          [Economia de até 40% comparado a comprar a bordo]
-          [Opções: refrigerantes, sucos, alcoólicas, premium]
-          ${temCriancas ? '[Pacotes infantis com sucos e refrigerantes ilimitados]' : ''}
+          Economia de até 40% comparado a comprar a bordo
+          Opções: refrigerantes, sucos, alcoólicas, premium
+          ${temCriancas ? 'Pacotes infantis com sucos e refrigerantes ilimitados' : ''}
           
           🎯 PASSEIOS NOS DESTINOS:
-          [Lista dos portos de parada]
+          Lista dos portos de parada
           💡 Compre os passeios ANTECIPADOS com a CVC:
           - Garantia de lugar
           - Preços melhores que a bordo
           - Guias em português
           ${temCriancas ? '- Passeios adequados para crianças' : ''}
           
-          ${temCriancas ? `
-          👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS:
-          - Kids Club gratuito (verificar idades)
-          - Piscinas infantis e tobogãs
-          - Cardápio kids nos restaurantes
-          - Babysitting disponível (pago)
-          - Fraldário e berços sob solicitação` : ''}
+          ${temCriancas ? '👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS:' : ''}
+          ${temCriancas ? '- Kids Club gratuito (verificar idades)' : ''}
+          ${temCriancas ? '- Piscinas infantis e tobogãs' : ''}
+          ${temCriancas ? '- Cardápio kids nos restaurantes' : ''}
+          ${temCriancas ? '- Babysitting disponível (pago)' : ''}
+          ${temCriancas ? '- Fraldário e berços sob solicitação' : ''}
           
           💰 DICAS DE ECONOMIA:
           - Pacote de bebidas antecipado (economia de 40%)
@@ -192,10 +191,10 @@ export default async function handler(req, res) {
           - Spa: promoções no primeiro dia
           
           🍽️ GASTRONOMIA A BORDO:
-          [Restaurante principal incluído]
-          [Restaurantes de especialidades (pagos)]
-          [Buffet 24h, pizzaria, sorveteria]
-          ${temCriancas ? '[Menu infantil disponível em todos restaurantes]' : ''}
+          Restaurante principal incluído
+          Restaurantes de especialidades (pagos)
+          Buffet 24h, pizzaria, sorveteria
+          ${temCriancas ? 'Menu infantil disponível em todos restaurantes' : ''}
           
           📱 DICAS IMPORTANTES:
           - Check-in online antecipado
@@ -234,17 +233,10 @@ export default async function handler(req, res) {
           // DICAS NORMAIS DE DESTINO
           const isNacional = destino && ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Recife', 'Fortaleza', 'Natal', 'Maceió', 'Porto Alegre', 'Florianópolis', 'Curitiba', 'Belo Horizonte', 'Brasília', 'Manaus', 'Belém', 'Foz do Iguaçu'].some(cidade => destino.includes(cidade));
           
-          // Tentar extrair o período da viagem do orçamento
-          const periodoViagem = conteudoPrincipal ? `
-          IMPORTANTE: Analise o orçamento e identifique o período da viagem (mês/data).
-          Se encontrar, foque as dicas NESSE PERÍODO ESPECÍFICO.` : '';
+          const periodoViagem = conteudoPrincipal ? 'IMPORTANTE: Analise o orçamento e identifique o período da viagem (mês/data). Se encontrar, foque as dicas NESSE PERÍODO ESPECÍFICO.' : '';
           
-          // Detectar se há crianças na viagem
           const temCriancas = criancas > 0 || conteudoPrincipal.toLowerCase().includes('criança') || conteudoPrincipal.toLowerCase().includes('crianças');
-          const dicasCriancas = temCriancas ? `
-          ATENÇÃO: Esta viagem inclui CRIANÇAS! 
-          Adapte TODAS as dicas para famílias com crianças.
-          Inclua atrações infantis, restaurantes family-friendly, cuidados especiais.` : '';
+          const dicasCriancas = temCriancas ? 'ATENÇÃO: Esta viagem inclui CRIANÇAS! Adapte TODAS as dicas para famílias com crianças. Inclua atrações infantis, restaurantes family-friendly, cuidados especiais.' : '';
           
           prompt = `Você é um especialista em viagens da CVC Itaqua. 
           Crie dicas práticas e úteis sobre ${destino || 'o destino'}.
@@ -257,51 +249,50 @@ export default async function handler(req, res) {
           🌟 DICAS SOBRE [DESTINO] ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
           
           📅 SOBRE SUA VIAGEM EM [MÊS/PERÍODO]:
-          [O que esperar do clima e o que aproveitar NESTE período específico da viagem]
-          [Eventos ou atrações especiais deste período]
-          ${temCriancas ? '[Mencione atividades ideais para crianças neste período]' : ''}
+          O que esperar do clima e o que aproveitar NESTE período específico da viagem
+          Eventos ou atrações especiais deste período
+          ${temCriancas ? 'Mencione atividades ideais para crianças neste período' : ''}
           
-          ${temCriancas ? `👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS COM CRIANÇAS:
-          [Atrações específicas para crianças]
-          [Horários mais adequados para passeios com pequenos]
-          [Restaurantes com área kids ou menu infantil]
-          [Cuidados especiais com sol, hidratação e descanso]
-          ` : ''}
+          ${temCriancas ? '👨‍👩‍👧‍👦 DICAS PARA FAMÍLIAS COM CRIANÇAS:' : ''}
+          ${temCriancas ? 'Atrações específicas para crianças' : ''}
+          ${temCriancas ? 'Horários mais adequados para passeios com pequenos' : ''}
+          ${temCriancas ? 'Restaurantes com área kids ou menu infantil' : ''}
+          ${temCriancas ? 'Cuidados especiais com sol, hidratação e descanso' : ''}
           
           💰 DICAS DE ECONOMIA:
-          [3-4 dicas práticas - NÃO mencionar comprar pela internet]
-          ${temCriancas ? '[Mencione gratuidades ou descontos para crianças]' : ''}
-          [Mencionar vantagens dos pacotes CVC]
+          3-4 dicas práticas - NÃO mencionar comprar pela internet
+          ${temCriancas ? 'Mencione gratuidades ou descontos para crianças' : ''}
+          Mencionar vantagens dos pacotes CVC
           
           🍽️ GASTRONOMIA LOCAL:
-          [Pratos típicos que vale a pena experimentar]
-          ${temCriancas ? '[Indicar pratos que crianças costumam gostar]' : ''}
-          [Restaurantes parceiros CVC com desconto, se aplicável]
+          Pratos típicos que vale a pena experimentar
+          ${temCriancas ? 'Indicar pratos que crianças costumam gostar' : ''}
+          Restaurantes parceiros CVC com desconto, se aplicável
           
           🎯 PRINCIPAIS ATRAÇÕES:
-          [Top 5 lugares imperdíveis]
-          ${temCriancas ? '[Destacar quais são mais adequadas para crianças]' : ''}
-          [Mencionar que a CVC vende todos os passeios com segurança]
+          Top 5 lugares imperdíveis
+          ${temCriancas ? 'Destacar quais são mais adequadas para crianças' : ''}
+          Mencionar que a CVC vende todos os passeios com segurança
           
           💡 DOCUMENTAÇÃO NECESSÁRIA:
           ${isNacional ? 
-          `RG original em bom estado (máximo 10 anos) ou CNH válida.${temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original. Menores desacompanhados de um dos pais precisam de autorização judicial com firma reconhecida.' : ''}` : 
-          `Passaporte válido (mínimo 6 meses), verificar necessidade de visto.${temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório. Menores precisam de autorização de ambos os pais se viajarem desacompanhados de um deles.' : ''}`}
+          'RG original em bom estado (máximo 10 anos) ou CNH válida.' + (temCriancas ? ' CRIANÇAS: RG ou Certidão de Nascimento original. Menores desacompanhados de um dos pais precisam de autorização judicial com firma reconhecida.' : '') : 
+          'Passaporte válido (mínimo 6 meses), verificar necessidade de visto.' + (temCriancas ? ' CRIANÇAS: Passaporte próprio obrigatório. Menores precisam de autorização de ambos os pais se viajarem desacompanhados de um deles.' : '')}
           
           🚕 TRANSPORTE:
-          [Como se locomover - destacar transfers CVC disponíveis]
-          ${temCriancas ? '[Mencionar necessidade de cadeirinha/assento infantil]' : ''}
+          Como se locomover - destacar transfers CVC disponíveis
+          ${temCriancas ? 'Mencionar necessidade de cadeirinha/assento infantil' : ''}
           
           🎁 O QUE TRAZER:
-          [Sugestões de lembrancinhas típicas]
-          ${temCriancas ? '[Sugestões de presentes infantis locais]' : ''}
+          Sugestões de lembrancinhas típicas
+          ${temCriancas ? 'Sugestões de presentes infantis locais' : ''}
           
           📌 OUTRAS ÉPOCAS DO ANO:
-          [Breve menção sobre o que muda em outras estações]
+          Breve menção sobre o que muda em outras estações
           
           ⚠️ DICAS DE SEGURANÇA:
-          [Cuidados básicos com pertences e saúde]
-          ${temCriancas ? '[Atenção especial: pulseiras de identificação, protetor solar infantil, repelente adequado]' : ''}
+          Cuidados básicos com pertences e saúde
+          ${temCriancas ? 'Atenção especial: pulseiras de identificação, protetor solar infantil, repelente adequado' : ''}
           
           📞 IMPORTANTE: A CVC Itaqua oferece todos os passeios com receptivos locais confiáveis, transfers seguros${temCriancas ? ', cadeirinhas para crianças' : ''} e assistência 24h durante sua viagem!`;
         }
