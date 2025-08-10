@@ -332,6 +332,23 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 // REGRAS CRÍTICAS DE FORMATAÇÃO:
 // =================================================================
 
+**TÍTULO - REGRA ABSOLUTA:**
+- SEMPRE use APENAS "*Companhia*" 
+- NUNCA "*Companhia - Cidade ✈ Cidade*"
+- Exemplos CORRETOS: "*Gol*", "*Latam*", "*Azul*"
+- Exemplos ERRADOS: "*Gol - São Paulo ✈ Rio*", "*Latam - Guarulhos ✈ Salvador*"
+
+**MÚLTIPLOS VOOS - REGRA ABSOLUTA:**
+- Companhias DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2
+- Horários DIFERENTES = SEMPRE use OPÇÃO 1, OPÇÃO 2  
+- NÃO use formato simples quando há 2+ voos
+- Cada OPÇÃO deve começar com "*OPÇÃO X - Companhia*"
+
+**PASSAGEIROS - NUNCA INVENTE:**
+- PROIBIDO inventar idades
+- Use APENAS: "01 bebê", "01 criança" (sem idades)
+- SÓ coloque idade se estiver EXPLICITAMENTE no texto original
+
 **CONVERSÕES OBRIGATÓRIAS DE AEROPORTOS:**
 - GRU → Guarulhos
 - CGH → Congonhas  
@@ -387,12 +404,12 @@ ${parcelamento ? `\nParcelamento solicitado: ${parcelamento}x sem juros` : ''}
 - Voos idênticos: Usar formato TARIFA A, B, C
 
 **INSTRUÇÃO FINAL:**
-- Use EXATAMENTE o formato do template escolhido
-- NÃO invente informações não fornecidas (especialmente idades, valores ou tarifas extras)
-- MANTENHA todos os emojis do template
-- SEMPRE inclua informação de bagagem (se não houver, use o padrão)
-- Use APENAS as tarifas/opções que existem nos dados fornecidos (não adicione tarifas extras)
-- Responda APENAS com o orçamento formatado, sem explicações adicionais
+- NUNCA adicione explicações como "De acordo com o manual..."
+- Responda APENAS com o orçamento formatado
+- NÃO invente informações (idades, valores, links falsos)
+- SEMPRE use OPÇÃO 1, 2 quando há múltiplos voos
+- SEMPRE use apenas nome da companhia no título
+- Use TARIFA A, B APENAS quando for exatamente o mesmo voo
 
 **IMPORTANTE SOBRE TARIFAS:**
 - Use TARIFA A, B, C APENAS para as opções que realmente existem nos dados
