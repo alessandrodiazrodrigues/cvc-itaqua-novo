@@ -1,11 +1,53 @@
-// 🚀 CVC ITAQUA v7.4 - SISTEMA COMPLETO FINAL
-// Detecção avançada de todos os tipos de orçamento
+// 🚀 CVC ITAQUA v7.5 - SISTEMA COMPLETO COM ÍNDICE
+// ================================================================================
+// 📑 ÍNDICE GERAL DO SISTEMA
+// ================================================================================
+// 1. TEMPLATES DE ORÇAMENTOS
+//    1.1 Aéreo Ida e Volta Simples
+//    1.2 Voo Combinado (Mix de Companhias)
+//    1.3 Múltiplas Opções
+//    1.4 Pacote Completo (Aéreo + Hotel)
+//    1.5 Voo com Conexão Detalhada
+//    1.6 Apenas Detalhes (Sem Preço)
+//    1.7 Cruzeiro
+// 
+// 2. TABELA DE CONVERSÃO DE AEROPORTOS
+//    2.1 Aeroportos Brasileiros Principais
+//    2.2 Aeroportos Brasileiros Regionais
+//    2.3 Aeroportos América do Sul
+//    2.4 Aeroportos América do Norte/Central
+//    2.5 Aeroportos Europa
+//
+// 3. HANDLER PRINCIPAL DA API
+//    3.1 Configuração CORS
+//    3.2 Endpoint GET - Status
+//    3.3 Endpoint POST - Processar
+//
+// 4. PROCESSAMENTO DE DADOS
+//    4.1 Detecção de Passageiros
+//    4.2 Detecção de Tipos
+//    4.3 Análise de Conteúdo
+//
+// 5. PROMPTS ESPECIALIZADOS
+//    5.1 Prompt para Dicas
+//    5.2 Prompt para Ranking
+//    5.3 Prompt Principal para Orçamentos
+//
+// 6. PROCESSAMENTO COM IA
+//    6.1 Decisão de IA (Claude vs GPT)
+//    6.2 Processamento com Claude
+//    6.3 Processamento com GPT
+//
+// 7. RESPOSTA FINAL
+//    7.1 Formatação de Resposta
+//    7.2 Logs e Debug
+// ================================================================================
 
 // ================================================================================
-// 📋 TEMPLATES DE ORÇAMENTOS - TODOS OS CASOS
+// 1. 📋 TEMPLATES DE ORÇAMENTOS - TODOS OS CASOS
 // ================================================================================
 const TEMPLATES = {
-  // Template 1: Aéreo Ida e Volta Simples
+  // 1.1 - Template Aéreo Ida e Volta Simples
   aereo_ida_volta: `
 *{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
 {dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
@@ -18,7 +60,7 @@ const TEMPLATES = {
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 2: Voo Combinado (Mix de Companhias)
+  // 1.2 - Template Voo Combinado (Mix de Companhias)
   voo_combinado: `
 *Voo {cidadeOrigem} ✈ {cidadeDestino}*
 {dataIda} a {dataVolta} ({dias} dias e {noites} noites)
@@ -40,7 +82,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 3: Múltiplas Opções (2+ escolhas)
+  // 1.3 - Template Múltiplas Opções (2+ escolhas)
   multiplas_opcoes: `
 *OPÇÃO 1 - {companhia1} - {cidadeOrigem} ✈ {cidadeDestino}*
 {dataIda1} - {aeroportoOrigem1} {horaIda1} / {aeroportoDestino1} {horaChegadaIda1} ({tipoVoo1})
@@ -65,7 +107,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 4: Pacote Completo (Aéreo + Hotel)
+  // 1.4 - Template Pacote Completo (Aéreo + Hotel)
   pacote_completo: `
 *Pacote {destino}*
 {dataIda} a {dataVolta} ({dias} dias e {noites} noites)
@@ -97,7 +139,7 @@ VOLTA - {companhiaVolta} - {dataVolta}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 5: Voo com Conexão Detalhada
+  // 1.5 - Template Voo com Conexão Detalhada
   voo_conexao_detalhada: `
 *{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
 {dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} (com {paradas} - {duracao})
@@ -111,7 +153,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 6: Apenas Detalhes (Sem Preço)
+  // 1.6 - Template Apenas Detalhes (Sem Preço)
   detalhes_sem_preco: `
 *{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
 {dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
@@ -125,7 +167,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-  // Template 7: Cruzeiro
+  // 1.7 - Template Cruzeiro
   cruzeiro: `
 🚢 *Cruzeiro {nomeNavio}* – {noites} noites
 {passageiros}
@@ -148,10 +190,10 @@ Valores sujeitos a confirmação e disponibilidade`
 };
 
 // ================================================================================
-// 🗺️ TABELA COMPLETA DE CONVERSÃO DE AEROPORTOS
+// 2. 🗺️ TABELA COMPLETA DE CONVERSÃO DE AEROPORTOS
 // ================================================================================
 const AEROPORTOS = {
-  // Brasil - Principais
+  // 2.1 - Aeroportos Brasileiros Principais
   'GRU': 'Guarulhos',
   'CGH': 'Congonhas',
   'VCP': 'Viracopos',
@@ -179,7 +221,7 @@ const AEROPORTOS = {
   'GYN': 'Goiânia',
   'VIX': 'Vitória',
   
-  // Brasil - Regionais
+  // 2.2 - Aeroportos Brasileiros Regionais
   'BPS': 'Porto Seguro',
   'IOS': 'Ilhéus',
   'CMG': 'Corumbá',
@@ -200,7 +242,7 @@ const AEROPORTOS = {
   'LDB': 'Londrina',
   'MGF': 'Maringá',
   
-  // Internacional - América do Sul
+  // 2.3 - Aeroportos América do Sul
   'EZE': 'Ezeiza - Buenos Aires',
   'AEP': 'Aeroparque - Buenos Aires',
   'SCL': 'Santiago',
@@ -214,7 +256,7 @@ const AEROPORTOS = {
   'LPB': 'La Paz',
   'VVI': 'Santa Cruz de la Sierra',
   
-  // Internacional - América do Norte/Central
+  // 2.4 - Aeroportos América do Norte/Central
   'MEX': 'Cidade do México',
   'CUN': 'Cancún',
   'MIA': 'Miami',
@@ -227,7 +269,7 @@ const AEROPORTOS = {
   'ORD': 'Chicago',
   'YYZ': 'Toronto',
   
-  // Internacional - Europa
+  // 2.5 - Aeroportos Europa
   'LIS': 'Lisboa',
   'OPO': 'Porto',
   'MAD': 'Madrid',
@@ -244,10 +286,10 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 🎯 HANDLER PRINCIPAL DA API v7.4
+// 3. 🎯 HANDLER PRINCIPAL DA API v7.5
 // ================================================================================
 export default async function handler(req, res) {
-  // Configuração de CORS
+  // 3.1 - Configuração CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -256,35 +298,45 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
-  // GET - Status da API
+  // 3.2 - Endpoint GET - Status da API
   if (req.method === 'GET') {
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
     
     return res.status(200).json({
       success: true,
-      message: 'API CVC Itaqua v7.5 - Online (Detecção Aprimorada)',
+      message: 'API CVC Itaqua v7.5 - Online (Sistema Completo com Índice)',
       version: '7.5',
       services: {
         openai: hasOpenAI ? 'Configurado' : 'Não configurado',
         anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
       },
       features: [
+        'Sistema com índice completo',
         'Detecção de voo combinado vs múltiplas opções',
         'Suporte a codeshare',
         'Processamento com e sem preços',
         'Template de pacote completo',
-        'Detecção inteligente de todos os tipos',
+        'Sistema de dicas e ranking',
         'Formatação perfeita para WhatsApp'
       ],
-      lastUpdate: '2025-01-14'
+      lastUpdate: '2025-01-14',
+      sections: {
+        '1': 'Templates de Orçamentos',
+        '2': 'Tabela de Aeroportos',
+        '3': 'Handler Principal',
+        '4': 'Processamento de Dados',
+        '5': 'Prompts Especializados',
+        '6': 'Processamento com IA',
+        '7': 'Resposta Final'
+      }
     });
   }
   
-  // POST - Processar orçamento
+  // 3.3 - Endpoint POST - Processar Orçamento
   if (req.method === 'POST') {
     try {
-      console.log('📥 Requisição recebida v7.4');
+      console.log('📥 Requisição recebida v7.5');
       
       const { 
         observacoes = '', 
@@ -299,20 +351,15 @@ export default async function handler(req, res) {
         pdfContent = null
       } = req.body;
       
+      // ================================================================================
+      // 4. 📊 PROCESSAMENTO DE DADOS
+      // ================================================================================
+      
       // Determinar conteúdo principal
       const conteudoPrincipal = observacoes || textoColado || pdfContent || '';
       const conteudoLower = conteudoPrincipal.toLowerCase();
       
-      // Log de análise
-      console.log('🔍 Análise do conteúdo:');
-      console.log('- Tipos selecionados:', tipos);
-      console.log('- Tem imagem?', !!imagemBase64);
-      console.log('- Tem hotel?', conteudoLower.includes('hotel') || conteudoLower.includes('palazzo'));
-      console.log('- Tem preço?', conteudoLower.includes('r$'));
-      console.log('- Tem Avianca?', conteudoLower.includes('avianc'));
-      console.log('- Tem Gol?', conteudoLower.includes('gol'));
-      
-      // Detectar informações de passageiros
+      // 4.1 - Detecção de Passageiros
       let infoPassageiros = '';
       
       // Padrão 1: "Total (X Adultos e Y Crianças)"
@@ -353,11 +400,11 @@ export default async function handler(req, res) {
         infoPassageiros = textoPax;
       }
       
-      // Verificar tipos especiais
+      // 4.2 - Detecção de Tipos Especiais
       const isDicas = tipos.includes('Dicas');
       const isRanking = tipos.includes('Ranking');
       
-      // Detectar tipo de orçamento
+      // 4.3 - Análise de Conteúdo
       const temHotel = tipos.includes('Hotel') || conteudoLower.includes('palazzo') || conteudoLower.includes('hotel');
       const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo') || conteudoLower.includes('ida');
       const isPacote = temHotel && temAereo;
@@ -366,11 +413,22 @@ export default async function handler(req, res) {
       const temGol = conteudoLower.includes('gol');
       const temMultiplasOpcoes = conteudoLower.includes('opção 1') || conteudoLower.includes('selecionado') && conteudoLower.split('selecionado').length > 2;
       
+      // Log de análise
+      console.log('🔍 Análise do conteúdo:');
+      console.log('- Tipos selecionados:', tipos);
+      console.log('- Tem imagem?', !!imagemBase64);
+      console.log('- Tem hotel?', temHotel);
+      console.log('- Tem preço?', temPreco);
+      console.log('- Tem Avianca?', temAvianca);
+      console.log('- Tem Gol?', temGol);
+      
       let prompt = '';
       
       // ================================================================================
-      // 💡 PROMPT PARA DICAS
+      // 5. 📝 PROMPTS ESPECIALIZADOS
       // ================================================================================
+      
+      // 5.1 - Prompt para Dicas
       if (isDicas) {
         let destinoReal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
         
@@ -455,9 +513,7 @@ export default async function handler(req, res) {
         - Formatação para WhatsApp
         - NÃO use formato de lista numerada genérica`;
       }
-      // ================================================================================
-      // 🏆 PROMPT PARA RANKING
-      // ================================================================================
+      // 5.2 - Prompt para Ranking
       else if (isRanking) {
         let destinoRanking = destino && destino !== 'Destino' && destino !== '' ? destino : null;
         
@@ -541,9 +597,7 @@ export default async function handler(req, res) {
         - Se o destino for Orlando, inclua hotéis próximos aos parques
         - Sempre destaque os benefícios CVC`;
       }
-      // ================================================================================
-      // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS - COMPLETO
-      // ================================================================================
+      // 5.3 - Prompt Principal para Orçamentos
       else {
         const tabelaAeroportos = Object.entries(AEROPORTOS)
           .map(([codigo, nome]) => `${codigo} → ${nome}`)
@@ -685,7 +739,7 @@ SAÍDA OBRIGATÓRIA:
 09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
 
 💰 R$ 1.026,02 para 01 adulto
-💳 Entrada de R$ 252,20 + 9x de R$ 85,98 s/ juros
+💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros
 ✅ Só mala de mão incluída
 🏷️ Tarifa facial
 
@@ -715,22 +769,22 @@ ${tabelaAeroportos}
 4. **SE NÃO TEM PREÇO, OMITIR LINHA DE VALOR**
 5. **INCLUIR DETALHES DE CONEXÃO QUANDO HOUVER**
 6. **MENCIONAR CODESHARE SE APLICÁVEL**
-7. **FORMATAR PARCELAMENTO CORRETAMENTE**
+7. **FORMATAR PARCELAMENTO:** "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
 8. **TERMINAR COM "Valores sujeitos..."**
 
 **IMPORTANTE:**
-- Entrada de R$ X + Yx de R$ Y = usar este formato exato
+- Parcelamento: sempre "primeira parcela" (nunca "entrada")
 - Resort Fee = mencionar em observações do hotel
 - Passageiros = sempre com zero à esquerda (01, 02, 03)`;
       }
       
       // ================================================================================
-      // 🤖 PROCESSAMENTO COM IA
+      // 6. 🤖 PROCESSAMENTO COM IA
       // ================================================================================
       let resultado = '';
       let iaUsada = 'gpt-4o-mini';
       
-      // Decidir qual IA usar
+      // 6.1 - Decisão de IA (Claude vs GPT)
       const usarClaude = imagemBase64 || 
                         (conteudoPrincipal.length > 2000) ||
                         tipos.includes('Cruzeiro') ||
@@ -739,54 +793,47 @@ ${tabelaAeroportos}
       
       console.log('🤖 IA selecionada:', usarClaude ? 'Claude' : 'GPT');
       
+      // 6.2 - Processamento com Claude
       if (usarClaude && process.env.ANTHROPIC_API_KEY) {
         console.log('🤖 Usando Claude 3 Haiku...');
         iaUsada = 'claude-3-haiku';
         
         const systemPrompt = `Você é um assistente da CVC Itaqua.
 
-INSTRUÇÕES ABSOLUTAS:
-1. DETECTAR TIPO CORRETAMENTE:
-   - Pacote = Hotel + Aéreo juntos
-   - Múltiplas Opções = 2+ cards "Selecionado"
-   - Voo Combinado = Avianca ida + Gol volta (mesmo itinerário)
-   - Voo Simples = ida/volta normal
+INSTRUÇÕES ABSOLUTAS - USE EXATAMENTE ESTE FORMATO:
 
-2. USAR TEMPLATE CORRETO:
-   - Pacote → Incluir seção de voos E hotel
-   - Múltiplas → OPÇÃO 1, OPÇÃO 2
-   - Combinado → IDA - Avianca, VOLTA - Gol
-   - Sem preço → Omitir linha de valor
+PARA VOO SIMPLES:
+*{Companhia} - {Cidade Origem} ✈ {Cidade Destino}*
+{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo})
+--
+{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo})
 
-3. CONVERTER CÓDIGOS E FORMATAR:
-   - GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
-   - NÃO incluir códigos entre parênteses
-   - Datas: usar formato DD/MM, não "ter, 03 de fevereiro"
+💰 R$ {valor} para {passageiros}
+💳 {parcelamento}
+✅ {bagagem}
+🏷️ {tarifa}
 
-4. DETECTAR PASSAGEIROS CORRETAMENTE:
-   - Procurar "Total (X Adultos e Y Crianças)" no texto
-   - Formato: "02 adultos + 02 crianças" (com zero à esquerda)
+Valores sujeitos a confirmação e disponibilidade
 
-5. VOOS COM ESCALA:
-   - Se tem duração (12h 25min), incluir: "(com 1 parada - 12h 25min)"
-   - Se voo noturno chega dia seguinte: adicionar "+1" no horário
-   - NÃO repetir códigos de aeroporto
+FORMATO CORRETO DE PARCELAMENTO:
+- COM entrada: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
+- SEM entrada: "10x de R$ XXX s/ juros no cartão"
+- NUNCA use "Entrada de", sempre "primeira parcela de"
 
-6. FORMATO DE PARCELAMENTO:
-   "Entrada de R$ 3.518,65 + 9x de R$ 1.304,48 s/ juros"
+CONVERSÕES: GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando
 
-7. RESORT FEE:
-   "⚠️ Resort Fee: $30+tax por noite (pago direto no hotel)"
+EXEMPLO CORRETO:
+*Latam - São Paulo ✈ Juazeiro do Norte*
+07/10 - Guarulhos 08:20 / Juazeiro do Norte 11:15 (voo direto)
+--
+09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
 
-8. ENDEREÇO DO HOTEL:
-   Capitalizar corretamente: "4944 W Irlo Bronson Memorial Hwy, Kissimmee, FL"
+💰 R$ 1.026,02 para 01 adulto
+💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros
+✅ Só mala de mão incluída
+🏷️ Tarifa facial
 
-9. FORMATAÇÃO DE VOOS NO PACOTE:
-   IDA - Avianca - 03/02 (não "ter, 03 de fevereiro")
-   Guarulhos 01:50 / Orlando 12:15 (sem códigos GRU/MCO)
-
-10. SEMPRE terminar com:
-    "Valores sujeitos a confirmação e disponibilidade"`;
+Valores sujeitos a confirmação e disponibilidade`;
         
         const messages = [{
           role: 'user',
@@ -828,7 +875,9 @@ INSTRUÇÕES ABSOLUTAS:
         const claudeData = await claudeResponse.json();
         resultado = claudeData.content[0].text;
         
-      } else {
+      } 
+      // 6.3 - Processamento com GPT
+      else {
         console.log('🤖 Usando GPT-4o-mini...');
         
         const OPENAI_KEY = process.env.OPENAI_API_KEY;
@@ -853,26 +902,22 @@ REGRAS CRÍTICAS - SIGA EXATAMENTE:
    
    Valores sujeitos a confirmação e disponibilidade
 
-2. NUNCA USE:
-   - Formato de lista com "Origem:", "Destino:", etc
-   - Títulos como "ORÇAMENTO DE VIAGEM"
-   - Bullet points ou listas
-   - Múltiplas linhas desnecessárias
+2. FORMATO DE PARCELAMENTO OBRIGATÓRIO:
+   - COM primeira parcela diferente: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
+   - Parcelas iguais: "10x de R$ XXX s/ juros no cartão"
+   - NUNCA use "Entrada de", sempre "primeira parcela de"
 
 3. CONVERSÕES OBRIGATÓRIAS:
    GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, BOG→Bogotá
 
-4. DETECTAR PASSAGEIROS:
-   Se não especificado, assumir "01 adulto"
-
-5. EXEMPLO CORRETO:
+4. EXEMPLO CORRETO:
    *Latam - São Paulo ✈ Juazeiro do Norte*
    07/10 - Guarulhos 08:20 / Juazeiro do Norte 11:15 (voo direto)
    --
    09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
    
    💰 R$ 1.026,02 para 01 adulto
-   💳 Entrada de R$ 252,20 + 9x de R$ 85,98 s/ juros
+   💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros
    ✅ Só mala de mão incluída
    🏷️ Tarifa facial
    
@@ -906,42 +951,58 @@ REGRAS CRÍTICAS - SIGA EXATAMENTE:
       }
       
       // ================================================================================
-      // ✅ RESPOSTA FINAL
+      // 7. ✅ RESPOSTA FINAL
       // ================================================================================
+      
+      // 7.1 - Formatação de Resposta
       console.log('✅ Processamento concluído');
       console.log('📋 Tipo detectado:', 
         isPacote ? 'PACOTE' : 
         temMultiplasOpcoes ? 'MÚLTIPLAS OPÇÕES' :
         (temAvianca && temGol) ? 'VOO COMBINADO' :
+        isDicas ? 'DICAS' :
+        isRanking ? 'RANKING' :
         'VOO SIMPLES'
       );
       console.log('💰 Tem preço?', temPreco ? 'SIM' : 'NÃO');
       
+      // 7.2 - Logs e Debug
       return res.status(200).json({
         success: true,
         result: resultado,
         ia_usada: iaUsada,
-        version: '7.4',
+        version: '7.5',
         tipo_detectado: isDicas ? 'dicas' : 
                        isRanking ? 'ranking' : 
                        isPacote ? 'pacote' :
                        temMultiplasOpcoes ? 'multiplas_opcoes' :
                        (temAvianca && temGol) ? 'voo_combinado' :
                        'voo_simples',
-        tem_preco: temPreco
+        tem_preco: temPreco,
+        debug: {
+          section_1: 'Templates processados',
+          section_2: 'Aeroportos convertidos',
+          section_3: 'Handler executado',
+          section_4: 'Dados processados',
+          section_5: 'Prompt utilizado',
+          section_6: `IA utilizada: ${iaUsada}`,
+          section_7: 'Resposta formatada'
+        }
       });
       
     } catch (error) {
       console.error('❌ Erro:', error);
       return res.status(500).json({
         success: false,
-        error: error.message || 'Erro desconhecido'
+        error: error.message || 'Erro desconhecido',
+        version: '7.5'
       });
     }
   }
   
   return res.status(405).json({
     success: false,
-    error: 'Método não suportado'
+    error: 'Método não suportado',
+    version: '7.5'
   });
 }
