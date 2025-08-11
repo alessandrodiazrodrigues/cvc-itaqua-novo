@@ -377,7 +377,7 @@ export default async function handler(req, res) {
         // Se não tem destino no campo, tentar extrair do conteúdo
         if (!destinoReal && conteudoPrincipal) {
           // Buscar padrões comuns de destino
-          const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago)/i);
+          const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa)/i);
           if (padraoDestino) {
             destinoReal = padraoDestino[0];
           }
@@ -385,40 +385,161 @@ export default async function handler(req, res) {
         
         const temCriancas = conteudoLower.includes('criança');
         const isCruzeiro = conteudoLower.includes('cruzeiro');
+        const isOrlando = destinoReal && destinoReal.toLowerCase().includes('orlando');
         
         prompt = `Você é um especialista em viagens da CVC Itaqua.
         
         ${!destinoReal ? 
-        'ANALISE o conteúdo abaixo, IDENTIFIQUE o destino mencionado e crie dicas específicas para esse destino.' :
-        `Crie dicas ESPECÍFICAS para ${destinoReal}.`}
+        'ANALISE o conteúdo abaixo, IDENTIFIQUE o destino mencionado e crie dicas específicas.' :
+        `Crie dicas ESPECÍFICAS e PRÁTICAS para ${destinoReal}.`}
         
         ${isCruzeiro ? 'Este é um CRUZEIRO. Foque em vida a bordo, cabines, refeições.' : ''}
         ${temCriancas ? 'A viagem inclui CRIANÇAS. Adapte as dicas para famílias.' : ''}
         
-        CONTEÚDO PARA ANÁLISE:
-        ${conteudoPrincipal || 'Destino não especificado'}
+        CONTEÚDO: ${conteudoPrincipal || 'Destino não especificado'}
         
-        IMPORTANTE: 
-        - Se conseguir identificar o destino, crie dicas específicas
-        - Se não houver destino claro, crie dicas gerais de viagem
-        - Use formatação para WhatsApp com emojis apropriados
-        - NÃO pergunte ao usuário, processe com as informações disponíveis`;
+        ${isOrlando ? `
+        REGRAS ESPECIAIS PARA ORLANDO:
+        - Mencione que a CVC vende ingressos para todos os parques
+        - Destaque que organizamos toda a programação dos parques
+        - Informe sobre locação de carros pela CVC
+        - Dicas práticas de economia e logística
+        - Sugestões de roteiro por dia` : ''}
+        
+        FORMATO OBRIGATÓRIO:
+        
+        🌟 DICAS PARA ${destinoReal || '[DESTINO]'} ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
+        
+        📅 SOBRE SUA VIAGEM:
+        [Clima, época, o que esperar]
+        ${temCriancas ? '[Atividades ideais para crianças]' : ''}
+        
+        ${isOrlando ? `
+        🎢 PARQUES TEMÁTICOS:
+        ✅ A CVC Itaqua vende ingressos para TODOS os parques com preços especiais!
+        ✅ Organizamos sua programação completa: qual parque em cada dia
+        ✅ Dicas de FastPass e horários estratégicos
+        [Sugestões específicas de roteiro]
+        
+        🚗 TRANSPORTE:
+        ✅ Locação de carros pela CVC com tarifas exclusivas
+        ✅ Seguro completo e GPS incluído
+        ✅ Entrega no aeroporto ou hotel
+        [Dicas de deslocamento entre parques]` : ''}
+        
+        💰 DICAS DE ECONOMIA:
+        [3-4 dicas práticas e específicas]
+        [Mencionar vantagens dos pacotes CVC]
+        
+        🍽️ GASTRONOMIA:
+        [Pratos/restaurantes imperdíveis]
+        ${temCriancas ? '[Opções family-friendly]' : ''}
+        
+        🛍️ COMPRAS:
+        [Melhores outlets e lojas]
+        [Dicas de tax free se aplicável]
+        
+        📱 DICAS PRÁTICAS:
+        [Aplicativos úteis]
+        [Documentação necessária]
+        ${temCriancas ? '[Itens essenciais para crianças]' : ''}
+        
+        ⚠️ IMPORTANTE:
+        📞 A CVC Itaqua oferece assistência completa durante toda sua viagem!
+        ✅ Ingressos, transfers, passeios - tudo com a gente!
+        
+        INSTRUÇÕES:
+        - Use emojis apropriados
+        - Seja específico e prático
+        - Sempre mencione os serviços CVC quando relevante
+        - Formatação para WhatsApp
+        - NÃO use formato de lista numerada genérica`;
       }
       // ================================================================================
       // 🏆 PROMPT PARA RANKING
       // ================================================================================
       else if (isRanking) {
-        let destinoRanking = destino && destino !== 'Destino' ? destino : 'EXTRAIR_DO_CONTEUDO';
+        let destinoRanking = destino && destino !== 'Destino' && destino !== '' ? destino : null;
+        
+        // Se não tem destino no campo, tentar extrair do conteúdo
+        if (!destinoRanking && conteudoPrincipal) {
+          // Buscar padrões comuns de destino
+          const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú)/i);
+          if (padraoDestino) {
+            destinoRanking = padraoDestino[0];
+          }
+        }
+        
+        // Se ainda não tem destino, usar destino padrão popular
+        if (!destinoRanking) {
+          destinoRanking = 'Orlando'; // Destino padrão se não identificar
+        }
         
         prompt = `Você é um especialista em hotéis da CVC Itaqua.
         
-        ${destinoRanking === 'EXTRAIR_DO_CONTEUDO' ?
-        'Identifique o destino e crie ranking TOP 5 hotéis REAIS.' :
-        `Crie ranking TOP 5 hotéis REAIS em ${destinoRanking}.`}
+        Crie um ranking dos TOP 5 hotéis REAIS em ${destinoRanking}.
         
-        CONTEÚDO: ${conteudoPrincipal}
+        CONTEÚDO PARA CONTEXTO: ${conteudoPrincipal || 'Não fornecido'}
         
-        Use formatação WhatsApp com emojis.`;
+        IMPORTANTE:
+        - Use apenas hotéis que REALMENTE EXISTEM em ${destinoRanking}
+        - Inclua variedade: luxo, médio, econômico
+        - Mencione que a CVC tem tarifas especiais
+        - Se possível, inclua hotéis mencionados no conteúdo
+        
+        Use EXATAMENTE este formato:
+        
+        🏆 TOP 5 HOTÉIS - ${destinoRanking.toUpperCase()} 🏆
+        ✅ Todos disponíveis na CVC com tarifas exclusivas!
+        
+        1️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐⭐
+        📍 [Localização/Bairro real]
+        ✨ [Principal diferencial verdadeiro]
+        🛏️ [Tipo de acomodação]
+        💰 Diária média: R$ [valor realista]
+        📞 Reserve com a CVC: melhores tarifas!
+        
+        2️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐⭐
+        📍 [Localização/Bairro real]
+        ✨ [Principal diferencial verdadeiro]
+        🛏️ [Tipo de acomodação]
+        💰 Diária média: R$ [valor realista]
+        📞 Parcelamento exclusivo CVC
+        
+        3️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐
+        📍 [Localização/Bairro real]
+        ✨ [Principal diferencial verdadeiro]
+        🛏️ [Tipo de acomodação]
+        💰 Diária média: R$ [valor realista]
+        📞 Pacotes com aéreo na CVC
+        
+        4️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐
+        📍 [Localização/Bairro real]
+        ✨ [Principal diferencial verdadeiro]
+        🛏️ [Tipo de acomodação]
+        💰 Diária média: R$ [valor realista]
+        📞 Ofertas especiais CVC
+        
+        5️⃣ [Nome do Hotel Real] ⭐⭐⭐
+        📍 [Localização/Bairro real]
+        ✨ Melhor custo-benefício
+        🛏️ [Tipo de acomodação]
+        💰 Diária média: R$ [valor realista]
+        📞 Condições imperdíveis na CVC
+        
+        💡 DICA: A CVC Itaqua oferece:
+        • Parcelamento em até 10x sem juros
+        • Pacotes completos com aéreo + hotel
+        • Seguro viagem incluído
+        • Assistência 24h durante sua estadia
+        
+        📲 Entre em contato para valores exclusivos!
+        
+        INSTRUÇÕES FINAIS:
+        - NÃO pergunte ao usuário qual destino
+        - Use hotéis REAIS do destino
+        - Se o destino for Orlando, inclua hotéis próximos aos parques
+        - Sempre destaque os benefícios CVC`;
       }
       // ================================================================================
       // 📋 PROMPT PRINCIPAL PARA ORÇAMENTOS - COMPLETO
@@ -553,6 +674,29 @@ ${temMultiplasOpcoes ? `
 🏷️ {reembolso2}
 
 Valores sujeitos a confirmação e disponibilidade` : ''}
+
+**EXEMPLO CORRETO PARA VOO SIMPLES:**
+Dados: Latam, São Paulo-Juazeiro do Norte, 07/10-09/10, GRU-JDO, R$ 1.026,02
+
+SAÍDA OBRIGATÓRIA:
+*Latam - São Paulo ✈ Juazeiro do Norte*
+07/10 - Guarulhos 08:20 / Juazeiro do Norte 11:15 (voo direto)
+--
+09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
+
+💰 R$ 1.026,02 para 01 adulto
+💳 Entrada de R$ 252,20 + 9x de R$ 85,98 s/ juros
+✅ Só mala de mão incluída
+🏷️ Tarifa facial
+
+Valores sujeitos a confirmação e disponibilidade
+
+**NUNCA FAÇA:**
+❌ Listar campos como "Origem:", "Destino:", "Data:"
+❌ Usar formato de lista ou bullet points
+❌ Adicionar títulos como "ORÇAMENTO DE VIAGEM"
+❌ Separar informações em múltiplas linhas desnecessárias
+❌ Usar formato diferente do template
 
 // =================================================================
 // CONVERSÃO DE CÓDIGOS
@@ -694,18 +838,45 @@ INSTRUÇÕES ABSOLUTAS:
         
         const systemPrompt = `Você é um assistente da CVC Itaqua.
 
-REGRAS CRÍTICAS:
-1. DETECTAR: Pacote (hotel+voo) vs Múltiplas Opções vs Voo Combinado
-2. CONVERTER: GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
-3. PASSAGEIROS: Procurar "Total (X Adultos e Y Crianças)" - formato "02 adultos + 02 crianças"
-4. VOOS: 
-   - Formato data: 03/02 (NÃO "ter, 03 de fevereiro")
-   - Sem códigos: Guarulhos (NÃO "Guarulhos (GRU)")
-   - Com escala: "(com 1 parada - 12h 25min)"
-5. PARCELAMENTO: "Entrada de R$ X + 9x de R$ Y s/ juros"
-6. SEM PREÇO: Omitir linha de valor se não houver
-7. HOTEL: Capitalizar endereço corretamente
-8. TERMINAR: "Valores sujeitos a confirmação e disponibilidade"`;
+REGRAS CRÍTICAS - SIGA EXATAMENTE:
+
+1. FORMATO OBRIGATÓRIO PARA VOOS:
+   *Companhia - Cidade Origem ✈ Cidade Destino*
+   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo)
+   --
+   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo)
+   
+   💰 R$ valor para passageiros
+   💳 Parcelamento (se houver)
+   ✅ Bagagem
+   🏷️ Tipo tarifa
+   
+   Valores sujeitos a confirmação e disponibilidade
+
+2. NUNCA USE:
+   - Formato de lista com "Origem:", "Destino:", etc
+   - Títulos como "ORÇAMENTO DE VIAGEM"
+   - Bullet points ou listas
+   - Múltiplas linhas desnecessárias
+
+3. CONVERSÕES OBRIGATÓRIAS:
+   GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, BOG→Bogotá
+
+4. DETECTAR PASSAGEIROS:
+   Se não especificado, assumir "01 adulto"
+
+5. EXEMPLO CORRETO:
+   *Latam - São Paulo ✈ Juazeiro do Norte*
+   07/10 - Guarulhos 08:20 / Juazeiro do Norte 11:15 (voo direto)
+   --
+   09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
+   
+   💰 R$ 1.026,02 para 01 adulto
+   💳 Entrada de R$ 252,20 + 9x de R$ 85,98 s/ juros
+   ✅ Só mala de mão incluída
+   🏷️ Tarifa facial
+   
+   Valores sujeitos a confirmação e disponibilidade`;
         
         const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
