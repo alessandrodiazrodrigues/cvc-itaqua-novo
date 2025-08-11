@@ -679,8 +679,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="cadastro-vendas.html">
-                            <i class="fas fa-handshake"></i> Vendas
+                        <a class="nav-link" href="vendas.html">
+                            <i class="fas fa-shopping-cart"></i> Vendas
                         </a>
                     </li>
                     <li class="nav-item">
@@ -961,56 +961,7 @@
         let vendedorLogado = null; // Para futuro sistema de login
 
         // ================================================================================
-        // 🚀 INICIALIZAÇÃO
-        // ================================================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v6.0 - Design Padronizado');
-            console.log('✨ Funcionalidades:');
-            console.log('   ✅ Design unificado com sistema de Orçamentos');
-            console.log('   ✅ Bootstrap 5 integrado');
-            console.log('   ✅ Visual moderno e responsivo');
-            console.log('   ✅ Gradientes e animações suaves');
-            
-            document.getElementById('data_abertura').valueAsDate = new Date();
-            carregarOrbiuns();
-            document.getElementById('formNovoOrbium').addEventListener('submit', enviarNovoOrbium);
-            document.getElementById('formEditarOrbium').addEventListener('submit', editarOrbium);
-        });
-
-        // ================================================================================
-        // 📡 FUNÇÃO FETCH COM TRATAMENTO DE ERROS
-        // ================================================================================
-        async function fetchCorsSeguro(dados) {
-            console.log('📡 Enviando requisição:', dados);
-            
-            try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
-                    body: JSON.stringify(dados)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('📥 Dados recebidos:', data);
-                
-                return data;
-                
-            } catch (error) {
-                console.error('❌ Erro na requisição:', error);
-                mostrarErroTemporario(`Erro de conexão: ${error.message}`);
-                throw error;
-            }
-        }
-
-        // ================================================================================
-        // 📊 CARREGAR ORBIUNS DA PLANILHA
+        // 📊 CARREGAR ORBIUNS DA PLANILHA - FUNÇÃO GLOBAL
         // ================================================================================
         async function carregarOrbiuns(manterFiltros = false) {
             const loadingEl = document.getElementById('loadingMessage');
@@ -1522,6 +1473,67 @@
                 abrirModalNovoOrbium();
             }
         });
+
+        // ================================================================================
+        // 🚀 INICIALIZAÇÃO
+        // ================================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v6.0 - Design Padronizado');
+            console.log('✨ Funcionalidades:');
+            console.log('   ✅ Design unificado com sistema de Orçamentos');
+            console.log('   ✅ Bootstrap 5 integrado');
+            console.log('   ✅ Visual moderno e responsivo');
+            console.log('   ✅ Gradientes e animações suaves');
+            
+            const dataAbertura = document.getElementById('data_abertura');
+            if (dataAbertura) {
+                dataAbertura.valueAsDate = new Date();
+            }
+            
+            carregarOrbiuns();
+            
+            const formNovo = document.getElementById('formNovoOrbium');
+            if (formNovo) {
+                formNovo.addEventListener('submit', enviarNovoOrbium);
+            }
+            
+            const formEditar = document.getElementById('formEditarOrbium');
+            if (formEditar) {
+                formEditar.addEventListener('submit', editarOrbium);
+            }
+        });
+
+        // ================================================================================
+        // 📡 FUNÇÃO FETCH COM TRATAMENTO DE ERROS
+        // ================================================================================
+        async function fetchCorsSeguro(dados) {
+            console.log('📡 Enviando requisição:', dados);
+            
+            try {
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 Dados recebidos:', data);
+                
+                return data;
+                
+            } catch (error) {
+                console.error('❌ Erro na requisição:', error);
+                mostrarErroTemporario(`Erro de conexão: ${error.message}`);
+                throw error;
+            }
+        }
 
         // ================================================================================
         // 🚀 LOGS DO SISTEMA
