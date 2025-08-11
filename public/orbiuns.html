@@ -958,7 +958,51 @@
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
-        let vendedorLogado = null; // Para futuro sistema de login
+        let vendedorLogado = null;
+
+        // ================================================================================
+        // 🎛️ FUNÇÃO PARA ABRIR MODAL - DECLARADA PRIMEIRO!
+        // ================================================================================
+        function abrirModalNovoOrbium() {
+            const dataInput = document.getElementById('data_abertura');
+            if (dataInput) {
+                dataInput.valueAsDate = new Date();
+            }
+            const modal = new bootstrap.Modal(document.getElementById('modalNovoOrbium'));
+            modal.show();
+        }
+
+        // ================================================================================
+        // 📡 FUNÇÃO FETCH COM TRATAMENTO DE ERROS
+        // ================================================================================
+        async function fetchCorsSeguro(dados) {
+            console.log('📡 Enviando requisição:', dados);
+            
+            try {
+                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 Dados recebidos:', data);
+                
+                return data;
+                
+            } catch (error) {
+                console.error('❌ Erro na requisição:', error);
+                mostrarErroTemporario(`Erro de conexão: ${error.message}`);
+                throw error;
+            }
+        }
 
         // ================================================================================
         // 📊 CARREGAR ORBIUNS DA PLANILHA - FUNÇÃO GLOBAL
@@ -1465,17 +1509,7 @@
         }
 
         // ================================================================================
-        // 🎛️ EVENT LISTENERS
-        // ================================================================================
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'n') {
-                e.preventDefault();
-                abrirModalNovoOrbium();
-            }
-        });
-
-        // ================================================================================
-        // 🚀 INICIALIZAÇÃO
+        // 🚀 INICIALIZAÇÃO - NO FINAL APÓS TODAS AS FUNÇÕES
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Sistema de Orbiuns CVC Itaqua v6.0 - Design Padronizado');
@@ -1484,6 +1518,7 @@
             console.log('   ✅ Bootstrap 5 integrado');
             console.log('   ✅ Visual moderno e responsivo');
             console.log('   ✅ Gradientes e animações suaves');
+            console.log('   ✅ Todas as funções disponíveis globalmente');
             
             const dataAbertura = document.getElementById('data_abertura');
             if (dataAbertura) {
@@ -1503,37 +1538,13 @@
             }
         });
 
-        // ================================================================================
-        // 📡 FUNÇÃO FETCH COM TRATAMENTO DE ERROS
-        // ================================================================================
-        async function fetchCorsSeguro(dados) {
-            console.log('📡 Enviando requisição:', dados);
-            
-            try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
-                    body: JSON.stringify(dados)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('📥 Dados recebidos:', data);
-                
-                return data;
-                
-            } catch (error) {
-                console.error('❌ Erro na requisição:', error);
-                mostrarErroTemporario(`Erro de conexão: ${error.message}`);
-                throw error;
+        // Event listener para atalho de teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                abrirModalNovoOrbium();
             }
-        }
+        });
 
         // ================================================================================
         // 🚀 LOGS DO SISTEMA
