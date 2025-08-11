@@ -263,8 +263,8 @@ export default async function handler(req, res) {
     
     return res.status(200).json({
       success: true,
-      message: 'API CVC Itaqua v7.4 - Online (Sistema Completo)',
-      version: '7.4',
+      message: 'API CVC Itaqua v7.5 - Online (Detecção Aprimorada)',
+      version: '7.5',
       services: {
         openai: hasOpenAI ? 'Configurado' : 'Não configurado',
         anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
@@ -372,23 +372,37 @@ export default async function handler(req, res) {
       // 💡 PROMPT PARA DICAS
       // ================================================================================
       if (isDicas) {
-        let destinoReal = destino && destino !== 'Destino' ? destino : 'EXTRAIR_DO_CONTEUDO';
+        let destinoReal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
+        
+        // Se não tem destino no campo, tentar extrair do conteúdo
+        if (!destinoReal && conteudoPrincipal) {
+          // Buscar padrões comuns de destino
+          const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago)/i);
+          if (padraoDestino) {
+            destinoReal = padraoDestino[0];
+          }
+        }
         
         const temCriancas = conteudoLower.includes('criança');
         const isCruzeiro = conteudoLower.includes('cruzeiro');
         
         prompt = `Você é um especialista em viagens da CVC Itaqua.
         
-        ${destinoReal === 'EXTRAIR_DO_CONTEUDO' ? 
-        'Identifique o destino no conteúdo e crie dicas específicas.' :
+        ${!destinoReal ? 
+        'ANALISE o conteúdo abaixo, IDENTIFIQUE o destino mencionado e crie dicas específicas para esse destino.' :
         `Crie dicas ESPECÍFICAS para ${destinoReal}.`}
         
-        ${isCruzeiro ? 'CRUZEIRO: Foque em vida a bordo.' : ''}
-        ${temCriancas ? 'FAMÍLIA: Adapte para crianças.' : ''}
+        ${isCruzeiro ? 'Este é um CRUZEIRO. Foque em vida a bordo, cabines, refeições.' : ''}
+        ${temCriancas ? 'A viagem inclui CRIANÇAS. Adapte as dicas para famílias.' : ''}
         
-        CONTEÚDO: ${conteudoPrincipal}
+        CONTEÚDO PARA ANÁLISE:
+        ${conteudoPrincipal || 'Destino não especificado'}
         
-        Use formatação WhatsApp com emojis apropriados.`;
+        IMPORTANTE: 
+        - Se conseguir identificar o destino, crie dicas específicas
+        - Se não houver destino claro, crie dicas gerais de viagem
+        - Use formatação para WhatsApp com emojis apropriados
+        - NÃO pergunte ao usuário, processe com as informações disponíveis`;
       }
       // ================================================================================
       // 🏆 PROMPT PARA RANKING
@@ -600,8 +614,10 @@ INSTRUÇÕES ABSOLUTAS:
    - Combinado → IDA - Avianca, VOLTA - Gol
    - Sem preço → Omitir linha de valor
 
-3. CONVERTER CÓDIGOS:
-   GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
+3. CONVERTER CÓDIGOS E FORMATAR:
+   - GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
+   - NÃO incluir códigos entre parênteses
+   - Datas: usar formato DD/MM, não "ter, 03 de fevereiro"
 
 4. DETECTAR PASSAGEIROS CORRETAMENTE:
    - Procurar "Total (X Adultos e Y Crianças)" no texto
@@ -610,6 +626,7 @@ INSTRUÇÕES ABSOLUTAS:
 5. VOOS COM ESCALA:
    - Se tem duração (12h 25min), incluir: "(com 1 parada - 12h 25min)"
    - Se voo noturno chega dia seguinte: adicionar "+1" no horário
+   - NÃO repetir códigos de aeroporto
 
 6. FORMATO DE PARCELAMENTO:
    "Entrada de R$ 3.518,65 + 9x de R$ 1.304,48 s/ juros"
@@ -620,8 +637,12 @@ INSTRUÇÕES ABSOLUTAS:
 8. ENDEREÇO DO HOTEL:
    Capitalizar corretamente: "4944 W Irlo Bronson Memorial Hwy, Kissimmee, FL"
 
-9. SEMPRE terminar com:
-   "Valores sujeitos a confirmação e disponibilidade"`;
+9. FORMATAÇÃO DE VOOS NO PACOTE:
+   IDA - Avianca - 03/02 (não "ter, 03 de fevereiro")
+   Guarulhos 01:50 / Orlando 12:15 (sem códigos GRU/MCO)
+
+10. SEMPRE terminar com:
+    "Valores sujeitos a confirmação e disponibilidade"`;
         
         const messages = [{
           role: 'user',
@@ -676,10 +697,15 @@ INSTRUÇÕES ABSOLUTAS:
 REGRAS CRÍTICAS:
 1. DETECTAR: Pacote (hotel+voo) vs Múltiplas Opções vs Voo Combinado
 2. CONVERTER: GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
-3. FORMATO: Passageiros "03 adultos + 01 criança"
-4. PARCELAMENTO: "Entrada de R$ X + 9x de R$ Y s/ juros"
-5. SEM PREÇO: Omitir linha de valor se não houver
-6. TERMINAR: "Valores sujeitos a confirmação e disponibilidade"`;
+3. PASSAGEIROS: Procurar "Total (X Adultos e Y Crianças)" - formato "02 adultos + 02 crianças"
+4. VOOS: 
+   - Formato data: 03/02 (NÃO "ter, 03 de fevereiro")
+   - Sem códigos: Guarulhos (NÃO "Guarulhos (GRU)")
+   - Com escala: "(com 1 parada - 12h 25min)"
+5. PARCELAMENTO: "Entrada de R$ X + 9x de R$ Y s/ juros"
+6. SEM PREÇO: Omitir linha de valor se não houver
+7. HOTEL: Capitalizar endereço corretamente
+8. TERMINAR: "Valores sujeitos a confirmação e disponibilidade"`;
         
         const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
