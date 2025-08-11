@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVC Sender - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .btn-custom {
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .metric-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-4">
+        <div class="main-container">
+            <div class="header-section">
+                <h1><i class="bi bi-gear-fill"></i> CVC Sender - Dashboard</h1>
+                <p>Sistema de Automação Instagram + WhatsApp</p>
+                <span class="badge bg-light text-dark" id="status">🔴 Desconectado</span>
+            </div>
+            
+            <div class="p-4">
+                <div class="card status-card">
+                    <div class="card-body text-center">
+                        <h5>Controles do Sistema</h5>
+                        <div class="btn-group mt-3" role="group">
+                            <button class="btn btn-success btn-custom" onclick="iniciar()">
+                                <i class="bi bi-play-fill"></i> Iniciar
+                            </button>
+                            <button class="btn btn-danger btn-custom" onclick="parar()">
+                                <i class="bi bi-stop-fill"></i> Parar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card status-card">
+                            <div class="card-body text-center">
+                                <h5>📱 Instagram</h5>
+                                <div class="metric-number" id="instagram">0</div>
+                                <small>Mensagens Enviadas</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card status-card">
+                            <div class="card-body text-center">
+                                <h5>💬 WhatsApp</h5>
+                                <div class="metric-number" id="whatsapp">0</div>
+                                <small>Mensagens Enviadas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://cvcsender-production.up.railway.app';
+        
+        async function iniciar() {
+            try {
+                const response = await fetch(`${API_URL}/api/start`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({modulos: ['instagram', 'whatsapp']})
+                });
+                const data = await response.json();
+                alert('Sistema iniciado!');
+                atualizarStatus();
+            } catch (error) {
+                alert('Erro ao iniciar: ' + error);
+            }
+        }
+        
+        async function parar() {
+            try {
+                const response = await fetch(`${API_URL}/api/stop`, {method: 'POST'});
+                const data = await response.json();
+                alert('Sistema parado!');
+                atualizarStatus();
+            } catch (error) {
+                alert('Erro ao parar: ' + error);
+            }
+        }
+        
+        async function atualizarStatus() {
+            try {
+                const response = await fetch(`${API_URL}/api/status`);
+                const data = await response.json();
+                
+                const badge = document.getElementById('status');
+                if (data.status === 'rodando') {
+                    badge.textContent = '🟢 Rodando';
+                    badge.className = 'badge bg-success';
+                } else {
+                    badge.textContent = '🔴 Parado';
+                    badge.className = 'badge bg-danger';
+                }
+                
+                document.getElementById('instagram').textContent = data.stats?.instagram || 0;
+                document.getElementById('whatsapp').textContent = data.stats?.whatsapp || 0;
+            } catch (error) {
+                console.error('Erro ao atualizar:', error);
+            }
+        }
+        
+        // Atualizar a cada 5 segundos
+        setInterval(atualizarStatus, 5000);
+        atualizarStatus();
+    </script>
+</body>
+</html>
