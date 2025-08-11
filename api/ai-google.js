@@ -315,10 +315,28 @@ export default async function handler(req, res) {
       // Detectar informações de passageiros
       let infoPassageiros = '';
       
-      // Padrão 1: "X Adultos e Y Crianças"
+      // Padrão 1: "Total (X Adultos e Y Crianças)"
+      const padraoTotal = conteudoPrincipal.match(/Total\s*\((\d+)\s*(?:Adulto|Adultos)(?:\s*(?:e|\+)\s*(\d+)\s*(?:Criança|Crianças))?\)/i);
+      
+      // Padrão 2: "X Adultos e Y Crianças" genérico
       const padraoPassageiros = conteudoPrincipal.match(/(\d+)\s*(?:adulto|adultos)(?:\s*(?:e|\+)\s*(\d+)\s*(?:criança|crianças))?/i);
       
-      if (padraoPassageiros) {
+      if (padraoTotal) {
+        const numAdultos = parseInt(padraoTotal[1]);
+        const numCriancas = padraoTotal[2] ? parseInt(padraoTotal[2]) : 0;
+        
+        let textoPax = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
+        
+        if (numCriancas > 0) {
+          textoPax += ` + ${String(numCriancas).padStart(2, '0')} ${numCriancas === 1 ? 'criança' : 'crianças'}`;
+          
+          if (idadesCriancas && idadesCriancas.length > 0) {
+            textoPax += ` (${idadesCriancas.join(' e ')} anos)`;
+          }
+        }
+        
+        infoPassageiros = textoPax;
+      } else if (padraoPassageiros) {
         const numAdultos = parseInt(padraoPassageiros[1]);
         const numCriancas = padraoPassageiros[2] ? parseInt(padraoPassageiros[2]) : 0;
         
@@ -585,16 +603,24 @@ INSTRUÇÕES ABSOLUTAS:
 3. CONVERTER CÓDIGOS:
    GRU→Guarulhos, MCO→Orlando, BOG→Bogotá, FOR→Fortaleza
 
-4. FORMATO DE PARCELAMENTO:
+4. DETECTAR PASSAGEIROS CORRETAMENTE:
+   - Procurar "Total (X Adultos e Y Crianças)" no texto
+   - Formato: "02 adultos + 02 crianças" (com zero à esquerda)
+
+5. VOOS COM ESCALA:
+   - Se tem duração (12h 25min), incluir: "(com 1 parada - 12h 25min)"
+   - Se voo noturno chega dia seguinte: adicionar "+1" no horário
+
+6. FORMATO DE PARCELAMENTO:
    "Entrada de R$ 3.518,65 + 9x de R$ 1.304,48 s/ juros"
 
-5. PASSAGEIROS:
-   "03 adultos + 01 criança" (sempre com zero à esquerda)
+7. RESORT FEE:
+   "⚠️ Resort Fee: $30+tax por noite (pago direto no hotel)"
 
-6. RESORT FEE:
-   "⚠️ Resort Fee: $30+tax por noite (pago no hotel)"
+8. ENDEREÇO DO HOTEL:
+   Capitalizar corretamente: "4944 W Irlo Bronson Memorial Hwy, Kissimmee, FL"
 
-7. SEMPRE terminar com:
+9. SEMPRE terminar com:
    "Valores sujeitos a confirmação e disponibilidade"`;
         
         const messages = [{
