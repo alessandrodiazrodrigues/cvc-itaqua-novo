@@ -1,4 +1,4 @@
-// 🚀 CVC ITAQUA v7.6 - SISTEMA COMPLETO COM ÍNDICE (CORRIGIDO)
+// 🚀 CVC ITAQUA v7.7 - SISTEMA COMPLETO COM SUPORTE MULTITRECHO
 // ================================================================================
 // 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
@@ -10,6 +10,7 @@
 //    1.5 Voo com Conexão Detalhada
 //    1.6 Apenas Detalhes (Sem Preço)
 //    1.7 Cruzeiro
+//    1.8 Multitrecho (NOVO)
 //
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
 //    2.1 Aeroportos Brasileiros Principais
@@ -27,11 +28,13 @@
 //    4.1 Detecção de Passageiros
 //    4.2 Detecção de Tipos
 //    4.3 Análise de Conteúdo
+//    4.4 Detecção de Multitrecho (NOVO)
 //
 // 5. PROMPTS ESPECIALIZADOS
 //    5.1 Prompt para Dicas
 //    5.2 Prompt para Ranking
 //    5.3 Prompt Principal para Orçamentos
+//    5.4 Regras para Multitrecho (NOVO)
 //
 // 6. PROCESSAMENTO COM IA
 //    6.1 Decisão de IA (Claude vs GPT)
@@ -186,6 +189,19 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️
 
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.8 - Template Multitrecho (NOVO)
+    multitrecho: `
+*{companhia} - Multitrecho*
+{trechos_detalhados}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *VALORES DISPONÍVEIS:*
+Para {passageiros}
+
+{opcoes_valores}
+
 Valores sujeitos a confirmação e disponibilidade`
 };
 
@@ -286,7 +302,7 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v7.6
+// 3. 🎯 HANDLER PRINCIPAL DA API v7.7
 // ================================================================================
 export default async function handler(req, res) {
     // 3.1 - Configuração CORS
@@ -305,8 +321,8 @@ export default async function handler(req, res) {
 
         return res.status(200).json({
             success: true,
-            message: 'API CVC Itaqua v7.6 - Online (Sistema Completo com Índice)',
-            version: '7.6',
+            message: 'API CVC Itaqua v7.7 - Online (Com suporte multitrecho aprimorado)',
+            version: '7.7',
             services: {
                 openai: hasOpenAI ? 'Configurado' : 'Não configurado',
                 anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
@@ -318,9 +334,11 @@ export default async function handler(req, res) {
                 'Processamento com e sem preços',
                 'Template de pacote completo',
                 'Sistema de dicas e ranking',
-                'Formatação perfeita para WhatsApp'
+                'Formatação perfeita para WhatsApp',
+                'Suporte multitrecho com múltiplas opções (NOVO)',
+                'Detecção automática de parcelamento (NOVO)'
             ],
-            lastUpdate: '2025-01-14', // Manter data fictícia
+            lastUpdate: '2025-01-14',
             sections: {
                 '1': 'Templates de Orçamentos',
                 '2': 'Tabela de Aeroportos',
@@ -336,7 +354,7 @@ export default async function handler(req, res) {
     // 3.3 - Endpoint POST - Processar Orçamento
     if (req.method === 'POST') {
         try {
-            console.log('📥 Requisição recebida v7.6');
+            console.log('📥 Requisição recebida v7.7');
 
             const {
                 observacoes = '',
@@ -387,6 +405,17 @@ export default async function handler(req, res) {
                 }
                 infoPassageiros = textoPax;
             }
+            
+            // 4.1.1 - Detecção automática de destino se não fornecido
+            let destinoFinal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
+            if (!destinoFinal && conteudoPrincipal) {
+                // Tentar extrair destino do conteúdo
+                const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú|Juazeiro do Norte|Salvador|Recife|Brasília|Curitiba|Florianópolis|Vitória|Belo Horizonte|Manaus|Belém|São Luís)/i);
+                if (padraoDestino) {
+                    destinoFinal = padraoDestino[0];
+                    console.log('📍 Destino detectado automaticamente:', destinoFinal);
+                }
+            }
 
             // 4.2 - Detecção de Tipos Especiais
             const isDicas = tipos.includes('Dicas');
@@ -396,12 +425,23 @@ export default async function handler(req, res) {
             const temHotel = tipos.includes('Hotel') || conteudoLower.includes('palazzo') || conteudoLower.includes('hotel');
             const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo') || conteudoLower.includes('ida');
             const isPacote = temHotel && temAereo;
-            const temPreco = conteudoLower.includes('r$'); // CORREÇÃO: Adicionado '$'
+            const temPreco = conteudoLower.includes('r$');
             const temAvianca = conteudoLower.includes('avianc');
             const temGol = conteudoLower.includes('gol');
             const temMultiplasOpcoes = conteudoLower.includes('opção 1') || (conteudoLower.includes('selecionado') && conteudoLower.split('selecionado').length > 2);
             const linkMatch = conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/[^\s]+/);
             const linkCVC = linkMatch ? linkMatch[0] : null;
+
+            // 4.4 - Detecção de Multitrecho (NOVO)
+            const isMultitrecho = conteudoLower.includes('multitrecho') || 
+                                  conteudoLower.includes('trecho 1') || 
+                                  (conteudoLower.includes('trecho') && conteudoLower.split('trecho').length > 2);
+
+            // Detectar se tem info de parcelamento
+            const temInfoParcelamento = conteudoPrincipal.includes('Entrada de R$') || 
+                                        conteudoPrincipal.includes('x de R$') ||
+                                        conteudoPrincipal.includes('x s/ juros') ||
+                                        parcelamento !== null;
 
             // Log de análise
             console.log('🔍 Análise do conteúdo:');
@@ -414,6 +454,8 @@ export default async function handler(req, res) {
             console.log('- Tem Gol?', temGol);
             console.log('- É pacote?', isPacote);
             console.log('- Múltiplas Opções?', temMultiplasOpcoes);
+            console.log('- É multitrecho?', isMultitrecho);
+            console.log('- Tem info parcelamento?', temInfoParcelamento);
 
             let prompt = '';
 
@@ -581,8 +623,53 @@ export default async function handler(req, res) {
                     .map(([codigo, nome]) => `${codigo} → ${nome}`)
                     .join('\n');
 
+                // 5.4 - Regras para Multitrecho (NOVO)
+                const multitrecho_rules = isMultitrecho ? `
+**🔴 ATENÇÃO: DETECTADO MULTITRECHO!**
+
+USE ESTE FORMATO ESPECÍFICO:
+
+SE OS VOOS SÃO IDÊNTICOS COM VALORES DIFERENTES (múltiplas opções):
+
+*{Companhia} - Multitrecho*
+{data1} - {origem1} {hora1} / {destino1} {hora2} ({tipo})
+--
+{data2} - {origem2} {hora3} / {destino2} {hora4} ({tipo})
+--
+{data3} - {origem3} {hora5} / {destino3} {hora6} ({tipo})
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *VALORES DISPONÍVEIS:*
+Para {passageiros}
+
+*Opção 1:* R$ {valor1}
+✅ {bagagem1 - detectar diferença pelos ícones}
+${temInfoParcelamento ? '💳 {parcelamento1 no formato: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"}' : ''}
+🏷️ {tarifa1}
+🔗 {link1 se houver}
+
+*Opção 2:* R$ {valor2}
+✅ {bagagem2 - detectar diferença pelos ícones}
+${temInfoParcelamento ? '💳 {parcelamento2 no formato: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"}' : ''}
+🏷️ {tarifa2}
+🔗 {link2 se houver}
+
+Valores sujeitos a confirmação e disponibilidade
+
+REGRAS CRÍTICAS MULTITRECHO:
+1. NÃO repetir nome da companhia entre trechos
+2. NÃO colocar títulos entre os trechos (tipo "Trecho 2")
+3. Usar apenas -- para separar trechos
+4. Se houver diferença de bagagem, identificar: "Somente bagagem de mão" vs "Bagagem de mão + 23kg despachada"
+5. ${!temInfoParcelamento ? 'NÃO incluir linha de parcelamento - não há essa informação' : 'SEMPRE formatar parcelamento como: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"'}
+6. NUNCA usar "Entrada de", sempre "primeira parcela de"
+7. Se houver múltiplas opções com mesmos voos, usar formato compacto com valores separados
+` : '';
+
                 prompt = `Você é um assistente da CVC Itaqua.
 ANALISE CUIDADOSAMENTE o tipo de orçamento.
+
+${multitrecho_rules}
 
 **DADOS DO CLIENTE:**
 ${conteudoPrincipal}
@@ -600,6 +687,8 @@ ${linkCVC ? `Link CVC: ${linkCVC}` : ''}
 - Tem Avianca? ${temAvianca ? 'SIM' : 'NÃO'}
 - Tem Gol? ${temGol ? 'SIM' : 'NÃO'}
 - Múltiplas Opções? ${temMultiplasOpcoes ? 'SIM' : 'NÃO'}
+- É Multitrecho? ${isMultitrecho ? 'SIM - USAR FORMATO ESPECIAL!' : 'NÃO'}
+- Tem info de parcelamento? ${temInfoParcelamento ? 'SIM - INCLUIR' : 'NÃO - OMITIR'}
 
 // =================================================================
 // IDENTIFICAÇÃO CRÍTICA DO TIPO
@@ -607,26 +696,29 @@ ${linkCVC ? `Link CVC: ${linkCVC}` : ''}
 
 **REGRAS DE PRIORIDADE:**
 
-1. **PACOTE COMPLETO** (Hotel + Aéreo juntos)
-   ${isPacote ? '✅ DETECTADO - USE TEMPLATE DE PACOTE!' : ''}
+1. **MULTITRECHO** (Múltiplos trechos de voo)
+   ${isMultitrecho ? '✅ DETECTADO - USE TEMPLATE MULTITRECHO!' : ''}
+   
+2. **PACOTE COMPLETO** (Hotel + Aéreo juntos)
+   ${isPacote && !isMultitrecho ? '✅ DETECTADO - USE TEMPLATE DE PACOTE!' : ''}
    - Palazzo Lakeside ou outros hotéis + voos
    - Use template com seções separadas para voo e hotel
    
-2. **MÚLTIPLAS OPÇÕES** (2+ cards "Selecionado")
-   ${temMultiplasOpcoes ? '✅ DETECTADO - USE OPÇÃO 1 e OPÇÃO 2!' : ''}
+3. **MÚLTIPLAS OPÇÕES** (2+ cards "Selecionado")
+   ${temMultiplasOpcoes && !isMultitrecho ? '✅ DETECTADO - USE OPÇÃO 1 e OPÇÃO 2!' : ''}
    - Diferentes datas/horários/passageiros
    - Cada opção com seu preço
    
-3. **VOO COMBINADO** (Mix no mesmo itinerário)
-   ${temAvianca && temGol && !temMultiplasOpcoes ? '✅ DETECTADO - USE VOO COMBINADO!' : ''}
+4. **VOO COMBINADO** (Mix no mesmo itinerário)
+   ${temAvianca && temGol && !temMultiplasOpcoes && !isMultitrecho ? '✅ DETECTADO - USE VOO COMBINADO!' : ''}
    - Ida Avianca + Volta Gol (ou vice-versa)
    - Um único preço total
    
-4. **VOO SIMPLES** (Ida e volta normal)
+5. **VOO SIMPLES** (Ida e volta normal)
    - Uma companhia ou codeshare
    - Com ou sem conexão
    
-5. **SEM PREÇO** (Apenas detalhes)
+6. **SEM PREÇO** (Apenas detalhes)
    ${!temPreco ? '✅ DETECTADO - NÃO INCLUIR VALORES!' : ''}
    - Omitir linha de valor
    - Manter outros detalhes
@@ -635,7 +727,7 @@ ${linkCVC ? `Link CVC: ${linkCVC}` : ''}
 // TEMPLATES ESPECÍFICOS (Exemplos para a IA seguir)
 // =================================================================
 
-${isPacote ? `
+${isPacote && !isMultitrecho ? `
 **USE ESTE TEMPLATE DE PACOTE:**
 
 *Pacote {destino}*
@@ -668,7 +760,7 @@ VOLTA - {companhia} - {data}
 
 Valores sujeitos a confirmação e disponibilidade` : ''}
 
-${temAvianca && temGol && !temMultiplasOpcoes ? `
+${temAvianca && temGol && !temMultiplasOpcoes && !isMultitrecho ? `
 **USE ESTE TEMPLATE DE VOO COMBINADO:**
 
 *Voo {origem} ✈ {destino}*
@@ -687,7 +779,7 @@ ${temAvianca && temGol && !temMultiplasOpcoes ? `
 
 Valores sujeitos a confirmação e disponibilidade` : ''}
 
-${temMultiplasOpcoes ? `
+${temMultiplasOpcoes && !isMultitrecho ? `
 **USE ESTE TEMPLATE DE MÚLTIPLAS OPÇÕES:**
 
 *OPÇÃO 1 - {companhia} - {origem} ✈ {destino}*
@@ -719,7 +811,7 @@ SAÍDA OBRIGATÓRIA:
 09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
 
 💰 R$ 1.026,02 para 01 adulto
-💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros
+${temInfoParcelamento ? '💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros' : ''}
 ✅ Só mala de mão incluída
 🏷️ Tarifa facial
 🔗 https://www.cvc.com.br/carrinho-dinamico/6899f5730216ce3286369b76
@@ -731,6 +823,8 @@ Valores sujeitos a confirmação e disponibilidade
 ❌ Usar formato de lista ou bullet points
 ❌ Adicionar títulos como "ORÇAMENTO DE VIAGEM"
 ❌ Usar formato diferente do template
+❌ Incluir parcelamento sem ter a informação
+❌ Usar "Entrada de" ao invés de "primeira parcela de"
 
 // =================================================================
 // CONVERSÃO DE CÓDIGOS
@@ -750,13 +844,15 @@ ${tabelaAeroportos}
 5. **SE TEM LINK CVC, SEMPRE INCLUIR COM 🔗**
 6. **INCLUIR DETALHES DE CONEXÃO QUANDO HOUVER**
 7. **MENCIONAR CODESHARE SE APLICÁVEL**
-8. **FORMATAR PARCELAMENTO:** "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
+8. **FORMATAR PARCELAMENTO:** Só se tiver info, usar: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
 9. **TERMINAR COM "Valores sujeitos..."**
+10. **MULTITRECHO:** Usar formato compacto quando voos idênticos
 
 **IMPORTANTE:**
 - Parcelamento: sempre "primeira parcela" (nunca "entrada")
 - Resort Fee = mencionar em observações do hotel
-- Passageiros = sempre com zero à esquerda (01, 02, 03)`;
+- Passageiros = sempre com zero à esquerda (01, 02, 03)
+- Multitrecho = não repetir companhia, usar -- entre trechos`;
             }
 
             // ================================================================================
@@ -770,7 +866,8 @@ ${tabelaAeroportos}
                 (conteudoPrincipal.length > 2000) ||
                 tipos.includes('Cruzeiro') ||
                 isPacote ||
-                (temAvianca && temGol);
+                (temAvianca && temGol) ||
+                isMultitrecho;
 
             console.log('🤖 IA selecionada:', usarClaude ? 'Claude' : 'GPT');
 
@@ -778,7 +875,55 @@ ${tabelaAeroportos}
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 console.log('🤖 Usando Claude 3 Haiku...');
                 iaUsada = 'claude-3-haiku';
-                const systemPromptClaude = `Você é um assistente da CVC Itaqua. INSTRUÇÕES ABSOLUTAS - USE EXATAMENTE ESTE FORMATO: PARA VOO SIMPLES: *{Companhia} - {Cidade Origem} ✈ {Cidade Destino}* {DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) -- {DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) 💰 R$ {valor} para {passageiros} 💳 {parcelamento} ✅ {bagagem} 🏷️ {tarifa} 🔗 {link se houver} Valores sujeitos a confirmação e disponibilidade. FORMATO CORRETO DE PARCELAMENTO: - COM entrada: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros" - SEM entrada: "10x de R$ XXX s/ juros no cartão" - NUNCA use "Entrada de", sempre "primeira parcela de". CONVERSÕES: GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando. SEMPRE INCLUIR O LINK SE FORNECIDO!`;
+                const systemPromptClaude = `Você é um assistente da CVC Itaqua. INSTRUÇÕES ABSOLUTAS - USE EXATAMENTE ESTE FORMATO: 
+
+PARA VOO SIMPLES: 
+*{Companhia} - {Cidade Origem} ✈ {Cidade Destino}* 
+{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) 
+-- 
+{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) 
+
+💰 R$ {valor} para {passageiros} 
+${temInfoParcelamento ? '💳 {parcelamento}' : ''}
+✅ {bagagem} 
+🏷️ {tarifa} 
+🔗 {link se houver} 
+
+Valores sujeitos a confirmação e disponibilidade. 
+
+PARA MULTITRECHO COM MÚLTIPLAS OPÇÕES:
+*{Companhia} - Multitrecho*
+{trecho1}
+--
+{trecho2}
+--
+{trecho3}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *VALORES DISPONÍVEIS:*
+Para {passageiros}
+
+*Opção 1:* R$ {valor1}
+✅ {bagagem1}
+${temInfoParcelamento ? '💳 {parcelamento1}' : ''}
+🏷️ {tarifa1}
+
+*Opção 2:* R$ {valor2}
+✅ {bagagem2}
+${temInfoParcelamento ? '💳 {parcelamento2}' : ''}
+🏷️ {tarifa2}
+
+Valores sujeitos a confirmação e disponibilidade
+
+FORMATO CORRETO DE PARCELAMENTO: 
+- "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros" 
+- NUNCA use "Entrada de", sempre "primeira parcela de". 
+
+CONVERSÕES: GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, LIS→Lisboa, ORY→Paris Orly. 
+
+${!temInfoParcelamento ? 'NÃO incluir linha de parcelamento' : 'SEMPRE INCLUIR O PARCELAMENTO FORNECIDO'}
+SEMPRE INCLUIR O LINK SE FORNECIDO!`;
+                
                 const messages = [{
                     role: 'user',
                     content: imagemBase64 ? [{
@@ -793,6 +938,7 @@ ${tabelaAeroportos}
                         }
                     }] : prompt
                 }];
+                
                 const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
                     headers: {
@@ -808,11 +954,13 @@ ${tabelaAeroportos}
                         system: systemPromptClaude
                     })
                 });
+                
                 if (!claudeResponse.ok) {
                     const errorText = await claudeResponse.text();
                     console.error('❌ Erro Claude:', errorText);
                     throw new Error(`Erro ao processar com Claude: ${errorText}`);
                 }
+                
                 const claudeData = await claudeResponse.json();
                 resultado = claudeData.content[0].text;
 
@@ -824,7 +972,38 @@ ${tabelaAeroportos}
                 if (!OPENAI_KEY) {
                     throw new Error('OpenAI API key não configurada.');
                 }
-                const systemPromptGpt = `Você é um assistente da CVC Itaqua. REGRAS CRÍTICAS - SIGA EXATAMENTE: 1. FORMATO OBRIGATÓRIO PARA VOOS: *Companhia - Cidade Origem ✈ Cidade Destino* DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) -- DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) 💰 R$ valor para passageiros 💳 Parcelamento (se houver) ✅ Bagagem 🏷️ Tipo tarifa 🔗 Link (se houver) Valores sujeitos a confirmação e disponibilidade. 2. FORMATO DE PARCELAMENTO OBRIGATÓRIO: - COM primeira parcela diferente: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros" - Parcelas iguais: "10x de R$ XXX s/ juros no cartão" - NUNCA use "Entrada de", sempre "primeira parcela de". 3. CONVERSÕES OBRIGATÓRIAS: GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, BOG→Bogotá. 4. SEMPRE INCLUIR O LINK SE FORNECIDO!`;
+                
+                const systemPromptGpt = `Você é um assistente da CVC Itaqua. REGRAS CRÍTICAS - SIGA EXATAMENTE: 
+
+1. FORMATO OBRIGATÓRIO PARA VOOS: 
+   *Companhia - Cidade Origem ✈ Cidade Destino* 
+   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) 
+   -- 
+   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) 
+   
+   💰 R$ valor para passageiros 
+   ${temInfoParcelamento ? '💳 Parcelamento (se houver)' : ''}
+   ✅ Bagagem 
+   🏷️ Tipo tarifa 
+   🔗 Link (se houver) 
+   
+   Valores sujeitos a confirmação e disponibilidade. 
+
+2. PARA MULTITRECHO:
+   *Companhia - Multitrecho*
+   {trechos com -- entre eles}
+   
+   Se houver múltiplas opções de valores, use formato compacto com valores separados.
+
+3. FORMATO DE PARCELAMENTO OBRIGATÓRIO: 
+   ${temInfoParcelamento ? '- "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"' : '- NÃO incluir parcelamento'}
+   - NUNCA use "Entrada de", sempre "primeira parcela de". 
+
+4. CONVERSÕES OBRIGATÓRIAS: 
+   GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, BOG→Bogotá, LIS→Lisboa, ORY→Paris Orly. 
+
+5. SEMPRE INCLUIR O LINK SE FORNECIDO!`;
+                
                 const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -844,21 +1023,24 @@ ${tabelaAeroportos}
                         max_tokens: 2000
                     })
                 });
+                
                 if (!gptResponse.ok) {
                     const errorText = await gptResponse.text();
                     console.error('❌ Erro GPT:', errorText);
                     throw new Error(`Erro ao processar com GPT: ${errorText}`);
                 }
+                
                 const gptData = await gptResponse.json();
                 resultado = gptData.choices[0].message.content;
             }
 
-                        // ================================================================================
+            // ================================================================================
             // 7. ✅ RESPOSTA FINAL
             // ================================================================================
             console.log('✅ Processamento concluído');
             const tipoDetectadoFinal = isDicas ? 'dicas' :
                 isRanking ? 'ranking' :
+                isMultitrecho ? 'multitrecho' :
                 isPacote ? 'pacote' :
                 temMultiplasOpcoes ? 'multiplas_opcoes' :
                 (temAvianca && temGol) ? 'voo_combinado' :
@@ -866,19 +1048,21 @@ ${tabelaAeroportos}
 
             console.log('📋 Tipo detectado:', tipoDetectadoFinal.toUpperCase());
             console.log('💰 Tem preço?', temPreco ? 'SIM' : 'NÃO');
+            console.log('💳 Tem info parcelamento?', temInfoParcelamento ? 'SIM' : 'NÃO');
 
             return res.status(200).json({
                 success: true,
                 result: resultado,
                 ia_usada: iaUsada,
-                version: '7.6',
+                version: '7.7',
                 tipo_detectado: tipoDetectadoFinal,
                 tem_preco: temPreco,
+                tem_parcelamento: temInfoParcelamento,
                 debug: {
                     section_1: 'Templates processados',
                     section_2: 'Aeroportos convertidos',
                     section_3: 'Handler executado',
-                    section_4: 'Dados processados',
+                    section_4: 'Dados processados (com multitrecho)',
                     section_5: 'Prompt utilizado',
                     section_6: `IA utilizada: ${iaUsada}`,
                     section_7: 'Resposta formatada'
@@ -890,7 +1074,7 @@ ${tabelaAeroportos}
             return res.status(500).json({
                 success: false,
                 error: error.message || 'Erro desconhecido no servidor',
-                version: '7.6'
+                version: '7.7'
             });
         }
     }
@@ -898,6 +1082,6 @@ ${tabelaAeroportos}
     return res.status(405).json({
         success: false,
         error: 'Método não suportado',
-        version: '7.6'
+        version: '7.7'
     });
 }
