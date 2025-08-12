@@ -1,180 +1,231 @@
-// 🚀 CVC ITAQUA v7.7 - SISTEMA COMPLETO COM SUPORTE MULTITRECHO
+// 🚀 CVC ITAQUA v7.9 - SISTEMA COMPLETO COM TEMPLATES HARDCODED
 // ================================================================================
 // 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
-// 1. TEMPLATES DE ORÇAMENTOS
+// 1. TEMPLATES DE ORÇAMENTOS (HARDCODED)
 //    1.1 Aéreo Ida e Volta Simples
-//    1.2 Voo Combinado (Mix de Companhias)
-//    1.3 Múltiplas Opções
-//    1.4 Pacote Completo (Aéreo + Hotel)
-//    1.5 Voo com Conexão Detalhada
-//    1.6 Apenas Detalhes (Sem Preço)
-//    1.7 Cruzeiro
-//    1.8 Multitrecho (NOVO)
-//
+//    1.2 Aéreo com Conexão Detalhada
+//    1.3 Aéreo Somente Ida
+//    1.4 Múltiplas Opções (2 e 3 planos)
+//    1.5 Multitrecho
+//    1.6 Múltiplas Companhias
+//    1.7 Hotéis - Múltiplas Opções
+//    1.8 Roteiro de Hotéis
+//    1.9 Pacote Completo
+//    1.10 Cruzeiro
+//    1.11 Locação de Carro (NOVO)
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
-//    2.1 Aeroportos Brasileiros Principais
-//    2.2 Aeroportos Brasileiros Regionais
-//    2.3 Aeroportos América do Sul
-//    2.4 Aeroportos América do Norte/Central
-//    2.5 Aeroportos Europa
-//
 // 3. HANDLER PRINCIPAL DA API
-//    3.1 Configuração CORS
-//    3.2 Endpoint GET - Status
-//    3.3 Endpoint POST - Processar
-//
 // 4. PROCESSAMENTO DE DADOS
-//    4.1 Detecção de Passageiros
-//    4.2 Detecção de Tipos
-//    4.3 Análise de Conteúdo
-//    4.4 Detecção de Multitrecho (NOVO)
-//
 // 5. PROMPTS ESPECIALIZADOS
-//    5.1 Prompt para Dicas
-//    5.2 Prompt para Ranking
-//    5.3 Prompt Principal para Orçamentos
-//    5.4 Regras para Multitrecho (NOVO)
-//
 // 6. PROCESSAMENTO COM IA
-//    6.1 Decisão de IA (Claude vs GPT)
-//    6.2 Processamento com Claude
-//    6.3 Processamento com GPT
-//
 // 7. RESPOSTA FINAL
-//    7.1 Formatação de Resposta
-//    7.2 Logs e Debug
 // ================================================================================
 
 // ================================================================================
-// 1. 📋 TEMPLATES DE ORÇAMENTOS - TODOS OS CASOS
+// 1. 📋 TEMPLATES DE ORÇAMENTOS (HARDCODED DO MANUAL)
 // ================================================================================
 const TEMPLATES = {
-    // 1.1 - Template Aéreo Ida e Volta Simples
-    aereo_ida_volta: `
-*{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
+    // 1.1 - Aéreo Ida e Volta Simples
+    aereo_ida_volta: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
-{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoOrigem} {horaChegadaVolta} ({tipoVooVolta})
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
-💰 R$ {valorTotal} para {passageiros}
+💰 R$ {valor_total} para {passageiros}
 ✅ {bagagem}
 🏷️ {reembolso}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.2 - Template Voo Combinado (Mix de Companhias)
-    voo_combinado: `
-*Voo {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda} a {dataVolta} ({dias} dias e {noites} noites)
+    // 1.2 - Aéreo com Conexão Detalhada
+    aereo_conexao_detalhada: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
+(conexão em {cidade_conexao} - {tempo_espera} de espera)
+{data_ida} - {aeroporto_conexao} {hora_saida_conexao} / {aeroporto_destino} {hora_chegada_ida} (voo direto)
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
-✈️ IDA - {companhiaIda}
-{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoConexao} {horaChegadaConexao} (voo direto)
-(conexão em {cidadeConexao} - {tempoEspera} de espera)
-{dataIda} - {aeroportoConexao} {horaSaidaConexao} / {aeroportoDestino} {horaChegadaDestino} (voo direto)
-
-✈️ VOLTA - {companhiaVolta}
-{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoConexaoVolta} {horaChegadaConexaoVolta} (voo direto)
-(conexão em {cidadeConexaoVolta} - {tempoEsperaVolta} de espera)
-{dataVoltaDia} - {aeroportoConexaoVolta} {horaSaidaConexaoVolta} / {aeroportoOrigem} {horaChegadaVolta} (voo direto)
-
-💰 R$ {valorTotal} para {passageiros}
+💰 R$ {valor_total} para {passageiros}
 💳 {parcelamento}
 ✅ {bagagem}
 🏷️ {reembolso}
+🔗 {link}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.3 - Template Múltiplas Opções (2+ escolhas)
-    multiplas_opcoes: `
-*OPÇÃO 1 - {companhia1} - {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda1} - {aeroportoOrigem1} {horaIda1} / {aeroportoDestino1} {horaChegadaIda1} ({tipoVoo1})
---
-{dataVolta1} - {aeroportoDestino1} {horaVolta1} / {aeroportoOrigem1} {horaChegadaVolta1} ({tipoVooVolta1})
+    // 1.3 - Aéreo Somente Ida
+    aereo_somente_ida: `*{companhia}*
+{data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 
-💰 R$ {valor1} para {passageiros1}
-✅ {bagagem1}
-🏷️ {reembolso1}
+💰 Valor total para {passageiros} = R$ {valor}
+Inclui taxas de embarque
+Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa
+🏷️ {reembolso}
 
----
-
-*OPÇÃO 2 - {companhia2} - {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda2} - {aeroportoOrigem2} {horaIda2} / {aeroportoDestino2} {horaChegadaIda2} ({tipoVoo2})
---
-{dataVolta2} - {aeroportoDestino2} {horaVolta2} / {aeroportoOrigem2} {horaChegadaVolta2} ({tipoVooVolta2})
-{notaCodeshare}
-
-💰 R$ {valor2} para {passageiros2}
-✅ {bagagem2}
-🏷️ {reembolso2}
+⚠️ Passagem somente de ida - sem retorno incluído
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.4 - Template Pacote Completo (Aéreo + Hotel)
-    pacote_completo: `
-*Pacote {destino}*
-{dataIda} a {dataVolta} ({dias} dias e {noites} noites)
+    // 1.4 - Múltiplas Opções - 2 Planos
+    multiplas_opcoes_2: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 **OPÇÃO 1** - R$ {valor1}
+✅ Só mala de mão incluída
+💳 {parcelamento1}
+🔗 {link1}
+
+💰 **OPÇÃO 2** - R$ {valor2}
+✅ Mala de mão + bagagem despachada
+✅ Cancelamento/alteração com multas
+✅ Reembolsável conforme regras do bilhete
+💳 {parcelamento2}
+🔗 {link2}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.5 - Multitrecho
+    multitrecho: `*Multitrecho - {companhias}*
+{data_inicio} a {data_fim} ({dias} dias e {noites} noites)
+
+*Trecho 1:* {origem1} → {destino1}
+{data1} - {aeroporto1} {hora1} / {aeroporto_chegada1} {hora_chegada1} ({tipo_voo1})
+
+*Trecho 2:* {origem2} → {destino2}
+{data2} - {aeroporto2} {hora2} / {aeroporto_chegada2} {hora_chegada2} ({tipo_voo2})
+
+*Trecho 3:* {origem3} → {destino3}
+{data3} - {aeroporto3} {hora3} / {aeroporto_chegada3} {hora_chegada3} ({tipo_voo3})
+
+💰 R$ {valor_total} para {passageiros}
+💳 {parcelamento}
+✅ {bagagem}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.6 - Múltiplas Companhias
+    multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
+--
+{data_volta1} - {aeroporto_volta1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
+
+💰 R$ {valor1} para {passageiros}
+💳 {parcelamento1}
+🔗 {link1}
+
+*OPÇÃO 2 - {companhia2} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida2} - {aeroporto_origem2} {hora_ida2} / {aeroporto_destino2} {hora_chegada2} ({tipo_voo2})
+--
+{data_volta2} - {aeroporto_volta2} {hora_volta2} / {aeroporto_origem2} {hora_chegada_volta2} ({tipo_voo_volta2})
+
+💰 R$ {valor2} para {passageiros}
+💳 {parcelamento2}
+🔗 {link2}
+
+🏷️ {reembolso}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.7 - Hotéis - Múltiplas Opções
+    hoteis_multiplas_opcoes: `*Hotéis em {destino}*
+Período: {data_entrada} a {data_saida} ({noites} noites)
+{passageiros}
+
+**OPÇÃO 1** - {nome_hotel1} ⭐{estrelas1}
+📍 {localizacao1}
+🛏️ {tipo_quarto1}
+☕ {regime1}
+💰 R$ {valor1} total
+🔗 {link1}
+
+**OPÇÃO 2** - {nome_hotel2} ⭐{estrelas2}
+📍 {localizacao2}
+🛏️ {tipo_quarto2}
+☕ {regime2}
+💰 R$ {valor2} total
+🔗 {link2}
+
+**OPÇÃO 3** - {nome_hotel3} ⭐{estrelas3}
+📍 {localizacao3}
+🛏️ {tipo_quarto3}
+☕ {regime3}
+💰 R$ {valor3} total
+🔗 {link3}
+
+💳 {parcelamento}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.8 - Roteiro de Hotéis
+    roteiro_hoteis: `*Roteiro {destino}*
+{passageiros}
+
+📅 **{data1} a {data2}** ({noites1} noites)
+🏨 {hotel1} - {cidade1}
+🛏️ {tipo_quarto1} com {regime1}
+💰 R$ {valor1}
+
+📅 **{data2} a {data3}** ({noites2} noites)
+🏨 {hotel2} - {cidade2}
+🛏️ {tipo_quarto2} com {regime2}
+💰 R$ {valor2}
+
+📅 **{data3} a {data4}** ({noites3} noites)
+🏨 {hotel3} - {cidade3}
+🛏️ {tipo_quarto3} com {regime3}
+💰 R$ {valor3}
+
+💰 **VALOR TOTAL DO ROTEIRO:** R$ {valor_total}
+💳 {parcelamento}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.9 - Pacote Completo
+    pacote_completo: `*Pacote {destino}*
+Embarque: {data_embarque}
 Pacote para {passageiros}
 
 *O Pacote Inclui:*
-- Passagem Aérea ida e volta
+- Passagem Aérea ida e volta para {destino}
 - Taxas de Embarque
-- {noites} noites de hospedagem
-{servicosAdicionais}
+- Traslado {tipo_traslado}
+- {passeios}
+- {seguro}
+- {noites} noites de hospedagem no hotel escolhido
 
-✈️ *Voos:*
-IDA - {companhiaIda} - {dataIda}
-{origemIda} {horaIda} / {destinoIda} {horaChegadaIda} ({tipoVooIda})
-
-VOLTA - {companhiaVolta} - {dataVolta}
-{origemVolta} {horaVolta} / {destinoVolta} {horaChegadaVolta} ({tipoVooVolta})
-
-🏨 *Hotel Selecionado:*
-{nomeHotel}
-📍 {enderecoHotel}
-🛏️ {tipoQuarto}
-☕ {regime}
-{observacoesHotel}
-
-💰 R$ {valorTotal} total
-💳 {parcelamento}
-🏷️ {reembolso}
-
-Valores sujeitos a confirmação e disponibilidade`,
-
-    // 1.5 - Template Voo com Conexão Detalhada
-    voo_conexao_detalhada: `
-*{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} (com {paradas} - {duracao})
+✈️ *Voos {companhia}:*
+{data_ida} - {origem} {hora_ida} / {destino} {hora_chegada} ({tipo_voo})
 --
-{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoOrigem} {horaChegadaVolta} (com {paradasVolta} - {duracaoVolta})
+{data_volta} - {destino} {hora_volta} / {origem} {hora_chegada_volta} ({tipo_voo})
 
-💰 R$ {valorTotal} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
-🏷️ {reembolso}
+**OPÇÃO 1** - {nome_hotel1}
+📍 {endereco1}
+🛏️ {tipo_quarto1} com {regime1}
+💰 R$ {valor1} para {passageiros}
+🔗 {link1}
+
+**OPÇÃO 2** - {nome_hotel2} ⭐ Preferencial
+📍 {endereco2}
+🛏️ {tipo_quarto2} com {regime2}
+✅ Reembolsável conforme regras do bilhete
+💰 R$ {valor2} para {passageiros}
+🔗 {link2}
+
+**OPÇÃO 3** - {nome_hotel3}
+📍 {endereco3}
+🛏️ {tipo_quarto3} com {regime3}
+💰 R$ {valor3} para {passageiros}
+🔗 {link3}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.6 - Template Apenas Detalhes (Sem Preço)
-    detalhes_sem_preco: `
-*{companhia} - {cidadeOrigem} ✈ {cidadeDestino}*
-{dataIda} - {aeroportoOrigem} {horaIda} / {aeroportoDestino} {horaChegadaIda} ({tipoVoo})
-{detalhesConexaoIda}
---
-{dataVolta} - {aeroportoDestino} {horaVolta} / {aeroportoOrigem} {horaChegadaVolta} ({tipoVooVolta})
-{detalhesConexaoVolta}
-
-✅ {bagagem}
-🏷️ {reembolso}
-
-Valores sujeitos a confirmação e disponibilidade`,
-
-    // 1.7 - Template Cruzeiro
-    cruzeiro: `
-🚢 *Cruzeiro {nomeNavio}* – {noites} noites
+    // 1.10 - Cruzeiro
+    cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
-📅 Embarque: {dataEmbarque} ({diaSemana})
+📅 Embarque: {data_embarque} ({dia_semana})
 📍 Saída e chegada: {porto}
 🌊 Roteiro incrível pelo litoral brasileiro!
 
@@ -182,34 +233,66 @@ Valores sujeitos a confirmação e disponibilidade`,
 (Sujeita à confirmação de cabine e categoria)
 
 🛏 Opções de Cabines:
-{opcoesCabines}
+{opcoes_cabines}
+
+📎 Link para ver fotos, detalhes e reservar:
+{link}
 
 ✅ Inclui: hospedagem a bordo, pensão completa
 🚫 Não inclui: taxas, bebidas, excursões
 
-📲 Me chama pra garantir a sua cabine! 🌴🛳️
+📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
 
-Valores sujeitos a confirmação e disponibilidade`,
-
-    // 1.8 - Template Multitrecho (NOVO)
-    multitrecho: `
-*{companhia} - Multitrecho*
-{trechos_detalhados}
+    // 1.11 - Locação de Carro (NOVO)
+    locacao_carro: `🚗 *LOCAÇÃO DE VEÍCULOS - {cidade}*
+Retirada: {data_retirada} às {hora_retirada}
+Devolução: {data_devolucao} às {hora_devolucao}
+Local: {local_retirada}
+Total: {dias} dias
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
-💰 *VALORES DISPONÍVEIS:*
-Para {passageiros}
+*OPÇÃO 1 - {categoria1}*
+🚙 {modelo1}
+✅ Km livre
+✅ Proteção total {franquia1}
+✅ Proteção a terceiros
+✅ {motorista_adicional1}
+💰 R$ {valor1}
+⚠️ Taxa local: R$ {taxa1} (pagar na retirada)
 
-{opcoes_valores}
+━━━━━━━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2 - {categoria2}*
+🚗 {modelo2}
+✅ Km livre
+✅ Proteção total {franquia2}
+✅ Proteção a terceiros
+✅ {motorista_adicional2}
+💰 R$ {valor2}
+⚠️ Taxa local: R$ {taxa2} (pagar na retirada)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+*OPÇÃO 3 - {categoria3}*
+🚙 {modelo3}
+✅ Km livre
+✅ Proteção total {franquia3}
+✅ Proteção a terceiros
+✅ {motorista_adicional3}
+💰 R$ {valor3}
+⚠️ Taxa local: R$ {taxa3} (pagar na retirada)
+
+💡 *DOCUMENTOS NECESSÁRIOS:*
+• CNH + Passaporte + Cartão de crédito
+• GPS disponível por taxa adicional
+• Combustível: devolver com mesmo nível
 
 Valores sujeitos a confirmação e disponibilidade`
 };
 
 // ================================================================================
-// 2. 🗺️ TABELA COMPLETA DE CONVERSÃO DE AEROPORTOS
+// 2. 🗺️ TABELA DE CONVERSÃO DE AEROPORTOS
 // ================================================================================
 const AEROPORTOS = {
-    // 2.1 - Aeroportos Brasileiros Principais
+    // Aeroportos Brasileiros Principais
     'GRU': 'Guarulhos',
     'CGH': 'Congonhas',
     'VCP': 'Viracopos',
@@ -236,12 +319,10 @@ const AEROPORTOS = {
     'CGR': 'Campo Grande',
     'GYN': 'Goiânia',
     'VIX': 'Vitória',
-
-    // 2.2 - Aeroportos Brasileiros Regionais
     'BPS': 'Porto Seguro',
     'IOS': 'Ilhéus',
-    'CMG': 'Corumbá',
     'JDO': 'Juazeiro do Norte',
+    'IGU': 'Foz do Iguaçu',
     'IMP': 'Imperatriz',
     'MAB': 'Marabá',
     'STM': 'Santarém',
@@ -254,13 +335,12 @@ const AEROPORTOS = {
     'RAO': 'Ribeirão Preto',
     'JOI': 'Joinville',
     'XAP': 'Chapecó',
-    'IGU': 'Foz do Iguaçu',
     'LDB': 'Londrina',
     'MGF': 'Maringá',
 
-    // 2.3 - Aeroportos América do Sul
-    'EZE': 'Ezeiza - Buenos Aires',
-    'AEP': 'Aeroparque - Buenos Aires',
+    // Aeroportos América do Sul
+    'EZE': 'Buenos Aires Ezeiza',
+    'AEP': 'Buenos Aires Aeroparque',
     'SCL': 'Santiago',
     'LIM': 'Lima',
     'BOG': 'Bogotá',
@@ -272,40 +352,41 @@ const AEROPORTOS = {
     'LPB': 'La Paz',
     'VVI': 'Santa Cruz de la Sierra',
 
-    // 2.4 - Aeroportos América do Norte/Central
+    // Aeroportos América do Norte/Central
     'MEX': 'Cidade do México',
     'CUN': 'Cancún',
     'MIA': 'Miami',
     'MCO': 'Orlando',
     'FLL': 'Fort Lauderdale',
-    'JFK': 'Nova York - JFK',
+    'JFK': 'Nova York JFK',
+    'LGA': 'Nova York LaGuardia',
     'EWR': 'Newark',
     'LAX': 'Los Angeles',
     'SFO': 'San Francisco',
     'ORD': 'Chicago',
     'YYZ': 'Toronto',
 
-    // 2.5 - Aeroportos Europa
+    // Aeroportos Europa
     'LIS': 'Lisboa',
     'OPO': 'Porto',
     'MAD': 'Madrid',
     'BCN': 'Barcelona',
-    'CDG': 'Paris - Charles de Gaulle',
-    'ORY': 'Paris - Orly',
-    'FCO': 'Roma - Fiumicino',
-    'MXP': 'Milão - Malpensa',
-    'LHR': 'Londres - Heathrow',
-    'LGW': 'Londres - Gatwick',
+    'CDG': 'Paris Charles de Gaulle',
+    'ORY': 'Paris Orly',
+    'FCO': 'Roma Fiumicino',
+    'MXP': 'Milão Malpensa',
+    'LHR': 'Londres Heathrow',
+    'LGW': 'Londres Gatwick',
     'FRA': 'Frankfurt',
     'AMS': 'Amsterdã',
     'ZRH': 'Zurique'
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v7.7
+// 3. 🎯 HANDLER PRINCIPAL DA API v7.9
 // ================================================================================
 export default async function handler(req, res) {
-    // 3.1 - Configuração CORS
+    // Configuração CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -314,47 +395,38 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // 3.2 - Endpoint GET - Status da API
+    // Endpoint GET - Status da API
     if (req.method === 'GET') {
         const hasOpenAI = !!process.env.OPENAI_API_KEY;
         const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
 
         return res.status(200).json({
             success: true,
-            message: 'API CVC Itaqua v7.7 - Online (Com suporte multitrecho aprimorado)',
-            version: '7.7',
+            status: 'operational',
+            version: '7.9',
+            message: 'API CVC Itaqua Online - Templates Hardcoded',
+            timestamp: new Date().toISOString(),
             services: {
                 openai: hasOpenAI ? 'Configurado' : 'Não configurado',
                 anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
             },
             features: [
-                'Sistema com índice completo',
-                'Detecção de voo combinado vs múltiplas opções',
-                'Suporte a codeshare',
-                'Processamento com e sem preços',
-                'Template de pacote completo',
-                'Sistema de dicas e ranking',
-                'Formatação perfeita para WhatsApp',
-                'Suporte multitrecho com múltiplas opções (NOVO)',
-                'Detecção automática de parcelamento (NOVO)'
+                'Templates hardcoded (sem dependência externa)',
+                'Detecção automática de tipo',
+                'Suporte a locação de carro',
+                'Multitrecho aprimorado',
+                'Ranking de hotéis',
+                'Ordenação por preço',
+                'Parcelamento condicional'
             ],
-            lastUpdate: '2025-01-14',
-            sections: {
-                '1': 'Templates de Orçamentos',
-                '2': 'Tabela de Aeroportos',
-                '3': 'Handler Principal',
-                '4': 'Processamento de Dados',
-                '5': 'Prompts Especializados',
-                '6': 'Processamento com IA',
-                '7': 'Resposta Final'
-            }
+            templates_disponíveis: Object.keys(TEMPLATES)
         });
     }
 
-    // 3.3 - Endpoint POST - Processar Orçamento
+    // Endpoint POST - Processar Orçamento
     if (req.method === 'POST') {
         try {
-            console.log('📥 Requisição recebida v7.7');
+            console.log('📥 Requisição recebida v7.9');
 
             const {
                 observacoes = '',
@@ -366,7 +438,8 @@ export default async function handler(req, res) {
                 tipos = [],
                 parcelamento = null,
                 imagemBase64 = null,
-                pdfContent = null
+                arquivoBase64 = null,
+                temImagem = false
             } = req.body;
 
             // ================================================================================
@@ -374,7 +447,7 @@ export default async function handler(req, res) {
             // ================================================================================
 
             // Determinar conteúdo principal
-            const conteudoPrincipal = observacoes || textoColado || pdfContent || '';
+            const conteudoPrincipal = observacoes || textoColado || '';
             const conteudoLower = conteudoPrincipal.toLowerCase();
 
             // 4.1 - Detecção de Passageiros
@@ -405,538 +478,384 @@ export default async function handler(req, res) {
                 }
                 infoPassageiros = textoPax;
             }
-            
-            // 4.1.1 - Detecção automática de destino se não fornecido
+
+            // 4.2 - Detecção automática de destino
             let destinoFinal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
             if (!destinoFinal && conteudoPrincipal) {
-                // Tentar extrair destino do conteúdo
-                const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú|Juazeiro do Norte|Salvador|Recife|Brasília|Curitiba|Florianópolis|Vitória|Belo Horizonte|Manaus|Belém|São Luís)/i);
+                const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|New York|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú|Juazeiro do Norte|Salvador|Recife|Brasília|Curitiba|Florianópolis|Vitória|Belo Horizonte|Manaus|Belém|São Luís|São Paulo|Campinas|Ribeirão Preto|Varsóvia|Warsaw|Roma|Londres|London|Barcelona|Madrid|Frankfurt|Amsterdam|Zurique|Toronto|Chicago|Los Angeles|San Francisco|Bogotá|Lima|Montevidéu|Assunção|La Paz)/i);
                 if (padraoDestino) {
                     destinoFinal = padraoDestino[0];
                     console.log('📍 Destino detectado automaticamente:', destinoFinal);
                 }
             }
 
-            // 4.2 - Detecção de Tipos Especiais
+            // 4.3 - Detecção de Tipos Especiais
             const isDicas = tipos.includes('Dicas');
             const isRanking = tipos.includes('Ranking');
+            const isHotel = tipos.includes('Hotel') || conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem') || conteudoLower.includes('resort');
+            const isCarro = conteudoLower.includes('locação') || conteudoLower.includes('locacao') || 
+                           conteudoLower.includes('retirada') && conteudoLower.includes('devolução') ||
+                           conteudoLower.includes('dollar') || conteudoLower.includes('hertz') || 
+                           conteudoLower.includes('avis') || conteudoLower.includes('categoria economico');
 
-            // 4.3 - Análise de Conteúdo
-            const temHotel = tipos.includes('Hotel') || conteudoLower.includes('palazzo') || conteudoLower.includes('hotel');
-            const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo') || conteudoLower.includes('ida');
-            const isPacote = temHotel && temAereo;
+            // 4.4 - Análise de Conteúdo
+            const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo') || 
+                            conteudoLower.includes(' ida ') || conteudoLower.includes('volta') ||
+                            conteudoLower.includes('aeroporto') || conteudoLower.includes('embarque');
+            const isPacote = isHotel && temAereo;
             const temPreco = conteudoLower.includes('r$');
-            const temAvianca = conteudoLower.includes('avianc');
-            const temGol = conteudoLower.includes('gol');
-            const temMultiplasOpcoes = conteudoLower.includes('opção 1') || (conteudoLower.includes('selecionado') && conteudoLower.split('selecionado').length > 2);
-            const linkMatch = conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/[^\s]+/);
-            const linkCVC = linkMatch ? linkMatch[0] : null;
-
-            // 4.4 - Detecção de Multitrecho (NOVO)
+            const linkMatch = conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/[^\s]+/g);
+            const linksCVC = linkMatch ? linkMatch : [];
+            
+            // Detecções específicas
             const isMultitrecho = conteudoLower.includes('multitrecho') || 
-                                  conteudoLower.includes('trecho 1') || 
-                                  (conteudoLower.includes('trecho') && conteudoLower.split('trecho').length > 2);
+                                 conteudoLower.includes('trecho 1') || 
+                                 (conteudoLower.includes('trecho') && conteudoLower.split('trecho').length > 2);
+            
+            const temMultiplasOpcoes = conteudoLower.includes('opção 1') || 
+                                       conteudoLower.includes('opção 2') ||
+                                       (conteudoLower.includes('selecionado') && conteudoLower.split('selecionado').length > 2);
 
-            // Detectar se tem info de parcelamento
+            const isSomenteIda = conteudoLower.includes('somente ida') || 
+                                conteudoLower.includes('apenas ida') ||
+                                conteudoLower.includes('one way');
+
+            const isCruzeiro = conteudoLower.includes('cruzeiro') || 
+                              conteudoLower.includes('navio') ||
+                              conteudoLower.includes('cabine');
+
+            // Detecção de parcelamento
             const temInfoParcelamento = conteudoPrincipal.includes('Entrada de R$') || 
-                                        conteudoPrincipal.includes('x de R$') ||
-                                        conteudoPrincipal.includes('x s/ juros') ||
-                                        parcelamento !== null;
+                                       conteudoPrincipal.includes('primeira parcela de R$') ||
+                                       conteudoPrincipal.includes('x de R$') ||
+                                       conteudoPrincipal.includes('x s/ juros') ||
+                                       parcelamento !== null;
+            
+            let tipoParcelamento = null;
+            let numParcelas = parcelamento || 10;
+            if (temInfoParcelamento) {
+                if (conteudoPrincipal.includes('Entrada de R$') || conteudoPrincipal.includes('primeira parcela de R$')) {
+                    tipoParcelamento = 'parcela_diferenciada';
+                } else if (parcelamento) {
+                    tipoParcelamento = 'parcelas_iguais';
+                    numParcelas = parcelamento;
+                }
+            }
 
             // Log de análise
             console.log('🔍 Análise do conteúdo:');
-            console.log('- Tipos selecionados:', tipos);
-            console.log('- Tem imagem?', !!imagemBase64);
-            console.log('- Tem hotel?', temHotel);
-            console.log('- Tem preço?', temPreco);
-            console.log('- Tem link?', !!linkCVC);
-            console.log('- Tem Avianca?', temAvianca);
-            console.log('- Tem Gol?', temGol);
-            console.log('- É pacote?', isPacote);
+            console.log('- Destino:', destinoFinal || 'NÃO IDENTIFICADO');
+            console.log('- Passageiros:', infoPassageiros || 'NÃO IDENTIFICADO');
+            console.log('- É Dicas?', isDicas);
+            console.log('- É Ranking?', isRanking);
+            console.log('- É Hotel?', isHotel);
+            console.log('- É Carro?', isCarro);
+            console.log('- É Pacote?', isPacote);
+            console.log('- É Multitrecho?', isMultitrecho);
+            console.log('- É Cruzeiro?', isCruzeiro);
+            console.log('- Somente Ida?', isSomenteIda);
             console.log('- Múltiplas Opções?', temMultiplasOpcoes);
-            console.log('- É multitrecho?', isMultitrecho);
-            console.log('- Tem info parcelamento?', temInfoParcelamento);
-
-            let prompt = '';
+            console.log('- Tem preço?', temPreco);
+            console.log('- Tem parcelamento?', temInfoParcelamento);
+            console.log('- Links encontrados:', linksCVC.length);
 
             // ================================================================================
             // 5. 📝 PROMPTS ESPECIALIZADOS
             // ================================================================================
 
+            let prompt = '';
+            const templatesString = JSON.stringify(TEMPLATES, null, 2);
+            const tabelaAeroportos = Object.entries(AEROPORTOS)
+                .map(([codigo, nome]) => `${codigo} → ${nome}`)
+                .join('\n');
+
+            // 5.1 - Prompt para Dicas
             if (isDicas) {
-                let destinoReal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
-                if (!destinoReal && conteudoPrincipal) {
-                    const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa)/i);
-                    if (padraoDestino) {
-                        destinoReal = padraoDestino[0];
-                    }
-                }
-                const temCriancas = conteudoLower.includes('criança');
-                const isCruzeiro = conteudoLower.includes('cruzeiro');
-                const isOrlando = destinoReal && destinoReal.toLowerCase().includes('orlando');
-                prompt = `Você é um especialista em viagens da CVC Itaqua.
-        
-                ${!destinoReal ? 'ANALISE o conteúdo abaixo, IDENTIFIQUE o destino mencionado e crie dicas específicas.' : `Crie dicas ESPECÍFICAS e PRÁTICAS para ${destinoReal}.`}
-                
-                ${isCruzeiro ? 'Este é um CRUZEIRO. Foque em vida a bordo, cabines, refeições.' : ''}
-                ${temCriancas ? 'A viagem inclui CRIANÇAS. Adapte as dicas para famílias.' : ''}
-                
-                CONTEÚDO: ${conteudoPrincipal || 'Destino não especificado'}
-                
-                ${isOrlando ? `
-                REGRAS ESPECIAIS PARA ORLANDO:
-                - Mencione que a CVC vende ingressos para todos os parques
-                - Destaque que organizamos toda a programação dos parques
-                - Informe sobre locação de carros pela CVC
-                - Dicas práticas de economia e logística
-                - Sugestões de roteiro por dia` : ''}
-                
-                FORMATO OBRIGATÓRIO:
-                
-                🌟 DICAS PARA ${destinoReal || '[DESTINO]'} ${temCriancas ? '- VIAGEM EM FAMÍLIA' : ''} 🌟
-                
-                📅 SOBRE SUA VIAGEM:
-                [Clima, época, o que esperar]
-                ${temCriancas ? '[Atividades ideais para crianças]' : ''}
-                
-                ${isOrlando ? `
-                🎢 PARQUES TEMÁTICOS:
-                ✅ A CVC Itaqua vende ingressos para TODOS os parques com preços especiais!
-                ✅ Organizamos sua programação completa: qual parque em cada dia
-                ✅ Dicas de FastPass e horários estratégicos
-                [Sugestões específicas de roteiro]
-                
-                🚗 TRANSPORTE:
-                ✅ Locação de carros pela CVC com tarifas exclusivas
-                ✅ Seguro completo e GPS incluído
-                ✅ Entrega no aeroporto ou hotel
-                [Dicas de deslocamento entre parques]` : ''}
-                
-                💰 DICAS DE ECONOMIA:
-                [3-4 dicas práticas e específicas]
-                [Mencionar vantagens dos pacotes CVC]
-                
-                🍽️ GASTRONOMIA:
-                [Pratos/restaurantes imperdíveis]
-                ${temCriancas ? '[Opções family-friendly]' : ''}
-                
-                🛍️ COMPRAS:
-                [Melhores outlets e lojas]
-                [Dicas de tax free se aplicável]
-                
-                📱 DICAS PRÁTICAS:
-                [Aplicativos úteis]
-                [Documentação necessária]
-                ${temCriancas ? '[Itens essenciais para crianças]' : ''}
-                
-                ⚠️ IMPORTANTE:
-                📞 A CVC Itaqua oferece assistência completa durante toda sua viagem!
-                ✅ Ingressos, transfers, passeios - tudo com a gente!
-                
-                INSTRUÇÕES:
-                - Use emojis apropriados
-                - Seja específico e prático
-                - Sempre mencione os serviços CVC quando relevante
-                - Formatação para WhatsApp
-                - NÃO use formato de lista numerada genérica`;
+                if (!destinoFinal) {
+                    prompt = `⚠️ DESTINO NÃO IDENTIFICADO
 
+Responda EXATAMENTE assim:
+
+❌ **Destino não identificado**
+
+Para receber dicas personalizadas, por favor informe:
+• O destino da viagem
+• Período da viagem
+• Quantidade de passageiros
+
+📞 Entre em contato com a CVC Itaqua e teremos prazer em criar um roteiro personalizado para sua viagem!
+
+NÃO adicione dicas genéricas. NÃO invente destino.`;
+                } else {
+                    const temCriancas = conteudoLower.includes('criança');
+                    prompt = `Crie dicas ESPECÍFICAS e PRÁTICAS para ${destinoFinal}.
+${temCriancas ? 'A viagem inclui CRIANÇAS. Adapte as dicas para famílias.' : ''}
+
+FORMATO:
+🌟 DICAS PARA ${destinoFinal.toUpperCase()} 🌟
+
+Crie dicas detalhadas sobre:
+- Melhor época para visitar
+- Principais atrações
+- Dicas de economia
+- Gastronomia local
+- Transporte
+- Compras
+- Documentação necessária
+
+Sempre mencione os serviços da CVC Itaqua quando relevante.
+Seja específico e prático.`;
+                }
+
+            // 5.2 - Prompt para Ranking
             } else if (isRanking) {
-                let destinoRanking = destino && destino !== 'Destino' && destino !== '' ? destino : null;
-                if (!destinoRanking && conteudoPrincipal) {
-                    const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Paris|Buenos Aires|Santiago|Nova York|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú)/i);
-                    if (padraoDestino) {
-                        destinoRanking = padraoDestino[0];
+                if (!destinoFinal) {
+                    prompt = `⚠️ DESTINO NÃO IDENTIFICADO
+
+Responda EXATAMENTE assim:
+
+❌ **Destino não identificado para ranking de hotéis**
+
+Para receber nosso ranking exclusivo de hotéis, por favor informe:
+• O destino desejado
+• Período da viagem
+• Tipo de hotel preferido (luxo, médio, econômico)
+
+📞 A CVC Itaqua tem parceria com os melhores hotéis em todos os destinos!
+Entre em contato e encontraremos a hospedagem perfeita para você.
+
+NÃO adicione hotéis genéricos. NÃO invente destino.`;
+                } else {
+                    const temDadosHoteis = isHotel && temPreco;
+                    
+                    if (temDadosHoteis) {
+                        prompt = `DADOS FORNECIDOS:
+${conteudoPrincipal}
+
+Crie um ranking dos hotéis fornecidos, ORDENADOS DO MAIS BARATO PARA O MAIS CARO.
+
+FORMATO OBRIGATÓRIO:
+🏆 **RANKING DE HOTÉIS - ${destinoFinal.toUpperCase()}** 🏆
+[Período e passageiros se disponível]
+
+[Para cada hotel, do mais barato ao mais caro:]
+💰 [Nome do Hotel] – R$ [valor]
+🛏 [Tipo de quarto e descrição]
+📍 [Localização]
+✅ [Destaques positivos]
+⚠️ [Se for hotel simples: "HOTEL SIMPLES, CATEGORIA ECONÔMICA"]
+💡 [Dica útil e positiva]
+
+NÃO incluir links, parcelamento ou "valores sujeitos".
+SEMPRE focar no positivo, nunca mencionar aspectos negativos.`;
+                    } else {
+                        prompt = `Crie um ranking de hotéis REAIS em ${destinoFinal}.
+
+FORMATO:
+🏆 **RANKING DE HOTÉIS - ${destinoFinal.toUpperCase()}** 🏆
+
+Liste 5 hotéis reais, do mais barato ao mais caro:
+💰 [Nome real] – R$ [preço médio realista]
+🛏 [Tipo de quarto]
+📍 [Localização real]
+✅ [Destaques positivos]
+💡 [Dica útil]
+
+Use hotéis que realmente existem em ${destinoFinal}.
+Foque sempre no positivo.
+Para hotéis simples, use "HOTEL SIMPLES, CATEGORIA ECONÔMICA".`;
                     }
                 }
-                if (!destinoRanking) {
-                    destinoRanking = 'Orlando';
-                }
-                prompt = `Você é um especialista em hotéis da CVC Itaqua.
-        
-                Crie um ranking dos TOP 5 hotéis REAIS em ${destinoRanking}.
-                
-                CONTEÚDO PARA CONTEXTO: ${conteudoPrincipal || 'Não fornecido'}
-                
-                IMPORTANTE:
-                - Use apenas hotéis que REALMENTE EXISTEM em ${destinoRanking}
-                - Inclua variedade: luxo, médio, econômico
-                - Mencione que a CVC tem tarifas especiais
-                - Se possível, inclua hotéis mencionados no conteúdo
-                
-                Use EXATAMENTE este formato:
-                
-                🏆 TOP 5 HOTÉIS - ${destinoRanking.toUpperCase()} 🏆
-                ✅ Todos disponíveis na CVC com tarifas exclusivas!
-                
-                1️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐⭐
-                📍 [Localização/Bairro real]
-                ✨ [Principal diferencial verdadeiro]
-                🛏️ [Tipo de acomodação]
-                💰 Diária média: R$ [valor realista]
-                📞 Reserve com a CVC: melhores tarifas!
-                
-                2️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐⭐
-                📍 [Localização/Bairro real]
-                ✨ [Principal diferencial verdadeiro]
-                🛏️ [Tipo de acomodação]
-                💰 Diária média: R$ [valor realista]
-                📞 Parcelamento exclusivo CVC
-                
-                3️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐
-                📍 [Localização/Bairro real]
-                ✨ [Principal diferencial verdadeiro]
-                🛏️ [Tipo de acomodação]
-                💰 Diária média: R$ [valor realista]
-                📞 Pacotes com aéreo na CVC
-                
-                4️⃣ [Nome do Hotel Real] ⭐⭐⭐⭐
-                📍 [Localização/Bairro real]
-                ✨ [Principal diferencial verdadeiro]
-                🛏️ [Tipo de acomodação]
-                💰 Diária média: R$ [valor realista]
-                📞 Ofertas especiais CVC
-                
-                5️⃣ [Nome do Hotel Real] ⭐⭐⭐
-                📍 [Localização/Bairro real]
-                ✨ Melhor custo-benefício
-                🛏️ [Tipo de acomodação]
-                💰 Diária média: R$ [valor realista]
-                📞 Condições imperdíveis na CVC
-                
-                💡 DICA: A CVC Itaqua oferece:
-                • Parcelamento em até 10x sem juros
-                • Pacotes completos com aéreo + hotel
-                • Seguro viagem incluído
-                • Assistência 24h durante sua estadia
-                
-                📲 Entre em contato para valores exclusivos!
-                
-                INSTRUÇÕES FINAIS:
-                - NÃO pergunte ao usuário qual destino
-                - Use hotéis REAIS do destino
-                - Se o destino for Orlando, inclua hotéis próximos aos parques
-                - Sempre destaque os benefícios CVC`;
 
-            } else {
-                // 5.3 - Prompt Principal para Orçamentos
-                const tabelaAeroportos = Object.entries(AEROPORTOS)
-                    .map(([codigo, nome]) => `${codigo} → ${nome}`)
-                    .join('\n');
+            // 5.3 - Prompt para Locação de Carro
+            } else if (isCarro) {
+                prompt = `TEMPLATES DISPONÍVEIS:
+${templatesString}
 
-                // 5.4 - Regras para Multitrecho (NOVO)
-                const multitrecho_rules = isMultitrecho ? `
-**🔴 ATENÇÃO: DETECTADO MULTITRECHO!**
-
-USE ESTE FORMATO ESPECÍFICO:
-
-SE OS VOOS SÃO IDÊNTICOS COM VALORES DIFERENTES (múltiplas opções):
-
-*{Companhia} - Multitrecho*
-{data1} - {origem1} {hora1} / {destino1} {hora2} ({tipo})
---
-{data2} - {origem2} {hora3} / {destino2} {hora4} ({tipo})
---
-{data3} - {origem3} {hora5} / {destino3} {hora6} ({tipo})
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-💰 *VALORES DISPONÍVEIS:*
-Para {passageiros}
-
-*Opção 1:* R$ {valor1}
-✅ {bagagem1 - detectar diferença pelos ícones}
-${temInfoParcelamento ? '💳 {parcelamento1 no formato: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"}' : ''}
-🏷️ {tarifa1}
-🔗 {link1 se houver}
-
-*Opção 2:* R$ {valor2}
-✅ {bagagem2 - detectar diferença pelos ícones}
-${temInfoParcelamento ? '💳 {parcelamento2 no formato: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"}' : ''}
-🏷️ {tarifa2}
-🔗 {link2 se houver}
-
-Valores sujeitos a confirmação e disponibilidade
-
-REGRAS CRÍTICAS MULTITRECHO:
-1. NÃO repetir nome da companhia entre trechos
-2. NÃO colocar títulos entre os trechos (tipo "Trecho 2")
-3. Usar apenas -- para separar trechos
-4. Se houver diferença de bagagem, identificar: "Somente bagagem de mão" vs "Bagagem de mão + 23kg despachada"
-5. ${!temInfoParcelamento ? 'NÃO incluir linha de parcelamento - não há essa informação' : 'SEMPRE formatar parcelamento como: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"'}
-6. NUNCA usar "Entrada de", sempre "primeira parcela de"
-7. Se houver múltiplas opções com mesmos voos, usar formato compacto com valores separados
-` : '';
-
-                prompt = `Você é um assistente da CVC Itaqua.
-ANALISE CUIDADOSAMENTE o tipo de orçamento.
-
-${multitrecho_rules}
-
-**DADOS DO CLIENTE:**
+DADOS FORNECIDOS:
 ${conteudoPrincipal}
-${destino ? `Destino: ${destino}` : ''}
+
+DETECTADO: LOCAÇÃO DE CARRO
+
+Use o template 'locacao_carro' para formatar.
+
+IMPORTANTE:
+- ORDENAR do MAIS BARATO para o MAIS CARO
+- Converter "ORLANDO INTERNATIONAL APORLANDO" para "Orlando International Airport"
+- Identificar categorias (Econômico, Compacto, SUV)
+- Destacar taxas locais
+- Incluir serviços (Km livre, proteção, motorista adicional)
+
+${temInfoParcelamento ? 
+  `Incluir parcelamento: ${tipoParcelamento === 'parcela_diferenciada' ? 
+    'Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros' :
+    `${numParcelas}x de R$ X s/ juros no cartão`}` : 
+  'NÃO incluir parcelamento'}
+
+Termine com "Valores sujeitos a confirmação e disponibilidade"`;
+
+            // 5.4 - Prompt para Hotéis
+            } else if (isHotel && !temAereo) {
+                prompt = `TEMPLATES DISPONÍVEIS:
+${templatesString}
+
+DADOS FORNECIDOS:
+${conteudoPrincipal}
+${destinoFinal ? `Destino: ${destinoFinal}` : ''}
 ${infoPassageiros ? `Passageiros: ${infoPassageiros}` : ''}
-${parcelamento ? `Parcelamento: ${parcelamento}x sem juros` : ''}
-${linkCVC ? `Link CVC: ${linkCVC}` : ''}
 
-**ANÁLISE DETECTADA:**
-- Tem Hotel? ${temHotel ? 'SIM' : 'NÃO'}
-- Tem Aéreo? ${temAereo ? 'SIM' : 'NÃO'}
-- É Pacote? ${isPacote ? 'SIM' : 'NÃO'}
-- Tem Preço? ${temPreco ? 'SIM' : 'NÃO'}
-- Tem Link? ${linkCVC ? 'SIM - INCLUIR!' : 'NÃO'}
-- Tem Avianca? ${temAvianca ? 'SIM' : 'NÃO'}
-- Tem Gol? ${temGol ? 'SIM' : 'NÃO'}
-- Múltiplas Opções? ${temMultiplasOpcoes ? 'SIM' : 'NÃO'}
-- É Multitrecho? ${isMultitrecho ? 'SIM - USAR FORMATO ESPECIAL!' : 'NÃO'}
-- Tem info de parcelamento? ${temInfoParcelamento ? 'SIM - INCLUIR' : 'NÃO - OMITIR'}
+DETECTADO: HOTÉIS (sem aéreo)
 
-// =================================================================
-// IDENTIFICAÇÃO CRÍTICA DO TIPO
-// =================================================================
+Use o template 'hoteis_multiplas_opcoes'.
 
-**REGRAS DE PRIORIDADE:**
+IMPORTANTE:
+- ORDENAR do MAIS BARATO para o MAIS CARO
+- Se houver "Preferencial", destacar com ⭐
+- Se houver Resort Fee, mencionar como ⚠️
+- Se houver desconto, mostrar: De ~~R$ X~~ por R$ Y
 
-1. **MULTITRECHO** (Múltiplos trechos de voo)
-   ${isMultitrecho ? '✅ DETECTADO - USE TEMPLATE MULTITRECHO!' : ''}
-   
-2. **PACOTE COMPLETO** (Hotel + Aéreo juntos)
-   ${isPacote && !isMultitrecho ? '✅ DETECTADO - USE TEMPLATE DE PACOTE!' : ''}
-   - Palazzo Lakeside ou outros hotéis + voos
-   - Use template com seções separadas para voo e hotel
-   
-3. **MÚLTIPLAS OPÇÕES** (2+ cards "Selecionado")
-   ${temMultiplasOpcoes && !isMultitrecho ? '✅ DETECTADO - USE OPÇÃO 1 e OPÇÃO 2!' : ''}
-   - Diferentes datas/horários/passageiros
-   - Cada opção com seu preço
-   
-4. **VOO COMBINADO** (Mix no mesmo itinerário)
-   ${temAvianca && temGol && !temMultiplasOpcoes && !isMultitrecho ? '✅ DETECTADO - USE VOO COMBINADO!' : ''}
-   - Ida Avianca + Volta Gol (ou vice-versa)
-   - Um único preço total
-   
-5. **VOO SIMPLES** (Ida e volta normal)
-   - Uma companhia ou codeshare
-   - Com ou sem conexão
-   
-6. **SEM PREÇO** (Apenas detalhes)
-   ${!temPreco ? '✅ DETECTADO - NÃO INCLUIR VALORES!' : ''}
-   - Omitir linha de valor
-   - Manter outros detalhes
+${temInfoParcelamento ? 
+  `Incluir parcelamento: ${tipoParcelamento === 'parcela_diferenciada' ? 
+    'Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros' :
+    `${numParcelas}x de R$ X s/ juros no cartão`}` : 
+  'NÃO incluir parcelamento'}
 
-// =================================================================
-// TEMPLATES ESPECÍFICOS (Exemplos para a IA seguir)
-// =================================================================
+${linksCVC.length > 0 ? `Incluir links: ${linksCVC.join(', ')}` : 'NÃO incluir links'}
 
-${isPacote && !isMultitrecho ? `
-**USE ESTE TEMPLATE DE PACOTE:**
+Termine com "Valores sujeitos a confirmação e disponibilidade"`;
 
-*Pacote {destino}*
-{data_ida} a {data_volta} ({X} dias e {Y} noites)
-Pacote para {passageiros}
+            // 5.5 - Prompt para Cruzeiro
+            } else if (isCruzeiro) {
+                prompt = `TEMPLATES DISPONÍVEIS:
+${templatesString}
 
-*O Pacote Inclui:*
-- Passagem Aérea ida e volta
-- Taxas de Embarque
-- {noites} noites de hospedagem
-- {regime_alimentacao}
+DADOS FORNECIDOS:
+${conteudoPrincipal}
 
-✈️ *Voos:*
-IDA - {companhia} - {data}
-{origem} {hora} / {destino} {hora} ({tipo})
+DETECTADO: CRUZEIRO
 
-VOLTA - {companhia} - {data}
-{origem} {hora} / {destino} {hora} ({tipo})
+Use o template 'cruzeiro'.
+Extraia todas as informações sobre o navio, roteiro, cabines.
 
-🏨 *Hotel Selecionado:*
-{nome_hotel}
-📍 {endereco}
-🛏️ {tipo_quarto}
-☕ {regime}
-{observacoes_resort_fee}
+Termine com a mensagem padrão do template.`;
 
-💰 R$ {valor_total} total
-💳 {parcelamento}
-🏷️ {reembolso}
+            // 5.6 - Prompt para Multitrecho
+            } else if (isMultitrecho) {
+                prompt = `TEMPLATES DISPONÍVEIS:
+${templatesString}
 
-Valores sujeitos a confirmação e disponibilidade` : ''}
+DADOS FORNECIDOS:
+${conteudoPrincipal}
 
-${temAvianca && temGol && !temMultiplasOpcoes && !isMultitrecho ? `
-**USE ESTE TEMPLATE DE VOO COMBINADO:**
+DETECTADO: MULTITRECHO
 
-*Voo {origem} ✈ {destino}*
-{data_ida} a {data_volta} ({X} dias e {Y} noites)
+ANALISE se há múltiplas opções do mesmo roteiro ou multitrecho único.
 
-✈️ IDA - Avianca
-{detalhes_ida_com_conexao}
+SE MÚLTIPLAS OPÇÕES (mesmo roteiro, preços diferentes):
+Formato compacto com valores separados.
 
-✈️ VOLTA - Gol
-{detalhes_volta_com_conexao}
+SE MULTITRECHO ÚNICO:
+Use o template 'multitrecho'.
 
-💰 R$ {valor} para {passageiros}
-💳 {parcelamento}
-✅ Só mala de mão incluída
-🏷️ Não reembolsável
-
-Valores sujeitos a confirmação e disponibilidade` : ''}
-
-${temMultiplasOpcoes && !isMultitrecho ? `
-**USE ESTE TEMPLATE DE MÚLTIPLAS OPÇÕES:**
-
-*OPÇÃO 1 - {companhia} - {origem} ✈ {destino}*
-{detalhes_opcao1}
-
-💰 R$ {valor1} para {passageiros1}
-✅ {bagagem1}
-🏷️ {reembolso1}
-
----
-
-*OPÇÃO 2 - {companhia} - {origem} ✈ {destino}*
-{detalhes_opcao2}
-{nota_codeshare_se_houver}
-
-💰 R$ {valor2} para {passageiros2}
-✅ {bagagem2}
-🏷️ {reembolso2}
-
-Valores sujeitos a confirmação e disponibilidade` : ''}
-
-**EXEMPLO CORRETO PARA VOO SIMPLES:**
-Dados: Latam, São Paulo-Juazeiro do Norte, 07/10-09/10, GRU-JDO, R$ 1.026,02, linkCVC fornecido
-
-SAÍDA OBRIGATÓRIA:
-*Latam - São Paulo ✈ Juazeiro do Norte*
-07/10 - Guarulhos 08:20 / Juazeiro do Norte 11:15 (voo direto)
---
-09/10 - Juazeiro do Norte 16:05 / Guarulhos 19:15 (voo direto)
-
-💰 R$ 1.026,02 para 01 adulto
-${temInfoParcelamento ? '💳 Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ 252,20 + 9x de R$ 85,98 s/ juros' : ''}
-✅ Só mala de mão incluída
-🏷️ Tarifa facial
-🔗 https://www.cvc.com.br/carrinho-dinamico/6899f5730216ce3286369b76
-
-Valores sujeitos a confirmação e disponibilidade
-
-**NUNCA FAÇA:**
-❌ Listar campos como "Origem:", "Destino:", "Data:"
-❌ Usar formato de lista ou bullet points
-❌ Adicionar títulos como "ORÇAMENTO DE VIAGEM"
-❌ Usar formato diferente do template
-❌ Incluir parcelamento sem ter a informação
-❌ Usar "Entrada de" ao invés de "primeira parcela de"
-
-// =================================================================
-// CONVERSÃO DE CÓDIGOS
-// =================================================================
-
-**SEMPRE CONVERTER:**
+CONVERSÕES OBRIGATÓRIAS:
 ${tabelaAeroportos}
 
-// =================================================================
-// REGRAS FINAIS
-// =================================================================
+REGRAS:
+- NÃO repetir companhia entre trechos
+- Usar -- apenas entre ida/volta
+- Converter TODOS os códigos de aeroportos
+- ${!temInfoParcelamento ? 'NÃO incluir parcelamento' : 'Incluir parcelamento conforme fornecido'}
+- ${linksCVC.length === 0 ? 'NÃO incluir links' : `Incluir links: ${linksCVC.join(', ')}`}
 
-1. **DETECTAR CORRETAMENTE O TIPO**
-2. **USAR O TEMPLATE APROPRIADO**
-3. **CONVERTER TODOS OS CÓDIGOS**
-4. **SE NÃO TEM PREÇO, OMITIR LINHA DE VALOR**
-5. **SE TEM LINK CVC, SEMPRE INCLUIR COM 🔗**
-6. **INCLUIR DETALHES DE CONEXÃO QUANDO HOUVER**
-7. **MENCIONAR CODESHARE SE APLICÁVEL**
-8. **FORMATAR PARCELAMENTO:** Só se tiver info, usar: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"
-9. **TERMINAR COM "Valores sujeitos..."**
-10. **MULTITRECHO:** Usar formato compacto quando voos idênticos
+Termine com "Valores sujeitos a confirmação e disponibilidade"`;
 
-**IMPORTANTE:**
-- Parcelamento: sempre "primeira parcela" (nunca "entrada")
-- Resort Fee = mencionar em observações do hotel
-- Passageiros = sempre com zero à esquerda (01, 02, 03)
-- Multitrecho = não repetir companhia, usar -- entre trechos`;
+            // 5.7 - Prompt Principal para Orçamentos
+            } else {
+                // Determinar qual template usar
+                let templateEspecifico = '';
+                if (isPacote) {
+                    templateEspecifico = 'pacote_completo';
+                } else if (isSomenteIda) {
+                    templateEspecifico = 'aereo_somente_ida';
+                } else if (temMultiplasOpcoes && !isMultitrecho) {
+                    templateEspecifico = 'multiplas_opcoes_2 ou multiplas_companhias';
+                } else {
+                    templateEspecifico = 'aereo_ida_volta ou aereo_conexao_detalhada';
+                }
+
+                prompt = `TEMPLATES DISPONÍVEIS:
+${templatesString}
+
+DADOS DO CLIENTE:
+${conteudoPrincipal}
+
+ANÁLISE:
+- Destino: ${destinoFinal || 'EXTRAIR DO CONTEÚDO - NÃO INVENTAR'}
+- Passageiros: ${infoPassageiros || 'EXTRAIR DO CONTEÚDO'}
+- É Pacote? ${isPacote}
+- É Multitrecho? ${isMultitrecho}
+- Somente Ida? ${isSomenteIda}
+- Múltiplas Opções? ${temMultiplasOpcoes}
+- Tem preço? ${temPreco}
+
+TEMPLATE SUGERIDO: ${templateEspecifico}
+
+CONVERSÕES OBRIGATÓRIAS:
+${tabelaAeroportos}
+
+REGRAS CRÍTICAS:
+1. Use o template EXATO correspondente
+2. Converta TODOS os códigos de aeroportos
+3. ${!destinoFinal ? 'EXTRAIR destino do conteúdo, NUNCA inventar' : `Usar destino: ${destinoFinal}`}
+4. ${!temPreco ? 'NÃO incluir linha de valor' : 'Incluir valores conforme fornecido'}
+5. ${!temInfoParcelamento ? 'NÃO incluir parcelamento' :
+     tipoParcelamento === 'parcela_diferenciada' ? 
+     'Parcelamento: "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ X + 9x de R$ Y s/ juros"' :
+     `Parcelamento: "${numParcelas}x de R$ X s/ juros no cartão"`}
+6. ${linksCVC.length === 0 ? 'NÃO incluir links' : `Incluir links: ${linksCVC.join(', ')}`}
+
+FORMATO:
+- Título com cidades (não aeroportos)
+- Datas: DD/MM
+- Horários: HH:MM
+- Passageiros com zero à esquerda (01, 02)
+- NUNCA inventar informações
+
+Termine com "Valores sujeitos a confirmação e disponibilidade"`;
             }
 
             // ================================================================================
             // 6. 🤖 PROCESSAMENTO COM IA
             // ================================================================================
+
             let resultado = '';
             let iaUsada = 'gpt-4o-mini';
 
-            // 6.1 - Decisão de IA (Claude vs GPT)
-            const usarClaude = imagemBase64 ||
-                (conteudoPrincipal.length > 2000) ||
-                tipos.includes('Cruzeiro') ||
-                isPacote ||
-                (temAvianca && temGol) ||
-                isMultitrecho;
+            // Decisão de IA (Claude vs GPT)
+            const usarClaude = imagemBase64 || arquivoBase64 || temImagem ||
+                              (conteudoPrincipal.length > 2000) ||
+                              isPacote || isMultitrecho || isCruzeiro;
 
             console.log('🤖 IA selecionada:', usarClaude ? 'Claude' : 'GPT');
 
-            // 6.2 - Processamento com Claude
+            // Processamento com Claude
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 console.log('🤖 Usando Claude 3 Haiku...');
                 iaUsada = 'claude-3-haiku';
-                const systemPromptClaude = `Você é um assistente da CVC Itaqua. INSTRUÇÕES ABSOLUTAS - USE EXATAMENTE ESTE FORMATO: 
-
-PARA VOO SIMPLES: 
-*{Companhia} - {Cidade Origem} ✈ {Cidade Destino}* 
-{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) 
--- 
-{DD/MM} - {Aeroporto} {HH:MM} / {Aeroporto} {HH:MM} ({tipo}) 
-
-💰 R$ {valor} para {passageiros} 
-${temInfoParcelamento ? '💳 {parcelamento}' : ''}
-✅ {bagagem} 
-🏷️ {tarifa} 
-🔗 {link se houver} 
-
-Valores sujeitos a confirmação e disponibilidade. 
-
-PARA MULTITRECHO COM MÚLTIPLAS OPÇÕES:
-*{Companhia} - Multitrecho*
-{trecho1}
---
-{trecho2}
---
-{trecho3}
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-💰 *VALORES DISPONÍVEIS:*
-Para {passageiros}
-
-*Opção 1:* R$ {valor1}
-✅ {bagagem1}
-${temInfoParcelamento ? '💳 {parcelamento1}' : ''}
-🏷️ {tarifa1}
-
-*Opção 2:* R$ {valor2}
-✅ {bagagem2}
-${temInfoParcelamento ? '💳 {parcelamento2}' : ''}
-🏷️ {tarifa2}
-
-Valores sujeitos a confirmação e disponibilidade
-
-FORMATO CORRETO DE PARCELAMENTO: 
-- "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros" 
-- NUNCA use "Entrada de", sempre "primeira parcela de". 
-
-CONVERSÕES: GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, LIS→Lisboa, ORY→Paris Orly. 
-
-${!temInfoParcelamento ? 'NÃO incluir linha de parcelamento' : 'SEMPRE INCLUIR O PARCELAMENTO FORNECIDO'}
-SEMPRE INCLUIR O LINK SE FORNECIDO!`;
                 
                 const messages = [{
                     role: 'user',
-                    content: imagemBase64 ? [{
-                        type: 'text',
-                        text: prompt
-                    }, {
-                        type: 'image',
-                        source: {
-                            type: 'base64',
-                            media_type: imagemBase64.split(';')[0].split(':')[1],
-                            data: imagemBase64.split(',')[1]
+                    content: (imagemBase64 || arquivoBase64) ? [
+                        { type: 'text', text: prompt },
+                        { 
+                            type: 'image', 
+                            source: {
+                                type: 'base64',
+                                media_type: (imagemBase64 || arquivoBase64).split(';')[0].split(':')[1],
+                                data: (imagemBase64 || arquivoBase64).split(',')[1]
+                            }
                         }
-                    }] : prompt
+                    ] : prompt
                 }];
                 
                 const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -951,7 +870,7 @@ SEMPRE INCLUIR O LINK SE FORNECIDO!`;
                         max_tokens: 2000,
                         temperature: 0.1,
                         messages,
-                        system: systemPromptClaude
+                        system: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos. Use o formato correto para WhatsApp.'
                     })
                 });
                 
@@ -965,44 +884,14 @@ SEMPRE INCLUIR O LINK SE FORNECIDO!`;
                 resultado = claudeData.content[0].text;
 
             }
-            // 6.3 - Processamento com GPT
+            // Processamento com GPT
             else {
                 console.log('🤖 Usando GPT-4o-mini...');
+                
                 const OPENAI_KEY = process.env.OPENAI_API_KEY;
                 if (!OPENAI_KEY) {
                     throw new Error('OpenAI API key não configurada.');
                 }
-                
-                const systemPromptGpt = `Você é um assistente da CVC Itaqua. REGRAS CRÍTICAS - SIGA EXATAMENTE: 
-
-1. FORMATO OBRIGATÓRIO PARA VOOS: 
-   *Companhia - Cidade Origem ✈ Cidade Destino* 
-   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) 
-   -- 
-   DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo voo) 
-   
-   💰 R$ valor para passageiros 
-   ${temInfoParcelamento ? '💳 Parcelamento (se houver)' : ''}
-   ✅ Bagagem 
-   🏷️ Tipo tarifa 
-   🔗 Link (se houver) 
-   
-   Valores sujeitos a confirmação e disponibilidade. 
-
-2. PARA MULTITRECHO:
-   *Companhia - Multitrecho*
-   {trechos com -- entre eles}
-   
-   Se houver múltiplas opções de valores, use formato compacto com valores separados.
-
-3. FORMATO DE PARCELAMENTO OBRIGATÓRIO: 
-   ${temInfoParcelamento ? '- "Parcelamento em até 10x sem juros no cartão, sendo a primeira parcela de R$ XXX + 9x de R$ YYY s/ juros"' : '- NÃO incluir parcelamento'}
-   - NUNCA use "Entrada de", sempre "primeira parcela de". 
-
-4. CONVERSÕES OBRIGATÓRIAS: 
-   GRU→Guarulhos, JDO→Juazeiro do Norte, MCO→Orlando, BOG→Bogotá, LIS→Lisboa, ORY→Paris Orly. 
-
-5. SEMPRE INCLUIR O LINK SE FORNECIDO!`;
                 
                 const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
@@ -1012,13 +901,13 @@ SEMPRE INCLUIR O LINK SE FORNECIDO!`;
                     },
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
-                        messages: [{
-                            role: 'system',
-                            content: systemPromptGpt
-                        }, {
-                            role: 'user',
-                            content: prompt
-                        }],
+                        messages: [
+                            { 
+                                role: 'system', 
+                                content: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos usando a tabela fornecida. Use o formato correto para WhatsApp.'
+                            },
+                            { role: 'user', content: prompt }
+                        ],
                         temperature: 0.1,
                         max_tokens: 2000
                     })
@@ -1037,51 +926,54 @@ SEMPRE INCLUIR O LINK SE FORNECIDO!`;
             // ================================================================================
             // 7. ✅ RESPOSTA FINAL
             // ================================================================================
-            console.log('✅ Processamento concluído');
-            const tipoDetectadoFinal = isDicas ? 'dicas' :
-                isRanking ? 'ranking' :
-                isMultitrecho ? 'multitrecho' :
-                isPacote ? 'pacote' :
-                temMultiplasOpcoes ? 'multiplas_opcoes' :
-                (temAvianca && temGol) ? 'voo_combinado' :
-                'voo_simples';
-
-            console.log('📋 Tipo detectado:', tipoDetectadoFinal.toUpperCase());
-            console.log('💰 Tem preço?', temPreco ? 'SIM' : 'NÃO');
-            console.log('💳 Tem info parcelamento?', temInfoParcelamento ? 'SIM' : 'NÃO');
+            
+            console.log('✅ Processamento concluído v7.9');
+            
+            // Determinar tipo detectado
+            let tipoDetectado = 'orcamento';
+            if (isDicas) tipoDetectado = 'dicas';
+            else if (isRanking) tipoDetectado = 'ranking';
+            else if (isCarro) tipoDetectado = 'locacao_carro';
+            else if (isCruzeiro) tipoDetectado = 'cruzeiro';
+            else if (isHotel && !temAereo) tipoDetectado = 'hoteis';
+            else if (isPacote) tipoDetectado = 'pacote';
+            else if (isMultitrecho) tipoDetectado = 'multitrecho';
+            else if (isSomenteIda) tipoDetectado = 'somente_ida';
+            else if (temMultiplasOpcoes) tipoDetectado = 'multiplas_opcoes';
 
             return res.status(200).json({
                 success: true,
                 result: resultado,
-                ia_usada: iaUsada,
-                version: '7.7',
-                tipo_detectado: tipoDetectadoFinal,
-                tem_preco: temPreco,
-                tem_parcelamento: temInfoParcelamento,
-                debug: {
-                    section_1: 'Templates processados',
-                    section_2: 'Aeroportos convertidos',
-                    section_3: 'Handler executado',
-                    section_4: 'Dados processados (com multitrecho)',
-                    section_5: 'Prompt utilizado',
-                    section_6: `IA utilizada: ${iaUsada}`,
-                    section_7: 'Resposta formatada'
+                metadata: {
+                    version: '7.9',
+                    ia_usada: iaUsada,
+                    tipo_detectado: tipoDetectado,
+                    destino: destinoFinal,
+                    passageiros: infoPassageiros,
+                    tem_preco: temPreco,
+                    tem_parcelamento: temInfoParcelamento,
+                    tipo_parcelamento: tipoParcelamento,
+                    num_parcelas: numParcelas,
+                    links_detectados: linksCVC.length,
+                    template_usado: tipoDetectado
                 }
             });
 
         } catch (error) {
-            console.error('❌ Erro no handler principal:', error);
+            console.error('❌ Erro no processamento:', error);
             return res.status(500).json({
                 success: false,
                 error: error.message || 'Erro desconhecido no servidor',
-                version: '7.7'
+                version: '7.9',
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
             });
         }
     }
 
+    // Método não suportado
     return res.status(405).json({
         success: false,
-        error: 'Método não suportado',
-        version: '7.7'
+        error: 'Método não suportado. Use GET para status ou POST para processar.',
+        version: '7.9'
     });
 }
