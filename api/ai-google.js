@@ -498,7 +498,7 @@ export default async function handler(req, res) {
             const isRanking = tipos.includes('Ranking');
             const isHotel = tipos.includes('Hotel') || conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem') || conteudoLower.includes('resort');
             const isCarro = conteudoLower.includes('locação') || conteudoLower.includes('locacao') || 
-                           conteudoLower.includes('retirada') && conteudoLower.includes('devolução') ||
+                           (conteudoLower.includes('retirada') && conteudoLower.includes('devolução')) ||
                            conteudoLower.includes('dollar') || conteudoLower.includes('hertz') || 
                            conteudoLower.includes('avis') || conteudoLower.includes('categoria economico');
 
@@ -684,6 +684,11 @@ Termine com "Valores sujeitos a confirmação e disponibilidade"`;
 
             // 5.4 - Prompt para Hotéis
             } else if (isHotel && !temAereo) {
+                const hasAnyTax = temTaxas ? 'SIM - INCLUIR TODAS!' : 'NÃO';
+                const reembolsoInfo = temNaoReembolsavel ? 'Não reembolsável detectado' : 
+                                     temReembolsavel ? 'Reembolsável detectado - NÃO MENCIONAR' : 
+                                     'Verificar no texto';
+                
                 prompt = `TEMPLATES DISPONÍVEIS:
 ${templatesString}
 
@@ -699,12 +704,13 @@ Use o template 'hoteis_multiplas_opcoes'.
 REGRAS CRÍTICAS PARA HOTÉIS:
 
 1. REEMBOLSO (REGRA OBRIGATÓRIA):
+   - ${reembolsoInfo}
    - Se diz "Reembolsável" (sem "Não") → NÃO MENCIONAR NADA
    - Se diz "Não reembolsável" → INCLUIR: 🏷️ Não reembolsável
    - NUNCA mostrar "🏷️ Reembolsável"
 
 2. TAXAS (SEMPRE DESTACAR):
-   ${temTaxas ? '⚠️ DETECTADAS TAXAS - INCLUIR TODAS!' : ''}
+   - Taxas detectadas? ${hasAnyTax}
    - Resort Fee → ⚠️ Resort Fee: USD XX por noite (pago no hotel)
    - Taxa do hotel → ⚠️ Taxa do hotel: USD XX por noite (pago no hotel)
    - Mandatory Tax → ⚠️ Taxa obrigatória: USD XX (pago no hotel)
@@ -818,6 +824,7 @@ ANÁLISE:
 - Somente Ida? ${isSomenteIda}
 - Múltiplas Opções? ${temMultiplasOpcoes}
 - Tem preço? ${temPreco}
+- Tem taxas? ${temTaxas}
 
 TEMPLATE SUGERIDO: ${templateEspecifico}
 
@@ -901,7 +908,7 @@ Termine com "Valores sujeitos a confirmação e disponibilidade"`;
                         max_tokens: 2000,
                         temperature: 0.1,
                         messages,
-                        system: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos. Use o formato correto para WhatsApp.'
+                        system: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos. Use o formato correto para WhatsApp. REGRA CRÍTICA: Se diz "Reembolsável" (sem "Não"), NÃO mencione. Se diz "Não reembolsável", inclua 🏷️ Não reembolsável. SEMPRE destaque taxas com ⚠️.'
                     })
                 });
                 
@@ -935,7 +942,7 @@ Termine com "Valores sujeitos a confirmação e disponibilidade"`;
                         messages: [
                             { 
                                 role: 'system', 
-                                content: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos usando a tabela fornecida. Use o formato correto para WhatsApp.'
+                                content: 'Você é um assistente da CVC Itaqua. Siga EXATAMENTE os templates fornecidos. NUNCA invente informações. Sempre converta códigos de aeroportos usando a tabela fornecida. Use o formato correto para WhatsApp. REGRA CRÍTICA DE REEMBOLSO: Se diz "Reembolsável" (sem "Não"), NÃO mencione nada. Se diz "Não reembolsável", inclua 🏷️ Não reembolsável. SEMPRE destaque taxas com ⚠️ quando houver Resort Fee, Taxa do hotel, etc.'
                             },
                             { role: 'user', content: prompt }
                         ],
