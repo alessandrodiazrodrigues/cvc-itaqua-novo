@@ -1,1318 +1,774 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 CVC Itaqua - Geração de Orçamento com IA v2.0</title>
+// 🚀 CVC ITAQUA v8.1 - AÉREO E PACOTE ATUALIZADOS - ERRO 500 CORRIGIDO
+// ================================================================================
+// 📑 ÍNDICE GERAL DO SISTEMA
+// ================================================================================
+// 1. TEMPLATES DE ORÇAMENTOS (ATUALIZADOS)
+//    1.1 Aéreo Ida e Volta Simples (NOVO FORMATO)
+//    1.2 Aéreo com Conexão Detalhada (NOVO FORMATO) 
+//    1.3 Aéreo Somente Ida (NOVO FORMATO)
+//    1.4 Múltiplas Opções (2 e 3 planos) (NOVO FORMATO)
+//    1.5 Multitrecho (NOVO FORMATO)
+//    1.6 Múltiplas Companhias (NOVO FORMATO)
+//    1.7 Hotéis - Múltiplas Opções (MANTIDO)
+//    1.8 Roteiro de Hotéis (MANTIDO)
+//    1.9 Pacote Completo (COMPLETAMENTE ATUALIZADO)
+//    1.10 Cruzeiro (MANTIDO)
+//    1.11 Locação de Carro (MANTIDO)
+// 2. TABELA DE CONVERSÃO DE AEROPORTOS (ATUALIZADA)
+// 3. HANDLER PRINCIPAL DA API
+// 4. PROCESSAMENTO DE DADOS
+// 5. PROMPTS ESPECIALIZADOS (ATUALIZADOS)
+// 6. PROCESSAMENTO COM IA
+// 7. RESPOSTA FINAL
+// ================================================================================
+
+// ================================================================================
+// 1. 📋 TEMPLATES DE ORÇAMENTOS (AÉREO E PACOTE ATUALIZADOS)
+// ================================================================================
+const TEMPLATES = {
+    // 1.1 - Aéreo Ida e Volta Simples (NOVO FORMATO CHECKLIST)
+    aereo_ida_volta: `*{companhia} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 Valor total: R$ {valor_total} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional}
+{parcelamento}
+{link}
+{reembolso}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.2 - Aéreo com Conexão Detalhada (NOVO FORMATO CHECKLIST)
+    aereo_conexao_detalhada: `*{companhia} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
+(conexão em {cidade_conexao} - {tempo_espera} de espera)
+{data_ida} - {aeroporto_conexao} {hora_saida_conexao} / {aeroporto_destino} {hora_chegada_ida} (voo direto)
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 Valor total: R$ {valor_total} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional}
+{parcelamento}
+{link}
+{reembolso}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.3 - Aéreo Somente Ida (NOVO FORMATO CHECKLIST)
+    aereo_somente_ida: `*{companhia} ✈ {cidade_destino}*
+{data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+
+💰 Valor total: R$ {valor} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional}
+{parcelamento}
+{link}
+{reembolso}
+
+⚠️ Passagem somente de ida - sem retorno incluído
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.4 - Múltiplas Opções - 2 Planos (NOVO FORMATO CHECKLIST)
+    multiplas_opcoes_2: `*OPÇÃO 1 - {companhia1} ✈ {cidade_destino}*
+{data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
+--
+{data_volta1} - {aeroporto_destino1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
+
+💰 Valor total: R$ {valor1} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional1}
+{parcelamento1}
+{link1}
+
+*OPÇÃO 2 - {companhia2} ✈ {cidade_destino}*
+{data_ida2} - {aeroporto_origem2} {hora_ida2} / {aeroporto_destino2} {hora_chegada2} ({tipo_voo2})
+--
+{data_volta2} - {aeroporto_destino2} {hora_volta2} / {aeroporto_origem2} {hora_chegada_volta2} ({tipo_voo_volta2})
+
+💰 Valor total: R$ {valor2} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional2}
+{parcelamento2}
+{link2}
+
+{reembolso}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.5 - Multitrecho (NOVO FORMATO CHECKLIST)
+    multitrecho: `*{companhia} ✈ Multitrecho*
+{data_trecho1} - {aeroporto1} {hora1} / {aeroporto_chegada1} {hora_chegada1} ({tipo_voo1})
+--
+{data_trecho2} - {aeroporto2} {hora2} / {aeroporto_chegada2} {hora_chegada2} ({tipo_voo2})
+--
+{data_trecho3} - {aeroporto3} {hora3} / {aeroporto_chegada3} {hora_chegada3} ({tipo_voo3})
+
+💰 Valor total: R$ {valor_total} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional}
+{parcelamento}
+{link}
+{reembolso}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.6 - Múltiplas Companhias (NOVO FORMATO CHECKLIST)
+    multiplas_companhias: `*OPÇÃO 1 - {companhia1} ✈ {cidade_destino}*
+{data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
+--
+{data_volta1} - {aeroporto_destino1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
+
+💰 Valor total: R$ {valor1} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional1}
+{parcelamento1}
+{link1}
+
+*OPÇÃO 2 - {companhia2} ✈ {cidade_destino}*
+{data_ida2} - {aeroporto_origem2} {hora_ida2} / {aeroporto_destino2} {hora_chegada2} ({tipo_voo2})
+--
+{data_volta2} - {aeroporto_destino2} {hora_volta2} / {aeroporto_origem2} {hora_chegada_volta2} ({tipo_voo_volta2})
+
+💰 Valor total: R$ {valor2} para {passageiros}
+✅ Inclui 1 mala de mão + 1 item pessoal{bagagem_adicional2}
+{parcelamento2}
+{link2}
+
+{reembolso}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.7 - Hotéis - Múltiplas Opções (MANTIDO - NÃO ALTERADO)
+    hoteis_multiplas_opcoes: `*Hotéis em {destino}*
+Período: {data_entrada} a {data_saida} ({noites} noites)
+{passageiros}
+
+**OPÇÃO 1** - {nome_hotel1} ⭐{estrelas1}
+📍 {localizacao1}
+🛏️ {tipo_quarto1}
+☕ {regime1}
+💰 R$ {valor1} total
+🔗 {link1}
+
+**OPÇÃO 2** - {nome_hotel2} ⭐{estrelas2}
+📍 {localizacao2}
+🛏️ {tipo_quarto2}
+☕ {regime2}
+💰 R$ {valor2} total
+🔗 {link2}
+
+**OPÇÃO 3** - {nome_hotel3} ⭐{estrelas3}
+📍 {localizacao3}
+🛏️ {tipo_quarto3}
+☕ {regime3}
+💰 R$ {valor3} total
+🔗 {link3}
+
+💳 {parcelamento}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.8 - Roteiro de Hotéis (MANTIDO - NÃO ALTERADO)
+    roteiro_hoteis: `*Roteiro {destino}*
+{passageiros}
+
+📅 **{data1} a {data2}** ({noites1} noites)
+🏨 {hotel1} - {cidade1}
+🛏️ {tipo_quarto1} com {regime1}
+💰 R$ {valor1}
+
+📅 **{data2} a {data3}** ({noites2} noites)
+🏨 {hotel2} - {cidade2}
+🛏️ {tipo_quarto2} com {regime2}
+💰 R$ {valor2}
+
+📅 **{data3} a {data4}** ({noites3} noites)
+🏨 {hotel3} - {cidade3}
+🛏️ {tipo_quarto3} com {regime3}
+💰 R$ {valor3}
+
+💰 **VALOR TOTAL DO ROTEIRO:** R$ {valor_total}
+💳 {parcelamento}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.9 - Pacote Completo (COMPLETAMENTE ATUALIZADO COM CONDICIONAIS)
+    pacote_completo: `*Pacote ✈ {destino}*
+Embarque: {data_embarque}
+Pacote para {passageiros}
+
+*O Pacote Inclui:*
+- Passagem Aérea ida e volta para {destino}
+- Taxas de Embarque
+{traslado}
+{passeios}
+{seguro}
+- {noites} noites de hospedagem no hotel escolhido
+
+✈️ *Voos {companhia}:*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+**OPÇÃO 1** - {nome_hotel1}
+📍 {endereco1}
+🛏️ {tipo_quarto1} com {regime1}
+💰 R$ {valor1} para {passageiros}
+{link1}
+
+**OPÇÃO 2** - {nome_hotel2}
+📍 {endereco2}
+🛏️ {tipo_quarto2} com {regime2}
+💰 R$ {valor2} para {passageiros}
+{link2}
+
+{opcao3}
+
+{parcelamento}
+{reembolso}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // 1.10 - Cruzeiro (MANTIDO - NÃO ALTERADO)
+    cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
+{passageiros}
+📅 Embarque: {data_embarque} ({dia_semana})
+📍 Saída e chegada: {porto}
+🌊 Roteiro incrível pelo litoral brasileiro!
+
+💥 Tarifas disponíveis!
+(Sujeita à confirmação de cabine e categoria)
+
+🛏 Opções de Cabines:
+{opcoes_cabines}
+
+📎 Link para ver fotos, detalhes e reservar:
+{link}
+
+✅ Inclui: hospedagem a bordo, pensão completa
+🚫 Não inclui: taxas, bebidas, excursões
+
+📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
+
+    // 1.11 - Locação de Carro (MANTIDO - NÃO ALTERADO)
+    locacao_carro: `🚗 *LOCAÇÃO DE VEÍCULOS - {cidade}*
+Retirada: {data_retirada} às {hora_retirada}
+Devolução: {data_devolucao} às {hora_devolucao}
+Local: {local_retirada}
+Total: {dias} dias
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1 - {categoria1}*
+🚙 {modelo1}
+✅ Km livre
+✅ Proteção total {franquia1}
+✅ Proteção a terceiros
+✅ {motorista_adicional1}
+💰 R$ {valor1}
+⚠️ Taxa local: R$ {taxa1} (pagar na retirada)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2 - {categoria2}*
+🚗 {modelo2}
+✅ Km livre
+✅ Proteção total {franquia2}
+✅ Proteção a terceiros
+✅ {motorista_adicional2}
+💰 R$ {valor2}
+⚠️ Taxa local: R$ {taxa2} (pagar na retirada)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+*OPÇÃO 3 - {categoria3}*
+🚙 {modelo3}
+✅ Km livre
+✅ Proteção total {franquia3}
+✅ Proteção a terceiros
+✅ {motorista_adicional3}
+💰 R$ {valor3}
+⚠️ Taxa local: R$ {taxa3} (pagar na retirada)
+
+💡 *DOCUMENTOS NECESSÁRIOS:*
+• CNH + Passaporte + Cartão de crédito
+• GPS disponível por taxa adicional
+• Combustível: devolver com mesmo nível
+
+Valores sujeitos a confirmação e disponibilidade`
+};
+
+// ================================================================================
+// 2. 🗺️ TABELA DE CONVERSÃO DE AEROPORTOS (ATUALIZADA COM MÚLTIPLOS AEROPORTOS)
+// ================================================================================
+const AEROPORTOS = {
+    // Aeroportos Brasileiros Principais
+    'GRU': 'Guarulhos',
+    'CGH': 'Congonhas',
+    'VCP': 'Viracopos',
+    'SDU': 'Santos Dumont',
+    'GIG': 'Galeão',
+    'BSB': 'Brasília',
+    'CNF': 'Confins',
+    'PLU': 'Pampulha',
+    'POA': 'Porto Alegre',
+    'CWB': 'Curitiba',
+    'FLN': 'Florianópolis',
+    'SSA': 'Salvador',
+    'REC': 'Recife',
+    'FOR': 'Fortaleza',
+    'NAT': 'Natal',
+    'MCZ': 'Maceió',
+    'AJU': 'Aracaju',
+    'JPA': 'João Pessoa',
+    'THE': 'Teresina',
+    'SLZ': 'São Luís',
+    'BEL': 'Belém',
+    'MAO': 'Manaus',
+    'CGB': 'Cuiabá',
+    'CGR': 'Campo Grande',
+    'GYN': 'Goiânia',
+    'VIX': 'Vitória',
+    'BPS': 'Porto Seguro',
+    'IOS': 'Ilhéus',
+    'JDO': 'Juazeiro do Norte',
+    'IGU': 'Foz do Iguaçu',
+    'IMP': 'Imperatriz',
+    'MAB': 'Marabá',
+    'STM': 'Santarém',
+    'RBR': 'Rio Branco',
+    'PVH': 'Porto Velho',
+    'BVB': 'Boa Vista',
+    'MCP': 'Macapá',
+    'PMW': 'Palmas',
+    'UDI': 'Uberlândia',
+    'RAO': 'Ribeirão Preto',
+    'JOI': 'Joinville',
+    'XAP': 'Chapecó',
+    'LDB': 'Londrina',
+    'MGF': 'Maringá',
+
+    // Aeroportos América do Sul (EXPANDIDO)
+    'EZE': 'Buenos Aires EZE',
+    'AEP': 'Buenos Aires AEP',
+    'SCL': 'Santiago',
+    'LIM': 'Lima',
+    'PCL': 'Pucallpa',
+    'CUZ': 'Cusco',
+    'AQP': 'Arequipa',
+    'BOG': 'Bogotá',
+    'GYE': 'Guayaquil',
+    'UIO': 'Quito',
+    'CCS': 'Caracas',
+    'MVD': 'Montevidéu',
+    'ASU': 'Assunção',
+    'LPB': 'La Paz',
+    'VVI': 'Santa Cruz de la Sierra',
+
+    // Aeroportos América do Norte/Central
+    'MEX': 'Cidade do México',
+    'CUN': 'Cancún',
+    'MIA': 'Miami',
+    'MCO': 'Orlando',
+    'FLL': 'Fort Lauderdale',
+    'JFK': 'Nova York JFK',
+    'LGA': 'Nova York LGA',
+    'EWR': 'Nova York EWR',
+    'LAX': 'Los Angeles',
+    'SFO': 'San Francisco',
+    'ORD': 'Chicago',
+    'YYZ': 'Toronto',
+
+    // Aeroportos Europa (COM MÚLTIPLOS AEROPORTOS)
+    'LIS': 'Lisboa',
+    'OPO': 'Porto',
+    'MAD': 'Madrid',
+    'BCN': 'Barcelona',
+    'CDG': 'Paris CDG',
+    'ORY': 'Paris ORY',
+    'FCO': 'Roma Fiumicino',
+    'MXP': 'Milão MXP',
+    'MIL': 'Milão MIL',
+    'LHR': 'Londres Heathrow',
+    'LGW': 'Londres Gatwick',
+    'FRA': 'Frankfurt',
+    'AMS': 'Amsterdã',
+    'ZRH': 'Zurique',
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- PDF.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-    <script>
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-        }
-    </script>
-    
-    <style>
-        :root {
-            --cvc-azul: #003399;
-            --cvc-amarelo: #FFD700;
-            --cvc-verde: #00A859;
-            --cvc-azul-claro: #4A90E2;
-            --cvc-azul-escuro: #002266;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            margin: 20px auto;
-            max-width: 1400px;
-        }
-        
-        .header-section {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 20px 20px 0 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
-            background: var(--cvc-amarelo);
-            border-radius: 50%;
-            opacity: 0.1;
-            transform: translate(50%, -50%);
-        }
-        
-        .header-content {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .cvc-logo {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            padding: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: var(--cvc-azul);
-            font-size: 18px;
-        }
-        
-        .header-title {
-            margin: 0;
-            font-weight: 700;
-            font-size: 2.2rem;
-        }
-        
-        .header-subtitle {
-            margin: 10px 0 0 0;
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-        
-        /* ESTIMADOR DE CUSTOS */
-        .cost-estimator {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .cost-card {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .cost-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .cost-card i {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            color: var(--cvc-amarelo);
-        }
-        
-        .cost-card h6 {
-            margin: 5px 0;
-            font-weight: 600;
-        }
-        
-        .cost-card span {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--cvc-amarelo);
-        }
-        
-        .cost-card small {
-            display: block;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-        
-        /* NAVEGAÇÃO */
-        .nav-pills {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 0;
-            border-radius: 0;
-        }
-        
-        .nav-pills .nav-link {
-            border-radius: 10px;
-            margin: 0 5px;
-            font-weight: 600;
-            color: var(--cvc-azul);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-pills .nav-link.active {
-            background: var(--cvc-azul);
-            color: white;
-        }
-        
-        .nav-pills .nav-link:hover:not(.active) {
-            background: var(--cvc-azul-claro);
-            color: white;
-        }
-        
-        /* FORMULÁRIO */
-        .form-section {
-            padding: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--cvc-azul);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-control {
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            padding: 12px 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus {
-            border-color: var(--cvc-azul);
-            box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
-        }
-        
-        .textarea-large {
-            min-height: 280px;
-            resize: vertical;
-        }
-        
-        /* CHECKBOXES TOTALMENTE CLICÁVEIS */
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
-        }
-        
-        .checkbox-item {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 18px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .checkbox-item:hover {
-            border-color: var(--cvc-azul);
-            background: rgba(0, 51, 153, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 51, 153, 0.1);
-        }
-        
-        .checkbox-item.selected {
-            border-color: var(--cvc-azul);
-            background: rgba(0, 51, 153, 0.1);
-            color: var(--cvc-azul);
-            font-weight: 600;
-        }
-        
-        .checkbox-item input[type="checkbox"] {
-            margin: 0;
-            width: 20px;
-            height: 20px;
-            accent-color: var(--cvc-azul);
-        }
-        
-        .checkbox-item label {
-            margin: 0;
-            cursor: pointer;
-            flex: 1;
-            font-size: 0.95rem;
-        }
-        
-        /* CAMPOS DINÂMICOS PARA CRIANÇAS */
-        .idade-crianca-input {
-            max-width: 120px;
-            margin-bottom: 10px;
-        }
-        
-        /* BOTÕES */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 15px 35px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 51, 153, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, var(--cvc-verde) 0%, #007C42 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(0, 168, 89, 0.3);
-        }
-        
-        /* RESULTADOS */
-        .result-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 25px;
-            border: 2px solid #dee2e6;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .result-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--cvc-azul);
-        }
-        
-        .result-section h4 {
-            color: var(--cvc-azul);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .result-content {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            min-height: 200px;
-            border: 1px solid #dee2e6;
-            white-space: pre-wrap;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .btn-copy {
-            background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            padding: 12px 25px;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-        
-        .btn-copy:hover {
-            background: linear-gradient(135deg, #138496 0%, #0e6674 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
-        }
-        
-        /* CARDS DE DICAS */
-        .info-card {
-            background: linear-gradient(135deg, rgba(0, 168, 89, 0.1) 0%, rgba(0, 168, 89, 0.05) 100%);
-            border: 2px solid rgba(0, 168, 89, 0.2);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .info-card:hover {
-            border-color: var(--cvc-verde);
-            background: linear-gradient(135deg, rgba(0, 168, 89, 0.15) 0%, rgba(0, 168, 89, 0.08) 100%);
-            transform: translateY(-2px);
-        }
-        
-        .info-card h5 {
-            color: var(--cvc-verde);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        /* PASTE AREA */
-        .paste-area {
-            min-height: 120px;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .paste-area:hover {
-            border-color: var(--cvc-azul);
-            background: rgba(0, 51, 153, 0.05);
-        }
-        
-        .paste-area.has-content {
-            border-style: solid;
-            border-color: var(--cvc-verde);
-            background: rgba(0, 168, 89, 0.05);
-        }
-        
-        /* LOADING E ESTADOS */
-        .loading {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-            padding: 40px;
-        }
-        
-        .loading::before {
-            content: '🤖';
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 10px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .error {
-            color: #dc3545;
-            background: rgba(220, 53, 69, 0.1);
-            border: 2px solid rgba(220, 53, 69, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
-        .success {
-            color: #28a745;
-            background: rgba(40, 167, 69, 0.1);
-            border: 2px solid rgba(40, 167, 69, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .header-title { font-size: 1.8rem; }
-            .checkbox-group { grid-template-columns: 1fr; }
-            .cost-card { margin: 10px 0; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="main-container">
-            <!-- Header com Logo CVC -->
-            <div class="header-section">
-                <div class="header-content">
-                    <div class="d-flex align-items-center justify-content-center flex-wrap">
-                        <div class="cvc-logo me-4">
-                            CVC
-                        </div>
-                        <div class="text-center">
-                            <h1 class="header-title">
-                                <i class="fas fa-robot"></i> Geração de Orçamento com IA v2.0
-                            </h1>
-                            <p class="header-subtitle">
-                                Sistema simplificado com manual integrado - CVC Itaquaquecetuba
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <!-- Estimador de Custos -->
-                    <div class="cost-estimator">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="cost-card">
-                                    <i class="fas fa-coins"></i>
-                                    <h6>Custo do Dia</h6>
-                                    <span id="custoDia">R$ 0,00</span>
-                                    <small>com IA</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="cost-card">
-                                    <i class="fas fa-calendar-month"></i>
-                                    <h6>Custo do Mês</h6>
-                                    <span id="custoMes">R$ 0,00</span>
-                                    <small>acumulado</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="cost-card">
-                                    <i class="fas fa-chart-line"></i>
-                                    <h6>Orçamentos Hoje</h6>
-                                    <span id="orcamentosHoje">0</span>
-                                    <small>gerados</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Navigation -->
-            <nav class="nav-pills">
-                <ul class="nav nav-pills justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="orcamentos.html">
-                            <i class="fas fa-calculator"></i> Orçamentos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="vendas.html">
-                            <i class="fas fa-handshake"></i> Vendas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="orbiuns.html">
-                            <i class="fas fa-headset"></i> Orbiuns
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            
-            <!-- Main Content -->
-            <div class="form-section">
-                <form id="orcamentoForm">
-                    <div class="row">
-                        <!-- Coluna Esquerda -->
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="destino" class="form-label">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Destino
-                                </label>
-                                <input type="text" class="form-control" id="destino" 
-                                       placeholder="Ex: Salvador, Maceió, Buenos Aires, Cidade do Cabo...">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-list-check"></i>
-                                    Tipos de Serviços
-                                </label>
-                                <div class="checkbox-group">
-                                    <div class="checkbox-item" data-value="Aéreo">
-                                        <input type="checkbox" id="aereo" name="tipos" value="Aéreo">
-                                        <label for="aereo">✈️ Aéreo</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Hotel">
-                                        <input type="checkbox" id="hotel" name="tipos" value="Hotel">
-                                        <label for="hotel">🏨 Hotel</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Cruzeiro">
-                                        <input type="checkbox" id="cruzeiro" name="tipos" value="Cruzeiro">
-                                        <label for="cruzeiro">🚢 Cruzeiro</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="Multitrechos">
-                                        <input type="checkbox" id="multitrecho" name="tipos" value="Multitrechos">
-                                        <label for="multitrecho">🛤️ Multitrechos</label>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Selecione pelo menos um tipo de serviço</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-credit-card"></i>
-                                    Opções de Parcelamento (opcional)
-                                </label>
-                                <div class="checkbox-group">
-                                    <div class="checkbox-item" data-value="10">
-                                        <input type="checkbox" id="parc10" name="parcelamento" value="10">
-                                        <label for="parc10">💳 10x sem juros</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="12">
-                                        <input type="checkbox" id="parc12" name="parcelamento" value="12">
-                                        <label for="parc12">💳 12x sem juros</label>
-                                    </div>
-                                    <div class="checkbox-item" data-value="15">
-                                        <input type="checkbox" id="parc15" name="parcelamento" value="15">
-                                        <label for="parc15">💳 15x sem juros</label>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Selecione apenas se houver parcelamento disponível</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="adultos" class="form-label">
-                                    <i class="fas fa-users"></i>
-                                    Adultos (opcional)
-                                </label>
-                                <input type="number" class="form-control" id="adultos" min="1" max="10" 
-                                       placeholder="Deixe vazio para detectar automaticamente">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="criancas" class="form-label">
-                                    <i class="fas fa-child"></i>
-                                    Crianças (opcional)
-                                </label>
-                                <input type="number" class="form-control" id="criancas" min="0" max="5" value="0">
-                                
-                                <!-- CAMPOS DINÂMICOS DE IDADE -->
-                                <div id="idadesCriancas" style="display: none; margin-top: 15px;">
-                                    <label class="form-label">Idades das crianças:</label>
-                                    <div id="camposIdades" class="row">
-                                        <!-- Campos criados dinamicamente -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Coluna Direita -->
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="observacoes" class="form-label">
-                                    <i class="fas fa-pencil-alt"></i>
-                                    Observações e dados da viagem
-                                </label>
-                                <textarea class="form-control textarea-large" id="observacoes" rows="12"
-                                          placeholder="Cole aqui as informações do orçamento (horários, preços, passageiros, etc.)"></textarea>
-                                <small class="text-muted">
-                                    💡 Dica: Cole prints de orçamentos ou informações detalhadas aqui
-                                </small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="textoColado" class="form-label">
-                                    <i class="fas fa-clipboard"></i>
-                                    Ou cole texto ou imagem (Ctrl + V)
-                                </label>
-                                <div id="pasteArea" class="paste-area" contenteditable="true">
-                                    <div style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
-                                        <i class="fas fa-clipboard fa-2x" style="display: block; margin-bottom: 10px;"></i>
-                                        📋 Clique aqui e pressione Ctrl+V para colar texto ou imagem
-                                    </div>
-                                </div>
-                                <input type="hidden" id="textoColado">
-                                <small class="text-muted">Detecção automática de escalas e múltiplas opções</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-image"></i>
-                                    Anexar orçamento (PDF ou Imagem)
-                                </label>
-                                <input type="file" class="form-control" id="arquivo" 
-                                       accept="image/*,.pdf" style="padding: 10px;">
-                                <small class="text-muted">
-                                    Formatos: JPG, PNG, PDF (máx. 10MB)
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Botão Principal -->
-                    <div class="text-center" style="margin-top: 40px;">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-magic"></i> Gerar Orçamento Completo
-                        </button>
-                    </div>
-                </form>
-                
-                <!-- Resultado Principal -->
-                <div class="result-section">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> Orçamento Principal</h4>
-                    <div id="orcamentoIA" class="result-content">
-                        <div style="text-align: center; color: #6c757d; padding: 40px;">
-                            <i class="fas fa-robot fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
-                            <div>Aguardando informações da viagem...</div>
-                            <small>Cole as informações acima e clique em "Gerar Orçamento"</small>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-copy" onclick="copiarTexto('orcamentoIA')">
-                        <i class="fas fa-copy"></i> Copiar Orçamento
-                    </button>
-                </div>
-                
-                <!-- Dicas do Destino -->
-                <div class="result-section" id="secaoDicas" style="display: none;">
-                    <h4><i class="fas fa-lightbulb"></i> Dicas do Destino</h4>
-                    <div id="dicasIA" class="result-content">
-                        Aguardando geração de dicas...
-                    </div>
-                    <button type="button" class="btn btn-copy" onclick="copiarTexto('dicasIA')">
-                        <i class="fas fa-copy"></i> Copiar Dicas
-                    </button>
-                </div>
-                
-                <!-- Ranking de Hotéis -->
-                <div class="result-section" id="secaoRanking" style="display: none;">
-                    <h4><i class="fas fa-star"></i> Ranking de Hotéis</h4>
-                    <div id="rankingIA" class="result-content">
-                        Aguardando geração de ranking...
-                    </div>
-                    <button type="button" class="btn btn-copy" onclick="copiarTexto('rankingIA')">
-                        <i class="fas fa-copy"></i> Copiar Ranking
-                    </button>
-                </div>
-                
-                <!-- Botões Adicionais -->
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <h5><i class="fas fa-lightbulb"></i> Dicas do Destino</h5>
-                            <p>Gere dicas personalizadas após criar um orçamento</p>
-                            <button type="button" class="btn btn-secondary" id="btnGerarDicas" disabled 
-                                    onclick="gerarDicasDestino()">
-                                <i class="fas fa-compass"></i> Gerar Dicas
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <h5><i class="fas fa-star"></i> Ranking de Hotéis</h5>
-                            <p>Rankings detalhados por categoria e preço</p>
-                            <button type="button" class="btn btn-secondary" id="btnGerarRanking" disabled
-                                    onclick="gerarRankingHoteis()">
-                                <i class="fas fa-trophy"></i> Gerar Ranking
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        console.log("🚀 Iniciando CVC Itaqua v2.0 SIMPLIFICADO...");
-        
-        // ================================================================================
-        // 🎯 VARIÁVEIS GLOBAIS
-        // ================================================================================
-        
-        let estadoGlobal = {
-            ultimoOrcamento: '',
-            ultimoDestino: '',
-            imagemBase64: null,
-            pdfContent: null,
-            custoDia: 0,
-            orcamentosHoje: 0
-        };
-        
-        // ================================================================================
-        // 🚀 INICIALIZAÇÃO
-        // ================================================================================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📋 Inicializando sistema CVC v2.0...');
-            
-            setupEventListeners();
-            setupPasteArea();
-            setupCheckboxesClicaveis();
-            setupCamposCriancas();
-            atualizarDisplayCustos();
-            
-            console.log('✅ CVC Itaqua v2.0 carregado e pronto!');
+    // Aeroportos Ásia/Oceania
+    'NRT': 'Tóquio NRT',
+    'HND': 'Tóquio HND'
+};
+
+// ================================================================================
+// 3. 🎯 HANDLER PRINCIPAL DA API v8.1 - ERRO 500 CORRIGIDO
+// ================================================================================
+export default async function handler(req, res) {
+    // Configuração CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Endpoint GET - Status da API
+    if (req.method === 'GET') {
+        const hasOpenAI = !!process.env.OPENAI_API_KEY;
+        const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+
+        return res.status(200).json({
+            success: true,
+            status: 'operational',
+            version: '8.1',
+            message: 'API CVC Itaqua Online - Erro 500 Corrigido',
+            timestamp: new Date().toISOString(),
+            services: {
+                openai: hasOpenAI ? 'Configurado' : 'Não configurado',
+                anthropic: hasAnthropic ? 'Configurado' : 'Não configurado'
+            },
+            features: [
+                'ERRO 500 CORRIGIDO - sintaxe javascript válida',
+                'Templates aéreo atualizados com checklist completo',
+                'Pacote completo totalmente reformulado',
+                'Suporte a aeroportos múltiplos (Paris CDG/ORY)',
+                'Passageiros flexíveis (com/sem idade)',
+                'Detecção melhorada de múltiplas opções',
+                'Conexão detalhada funcionando'
+            ]
         });
-        
-        function setupEventListeners() {
-            const form = document.getElementById('orcamentoForm');
-            if (form) {
-                form.addEventListener('submit', handleSubmit);
-                console.log('✅ Formulário conectado');
-            }
-            
-            const arquivo = document.getElementById('arquivo');
-            if (arquivo) {
-                arquivo.addEventListener('change', handleFileUpload);
-                console.log('✅ Upload de arquivo conectado');
-            }
-        }
-        
-        // ================================================================================
-        // 🖱️ CHECKBOXES TOTALMENTE CLICÁVEIS
-        // ================================================================================
-        
-        function setupCheckboxesClicaveis() {
-            document.querySelectorAll('.checkbox-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    if (e.target.type === 'checkbox' || e.target.tagName === 'LABEL') {
-                        return;
-                    }
-                    
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                    
-                    updateCheckboxVisual(this, checkbox.checked);
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-                
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                checkbox.addEventListener('change', function() {
-                    updateCheckboxVisual(item, this.checked);
-                });
-            });
-            
-            console.log('✅ Checkboxes clicáveis configurados');
-        }
-        
-        function updateCheckboxVisual(item, checked) {
-            if (checked) {
-                item.classList.add('selected');
-            } else {
-                item.classList.remove('selected');
-            }
-        }
-        
-        // ================================================================================
-        // 👶 CAMPOS DINÂMICOS PARA CRIANÇAS
-        // ================================================================================
-        
-        function setupCamposCriancas() {
-            const criancasInput = document.getElementById('criancas');
-            criancasInput.addEventListener('change', function() {
-                const numCriancas = parseInt(this.value) || 0;
-                const container = document.getElementById('idadesCriancas');
-                const camposContainer = document.getElementById('camposIdades');
-                
+    }
+
+    // Endpoint POST - Processar Orçamento
+    if (req.method === 'POST') {
+        try {
+            console.log('📥 Requisição recebida v8.1 - Erro 500 Corrigido');
+
+            const {
+                observacoes = '',
+                textoColado = '',
+                destino = '',
+                adultos = '',
+                criancas = 0,
+                idadesCriancas = [],
+                tipos = [],
+                parcelamento = null,
+                imagemBase64 = null,
+                arquivoBase64 = null,
+                temImagem = false
+            } = req.body;
+
+            // ================================================================================
+            // 4. 📊 PROCESSAMENTO DE DADOS (TODAS AS VARIÁVEIS DEFINIDAS CORRETAMENTE)
+            // ================================================================================
+
+            // Determinar conteúdo principal
+            const conteudoPrincipal = observacoes || textoColado || '';
+            const conteudoLower = conteudoPrincipal.toLowerCase();
+
+            // 4.1 - Detecção de Passageiros (CORRIGIDA PARA SEMPRE USAR "ADULTO")
+            let infoPassageiros = '';
+            const padraoTotal = conteudoPrincipal.match(/Total\s*\((\d+)\s*(?:Adulto|Adultos)(?:\s*(?:e|\+)\s*(\d+)\s*(?:Criança|Crianças))?\)/i);
+            const padraoPassageiros = conteudoPrincipal.match(/(\d+)\s*(?:adulto|adultos)(?:\s*(?:e|\+)\s*(\d+)\s*(?:criança|crianças))?/i);
+
+            if (padraoTotal) {
+                const numAdultos = parseInt(padraoTotal[1]);
+                const numCriancas = padraoTotal[2] ? parseInt(padraoTotal[2]) : 0;
+                let textoPax = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
                 if (numCriancas > 0) {
-                    container.style.display = 'block';
-                    camposContainer.innerHTML = '';
-                    
-                    for (let i = 1; i <= numCriancas; i++) {
-                        const col = document.createElement('div');
-                        col.className = 'col-md-6 mb-2';
-                        col.innerHTML = `
-                            <input type="number" class="form-control idade-crianca-input" 
-                                   id="idadeCrianca${i}" min="0" max="17" 
-                                   placeholder="Idade da criança ${i}">
-                        `;
-                        camposContainer.appendChild(col);
+                    textoPax += ` + ${String(numCriancas).padStart(2, '0')} ${numCriancas === 1 ? 'criança' : 'crianças'}`;
+                    if (idadesCriancas && idadesCriancas.length > 0) {
+                        textoPax += ` (${idadesCriancas.join(' e ')} anos)`;
                     }
-                    
-                    console.log(`✅ ${numCriancas} campos de idade criados`);
+                }
+                infoPassageiros = textoPax;
+            } else if (padraoPassageiros) {
+                const numAdultos = parseInt(padraoPassageiros[1]);
+                const numCriancas = padraoPassageiros[2] ? parseInt(padraoPassageiros[2]) : 0;
+                let textoPax = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
+                if (numCriancas > 0) {
+                    textoPax += ` + ${String(numCriancas).padStart(2, '0')} ${numCriancas === 1 ? 'criança' : 'crianças'}`;
+                    if (idadesCriancas && idadesCriancas.length > 0) {
+                        textoPax += ` (${idadesCriancas.join(' e ')} anos)`;
+                    }
+                }
+                infoPassageiros = textoPax;
+            } else {
+                // SE NÃO DETECTAR, USAR PADRÃO
+                infoPassageiros = '01 adulto';
+            }
+
+            // 4.2 - Detecção automática de destino (MELHORADA)
+            let destinoFinal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
+            if (!destinoFinal && conteudoPrincipal) {
+                // DESTINOS PRINCIPAIS EXPANDIDOS
+                const padraoDestino = conteudoPrincipal.match(/(?:Orlando|Miami|Cancún|Porto Seguro|Maceió|Fortaleza|Lisboa|Porto|Paris|Buenos Aires|Santiago|Nova York|New York|Nova Iorque|Manhattan|Times Square|Brooklyn|Queens|Rio de Janeiro|Gramado|Natal|João Pessoa|Foz do Iguaçu|Caldas Novas|Balneário Camboriú|Juazeiro do Norte|Salvador|Recife|Brasília|Curitiba|Florianópolis|Vitória|Belo Horizonte|Manaus|Belém|São Luís|São Paulo|Campinas|Ribeirão Preto|Varsóvia|Warsaw|Roma|Londres|London|Barcelona|Madrid|Frankfurt|Amsterdam|Amsterdã|Zurique|Toronto|Chicago|Los Angeles|San Francisco|Bogotá|Lima|Pucallpa|Cusco|Arequipa|Montevidéu|Assunção|La Paz|Boston|Washington|Seattle|Las Vegas|San Diego|Philadelphia|Phoenix|Dallas|Houston|Atlanta|Denver)/i);
+                
+                // DETECÇÃO POR CÓDIGOS DE AEROPORTO TAMBÉM
+                const padraoAeroporto = conteudoPrincipal.match(/\b(PCL|LIM|CUZ|AQP|BOG|SCL|EZE|AEP|MVD|ASU|LPB|VVI|MCO|MIA|JFK|LGA|EWR|LAX|SFO|ORD|YYZ|LIS|OPO|MAD|BCN|CDG|ORY|FCO|MXP|LHR|LGW|FRA|AMS|ZRH|NRT|HND)\b/g);
+                
+                if (padraoDestino) {
+                    destinoFinal = padraoDestino[0];
+                    if (destinoFinal.toLowerCase() === 'new york' || destinoFinal.toLowerCase() === 'manhattan') {
+                        destinoFinal = 'Nova York';
+                    }
+                    console.log('📍 Destino detectado por nome:', destinoFinal);
+                } else if (padraoAeroporto && padraoAeroporto.length > 0) {
+                    const ultimoAeroporto = padraoAeroporto[padraoAeroporto.length - 1];
+                    if (AEROPORTOS[ultimoAeroporto]) {
+                        destinoFinal = AEROPORTOS[ultimoAeroporto];
+                        console.log('📍 Destino detectado por código:', ultimoAeroporto, '→', destinoFinal);
+                    }
+                }
+            }
+
+            // 4.3 - Detecção de Tipos Especiais
+            const isDicas = tipos.includes('Dicas');
+            const isRanking = tipos.includes('Ranking');
+            const isHotel = tipos.includes('Hotel') || conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem') || conteudoLower.includes('resort');
+            const isCarro = conteudoLower.includes('locação') || conteudoLower.includes('locacao') || 
+                           (conteudoLower.includes('retirada') && conteudoLower.includes('devolução'));
+
+            // 4.4 - Análise de Conteúdo (TODAS VARIÁVEIS DEFINIDAS AQUI - CORREÇÃO DO ERRO 500)
+            const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo') || 
+                            conteudoLower.includes(' ida ') || conteudoLower.includes('volta') ||
+                            conteudoLower.includes('aeroporto') || conteudoLower.includes('embarque');
+            
+            const isPacote = (isHotel && temAereo) || conteudoLower.includes('o pacote inclui') || 
+                            conteudoLower.includes('noites de hospedagem');
+            
+            // ✅ CORREÇÃO CRÍTICA: Linha completa que causava o erro 500
+            const temPreco = conteudoLower.includes('r$');
+            
+            const linkMatch = conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/[^\s]+/g);
+            const linksCVC = linkMatch ? linkMatch : [];
+            
+            const isMultitrecho = conteudoLower.includes('multitrecho') || 
+                                 conteudoLower.includes('trecho 1') || 
+                                 (conteudoLower.includes('trecho') && conteudoLower.split('trecho').length > 2);
+            
+            // DETECÇÃO MELHORADA DE MÚLTIPLAS OPÇÕES
+            const temMultiplasOpcoes = conteudoLower.includes('opção 1') || 
+                                       conteudoLower.includes('opção 2') ||
+                                       (conteudoLower.includes('selecionado') && conteudoLower.split('selecionado').length > 2) ||
+                                       (conteudoLower.includes('excluir') && conteudoLower.split('excluir').length > 2) ||
+                                       (conteudoLower.match(/total.*r\$/g) && conteudoLower.match(/total.*r\$/g).length > 1) ||
+                                       (conteudoLower.includes('tap') && conteudoLower.includes('azul')) ||
+                                       (conteudoLower.includes('gol') && conteudoLower.includes('latam')) ||
+                                       (conteudoLower.includes('latam') && conteudoLower.includes('azul'));
+
+            // DETECÇÃO DE CONEXÃO DETALHADA
+            const temConexaoDetalhada = conteudoLower.includes('espera de') ||
+                                       conteudoLower.includes('conexão em') ||
+                                       conteudoLower.includes('escala em') ||
+                                       (conteudoLower.includes('espera') && conteudoLower.includes('min'));
+
+            const isSomenteIda = conteudoLower.includes('somente ida') || 
+                                conteudoLower.includes('apenas ida') ||
+                                conteudoLower.includes('one way');
+
+            const isCruzeiro = conteudoLower.includes('cruzeiro') || 
+                              conteudoLower.includes('navio') ||
+                              conteudoLower.includes('cabine');
+
+            // Detecção de informações específicas do pacote
+            const temTraslado = conteudoLower.includes('traslado') || 
+                               conteudoLower.includes('transfer') ||
+                               conteudoLower.includes('aeroporto/hotel');
+            
+            const temPasseios = conteudoLower.includes('city tour') || 
+                               conteudoLower.includes('passeio') ||
+                               conteudoLower.includes('excursão') ||
+                               conteudoLower.includes('tour');
+            
+            const temSeguro = conteudoLower.includes('seguro') ||
+                             conteudoLower.includes('insurance') ||
+                             conteudoLower.includes('cobertura');
+
+            // Detecção de taxas
+            const temTaxas = conteudoLower.includes('resort fee') || 
+                           conteudoLower.includes('taxa do hotel') ||
+                           conteudoLower.includes('mandatory tax') ||
+                           conteudoLower.includes('taxa obrigatória');
+
+            // Detecção de política de cancelamento
+            const temReembolsavel = conteudoPrincipal.includes('Reembolsável') && !conteudoPrincipal.includes('Não reembolsável');
+            const temNaoReembolsavel = conteudoPrincipal.includes('Não reembolsável');
+
+            // Detecção de parcelamento
+            const temInfoParcelamento = conteudoPrincipal.includes('Entrada de R$') || 
+                                       conteudoPrincipal.includes('primeira parcela de R$') ||
+                                       conteudoPrincipal.includes('x de R$') ||
+                                       conteudoPrincipal.includes('x s/ juros') ||
+                                       parcelamento !== null;
+            
+            let tipoParcelamento = null;
+            let numParcelas = parcelamento || 10;
+            if (temInfoParcelamento) {
+                if (conteudoPrincipal.includes('Entrada de R$') || conteudoPrincipal.includes('primeira parcela de R$')) {
+                    tipoParcelamento = 'parcela_diferenciada';
+                } else if (parcelamento) {
+                    tipoParcelamento = 'parcelas_iguais';
+                    numParcelas = parcelamento;
+                }
+            }
+
+            // Log de análise
+            console.log('🔍 Análise do conteúdo v8.1:');
+            console.log(`- Destino: ${destinoFinal || 'N/A'}, Passageiros: ${infoPassageiros || 'N/A'}`);
+            console.log(`- Múltiplas Opções: ${temMultiplasOpcoes}, Conexão: ${temConexaoDetalhada}, Pacote: ${isPacote}`);
+
+            // ================================================================================
+            // 5. 📝 PROMPTS ESPECIALIZADOS (SIMPLIFICADOS PARA FUNCIONAR)
+            // ================================================================================
+
+            let prompt = '';
+            const templatesString = JSON.stringify(TEMPLATES, null, 2);
+            const tabelaAeroportos = Object.entries(AEROPORTOS)
+                .map(([codigo, nome]) => `${codigo} → ${nome}`)
+                .join('\n');
+
+            // 5.1 - Prompt Principal SIMPLIFICADO
+            if (isDicas) {
+                prompt = `Crie dicas para ${destinoFinal || 'destino não especificado'}`;
+            } else if (isRanking) {
+                prompt = `Crie ranking de hotéis para ${destinoFinal || 'destino não especificado'}`;
+            } else {
+                let templateEspecifico = '';
+                if (isPacote) {
+                    templateEspecifico = 'pacote_completo';
+                } else if (isSomenteIda) {
+                    templateEspecifico = 'aereo_somente_ida';
+                } else if (temMultiplasOpcoes) {
+                    templateEspecifico = 'multiplas_opcoes_2';
+                } else if (isMultitrecho) {
+                    templateEspecifico = 'multitrecho';
+                } else if (temConexaoDetalhada) {
+                    templateEspecifico = 'aereo_conexao_detalhada';
                 } else {
-                    container.style.display = 'none';
+                    templateEspecifico = 'aereo_ida_volta';
                 }
-            });
-        }
-        
-        // ================================================================================
-        // 📋 ÁREA DE PASTE
-        // ================================================================================
-        
-        function setupPasteArea() {
-            const pasteArea = document.getElementById('pasteArea');
-            if (!pasteArea) return;
-            
-            pasteArea.addEventListener('paste', function(e) {
-                e.preventDefault();
-                
-                const clipboardData = e.clipboardData || window.clipboardData;
-                const items = clipboardData.items;
-                
-                // Verificar se há imagem
-                for (let item of items) {
-                    if (item.type.indexOf('image') !== -1) {
-                        const file = item.getAsFile();
-                        handleImagePaste(file);
-                        return;
-                    }
-                }
-                
-                // Se não há imagem, processar texto
-                const text = clipboardData.getData('text/plain');
-                if (text) {
-                    this.innerHTML = `<pre style="white-space: pre-wrap; margin: 0; text-align: left;">${text}</pre>`;
-                    this.classList.add('has-content');
-                    document.getElementById('textoColado').value = text;
-                    console.log('📝 Texto colado:', text.length, 'caracteres');
-                }
-            });
-        }
-        
-        async function handleImagePaste(file) {
-            try {
-                const base64 = await fileToBase64(file);
-                estadoGlobal.imagemBase64 = base64;
-                
-                const preview = `
-                    <div style="text-align: center;">
-                        <img src="${base64}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-                        <div style="margin-top: 10px; color: #666;">
-                            <i class="fas fa-image"></i> Imagem colada
-                        </div>
-                    </div>
-                `;
-                document.getElementById('pasteArea').innerHTML = preview;
-                document.getElementById('pasteArea').classList.add('has-content');
-                
-                console.log('🖼️ Imagem colada via Ctrl+V');
-            } catch (error) {
-                console.error('❌ Erro ao colar imagem:', error);
-            }
-        }
-        
-        // ================================================================================
-        // 📁 UPLOAD DE ARQUIVOS
-        // ================================================================================
-        
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
 
-            const pasteArea = document.getElementById('pasteArea');
-            pasteArea.innerHTML = `<div class="loading">Processando arquivo...</div>`;
-            pasteArea.classList.add('has-content');
+                prompt = `SISTEMA CVC ITAQUA v8.1 - ERRO 500 CORRIGIDO
 
-            try {
-                if (file.type.startsWith('image/')) {
-                    const base64 = await fileToBase64(file);
-                    estadoGlobal.imagemBase64 = base64;
-                    pasteArea.innerHTML = `
-                        <div style="text-align: center;">
-                            <img src="${base64}" style="max-width: 100%; max-height: 200px;">
-                            <div>${file.name}</div>
-                        </div>
-                    `;
-                } else if (file.type === 'application/pdf') {
-                    const fileReader = new FileReader();
-                    fileReader.onload = async function() {
-                        try {
-                            if (typeof pdfjsLib === 'undefined') {
-                                throw new Error('PDF.js não carregado');
-                            }
-                            
-                            const typedarray = new Uint8Array(this.result);
-                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                            let fullText = '';
-                            
-                            for (let i = 1; i <= pdf.numPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const textContent = await page.getTextContent();
-                                fullText += textContent.items.map(item => item.str).join(' ');
-                            }
-                            
-                            estadoGlobal.pdfContent = fullText;
-                            pasteArea.innerHTML = `
-                                <div style="text-align: center; color: #28a745;">
-                                    <i class="fas fa-file-pdf fa-3x"></i>
-                                    <div>PDF Lido com Sucesso!</div>
-                                    <small>${file.name}</small>
-                                </div>
-                            `;
-                            
-                        } catch (error) {
-                            console.error('Erro ao processar PDF:', error);
-                            pasteArea.innerHTML = `<div class="error">Erro ao ler o PDF</div>`;
-                        }
-                    };
-                    fileReader.readAsArrayBuffer(file);
-                }
-            } catch (error) {
-                pasteArea.innerHTML = `<div class="error">Erro ao processar o arquivo</div>`;
+TEMPLATES DISPONÍVEIS:
+${templatesString}
+
+DADOS DO CLIENTE:
+${conteudoPrincipal}
+
+ANÁLISE:
+- Destino: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}
+- Passageiros: ${infoPassageiros || 'EXTRAIR DO CONTEÚDO'}
+- Template sugerido: ${templateEspecifico}
+
+AEROPORTOS (converter códigos):
+${tabelaAeroportos}
+
+REGRAS OBRIGATÓRIAS:
+1. Títulos: "*Companhia ✈ Destino*" (sem origem)
+2. Bagagem: "✅ Inclui 1 mala de mão + 1 item pessoal"
+3. Passageiros: "01 adulto", "02 adultos" (com zero)
+4. Formato voos: "DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo)"
+5. Converter TODOS códigos de aeroporto
+6. Múltiplas opções: "*OPÇÃO 1 - Companhia ✈ Destino*"
+7. Conexão: "(conexão em Cidade - XXh XXmin de espera)"
+${temInfoParcelamento ? `8. Parcelamento: ${tipoParcelamento === 'parcela_diferenciada' ? 'Parcelado em 10x, sendo a primeira de R$ X + 9x de R$ Y s/ juros' : `${numParcelas}x de R$ X s/ juros`}` : '8. NÃO incluir parcelamento'}
+9. Reembolso: ${temNaoReembolsavel ? 'Incluir "🏷️ Não reembolsável"' : 'NÃO mencionar se reembolsável'}
+10. SEMPRE terminar: "Valores sujeitos a confirmação e disponibilidade"
+
+Use o template ${templateEspecifico} e siga EXATAMENTE as regras acima.`;
             }
-        }
-        
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-                reader.readAsDataURL(file);
-            });
-        }
-        
-        // ================================================================================
-        // 📋 COLETA DE DADOS DO FORMULÁRIO
-        // ================================================================================
-        
-        function coletarDadosFormulario() {
-            const observacoes = document.getElementById('observacoes').value || '';
-            const textoColado = document.getElementById('textoColado').value || '';
-            const destino = document.getElementById('destino').value || '';
-            const adultos = document.getElementById('adultos').value || '';
-            const criancas = parseInt(document.getElementById('criancas').value) || 0;
-            
-            // Coletar tipos selecionados
-            const tipos = [];
-            document.querySelectorAll('input[name="tipos"]:checked').forEach(checkbox => {
-                tipos.push(checkbox.value);
-            });
-            
-            // Coletar parcelamento selecionado (apenas um)
-            let parcelamento = null;
-            const parcelamentoChecked = document.querySelector('input[name="parcelamento"]:checked');
-            if (parcelamentoChecked) {
-                parcelamento = parcelamentoChecked.value;
-            }
-            
-            const dados = {
-                observacoes,
-                textoColado,
-                destino,
-                adultos,
-                criancas,
-                tipos,
-                parcelamento,
-                imagemBase64: estadoGlobal.imagemBase64,
-                pdfContent: estadoGlobal.pdfContent
-            };
-            
-            console.log('[v2.0] 📋 Dados coletados:', dados);
-            return dados;
-        }
-        
-        // ================================================================================
-        // 📡 COMUNICAÇÃO COM API v2.0 SIMPLIFICADA
-        // ================================================================================
-        
-        async function enviarParaAPI(dados) {
-            console.log('[v2.0] 🚀 Enviando para API simplificada...');
-            console.log('[v2.0] 📤 Dados:', dados);
-            
-            try {
-                const response = await fetch('/api/ai-google', {
+
+            // ================================================================================
+            // 6. 🤖 PROCESSAMENTO COM IA (SIMPLIFICADO)
+            // ================================================================================
+            let resultado = '';
+            let iaUsada = 'gpt-4o-mini';
+            const usarClaude = imagemBase64 || arquivoBase64 || temImagem || (conteudoPrincipal.length > 2000);
+
+            console.log('🤖 IA selecionada:', usarClaude ? 'Claude' : 'GPT');
+
+            const systemPrompt = 'Você é um assistente da CVC Itaqua v8.1. Siga EXATAMENTE os templates e regras fornecidos. NUNCA invente informações. SEMPRE converta códigos de aeroportos. Use formato limpo para WhatsApp.';
+
+            if (usarClaude && process.env.ANTHROPIC_API_KEY) {
+                console.log('🤖 Usando Claude...');
+                iaUsada = 'claude-3-haiku';
+                const messages = [{
+                    role: 'user',
+                    content: (imagemBase64 || arquivoBase64) ? [
+                        { type: 'text', text: prompt },
+                        { type: 'image', source: { type: 'base64', media_type: (imagemBase64 || arquivoBase64).split(';')[0].split(':')[1], data: (imagemBase64 || arquivoBase64).split(',')[1] } }
+                    ] : prompt
+                }];
+                const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(dados)
+                    headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+                    body: JSON.stringify({ model: 'claude-3-haiku-20240307', max_tokens: 2000, temperature: 0.1, messages, system: systemPrompt })
                 });
+                if (!claudeResponse.ok) { 
+                    const errorText = await claudeResponse.text(); 
+                    console.error('❌ Erro Claude:', errorText); 
+                    throw new Error(`Erro ao processar com Claude: ${errorText}`); 
+                }
+                const claudeData = await claudeResponse.json();
+                resultado = claudeData.content[0].text;
+            } else {
+                console.log('🤖 Usando GPT...');
+                const OPENAI_KEY = process.env.OPENAI_API_KEY;
+                if (!OPENAI_KEY) throw new Error('OpenAI API key não configurada.');
+                const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: prompt }], temperature: 0.1, max_tokens: 2000 })
+                });
+                if (!gptResponse.ok) { 
+                    const errorText = await gptResponse.text(); 
+                    console.error('❌ Erro GPT:', errorText); 
+                    throw new Error(`Erro ao processar com GPT: ${errorText}`); 
+                }
+                const gptData = await gptResponse.json();
+                resultado = gptData.choices[0].message.content;
+            }
 
-                const data = await response.json();
-                console.log('[v2.0] 📥 Resposta:', data);
+            // ================================================================================
+            // 7. ✅ RESPOSTA FINAL
+            // ================================================================================
+            console.log('✅ Processamento concluído v8.1');
+            let tipoDetectado = 'aereo_simples';
+            if (isDicas) tipoDetectado = 'dicas';
+            else if (isRanking) tipoDetectado = 'ranking';
+            else if (isPacote) tipoDetectado = 'pacote_completo';
+            else if (temMultiplasOpcoes) tipoDetectado = 'multiplas_opcoes';
+            else if (temConexaoDetalhada) tipoDetectado = 'conexao_detalhada';
 
-                if (!response.ok) {
-                    throw new Error(data.error || `HTTP ${response.status}`);
+            return res.status(200).json({
+                success: true,
+                result: resultado,
+                metadata: {
+                    version: '8.1',
+                    ia_usada: iaUsada,
+                    tipo_detectado: tipoDetectado,
+                    destino: destinoFinal,
+                    passageiros: infoPassageiros,
+                    tem_preco: temPreco,
+                    tem_parcelamento: temInfoParcelamento,
+                    correcoes_v81: [
+                        'ERRO 500 CORRIGIDO - sintaxe javascript válida',
+                        'Todas variáveis definidas corretamente',
+                        'Detecção melhorada de múltiplas opções',
+                        'PCL → Pucallpa nos aeroportos',
+                        'Passageiros sempre 01, 02 (zero à esquerda)'
+                    ]
                 }
+            });
 
-                if (data.success) {
-                    console.log('[v2.0] ✅ Sucesso! IA usada:', data.ia_usada);
-                    return data.result;
-                } else {
-                    throw new Error(data.error || 'Erro desconhecido');
-                }
-            } catch (error) {
-                console.error('[v2.0] ❌ Erro:', error);
-                throw error;
-            }
+        } catch (error) {
+            console.error('❌ Erro no processamento v8.1:', error);
+            return res.status(500).json({
+                success: false,
+                error: error.message || 'Erro desconhecido no servidor',
+                version: '8.1',
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
         }
-        
-        // ================================================================================
-        // 🎯 HANDLER DO FORMULÁRIO PRINCIPAL
-        // ================================================================================
-        
-        async function handleSubmit(e) {
-            e.preventDefault();
-            console.log('[v2.0] 🚀 Iniciando geração de orçamento...');
-            
-            const botao = e.target.querySelector('button[type="submit"]');
-            const textoOriginal = botao.textContent;
-            
-            try {
-                // Mostrar loading
-                botao.disabled = true;
-                botao.textContent = 'Gerando orçamento...';
-                mostrarLoading();
-                
-                // Coletar dados do formulário
-                const dados = coletarDadosFormulario();
-                
-                // Validar dados básicos
-                if (!dados.tipos || dados.tipos.length === 0) {
-                    throw new Error('Selecione pelo menos um tipo de serviço');
-                }
-                
-                const temConteudo = dados.observacoes.trim() || 
-                                  dados.textoColado.trim() || 
-                                  dados.imagemBase64 || 
-                                  dados.pdfContent;
-                                  
-                if (!temConteudo) {
-                    throw new Error('Adicione informações sobre a viagem');
-                }
-                
-                // Enviar para API
-                const resultado = await enviarParaAPI(dados);
-                
-                // Exibir resultado
-                exibirResultado(resultado);
-                
-                // Salvar estado para dicas/ranking
-                estadoGlobal.ultimoOrcamento = resultado;
-                estadoGlobal.ultimoDestino = dados.destino || 'Destino';
-                
-                // Habilitar botões de dicas
-                habilitarBotoesDicas();
-                
-                // Copiar automaticamente
-                await copiarTexto();
-                
-            } catch (error) {
-                console.error('[v2.0] ❌ Erro:', error);
-                exibirErro(error.message);
-            } finally {
-                // Restaurar botão
-                botao.disabled = false;
-                botao.textContent = textoOriginal;
-                esconderLoading();
-            }
-        }
-        
-        function mostrarLoading() {
-            document.getElementById('orcamentoIA').innerHTML = `
-                <div class="loading">
-                    🤖 Processando com IA v2.0...
-                    <div style="margin-top: 10px; font-size: 0.9rem;">
-                        Consultando manual e gerando orçamento...
-                    </div>
-                </div>
-            `;
-        }
-        
-        function esconderLoading() {
-            // Apenas remove o estado de loading
-        }
-        
-        function exibirResultado(resultado) {
-            document.getElementById('orcamentoIA').innerText = resultado;
-            console.log('[v2.0] ✅ Orçamento exibido com sucesso!');
-        }
-        
-        function exibirErro(mensagem) {
-            document.getElementById('orcamentoIA').innerHTML = `
-                <div class="error">
-                    <strong>❌ Erro:</strong> ${mensagem}
-                    <div style="margin-top: 10px; font-size: 0.9rem;">
-                        Tente novamente ou verifique os dados informados
-                    </div>
-                </div>
-            `;
-        }
-        
-        // ================================================================================
-        // 💡 DICAS E RANKING (USANDO O MANUAL)
-        // ================================================================================
-        
-        function habilitarBotoesDicas() {
-            const btnDicas = document.getElementById('btnGerarDicas');
-            const btnRanking = document.getElementById('btnGerarRanking');
-            
-            if (btnDicas) {
-                btnDicas.disabled = false;
-            }
-            
-            if (btnRanking) {
-                btnRanking.disabled = false;
-            }
-        }
-        
-        async function gerarDicasDestino() {
-            try {
-                document.getElementById('secaoDicas').style.display = 'block';
-                document.getElementById('dicasIA').innerHTML = `
-                    <div class="loading">
-                        🧭 Gerando dicas para ${estadoGlobal.ultimoDestino}...
-                    </div>
-                `;
-                
-                const dados = {
-                    observacoes: `CONSULTE O MANUAL E GERE DICAS: Crie dicas de viagem para ${estadoGlobal.ultimoDestino} seguindo o formato de dicas do manual.`,
-                    tipos: ['Dicas'],
-                    destino: estadoGlobal.ultimoDestino
-                };
-                
-                const resultado = await enviarParaAPI(dados);
-                document.getElementById('dicasIA').innerText = resultado;
-                
-                console.log('[v2.0] ✅ Dicas geradas com sucesso!');
-                
-            } catch (error) {
-                console.error('[v2.0] ❌ Erro ao gerar dicas:', error);
-                document.getElementById('dicasIA').innerHTML = `
-                    <div class="error">❌ Erro ao gerar dicas: ${error.message}</div>
-                `;
-            }
-        }
-        
-        async function gerarRankingHoteis() {
-            try {
-                document.getElementById('secaoRanking').style.display = 'block';
-                document.getElementById('rankingIA').innerHTML = `
-                    <div class="loading">
-                        🏆 Gerando ranking de hotéis para ${estadoGlobal.ultimoDestino}...
-                    </div>
-                `;
-                
-                const dados = {
-                    observacoes: `CONSULTE O MANUAL E GERE RANKING: Crie um ranking de hotéis para ${estadoGlobal.ultimoDestino} seguindo o formato de ranking do manual.`,
-                    tipos: ['Ranking'],
-                    destino: estadoGlobal.ultimoDestino
-                };
-                
-                const resultado = await enviarParaAPI(dados);
-                document.getElementById('rankingIA').innerText = resultado;
-                
-                console.log('[v2.0] ✅ Ranking gerado com sucesso!');
-                
-            } catch (error) {
-                console.error('[v2.0] ❌ Erro ao gerar ranking:', error);
-                document.getElementById('rankingIA').innerHTML = `
-                    <div class="error">❌ Erro ao gerar ranking: ${error.message}</div>
-                `;
-            }
-        }
-        
-        // ================================================================================
-        // 📋 COPIAR TEXTO
-        // ================================================================================
-        
-        async function copiarTexto(elementId = 'orcamentoIA') {
-            const elemento = document.getElementById(elementId);
-            if (!elemento) return;
-            
-            const texto = elemento.innerText || elemento.textContent;
-            
-            if (!texto || texto.trim() === '' || texto.includes('Aguardando')) {
-                if (elementId === 'orcamentoIA') {
-                    // Cópia automática silenciosa
-                    return;
-                } else {
-                    alert('⚠️ Não há conteúdo para copiar!');
-                    return;
-                }
-            }
-            
-            try {
-                await navigator.clipboard.writeText(texto);
-                console.log('✅ Texto copiado:', texto.length, 'caracteres');
-                
-                // Feedback visual apenas para botões manuais
-                if (elementId !== 'orcamentoIA' || event) {
-                    const botao = event?.target;
-                    if (botao) {
-                        const textoOriginal = botao.innerHTML;
-                        botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                        botao.style.background = 'linear-gradient(135deg, #28a745 0%, #20a139 100%)';
-                        
-                        setTimeout(() => {
-                            botao.innerHTML = textoOriginal;
-                            botao.style.background = '';
-                        }, 2000);
-                    }
-                }
-                
-            } catch (err) {
-                console.error('❌ Erro ao copiar:', err);
-            }
-        }
-        
-        // ================================================================================
-        // 💰 SISTEMA DE CUSTOS
-        // ================================================================================
-        
-        function atualizarDisplayCustos() {
-            try {
-                const hoje = new Date().toLocaleDateString('pt-BR');
-                const custosHoje = JSON.parse(localStorage.getItem(`custos_${hoje}`) || '[]');
-                
-                const custoTotal = custosHoje.reduce((acc, item) => acc + (item.valor || 0), 0);
-                const quantidadeHoje = custosHoje.length;
-                
-                document.getElementById('custoDia').textContent = `R$ ${custoTotal.toFixed(2)}`;
-                document.getElementById('orcamentosHoje').textContent = quantidadeHoje;
-                
-                // Calcular custo do mês
-                let custoMes = 0;
-                for (let i = 0; i < 30; i++) {
-                    const data = new Date();
-                    data.setDate(data.getDate() - i);
-                    const dataStr = data.toLocaleDateString('pt-BR');
-                    const custosDia = JSON.parse(localStorage.getItem(`custos_${dataStr}`) || '[]');
-                    custoMes += custosDia.reduce((acc, item) => acc + (item.valor || 0), 0);
-                }
-                
-                document.getElementById('custoMes').textContent = `R$ ${custoMes.toFixed(2)}`;
-                
-            } catch (error) {
-                console.error('❌ Erro ao atualizar custos:', error);
-            }
-        }
-        
-        // ================================================================================
-        // 🎯 LOG FINAL
-        // ================================================================================
-        
-        console.log("🎯 CVC Itaqua v2.0 SIMPLIFICADO!");
-        console.log("📋 Funcionalidades:");
-        console.log("- ✅ Interface CVC moderna");
-        console.log("- ✅ Integração direta com manual Google Docs");
-        console.log("- ✅ GPT-4o-mini para textos simples");
-        console.log("- ✅ Claude para imagens e casos complexos");
-        console.log("- ✅ Upload de imagens e PDFs");
-        console.log("- ✅ Dicas e Rankings usando o manual");
-        console.log("- ✅ Sistema super simplificado");
-        console.log("- ✅ Apenas 140 linhas no backend!");
-    </script>
-</body>
-</html>
+    }
+
+    return res.status(405).json({
+        success: false,
+        error: 'Método não suportado. Use GET para status ou POST para processar.',
+        version: '8.1'
+    });
+}
