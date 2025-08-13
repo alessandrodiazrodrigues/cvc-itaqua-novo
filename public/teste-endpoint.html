@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste de Endpoint - CVC Itaqua</title>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            background: #003399;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: #002266;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border-left: 4px solid #003399;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .warning { border-color: #ffc107; background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste de Endpoint - CVC Itaqua</h1>
+        <p>Use este utilitário para testar a conexão com o Google Apps Script.</p>
+        
+        <div>
+            <button class="btn" onclick="testarGET()">🔍 Testar GET</button>
+            <button class="btn" onclick="testarPOST()">📤 Testar POST</button>
+            <button class="btn" onclick="testarVendas()">📈 Testar Vendas</button>
+            <button class="btn" onclick="testarEmbarques()">✈️ Testar Embarques</button>
+            <button class="btn" onclick="limparResultados()">🧹 Limpar</button>
+        </div>
+        
+        <div id="resultados"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzrigpXOzcK-4ezlXLmh99vDLTea2E2U6MEvgTTo7aFI6AI33lhHtl_M6_WWfTZGp8O/exec';
+        
+        function adicionarResultado(titulo, conteudo, tipo = 'result') {
+            const resultados = document.getElementById('resultados');
+            const div = document.createElement('div');
+            div.className = `result ${tipo}`;
+            div.innerHTML = `<strong>${titulo}</strong>\n${conteudo}`;
+            resultados.appendChild(div);
+            resultados.scrollTop = resultados.scrollHeight;
+        }
+        
+        async function testarGET() {
+            adicionarResultado('🔍 Testando GET...', 'Enviando requisição GET...');
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const duration = Date.now() - start;
+                const data = await response.json();
+                
+                adicionarResultado(
+                    `✅ GET Sucesso (${duration}ms)`,
+                    `Status: ${response.status}\n\nResposta:\n${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+                
+            } catch (error) {
+                adicionarResultado(
+                    '❌ GET Falhou',
+                    `Erro: ${error.message}\n\nDetalhes: ${error.stack}`,
+                    'error'
+                );
+            }
+        }
+        
+        async function testarPOST() {
+            adicionarResultado('📤 Testando POST...', 'Enviando requisição POST simples...');
+            
+            const payload = {
+                action: 'listar',
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const duration = Date.now() - start;
+                const data = await response.json();
+                
+                adicionarResultado(
+                    `✅ POST Sucesso (${duration}ms)`,
+                    `Status: ${response.status}\n\nPayload enviado:\n${JSON.stringify(payload, null, 2)}\n\nResposta:\n${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+                
+            } catch (error) {
+                adicionarResultado(
+                    '❌ POST Falhou',
+                    `Erro: ${error.message}\n\nPayload: ${JSON.stringify(payload, null, 2)}`,
+                    'error'
+                );
+            }
+        }
+        
+        async function testarVendas() {
+            adicionarResultado('📈 Testando Vendas...', 'Enviando dados de venda de teste...');
+            
+            const payload = {
+                action: 'cadastrar_venda_completa',
+                dados: {
+                    nInforme: '99999',
+                    filial: '6220',
+                    vendedor: 'Alessandro',
+                    cpfCliente: '111.111.111-11',
+                    nomeCliente: 'Cliente Teste API',
+                    whatsappCliente: '(11) 99999-9999',
+                    pacotes: ['Nacional'],
+                    recibo: ['123456'],
+                    pedido: [''],
+                    reserva: [''],
+                    tipo: ['Hotel'],
+                    dataIda: ['2025-08-15'],
+                    dataVolta: ['2025-08-20'],
+                    observacoes: ['Teste de API'],
+                    seguro: 'recusado',
+                    timestamp: new Date().toISOString(),
+                    dataRegistro: new Date().toLocaleDateString('pt-BR')
+                }
+            };
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const duration = Date.now() - start;
+                const data = await response.json();
+                
+                if (data.success) {
+                    adicionarResultado(
+                        `✅ Venda Teste Sucesso (${duration}ms)`,
+                        `Venda cadastrada com sucesso!\n\nResposta:\n${JSON.stringify(data, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    adicionarResultado(
+                        `⚠️ Venda Teste com Erro (${duration}ms)`,
+                        `Erro retornado pelo servidor:\n${JSON.stringify(data, null, 2)}`,
+                        'warning'
+                    );
+                }
+                
+            } catch (error) {
+                adicionarResultado(
+                    '❌ Venda Teste Falhou',
+                    `Erro: ${error.message}\n\nPayload: ${JSON.stringify(payload, null, 2)}`,
+                    'error'
+                );
+            }
+        }
+        
+        async function testarEmbarques() {
+            adicionarResultado('✈️ Testando Embarques...', 'Enviando dados de embarque de teste...');
+            
+            const payload = {
+                action: 'cadastrar_embarque',
+                dados: {
+                    cpfCliente: '222.222.222-22',
+                    nomeCliente: 'Cliente Embarque Teste',
+                    vendedor: 'Alessandro',
+                    tipoViagem: 'Aéreo',
+                    destino: 'São Paulo',
+                    dataIda: '2025-08-15',
+                    dataVolta: '2025-08-20',
+                    observacoes: 'Teste de API para embarques'
+                }
+            };
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const duration = Date.now() - start;
+                const data = await response.json();
+                
+                if (data.success) {
+                    adicionarResultado(
+                        `✅ Embarque Teste Sucesso (${duration}ms)`,
+                        `Embarque cadastrado com sucesso!\n\nResposta:\n${JSON.stringify(data, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    adicionarResultado(
+                        `⚠️ Embarque Teste com Erro (${duration}ms)`,
+                        `Erro retornado pelo servidor:\n${JSON.stringify(data, null, 2)}`,
+                        'warning'
+                    );
+                }
+                
+            } catch (error) {
+                adicionarResultado(
+                    '❌ Embarque Teste Falhou',
+                    `Erro: ${error.message}\n\nPayload: ${JSON.stringify(payload, null, 2)}`,
+                    'error'
+                );
+            }
+        }
+        
+        function limparResultados() {
+            document.getElementById('resultados').innerHTML = '';
+        }
+        
+        // Teste automático ao carregar
+        window.addEventListener('load', () => {
+            adicionarResultado(
+                '🚀 Ferramenta de Teste Carregada',
+                `URL da API: ${API_URL}\nPronto para testar!`,
+                'result'
+            );
+        });
+    </script>
+</body>
+</html>
