@@ -37,7 +37,7 @@ try {
 const sheets = google.sheets({ version: 'v4', auth });
 
 // ================================================================================
-// 🌐 HANDLER PRINCIPAL COM CORS
+// 🌐 HANDLER PRINCIPAL COM CORS E LOGS DETALHADOS
 // ================================================================================
 export default async function handler(req, res) {
   // CORS Headers
@@ -47,12 +47,25 @@ export default async function handler(req, res) {
   
   // Handle preflight
   if (req.method === 'OPTIONS') {
+    console.log('[ORBIUNS API] Preflight OPTIONS request');
     return res.status(200).end();
   }
   
   console.log(`[ORBIUNS API] ${req.method} request received`);
+  console.log('[ORBIUNS API] Request body:', req.body);
+  console.log('[ORBIUNS API] Request query:', req.query);
   
   try {
+    // Verificar se auth está configurado
+    if (!auth) {
+      console.error('[ORBIUNS API] Google Auth não configurado');
+      return res.status(500).json({
+        success: false,
+        message: 'Erro de configuração: Google Auth não configurado',
+        error_details: 'GOOGLE_CREDENTIALS_JSON pode estar faltando'
+      });
+    }
+    
     if (req.method === 'GET') {
       return await handleGet(req, res);
     } else if (req.method === 'POST') {
@@ -64,10 +77,13 @@ export default async function handler(req, res) {
       });
     }
   } catch (error) {
-    console.error('[ORBIUNS API] Erro:', error);
+    console.error('[ORBIUNS API] Erro geral:', error);
+    console.error('[ORBIUNS API] Stack:', error.stack);
+    
     return res.status(500).json({
       success: false,
       message: error.message,
+      error_details: error.toString(),
       timestamp: new Date().toISOString()
     });
   }
@@ -254,21 +270,55 @@ async function handlePost(req, res) {
 
 async function cadastrarOrbium(req, res) {
   try {
+    console.log('[ORBIUNS] Dados recebidos para cadastro:', req.body);
+    
     const { orbium: dadosOrbium } = req.body;
     
-    if (!dadosOrbium || !dadosOrbium.orbium || !dadosOrbium.vendedor || !dadosOrbium.nome_cliente) {
+    // Validação melhorada
+    if (!dadosOrbium) {
+      console.log('[ORBIUNS] Campo orbium não encontrado no body');
       return res.status(400).json({
         success: false,
-        message: 'Campos obrigatórios: orbium, vendedor, nome_cliente'
+        message: 'Campo "orbium" não encontrado nos dados enviados'
+      });
+    }
+    
+    if (!dadosOrbium.orbium || !dadosOrbium.vendedor || !dadosOrbium.nome_cliente) {
+      console.log('[ORBIUNS] Campos obrigatórios faltando:', {
+        orbium: !!dadosOrbium.orbium,
+        vendedor: !!dadosOrbium.vendedor, 
+        nome_cliente: !!dadosOrbium.nome_cliente
+      });
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Campos obrigatórios: orbium, vendedor, nome_cliente',
+        dados_recebidos: dadosOrbium
       });
     }
     
     console.log('[ORBIUNS] Cadastrando novo orbium:', dadosOrbium.orbium);
     
+    // Preparar data de abertura
+    let dataAbertura = dadosOrbium.data_abertura;
+    if (dataAbertura) {
+      // Se é uma data ISO, converter para formato brasileiro
+      try {
+        const dataObj = new Date(dataAbertura);
+        if (!isNaN(dataObj.getTime())) {
+          dataAbertura = dataObj.toLocaleDateString('pt-BR');
+        }
+      } catch (e) {
+        console.log('[ORBIUNS] Erro ao converter data, usando como string:', dataAbertura);
+      }
+    } else {
+      dataAbertura = new Date().toLocaleDateString('pt-BR');
+    }
+    
     const novaLinha = [
       dadosOrbium.status || 'Em atendimento',
       dadosOrbium.orbium,
-      dadosOrbium.data_abertura || new Date().toLocaleDateString('pt-BR'),
+      dataAbertura,
       dadosOrbium.departamento || '',
       dadosOrbium.vendedor,
       dadosOrbium.recibo || '',
@@ -282,7 +332,10 @@ async function cadastrarOrbium(req, res) {
       dadosOrbium.whats_cliente || ''
     ];
     
-    await sheets.spreadsheets.values.append({
+    console.log('[ORBIUNS] Linha a ser inserida:', novaLinha);
+    
+    // Inserir na planilha
+    const result = await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A:N`,
       valueInputOption: 'USER_ENTERED',
@@ -291,17 +344,33 @@ async function cadastrarOrbium(req, res) {
       }
     });
     
-    console.log('[ORBIUNS] Orbium cadastrado com sucesso');
+    console.log('[ORBIUNS] Resultado da inserção:', result.status);
     
-    return res.status(200).json({
-      success: true,
-      message: `Orbium ${dadosOrbium.orbium} cadastrado com sucesso!`,
-      data: { orbium: dadosOrbium.orbium }
-    });
+    if (result.status === 200) {
+      console.log('[ORBIUNS] Orbium cadastrado com sucesso');
+      
+      return res.status(200).json({
+        success: true,
+        message: `Orbium ${dadosOrbium.orbium} cadastrado com sucesso!`,
+        data: { 
+          orbium: dadosOrbium.orbium,
+          linha_inserida: novaLinha 
+        }
+      });
+    } else {
+      throw new Error(`Erro na inserção: status ${result.status}`);
+    }
     
   } catch (error) {
-    console.error('[ORBIUNS] Erro ao cadastrar:', error);
-    throw new Error(`Erro ao cadastrar orbium: ${error.message}`);
+    console.error('[ORBIUNS] Erro detalhado ao cadastrar:', error);
+    console.error('[ORBIUNS] Stack:', error.stack);
+    
+    return res.status(500).json({
+      success: false,
+      message: `Erro ao cadastrar orbium: ${error.message}`,
+      error_details: error.toString(),
+      timestamp: new Date().toISOString()
+    });
   }
 }
 
