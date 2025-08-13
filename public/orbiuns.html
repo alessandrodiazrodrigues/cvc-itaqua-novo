@@ -913,9 +913,9 @@
     
     <script>
         // ================================================================================
-        // 🔧 CONFIGURAÇÃO DA API - NOVA URL CONSOLIDADA
+        // 🔧 CONFIGURAÇÃO DA API - NOVA URL ATUALIZADA v5.0
         // ================================================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxvqTe8L5aSsOd0w0IH2GWfAhONwpfDKr6xpFMVocyT3yBIJFw3QBb7WHcptp_dpJNXmg/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw5_ZLlnjB5DEIFQPxklYT-5DoD8iE8B0zyfv9ou9dFgmFWBCIwSv3ISsV-88QZt8xPrA/exec';
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -924,9 +924,9 @@
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v8.0 - NOVA API CONSOLIDADA!');
-            console.log('📡 URL da nova API Master:', API_URL);
-            console.log('📋 Aba "Dados" (maiúsculo) confirmada');
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v9.0 - SISTEMA MASTER COMPLETO!');
+            console.log('📡 URL da API Master v5.0:', API_URL);
+            console.log('📋 Todos os sistemas integrados e funcionais');
             console.log('✅ Sistema sem senha para orbiuns');
             
             // Carregar orbiuns ao iniciar
@@ -951,10 +951,10 @@
         });
 
         // ================================================================================
-        // 📡 FUNÇÃO FETCH PARA NOVA API
+        // 📡 FUNÇÃO FETCH PARA API MASTER v5.0
         // ================================================================================
         async function chamarAPI(dados) {
-            console.log('📡 Enviando para API Master:', dados);
+            console.log('📡 Enviando para API Master v5.0:', dados);
             
             try {
                 const response = await fetch(API_URL, {
@@ -970,12 +970,12 @@
                 }
                 
                 const data = await response.json();
-                console.log('📥 Resposta da API Master:', data);
+                console.log('📥 Resposta da API Master v5.0:', data);
                 
                 return data;
                 
             } catch (error) {
-                console.error('❌ Erro na comunicação com API Master:', error);
+                console.error('❌ Erro na comunicação com API Master v5.0:', error);
                 mostrarAlertaErro(`Erro de conexão: ${error.message}`);
                 throw error;
             }
