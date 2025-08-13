@@ -1,18 +1,18 @@
-// 🚀 CVC ITAQUA v8.7 - REGRAS RÍGIDAS E CORREÇÕES FINAIS
+// 🚀 CVC ITAQUA v8.8 - PROMPT COM EXEMPLO E REGRAS SIMPLIFICADAS
 // ================================================================================
 // 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
-// 1. TEMPLATES DE ORÇAMENTOS (PACOTE CORRIGIDO)
+// 1. TEMPLATES DE ORÇAMENTOS (ESTÁVEL)
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
-// 3. HANDLER PRINCIPAL DA API (COM VALIDAÇÃO)
+// 3. HANDLER PRINCIPAL DA API (ESTÁVEL)
 // 4. PROCESSAMENTO DE DADOS
-// 5. GERAÇÃO DE PROMPTS (REGRAS MAIS RÍGIDAS)
+// 5. GERAÇÃO DE PROMPTS (COM EXEMPLO)
 // 6. PROCESSAMENTO COM IA
 // 7. RESPOSTA FINAL
 // ================================================================================
 
 // ================================================================================
-// 1. 📋 TEMPLATES DE ORÇAMENTOS (PACOTE CORRIGIDO)
+// 1. 📋 TEMPLATES DE ORÇAMENTOS (ESTÁVEL)
 // ================================================================================
 const TEMPLATES = {
     aereo_ida_volta: `*{companhia} ✈ {cidade_destino}*
@@ -79,7 +79,6 @@ Valores sujeitos a confirmação e disponibilidade`,
 {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
     
-    // ✅ TEMPLATE DE PACOTE CORRIGIDO E FLEXÍVEL
     pacote_completo: `*Pacote ✈ {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -256,7 +255,7 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v8.7
+// 3. 🎯 HANDLER PRINCIPAL DA API v8.8
 // ================================================================================
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -264,16 +263,16 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method === 'GET') return res.status(200).json({ success: true, status: 'operational', version: '8.7' });
+    if (req.method === 'GET') return res.status(200).json({ success: true, status: 'operational', version: '8.8' });
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método não suportado.' });
 
     try {
         if (!req.body) {
-            console.error('v8.7: ❌ Erro: Requisição sem corpo.');
+            console.error('v8.8: ❌ Erro: Requisição sem corpo.');
             return res.status(400).json({ success: false, error: 'Requisição inválida: corpo não encontrado.' });
         }
         
-        console.log('v8.7: 📥 Início do processamento POST.');
+        console.log('v8.8: 📥 Início do processamento POST.');
         const {
             observacoes = '', textoColado = '', destino = '',
             tipos = [], parcelamento = null, imagemBase64 = null, 
@@ -284,7 +283,7 @@ export default async function handler(req, res) {
 
         // --- Bloco de Processamento de Dados ---
         try {
-            console.log('v8.7: 📊 Iniciando processamento de dados...');
+            console.log('v8.8: 📊 Iniciando processamento de dados...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
 
@@ -310,20 +309,18 @@ export default async function handler(req, res) {
                 infoParcelamento = `💳 Parcelado em até ${parcelamento}x sem juros`;
             }
 
-             console.log('v8.7: ✅ Processamento de dados concluído.');
+             console.log('v8.8: ✅ Processamento de dados concluído.');
         } catch (dataError) {
-            console.error('v8.7: ❌ Erro no processamento de dados:', dataError);
+            console.error('v8.8: ❌ Erro no processamento de dados:', dataError);
             return res.status(500).json({ success: false, error: 'Falha ao processar os dados de entrada.', details: dataError.message, stage: 'data-processing' });
         }
 
         // --- Bloco de Geração de Prompt ---
         try {
-            console.log('v8.7: 📝 Iniciando geração de prompt...');
+            console.log('v8.8: 📝 Iniciando geração de prompt...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
-            const templatesString = JSON.stringify(TEMPLATES, null, 2);
-            const tabelaAeroportos = Object.entries(AEROPORTOS).map(([codigo, nome]) => `${codigo} → ${nome}`).join('\n');
-
+            
             const isDicas = tipos.includes('Dicas');
             const isRanking = tipos.includes('Ranking');
             const isHotel = tipos.includes('Hotel') || conteudoLower.includes('hotel');
@@ -333,10 +330,10 @@ export default async function handler(req, res) {
             
             if (isDicas) {
                 templateEspecifico = 'dicas_especificas';
-                prompt = `SISTEMA CVC ITAQUA v8.7 - GERAÇÃO DE DICAS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nINSTRUÇÕES: Use o template 'dicas_especificas' com informações REAIS e DETALHADAS sobre ${destinoFinal || 'o destino mencionado'}. NÃO use informações genéricas. Pesquise no seu conhecimento dados sobre o destino.`;
+                prompt = `SISTEMA CVC ITAQUA v8.8 - GERAÇÃO DE DICAS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nINSTRUÇÕES: Use o template 'dicas_especificas' com informações REAIS e DETALHADAS sobre ${destinoFinal || 'o destino mencionado'}. NÃO use informações genéricas.`;
             } else if (isRanking) {
                 templateEspecifico = 'ranking_hoteis';
-                prompt = `SISTEMA CVC ITAQUA v8.7 - RANKING DE HOTÉIS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nINSTRUÇÕES: Use o template 'ranking_hoteis' com hotéis REAIS do destino. Pesquise no seu conhecimento e inclua preços médios reais e destaques.`;
+                prompt = `SISTEMA CVC ITAQUA v8.8 - RANKING DE HOTÉIS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nINSTRUÇÕES: Use o template 'ranking_hoteis' com hotéis REAIS do destino. Pesquise no seu conhecimento e inclua preços médios reais e destaques.`;
             } else {
                 if (isPacote) {
                     templateEspecifico = 'pacote_completo';
@@ -348,50 +345,75 @@ export default async function handler(req, res) {
                     templateEspecifico = 'aereo_ida_volta'; // Padrão
                 }
 
-                prompt = `🚀 SISTEMA CVC ITAQUA v8.7
-DADOS DO CLIENTE:
+                // ✅ PROMPT SIMPLIFICADO COM EXEMPLO
+                prompt = `Sua tarefa é converter os dados brutos de uma viagem em um orçamento formatado para WhatsApp.
+
+**DADOS BRUTOS:**
 ${conteudoPrincipal}
 
-ANÁLISE:
-- Destino: ${destinoFinal || 'EXTRAIR'}
-- Passageiros: ${infoPassageiros || 'EXTRAIR'}
+**INFORMAÇÕES ADICIONAIS:**
+- Passageiros: ${infoPassageiros}
 - Parcelamento: ${infoParcelamento || 'NÃO MENCIONAR'}
-- Template a ser usado: ${templateEspecifico}
+- Tabela de Aeroportos para conversão: ${JSON.stringify(AEROPORTOS)}
 
-AEROPORTOS (para consulta e conversão OBRIGATÓRIA):
-${tabelaAeroportos}
+**TEMPLATE A SER PREENCHIDO:**
+${TEMPLATES[templateEspecifico]}
 
-TEMPLATES DISPONÍVEIS:
-${templatesString}
+**EXEMPLO DE COMO O RESULTADO FINAL DEVE SER:**
+*Pacote ✈ Porto Seguro*
+Embarque: 06/11
+Pacote para 02 adultos
 
-📋 REGRAS CRÍTICAS E OBRIGATÓRIAS:
-1.  **AEROPORTOS**: Você DEVE converter TODOS os códigos de aeroporto (CGH, BPS, etc.) para seus nomes completos (Congonhas, Porto Seguro, etc.) EM TODAS AS PARTES DO TEXTO, especialmente na linha dos voos.
-2.  **PACOTE (TEMPLATE 'pacote_completo')**:
-    - Liste TODAS as opções de hotéis encontradas no texto.
-    - No item "O Pacote Inclui", use os emojis ✅ como no template.
-    - O campo {noites} deve ser preenchido APENAS com o número de noites (ex: "5 noites"). NUNCA inclua o número de dias.
-3.  **DATAS**: Calcule as noites corretamente (06/nov a 11/nov = 5 noites). Padronize TODAS as datas para o formato DD/MM (ex: 06/11).
-4.  **PARCELAMENTO**: Se a análise indicar um parcelamento (ex: "${infoParcelamento}"), você DEVE usar esse texto exato para preencher o campo {parcelamento}. Se a análise disser "NÃO MENCIONAR", deixe o campo {parcelamento} em branco. NÃO INVENTE essa informação.
-5.  **REEMBOLSO**: IGNORE a palavra "Reembolsável". A única regra é: se encontrar "Não reembolsável", adicione a linha "🏷️ Não reembolsável" no final.
-6.  **PASSAGEIROS**: Use o texto EXATO fornecido na análise ("${infoPassageiros}"), com o zero à esquerda.
-7.  **LINKS**: Mantenha os links originais da CVC para cada hotel.
-8.  **FINALIZAÇÃO**: SEMPRE termine com "Valores sujeitos a confirmação e disponibilidade".
+*O Pacote Inclui:*
+✅ Passagem Aérea ida e volta para Porto Seguro
+✅ Taxas de Embarque
+✅ Traslado compartilhado
+✅ 5 noites de hospedagem no hotel escolhido
 
-Use o template '${templateEspecifico}' e siga TODAS as regras sem exceção.`;
+✈️ *Voos Latam:*
+06/11 - Congonhas 17:30 / Porto Seguro 19:25 (voo direto)
+--
+11/11 - Porto Seguro 10:55 / Congonhas 13:05 (voo direto)
+
+🏨 *Opções de Hotéis:*
+**OPÇÃO 1** - Hotel Casablanca Porto Seguro
+📍 Av dos navegantes 282 282
+🛏️ 1 Standard Promo com Café da manhã
+💰 R$ 3.366,30 para 02 adultos
+https://www.cvc.com.br/link-exemplo-1
+
+**OPÇÃO 2** - Floral Inn Family Experientia Hotels
+📍 Avenida beira mar 8323
+🛏️ 1 Standard Frete com Café da manhã
+💰 R$ 3.445,04 para 02 adultos
+https://www.cvc.com.br/link-exemplo-2
+
+💳 Parcelado em até 10x sem juros
+
+Valores sujeitos a confirmação e disponibilidade
+
+**REGRAS FINAIS:**
+1.  Siga o formato do EXEMPLO à risca.
+2.  Converta TODOS os códigos de aeroporto (CGH, BPS) para seus nomes completos.
+3.  Calcule as noites corretamente (06/11 a 11/11 = 5 noites).
+4.  Use o texto de parcelamento EXATO que foi fornecido. Se não houver, não mencione.
+5.  IGNORE a palavra "Reembolsável". Só adicione "🏷️ Não reembolsável" se esta frase exata estiver nos dados brutos.
+
+Agora, gere o orçamento final usando os DADOS BRUTOS.`;
             }
             
-            console.log('v8.7: ✅ Geração de prompt concluída.');
+            console.log('v8.8: ✅ Geração de prompt concluída.');
         } catch (promptError) {
-            console.error('v8.7: ❌ Erro na geração do prompt:', promptError);
+            console.error('v8.8: ❌ Erro na geração do prompt:', promptError);
             return res.status(500).json({ success: false, error: 'Falha ao montar a requisição para a IA.', details: promptError.message, stage: 'prompt-generation' });
         }
 
         // --- Bloco de Chamada da IA ---
         try {
-            console.log('v8.7: 🤖 Iniciando chamada à IA...');
+            console.log('v8.8: 🤖 Iniciando chamada à IA...');
             iaUsada = 'gpt-4o-mini';
             const usarClaude = imagemBase64 || arquivoBase64 || temImagem || (observacoes.length + textoColado.length > 2000);
-            const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Siga EXATAMENTE os templates e as regras CRÍTICAS fornecidas no prompt do usuário. NUNCA invente informações. Converta códigos de aeroportos. Formate para WhatsApp. Para dicas e rankings, use informações reais do seu conhecimento sobre o destino.';
+            const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Sua única função é preencher o template fornecido no prompt do usuário com os dados brutos, seguindo o exemplo e as regras à risca. Não adicione nenhuma informação que não foi solicitada.';
 
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 iaUsada = 'claude-3-haiku';
@@ -408,26 +430,26 @@ Use o template '${templateEspecifico}' e siga TODAS as regras sem exceção.`;
                 const responseData = await apiResponse.json();
                 resultado = responseData.choices[0].message.content;
             }
-            console.log('v8.7: ✅ Chamada à IA concluída.');
+            console.log('v8.8: ✅ Chamada à IA concluída.');
         } catch (aiError) {
-            console.error('v8.7: ❌ Erro na chamada da IA:', aiError);
+            console.error('v8.8: ❌ Erro na chamada da IA:', aiError);
             return res.status(500).json({ success: false, error: 'Falha ao comunicar com o serviço de IA.', details: aiError.message, stage: 'ai-call' });
         }
 
-        console.log('v8.7: ✅ Processamento geral concluído. Enviando resposta...');
+        console.log('v8.8: ✅ Processamento geral concluído. Enviando resposta...');
         return res.status(200).json({
             success: true,
             result: resultado,
-            metadata: { version: '8.7', ia_usada: iaUsada, destino: destinoFinal, template_usado: templateEspecifico }
+            metadata: { version: '8.8', ia_usada: iaUsada, destino: destinoFinal, template_usado: templateEspecifico }
         });
 
     } catch (error) {
-        console.error('v8.7: ❌ Erro INESPERADO no handler principal:', error);
+        console.error('v8.8: ❌ Erro INESPERADO no handler principal:', error);
         return res.status(500).json({
             success: false,
             error: 'Ocorreu um erro inesperado no servidor.',
             details: error.message,
-            version: '8.7',
+            version: '8.8',
             stage: 'handler-main'
         });
     }
