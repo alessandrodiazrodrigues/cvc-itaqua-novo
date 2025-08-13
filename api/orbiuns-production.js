@@ -1,8 +1,7 @@
 export default async function handler(req, res) {
-  console.log('🚀 === ORBIUNS API PRODUCTION v1.0 ===');
+  console.log('🚀 === ORBIUNS API PRODUCTION v1.4 - SECURE ===');
   console.log('📅 Timestamp:', new Date().toISOString());
   console.log('🔧 Método:', req.method);
-  console.log('📡 Headers:', JSON.stringify(req.headers, null, 2));
 
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,29 +17,35 @@ export default async function handler(req, res) {
   const SENHA_ORBIUNS = 'orb123';
 
   try {
-    // Autenticação Google Sheets
-    const { GoogleAuth } = await import('google-auth-library');
+    // ⚠️ USAR APENAS VARIÁVEIS DE AMBIENTE - NUNCA CREDENCIAIS FIXAS
     const { google } = await import('googleapis');
+    
+    console.log('🔑 Configurando autenticação Google...');
+    
+    // Verificar se a variável de ambiente existe
+    if (!process.env.GOOGLE_CREDENTIALS_JSON) {
+      console.error('❌ GOOGLE_CREDENTIALS_JSON não configurado no Vercel');
+      return res.status(500).json({
+        success: false,
+        error: 'Credenciais do Google não configuradas',
+        details: 'Configure GOOGLE_CREDENTIALS_JSON nas variáveis de ambiente do Vercel'
+      });
+    }
 
-    const credentials = {
-      type: "service_account",
-      project_id: "cvc-orcamentos-ai",
-      private_key_id: "f1b5d8faa9e01b15dd5b3a4c2a8fe6d7b3c8f9a2",
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      client_email: "cvc-orcamentos-ia@cvc-orcamentos-ai.iam.gserviceaccount.com",
-      client_id: "102938475610293847561",
-      auth_uri: "https://accounts.google.com/o/oauth2/auth",
-      token_uri: "https://oauth2.googleapis.com/token",
-      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-      client_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
-    };
+    // Usar APENAS as credenciais das variáveis de ambiente
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+    console.log('✅ Credenciais carregadas das variáveis de ambiente');
 
-    const auth = new GoogleAuth({
-      credentials,
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: credentials.client_email,
+        private_key: credentials.private_key,
+      },
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
+    console.log('✅ Autenticação Google configurada com sucesso');
 
     // =========================================================================
     // 📋 LISTAR ORBIUNS
@@ -130,7 +135,7 @@ export default async function handler(req, res) {
           });
         }
 
-        // Preparar dados para inserção
+        // Preparar dados para inserção (seguindo a estrutura da planilha)
         const novaLinha = [
           orbium.status || 'Em atendimento',
           orbium.orbium,
@@ -143,7 +148,7 @@ export default async function handler(req, res) {
           orbium.recibo || '',
           orbium.reserva || '',
           orbium.cia || '',
-          orbium.localizador || '',
+          orbium.loc_gds || orbium.localizador || '',
           orbium.data_resolucao || '',
           orbium.data_atualizacao || new Date().toISOString()
         ];
