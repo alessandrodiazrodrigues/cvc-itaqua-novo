@@ -662,9 +662,9 @@
             <div class="content-section">
                 <!-- Links do cabeçalho -->
                 <div class="header-links">
-                    <a href="https://docs.google.com/spreadsheets/d/1dF8dfIh8EyvX-5_sISpVc4dMsLNOqpwovQsbsxl9ywc/edit?usp=sharing" 
+                    <a href="https://docs.google.com/spreadsheets/d/1A7HOrMOw60Rks4_fwj0BNP5i9cZQ9H-dOJ7LKFw5Jis/edit?usp=sharing" 
                        target="_blank" class="header-link">
-                        <i class="fas fa-table"></i> Abrir Google Sheets
+                        <i class="fas fa-table"></i> Abrir Planilha
                     </a>
                     <a href="javascript:void(0)" onclick="carregarOrbiuns()" class="header-link">
                         <i class="fas fa-sync-alt"></i> Atualizar Lista
@@ -913,9 +913,10 @@
     
     <script>
         // ================================================================================
-        // 🔧 CONFIGURAÇÃO DA API - DEBUG MODE
+        // 🔧 CONFIGURAÇÃO DA API - VERSÃO FINAL
         // ================================================================================
-        const API_URL = '/api/debug-orbiuns'; // API Debug temporária
+        const API_URL = '/api/orbiuns-production';
+        const SENHA_ORBIUNS = 'orb123';
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -924,9 +925,8 @@
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v11.1 - DEBUG MODE!');
-            console.log('📡 Usando API Debug: /api/debug-orbiuns');
-            console.log('🔍 Modo debug ativo para investigar erro 500');
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v12.0 - PRODUCTION MODE!');
+            console.log('📡 Usando API Production:', API_URL);
             
             // Carregar orbiuns ao iniciar
             carregarOrbiuns();
@@ -950,10 +950,10 @@
         });
 
         // ================================================================================
-        // 📡 FUNÇÃO FETCH PARA API MASTER v5.0
+        // 📡 FUNÇÃO FETCH PARA API PRODUCTION
         // ================================================================================
         async function chamarAPI(dados) {
-            console.log('📡 Enviando para API Debug:', dados);
+            console.log('📡 Enviando para API Production:', dados);
             
             try {
                 const response = await fetch(API_URL, {
@@ -974,19 +974,19 @@
                 }
                 
                 const data = await response.json();
-                console.log('📥 Resposta da API Debug:', data);
+                console.log('📥 Resposta da API Production:', data);
                 
                 return data;
                 
             } catch (error) {
-                console.error('❌ Erro na comunicação com API Debug:', error);
+                console.error('❌ Erro na comunicação com API Production:', error);
                 mostrarAlertaErro(`Erro de conexão: ${error.message}`);
                 throw error;
             }
         }
 
         // ================================================================================
-        // 📋 CARREGAR ORBIUNS DA ABA "Dados" - CORRIGIDO
+        // 📋 CARREGAR ORBIUNS DA PLANILHA
         // ================================================================================
         async function carregarOrbiuns() {
             const loadingEl = document.getElementById('loadingMessage');
@@ -996,7 +996,7 @@
             listEl.innerHTML = '';
 
             try {
-                console.log('📋 Carregando orbiuns da aba "Dados"...');
+                console.log('📋 Carregando orbiuns da planilha...');
                 
                 const data = await chamarAPI({
                     action: 'listar'
@@ -1007,21 +1007,15 @@
                 console.log('🔍 data.data:', data.data);
                 
                 if (data.success) {
-                    // Verificar se tem a estrutura data.data.orbiuns
                     if (data.data && data.data.orbiuns) {
                         orbiunsData = data.data.orbiuns;
-                        console.log(`✅ ${orbiunsData.length} orbiuns carregados da aba "Dados"`);
-                    } 
-                    // Se não tiver, verificar se data.orbiuns existe diretamente
-                    else if (data.orbiuns) {
+                        console.log(`✅ ${orbiunsData.length} orbiuns carregados da planilha`);
+                    } else if (data.orbiuns) {
                         orbiunsData = data.orbiuns;
                         console.log(`✅ ${orbiunsData.length} orbiuns carregados (estrutura alternativa)`);
-                    }
-                    // Se não tiver nenhum, usar array vazio
-                    else {
+                    } else {
                         orbiunsData = [];
                         console.log('⚠️ Nenhum orbium encontrado na resposta');
-                        console.log('🔍 Resposta completa:', data);
                     }
                     
                     // Filtrar para mostrar apenas Problemas e Em atendimento por padrão
@@ -1033,7 +1027,7 @@
                     await carregarEstatisticas();
                     
                 } else {
-                    throw new Error(data.message || 'Erro ao carregar dados da aba "Dados"');
+                    throw new Error(data.message || 'Erro ao carregar dados da planilha');
                 }
                 
             } catch (error) {
@@ -1041,7 +1035,7 @@
                 
                 listEl.innerHTML = `
                     <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-circle"></i> Erro ao conectar com a aba "Dados"</h5>
+                        <h5><i class="fas fa-exclamation-circle"></i> Erro ao conectar com a planilha</h5>
                         <p>${error.message}</p>
                         <button onclick="carregarOrbiuns()" class="btn btn-primary">
                             <i class="fas fa-sync-alt"></i> Tentar Novamente
@@ -1067,13 +1061,12 @@
                     document.getElementById('totalAbertos').textContent = stats.em_atendimento || 0;
                     document.getElementById('totalProblemas').textContent = stats.problema || 0;
                     document.getElementById('totalResolvidosHoje').textContent = stats.resolvidos_hoje || 0;
-                    document.getElementById('totalResolvidos30').textContent = stats.resolvidos_30_dias || 0;
+                    document.getElementById('totalResolvidos30').textContent = stats.resolvidos_semana || 0;
                     document.getElementById('totalGeral').textContent = stats.total || 0;
                     
                     console.log('📊 Estatísticas carregadas:', stats);
                 } else {
                     console.warn('⚠️ Erro ao carregar estatísticas:', data.message);
-                    // Calcular localmente se a API falhar
                     calcularEstatisticasLocais();
                 }
                 
@@ -1087,7 +1080,7 @@
             const stats = {
                 em_atendimento: orbiunsData.filter(o => o.status === 'Em atendimento').length,
                 problema: orbiunsData.filter(o => o.status === 'Problema').length,
-                resolvidos_hoje: 0, // Não temos data de resolução facilmente
+                resolvidos_hoje: 0,
                 resolvidos_30_dias: 0,
                 total: orbiunsData.length
             };
@@ -1205,13 +1198,12 @@
                     action: 'atualizar_status',
                     id: id,
                     status: 'Resolvido',
-                    observacoes: `Resolvido em ${new Date().toLocaleDateString('pt-BR')}`
+                    observacoes: `Resolvido em ${new Date().toLocaleDateString('pt-BR')}`,
+                    senha: SENHA_ORBIUNS
                 });
 
                 if (result.success) {
                     mostrarAlertaSucesso('✅ Orbium marcado como resolvido!');
-                    
-                    // Aguardar um pouco e recarregar
                     setTimeout(() => {
                         carregarOrbiuns();
                     }, 1000);
@@ -1236,13 +1228,12 @@
                     action: 'atualizar_status',
                     id: id,
                     status: 'Problema',
-                    observacoes: `PROBLEMA: ${motivo} - ${new Date().toLocaleDateString('pt-BR')}`
+                    observacoes: `PROBLEMA: ${motivo} - ${new Date().toLocaleDateString('pt-BR')}`,
+                    senha: SENHA_ORBIUNS
                 });
 
                 if (result.success) {
                     mostrarAlertaSucesso('⚠️ Orbium marcado como problema!');
-                    
-                    // Aguardar um pouco e recarregar
                     setTimeout(() => {
                         carregarOrbiuns();
                     }, 1000);
@@ -1290,7 +1281,8 @@
 
                 const result = await chamarAPI({
                     action: 'cadastrar',
-                    orbium: dados
+                    orbium: dados,
+                    senha: SENHA_ORBIUNS
                 });
 
                 if (result.success) {
@@ -1298,7 +1290,6 @@
                     bootstrap.Modal.getInstance(document.getElementById('modalNovoOrbium')).hide();
                     document.getElementById('formNovoOrbium').reset();
                     
-                    // Aguardar um pouco e recarregar
                     setTimeout(() => {
                         carregarOrbiuns();
                     }, 1000);
@@ -1350,19 +1341,17 @@
                 console.log('📝 Editando orbium:', dados);
 
                 const result = await chamarAPI({
-                    action: 'editar',
+                    action: 'atualizar_status',
                     id: dados.id,
-                    dados: {
-                        status: dados.status,
-                        observacoes: dados.observacoes
-                    }
+                    status: dados.status,
+                    observacoes: dados.observacoes,
+                    senha: SENHA_ORBIUNS
                 });
 
                 if (result.success) {
                     mostrarAlertaSucesso('✅ Orbium atualizado com sucesso!');
                     bootstrap.Modal.getInstance(document.getElementById('modalEditarOrbium')).hide();
                     
-                    // Aguardar um pouco e recarregar
                     setTimeout(() => {
                         carregarOrbiuns();
                     }, 1000);
