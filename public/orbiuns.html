@@ -913,9 +913,9 @@
     
     <script>
         // ================================================================================
-        // 🔧 CONFIGURAÇÃO DA API - PROXY VERCEL (SOLUÇÃO DEFINITIVA)
+        // 🔧 CONFIGURAÇÃO DA API - DEBUG MODE
         // ================================================================================
-        const API_URL = '/api/orbiuns'; // API Proxy no próprio Vercel
+        const API_URL = '/api/debug-orbiuns'; // API Debug temporária
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -924,10 +924,9 @@
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v11.0 - API PROXY DEFINITIVA!');
-            console.log('📡 Usando API Proxy Vercel (sem CORS): /api/orbiuns');
-            console.log('📋 Conecta diretamente com Google Sheets');
-            console.log('✅ CORS 100% resolvido com proxy próprio');
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v11.1 - DEBUG MODE!');
+            console.log('📡 Usando API Debug: /api/debug-orbiuns');
+            console.log('🔍 Modo debug ativo para investigar erro 500');
             
             // Carregar orbiuns ao iniciar
             carregarOrbiuns();
@@ -954,7 +953,7 @@
         // 📡 FUNÇÃO FETCH PARA API MASTER v5.0
         // ================================================================================
         async function chamarAPI(dados) {
-            console.log('📡 Enviando para API Proxy Vercel:', dados);
+            console.log('📡 Enviando para API Debug:', dados);
             
             try {
                 const response = await fetch(API_URL, {
@@ -965,17 +964,22 @@
                     body: JSON.stringify(dados)
                 });
                 
+                console.log('📊 Status da resposta:', response.status);
+                console.log('📊 Headers da resposta:', Object.fromEntries(response.headers));
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const errorText = await response.text();
+                    console.log('📊 Texto do erro:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}\nDetalhes: ${errorText}`);
                 }
                 
                 const data = await response.json();
-                console.log('📥 Resposta da API Proxy:', data);
+                console.log('📥 Resposta da API Debug:', data);
                 
                 return data;
                 
             } catch (error) {
-                console.error('❌ Erro na comunicação com API Proxy:', error);
+                console.error('❌ Erro na comunicação com API Debug:', error);
                 mostrarAlertaErro(`Erro de conexão: ${error.message}`);
                 throw error;
             }
