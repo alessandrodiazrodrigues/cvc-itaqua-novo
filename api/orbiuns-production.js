@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  console.log('🚀 === ORBIUNS API PRODUCTION v1.4 - SECURE ===');
+  console.log('🚀 === ORBIUNS API PRODUCTION v1.5 - SPREADSHEET ID CORRIGIDO ===');
   console.log('📅 Timestamp:', new Date().toISOString());
   console.log('🔧 Método:', req.method);
 
@@ -12,7 +12,8 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const PLANILHA_ID = '1A7HOrMOw60Rks4_fwj0BNP5i9cZQ9H-dOJ7LKFw5Jis';
+  // ✅ ID CORRIGIDO DA PLANILHA!
+  const PLANILHA_ID = '1dF8dfIh8EyvX-5_sISpVc4dMsLNOqpwovQsbsxl9ywc';
   const ABA_DADOS = 'Dados';
   const SENHA_ORBIUNS = 'orb123';
 
@@ -21,6 +22,7 @@ export default async function handler(req, res) {
     const { google } = await import('googleapis');
     
     console.log('🔑 Configurando autenticação Google...');
+    console.log('📊 Planilha ID CORRETA:', PLANILHA_ID);
     
     // Verificar se a variável de ambiente existe
     if (!process.env.GOOGLE_CREDENTIALS_JSON) {
