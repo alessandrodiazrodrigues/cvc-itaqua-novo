@@ -986,7 +986,7 @@
         }
 
         // ================================================================================
-        // 📋 CARREGAR ORBIUNS DA ABA "Dados"
+        // 📋 CARREGAR ORBIUNS DA ABA "Dados" - CORRIGIDO
         // ================================================================================
         async function carregarOrbiuns() {
             const loadingEl = document.getElementById('loadingMessage');
@@ -1002,9 +1002,27 @@
                     action: 'listar'
                 });
                 
+                console.log('🔍 Estrutura da resposta:', data);
+                console.log('🔍 data.success:', data.success);
+                console.log('🔍 data.data:', data.data);
+                
                 if (data.success) {
-                    orbiunsData = data.data.orbiuns || [];
-                    console.log(`✅ ${orbiunsData.length} orbiuns carregados da aba "Dados"`);
+                    // Verificar se tem a estrutura data.data.orbiuns
+                    if (data.data && data.data.orbiuns) {
+                        orbiunsData = data.data.orbiuns;
+                        console.log(`✅ ${orbiunsData.length} orbiuns carregados da aba "Dados"`);
+                    } 
+                    // Se não tiver, verificar se data.orbiuns existe diretamente
+                    else if (data.orbiuns) {
+                        orbiunsData = data.orbiuns;
+                        console.log(`✅ ${orbiunsData.length} orbiuns carregados (estrutura alternativa)`);
+                    }
+                    // Se não tiver nenhum, usar array vazio
+                    else {
+                        orbiunsData = [];
+                        console.log('⚠️ Nenhum orbium encontrado na resposta');
+                        console.log('🔍 Resposta completa:', data);
+                    }
                     
                     // Filtrar para mostrar apenas Problemas e Em atendimento por padrão
                     orbiunsFiltrados = orbiunsData.filter(o => 
