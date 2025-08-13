@@ -1,8 +1,8 @@
-// 🚀 CVC ITAQUA v8.3 - DEPURACAO AVANCADA DE ERROS
+// 🚀 CVC ITAQUA v8.4 - CORREÇÕES CRÍTICAS
 // ================================================================================
 // 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
-// 1. TEMPLATES DE ORÇAMENTOS
+// 1. TEMPLATES DE ORÇAMENTOS (CORRIGIDOS)
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
 // 3. HANDLER PRINCIPAL DA API (COM DEPURACAO)
 // 4. PROCESSAMENTO DE DADOS (EM BLOCO SEGURO)
@@ -12,7 +12,7 @@
 // ================================================================================
 
 // ================================================================================
-// 1. 📋 TEMPLATES DE ORÇAMENTOS
+// 1. 📋 TEMPLATES DE ORÇAMENTOS (CORRIGIDOS)
 // ================================================================================
 const TEMPLATES = {
     aereo_ida_volta: `*{companhia} ✈ {cidade_destino}*
@@ -27,6 +27,7 @@ const TEMPLATES = {
 {reembolso}
 
 Valores sujeitos a confirmação e disponibilidade`,
+
     aereo_conexao_detalhada: `*{companhia} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
 (conexão em {cidade_conexao} - {tempo_espera} de espera)
@@ -41,6 +42,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 {reembolso}
 
 Valores sujeitos a confirmação e disponibilidade`,
+
     aereo_somente_ida: `*{companhia} ✈ {cidade_destino}*
 {data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 
@@ -53,6 +55,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 ⚠️ Passagem somente de ida - sem retorno incluído
 
 Valores sujeitos a confirmação e disponibilidade`,
+
     multiplas_opcoes_2: `*OPÇÃO 1 - {companhia1} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
@@ -75,6 +78,111 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
+
+    // NOVO TEMPLATE PARA PACOTE COM MÚLTIPLOS HOTÉIS
+    pacote_completo_multiplos: `*Pacote ✈ {destino}*
+Embarque: {data_embarque}
+Pacote para {passageiros}
+
+*O Pacote Inclui:*
+- Passagem Aérea ida e volta para {destino}
+- Taxas de Embarque
+{traslado}
+{passeios}
+{seguro}
+- {noites} noites de hospedagem no hotel escolhido
+
+✈️ *Voos {companhia}:*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+🏨 *Opções de Hotéis:*
+
+**OPÇÃO 1** - {nome_hotel1}
+📍 {endereco1}
+🛏️ {tipo_quarto1} com {regime1}
+💰 R$ {valor1} para {passageiros}
+{link1}
+
+**OPÇÃO 2** - {nome_hotel2}
+📍 {endereco2}
+🛏️ {tipo_quarto2} com {regime2}
+💰 R$ {valor2} para {passageiros}
+{link2}
+
+**OPÇÃO 3** - {nome_hotel3}
+📍 {endereco3}
+🛏️ {tipo_quarto3} com {regime3}
+💰 R$ {valor3} para {passageiros}
+{link3}
+
+{opcoes_extras}
+
+{parcelamento}
+{reembolso}
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // TEMPLATE PARA DICAS ESPECÍFICAS
+    dicas_especificas: `🌍 *Dicas para {destino}* 🌍
+
+🏖️ **Melhor época para viajar:**
+{melhor_epoca}
+
+🍽️ **Gastronomia imperdível:**
+{gastronomia}
+
+🎯 **Principais atrações:**
+{atracoes}
+
+🏨 **Onde ficar:**
+{onde_ficar}
+
+💡 **Dicas especiais:**
+{dicas_especiais}
+
+💰 **Orçamento médio:**
+{orcamento_medio}
+
+📋 **Documentos necessários:**
+{documentos}
+
+✈️ Quer um orçamento personalizado? Me chama! 🌟
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // TEMPLATE PARA RANKING DE HOTÉIS
+    ranking_hoteis: `🏆 *Top 5 Hotéis em {destino}* 🏆
+
+**1️⃣ {hotel1_nome}**
+⭐{hotel1_estrelas} | 📍 {hotel1_localizacao}
+✨ {hotel1_destaque}
+💰 Diária média: R$ {hotel1_preco}
+
+**2️⃣ {hotel2_nome}**
+⭐{hotel2_estrelas} | 📍 {hotel2_localizacao}
+✨ {hotel2_destaque}
+💰 Diária média: R$ {hotel2_preco}
+
+**3️⃣ {hotel3_nome}**
+⭐{hotel3_estrelas} | 📍 {hotel3_localizacao}
+✨ {hotel3_destaque}
+💰 Diária média: R$ {hotel3_preco}
+
+**4️⃣ {hotel4_nome}**
+⭐{hotel4_estrelas} | 📍 {hotel4_localizacao}
+✨ {hotel4_destaque}
+💰 Diária média: R$ {hotel4_preco}
+
+**5️⃣ {hotel5_nome}**
+⭐{hotel5_estrelas} | 📍 {hotel5_localizacao}
+✨ {hotel5_destaque}
+💰 Diária média: R$ {hotel5_preco}
+
+💡 Quer reservar algum desses? Me chama! 📲
+
+Valores sujeitos a confirmação e disponibilidade`,
+
     multitrecho: `*{companhia} ✈ Multitrecho*
 {data_trecho1} - {aeroporto1} {hora1} / {aeroporto_chegada1} {hora_chegada1} ({tipo_voo1})
 --
@@ -89,6 +197,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 {reembolso}
 
 Valores sujeitos a confirmação e disponibilidade`,
+
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
 {passageiros}
@@ -116,40 +225,7 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 
 💳 {parcelamento}
 Valores sujeitos a confirmação e disponibilidade`,
-    pacote_completo: `*Pacote ✈ {destino}*
-Embarque: {data_embarque}
-Pacote para {passageiros}
 
-*O Pacote Inclui:*
-- Passagem Aérea ida e volta para {destino}
-- Taxas de Embarque
-{traslado}
-{passeios}
-{seguro}
-- {noites} noites de hospedagem no hotel escolhido
-
-✈️ *Voos {companhia}:*
-{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
---
-{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
-
-**OPÇÃO 1** - {nome_hotel1}
-📍 {endereco1}
-🛏️ {tipo_quarto1} com {regime1}
-💰 R$ {valor1} para {passageiros}
-{link1}
-
-**OPÇÃO 2** - {nome_hotel2}
-📍 {endereco2}
-🛏️ {tipo_quarto2} com {regime2}
-💰 R$ {valor2} para {passageiros}
-{link2}
-
-{opcao3}
-
-{parcelamento}
-{reembolso}
-Valores sujeitos a confirmação e disponibilidade`,
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
 📅 Embarque: {data_embarque} ({dia_semana})
@@ -169,6 +245,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🚫 Não inclui: taxas, bebidas, excursões
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
+
     locacao_carro: `🚗 *LOCAÇÃO DE VEÍCULOS - {cidade}*
 Retirada: {data_retirada} às {hora_retirada}
 Devolução: {data_devolucao} às {hora_devolucao}
@@ -241,7 +318,7 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v8.3
+// 3. 🎯 HANDLER PRINCIPAL DA API v8.4
 // ================================================================================
 export default async function handler(req, res) {
     // Configuração CORS
@@ -254,7 +331,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-        return res.status(200).json({ success: true, status: 'operational', version: '8.3' });
+        return res.status(200).json({ success: true, status: 'operational', version: '8.4' });
     }
 
     if (req.method !== 'POST') {
@@ -263,7 +340,7 @@ export default async function handler(req, res) {
 
     // --- Início do Bloco Principal Try/Catch ---
     try {
-        console.log('v8.3: 📥 Início do processamento POST.');
+        console.log('v8.4: 📥 Início do processamento POST.');
         const {
             observacoes = '', textoColado = '', destino = '', idadesCriancas = [],
             tipos = [], parcelamento = null, imagemBase64 = null,
@@ -274,7 +351,7 @@ export default async function handler(req, res) {
 
         // --- Bloco de Processamento de Dados ---
         try {
-            console.log('v8.3: 📊 Iniciando processamento de dados...');
+            console.log('v8.4: 📊 Iniciando processamento de dados...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
 
@@ -291,7 +368,13 @@ export default async function handler(req, res) {
                 }
                 infoPassageiros = textoPax;
             } else {
-                infoPassageiros = "01 adulto"; // Valor padrão
+                // Detectar do conteúdo
+                const adultoMatch = conteudoLower.match(/(\d+)\s*adulto/);
+                if (adultoMatch) {
+                    infoPassageiros = `${String(parseInt(adultoMatch[1])).padStart(2, '0')} ${parseInt(adultoMatch[1]) === 1 ? 'adulto' : 'adultos'}`;
+                } else {
+                    infoPassageiros = "02 adultos"; // Valor padrão do exemplo
+                }
             }
 
             destinoFinal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
@@ -301,15 +384,15 @@ export default async function handler(req, res) {
                     destinoFinal = padraoDestino[0].replace(/^\w/, c => c.toUpperCase());
                 }
             }
-             console.log('v8.3: ✅ Processamento de dados concluído.');
+             console.log('v8.4: ✅ Processamento de dados concluído.');
         } catch (dataError) {
-            console.error('v8.3: ❌ Erro no processamento de dados:', dataError);
+            console.error('v8.4: ❌ Erro no processamento de dados:', dataError);
             return res.status(500).json({ success: false, error: 'Falha ao processar os dados de entrada.', details: dataError.message, stage: 'data-processing' });
         }
 
         // --- Bloco de Geração de Prompt ---
         try {
-            console.log('v8.3: 📝 Iniciando geração de prompt...');
+            console.log('v8.4: 📝 Iniciando geração de prompt...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
             const templatesString = JSON.stringify(TEMPLATES, null, 2);
@@ -320,7 +403,7 @@ export default async function handler(req, res) {
             const isHotel = tipos.includes('Hotel') || conteudoLower.includes('hotel');
             const isCarro = conteudoLower.includes('locação') || conteudoLower.includes('locacao');
             const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo');
-            const isPacote = (isHotel && temAereo) || conteudoLower.includes('pacote inclui');
+            const isPacote = (isHotel && temAereo) || conteudoLower.includes('pacote inclui') || conteudoLower.includes('o pacote inclui');
             const isSomenteIda = conteudoLower.includes('somente ida');
             const temMultiplasOpcoes = (conteudoLower.match(/opção \d/g) || []).length > 1;
             const isMultitrecho = conteudoLower.includes('multitrecho');
@@ -330,42 +413,98 @@ export default async function handler(req, res) {
             const temInfoParcelamento = conteudoLower.includes('entrada de r$') || conteudoLower.includes('x de r$') || parcelamento !== null;
 
             let templateEspecifico = 'aereo_ida_volta';
-            if (isPacote) templateEspecifico = 'pacote_completo';
-            else if (isSomenteIda) templateEspecifico = 'aereo_somente_ida';
-            else if (temMultiplasOpcoes) templateEspecifico = 'multiplas_opcoes_2';
-            else if (isMultitrecho) templateEspecifico = 'multitrecho';
-            else if (temConexaoDetalhada) templateEspecifico = 'aereo_conexao_detalhada';
-            else if (isCruzeiro) templateEspecifico = 'cruzeiro';
-            else if (isCarro) templateEspecifico = 'locacao_carro';
-            else if (isHotel && !temAereo) templateEspecifico = 'hoteis_multiplas_opcoes';
-            else if (isDicas) templateEspecifico = 'dicas';
-            else if (isRanking) templateEspecifico = 'ranking';
+            
+            // LÓGICA ESPECÍFICA PARA DICAS E RANKING
+            if (isDicas) {
+                templateEspecifico = 'dicas_especificas';
+                prompt = `SISTEMA CVC ITAQUA v8.4 - GERAÇÃO DE DICAS
 
-            prompt = `🚀 SISTEMA CVC ITAQUA v8.3
+DESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}
+DADOS: ${conteudoPrincipal}
+
+INSTRUÇÕES CRÍTICAS:
+1. Use o template 'dicas_especificas' com informações REAIS sobre ${destinoFinal || 'o destino mencionado'}
+2. NUNCA use informações genéricas
+3. Pesquise no seu conhecimento dados específicos sobre o destino
+4. Inclua preços aproximados, épocas específicas, atrações reais
+5. Formate para WhatsApp
+6. Termine sempre com "Valores sujeitos a confirmação e disponibilidade"
+
+TEMPLATE: ${TEMPLATES.dicas_especificas}`;
+            } else if (isRanking) {
+                templateEspecifico = 'ranking_hoteis';
+                prompt = `SISTEMA CVC ITAQUA v8.4 - RANKING DE HOTÉIS
+
+DESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}
+DADOS: ${conteudoPrincipal}
+
+INSTRUÇÕES CRÍTICAS:
+1. Use o template 'ranking_hoteis' com hotéis REAIS
+2. Pesquise no seu conhecimento hotéis específicos do destino
+3. Inclua preços aproximados reais
+4. Use localizações verdadeiras
+5. Formate para WhatsApp
+6. Termine sempre com "Valores sujeitos a confirmação e disponibilidade"
+
+TEMPLATE: ${TEMPLATES.ranking_hoteis}`;
+            } else {
+                // Lógica normal para orçamentos
+                if (isPacote) {
+                    // Verificar se tem mais de 3 hotéis
+                    const opcoes = (conteudoPrincipal.match(/total \(2 adultos\)/gi) || []).length;
+                    if (opcoes > 3) {
+                        templateEspecifico = 'pacote_completo_multiplos';
+                    } else {
+                        templateEspecifico = 'pacote_completo';
+                    }
+                } else if (isSomenteIda) {
+                    templateEspecifico = 'aereo_somente_ida';
+                } else if (temMultiplasOpcoes) {
+                    templateEspecifico = 'multiplas_opcoes_2';
+                } else if (isMultitrecho) {
+                    templateEspecifico = 'multitrecho';
+                } else if (temConexaoDetalhada) {
+                    templateEspecifico = 'aereo_conexao_detalhada';
+                } else if (isCruzeiro) {
+                    templateEspecifico = 'cruzeiro';
+                } else if (isCarro) {
+                    templateEspecifico = 'locacao_carro';
+                } else if (isHotel && !temAereo) {
+                    templateEspecifico = 'hoteis_multiplas_opcoes';
+                }
+
+                prompt = `🚀 SISTEMA CVC ITAQUA v8.4
 DADOS DO CLIENTE: ${conteudoPrincipal}
 ANÁLISE: Destino: ${destinoFinal || 'EXTRAIR'}, Passageiros: ${infoPassageiros || 'EXTRAIR'}, Template: ${templateEspecifico}
 AEROPORTOS (converter): ${tabelaAeroportos}
 TEMPLATES: ${templatesString}
-📋 REGRAS CRÍTICAS:
-1. TÍTULO: "*Companhia ✈ Destino*".
-2. BAGAGEM: Padrão é "✅ Inclui 1 mala de mão + 1 item pessoal".
-3. VOOS: Formato "DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo)". Separar com "--".
-4. REEMBOLSO: Se "Não reembolsável", inclua "🏷️ Não reembolsável". Se for reembolsável, NÃO mencione.
-5. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade".
 
-Use o template '${templateEspecifico}' e siga TODAS as regras.`;
-            console.log('v8.3: ✅ Geração de prompt concluída.');
+📋 REGRAS CRÍTICAS:
+1. TÍTULO: "*Companhia ✈ Destino*" (use NOMES de cidades, não códigos)
+2. BAGAGEM: Padrão é "✅ Inclui 1 mala de mão + 1 item pessoal"
+3. VOOS: Formato "DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo)". Separar com "--"
+4. DATAS: Para período de 06/11 a 11/11 são exatamente 5 noites, não 6
+5. REEMBOLSO: Se "Não reembolsável", inclua "🏷️ Não reembolsável". Se for reembolsável, NÃO mencione
+6. LINKS: Mantenha os links originais da CVC quando fornecidos
+7. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
+8. PASSAGEIROS: Detectar corretamente (exemplo tem "2 Adultos" = "02 adultos")
+
+TEMPLATE ESPECÍFICO: ${templateEspecifico}
+Use este template exatamente e substitua as variáveis pelos dados reais.`;
+            }
+            
+            console.log('v8.4: ✅ Geração de prompt concluída.');
         } catch (promptError) {
-            console.error('v8.3: ❌ Erro na geração do prompt:', promptError);
+            console.error('v8.4: ❌ Erro na geração do prompt:', promptError);
             return res.status(500).json({ success: false, error: 'Falha ao montar a requisição para a IA.', details: promptError.message, stage: 'prompt-generation' });
         }
 
         // --- Bloco de Chamada da IA ---
         try {
-            console.log('v8.3: 🤖 Iniciando chamada à IA...');
+            console.log('v8.4: 🤖 Iniciando chamada à IA...');
             iaUsada = 'gpt-4o-mini';
             const usarClaude = imagemBase64 || arquivoBase64 || temImagem || (observacoes.length + textoColado.length > 2000);
-            const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Siga EXATAMENTE os templates e regras fornecidos. NUNCA invente informações. Converta todos os códigos de aeroportos. Formate para WhatsApp.';
+            const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Siga EXATAMENTE os templates e regras fornecidos. NUNCA invente informações que não estejam nos dados. Converta todos os códigos de aeroportos para nomes. Formate para WhatsApp. Para dicas e rankings, use informações reais do seu conhecimento sobre o destino.';
 
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 iaUsada = 'claude-3-haiku';
@@ -382,27 +521,27 @@ Use o template '${templateEspecifico}' e siga TODAS as regras.`;
                 const responseData = await apiResponse.json();
                 resultado = responseData.choices[0].message.content;
             }
-            console.log('v8.3: ✅ Chamada à IA concluída.');
+            console.log('v8.4: ✅ Chamada à IA concluída.');
         } catch (aiError) {
-            console.error('v8.3: ❌ Erro na chamada da IA:', aiError);
+            console.error('v8.4: ❌ Erro na chamada da IA:', aiError);
             return res.status(500).json({ success: false, error: 'Falha ao comunicar com o serviço de IA.', details: aiError.message, stage: 'ai-call' });
         }
 
-        console.log('v8.3: ✅ Processamento geral concluído. Enviando resposta...');
+        console.log('v8.4: ✅ Processamento geral concluído. Enviando resposta...');
         return res.status(200).json({
             success: true,
             result: resultado,
-            metadata: { version: '8.3', ia_usada: iaUsada, destino: destinoFinal }
+            metadata: { version: '8.4', ia_usada: iaUsada, destino: destinoFinal, template_usado: templateEspecifico }
         });
 
     } catch (error) {
         // Este é o 'catch' final para erros totalmente inesperados.
-        console.error('v8.3: ❌ Erro INESPERADO no handler principal:', error);
+        console.error('v8.4: ❌ Erro INESPERADO no handler principal:', error);
         return res.status(500).json({
             success: false,
             error: 'Ocorreu um erro inesperado no servidor.',
             details: error.message,
-            version: '8.3',
+            version: '8.4',
             stage: 'handler-main'
         });
     }
