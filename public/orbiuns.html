@@ -913,10 +913,9 @@
     
     <script>
         // ================================================================================
-        // 🔧 CONFIGURAÇÃO DA API - URL CORRETA DO OrbiusCRUD.gs
+        // 🔧 CONFIGURAÇÃO DA API - NOVA URL CONSOLIDADA
         // ================================================================================
-        const ORBIUNS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqeSPtGkkAK32zI5CYau-HdJikTcHncej0J1SvaGlFd_m50WAs0JMx1WQCpaE5ZTxvkg/exec';
-        const SENHA_ORBIUNS = 'orb123';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxvqTe8L5aSsOd0w0IH2GWfAhONwpfDKr6xpFMVocyT3yBIJFw3QBb7WHcptp_dpJNXmg/exec';
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -925,10 +924,10 @@
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v7.0 - CORRIGIDO!');
-            console.log('📡 URL correta do OrbiusCRUD.gs sendo usado');
-            console.log('📋 Aba "dados" confirmada como destino');
-            console.log('✅ Estrutura A-N: STATUS|ORBIUM|DATA|DEPT|VENDEDOR|RECIBO|RESERVA|PEDIDO|CIA|GDS|CIA|OBS|NOME|WHATS');
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v8.0 - NOVA API CONSOLIDADA!');
+            console.log('📡 URL da nova API Master:', API_URL);
+            console.log('📋 Aba "Dados" (maiúsculo) confirmada');
+            console.log('✅ Sistema sem senha para orbiuns');
             
             // Carregar orbiuns ao iniciar
             carregarOrbiuns();
@@ -952,17 +951,16 @@
         });
 
         // ================================================================================
-        // 📡 FUNÇÃO FETCH COM TRATAMENTO DE ERROS
+        // 📡 FUNÇÃO FETCH PARA NOVA API
         // ================================================================================
-        async function fetchCorsSeguro(dados) {
-            console.log('📡 Enviando para OrbiusCRUD.gs:', dados);
+        async function chamarAPI(dados) {
+            console.log('📡 Enviando para API Master:', dados);
             
             try {
-                const response = await fetch(ORBIUNS_SCRIPT_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'cors',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(dados)
                 });
@@ -972,19 +970,19 @@
                 }
                 
                 const data = await response.json();
-                console.log('📥 Resposta do OrbiusCRUD.gs:', data);
+                console.log('📥 Resposta da API Master:', data);
                 
                 return data;
                 
             } catch (error) {
-                console.error('❌ Erro na comunicação com OrbiusCRUD.gs:', error);
+                console.error('❌ Erro na comunicação com API Master:', error);
                 mostrarAlertaErro(`Erro de conexão: ${error.message}`);
                 throw error;
             }
         }
 
         // ================================================================================
-        // 📋 CARREGAR ORBIUNS DA ABA "dados"
+        // 📋 CARREGAR ORBIUNS DA ABA "Dados"
         // ================================================================================
         async function carregarOrbiuns() {
             const loadingEl = document.getElementById('loadingMessage');
@@ -994,16 +992,15 @@
             listEl.innerHTML = '';
 
             try {
-                console.log('📋 Carregando orbiuns da aba "dados"...');
+                console.log('📋 Carregando orbiuns da aba "Dados"...');
                 
-                const data = await fetchCorsSeguro({
-                    action: 'listar',
-                    filtros: {}
+                const data = await chamarAPI({
+                    action: 'listar'
                 });
                 
                 if (data.success) {
                     orbiunsData = data.data.orbiuns || [];
-                    console.log(`✅ ${orbiunsData.length} orbiuns carregados da aba "dados"`);
+                    console.log(`✅ ${orbiunsData.length} orbiuns carregados da aba "Dados"`);
                     
                     // Filtrar para mostrar apenas Problemas e Em atendimento por padrão
                     orbiunsFiltrados = orbiunsData.filter(o => 
@@ -1014,7 +1011,7 @@
                     await carregarEstatisticas();
                     
                 } else {
-                    throw new Error(data.message || 'Erro ao carregar dados da aba "dados"');
+                    throw new Error(data.message || 'Erro ao carregar dados da aba "Dados"');
                 }
                 
             } catch (error) {
@@ -1022,7 +1019,7 @@
                 
                 listEl.innerHTML = `
                     <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-circle"></i> Erro ao conectar com a aba "dados"</h5>
+                        <h5><i class="fas fa-exclamation-circle"></i> Erro ao conectar com a aba "Dados"</h5>
                         <p>${error.message}</p>
                         <button onclick="carregarOrbiuns()" class="btn btn-primary">
                             <i class="fas fa-sync-alt"></i> Tentar Novamente
@@ -1039,7 +1036,7 @@
         // ================================================================================
         async function carregarEstatisticas() {
             try {
-                const data = await fetchCorsSeguro({
+                const data = await chamarAPI({
                     action: 'estatisticas'
                 });
                 
@@ -1182,12 +1179,11 @@
             try {
                 console.log(`✅ Resolvendo orbium ID: ${id}`);
                 
-                const result = await fetchCorsSeguro({
+                const result = await chamarAPI({
                     action: 'atualizar_status',
                     id: id,
                     status: 'Resolvido',
-                    observacoes: `Resolvido em ${new Date().toLocaleDateString('pt-BR')}`,
-                    senha: SENHA_ORBIUNS
+                    observacoes: `Resolvido em ${new Date().toLocaleDateString('pt-BR')}`
                 });
 
                 if (result.success) {
@@ -1214,12 +1210,11 @@
             try {
                 console.log(`⚠️ Marcando problema no orbium ID: ${id}`);
                 
-                const result = await fetchCorsSeguro({
+                const result = await chamarAPI({
                     action: 'atualizar_status',
                     id: id,
                     status: 'Problema',
-                    observacoes: `PROBLEMA: ${motivo} - ${new Date().toLocaleDateString('pt-BR')}`,
-                    senha: SENHA_ORBIUNS
+                    observacoes: `PROBLEMA: ${motivo} - ${new Date().toLocaleDateString('pt-BR')}`
                 });
 
                 if (result.success) {
@@ -1243,7 +1238,7 @@
         // ➕ CADASTRAR NOVO ORBIUM
         // ================================================================================
         function abrirModalNovoOrbium() {
-            console.log('🔓 Abrindo modal de novo orbium');
+            console.log('➕ Abrindo modal de novo orbium');
             const dataInput = document.getElementById('data_abertura');
             if (dataInput) {
                 dataInput.valueAsDate = new Date();
@@ -1271,10 +1266,9 @@
 
                 console.log('📤 Enviando novo orbium:', dados);
 
-                const result = await fetchCorsSeguro({
+                const result = await chamarAPI({
                     action: 'cadastrar',
-                    orbium: dados,
-                    senha: SENHA_ORBIUNS
+                    orbium: dados
                 });
 
                 if (result.success) {
@@ -1333,14 +1327,13 @@
 
                 console.log('📝 Editando orbium:', dados);
 
-                const result = await fetchCorsSeguro({
+                const result = await chamarAPI({
                     action: 'editar',
                     id: dados.id,
                     dados: {
                         status: dados.status,
                         observacoes: dados.observacoes
-                    },
-                    senha: SENHA_ORBIUNS
+                    }
                 });
 
                 if (result.success) {
