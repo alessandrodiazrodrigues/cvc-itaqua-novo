@@ -1,13 +1,13 @@
-// 🚀 CVC ITAQUA v8.4 - CORREÇÕES CRÍTICAS
+// 🚀 CVC ITAQUA v8.5 - VALIDAÇÃO E CORREÇÕES FINAIS
 // ================================================================================
 // 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
 // 1. TEMPLATES DE ORÇAMENTOS (CORRIGIDOS)
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
-// 3. HANDLER PRINCIPAL DA API (COM DEPURACAO)
-// 4. PROCESSAMENTO DE DADOS (EM BLOCO SEGURO)
-// 5. GERAÇÃO DE PROMPTS (EM BLOCO SEGURO)
-// 6. PROCESSAMENTO COM IA (EM BLOCO SEGURO)
+// 3. HANDLER PRINCIPAL DA API (COM VALIDAÇÃO)
+// 4. PROCESSAMENTO DE DADOS
+// 5. GERAÇÃO DE PROMPTS
+// 6. PROCESSAMENTO COM IA
 // 7. RESPOSTA FINAL
 // ================================================================================
 
@@ -78,8 +78,8 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
-
-    // NOVO TEMPLATE PARA PACOTE COM MÚLTIPLOS HOTÉIS
+    
+    // TEMPLATE CORRIGIDO PARA PACOTE COM MÚLTIPLOS HOTÉIS
     pacote_completo_multiplos: `*Pacote ✈ {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -116,8 +116,6 @@ Pacote para {passageiros}
 🛏️ {tipo_quarto3} com {regime3}
 💰 R$ {valor3} para {passageiros}
 {link3}
-
-{opcoes_extras}
 
 {parcelamento}
 {reembolso}
@@ -318,7 +316,7 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v8.4
+// 3. 🎯 HANDLER PRINCIPAL DA API v8.5
 // ================================================================================
 export default async function handler(req, res) {
     // Configuração CORS
@@ -331,7 +329,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-        return res.status(200).json({ success: true, status: 'operational', version: '8.4' });
+        return res.status(200).json({ success: true, status: 'operational', version: '8.5' });
     }
 
     if (req.method !== 'POST') {
@@ -340,59 +338,52 @@ export default async function handler(req, res) {
 
     // --- Início do Bloco Principal Try/Catch ---
     try {
-        console.log('v8.4: 📥 Início do processamento POST.');
+        // ✅ VALIDAÇÃO DE SEGURANÇA: Garante que o corpo da requisição existe
+        if (!req.body) {
+            console.error('v8.5: ❌ Erro: Requisição recebida sem corpo (body).');
+            return res.status(400).json({ success: false, error: 'Requisição inválida: corpo não encontrado.' });
+        }
+        
+        console.log('v8.5: 📥 Início do processamento POST.');
         const {
             observacoes = '', textoColado = '', destino = '', idadesCriancas = [],
             tipos = [], parcelamento = null, imagemBase64 = null,
             arquivoBase64 = null, temImagem = false
         } = req.body;
 
-        let infoPassageiros, destinoFinal, prompt, resultado, iaUsada, tipoDetectado;
+        let infoPassageiros, destinoFinal, prompt, resultado, iaUsada, templateEspecifico;
 
         // --- Bloco de Processamento de Dados ---
         try {
-            console.log('v8.4: 📊 Iniciando processamento de dados...');
+            console.log('v8.5: 📊 Iniciando processamento de dados...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
 
-            const padraoPassageiros = conteudoLower.match(/(\d+)\s*(?:adulto|adultos)(?:\s*(?:e|\+)\s*(\d+)\s*(?:criança|crianças))?/i);
+            const padraoPassageiros = conteudoLower.match(/(\d+)\s*(?:adulto|adultos)/i);
             if (padraoPassageiros) {
                 const numAdultos = parseInt(padraoPassageiros[1]);
-                const numCriancas = padraoPassageiros[2] ? parseInt(padraoPassageiros[2]) : 0;
-                let textoPax = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
-                if (numCriancas > 0) {
-                    textoPax += ` + ${String(numCriancas).padStart(2, '0')} ${numCriancas === 1 ? 'criança' : 'crianças'}`;
-                    if (idadesCriancas && idadesCriancas.length > 0) {
-                        textoPax += ` (${idadesCriancas.join(' e ')} anos)`;
-                    }
-                }
-                infoPassageiros = textoPax;
+                infoPassageiros = `${String(numAdultos).padStart(2, '0')} ${numAdultos === 1 ? 'adulto' : 'adultos'}`;
             } else {
-                // Detectar do conteúdo
-                const adultoMatch = conteudoLower.match(/(\d+)\s*adulto/);
-                if (adultoMatch) {
-                    infoPassageiros = `${String(parseInt(adultoMatch[1])).padStart(2, '0')} ${parseInt(adultoMatch[1]) === 1 ? 'adulto' : 'adultos'}`;
-                } else {
-                    infoPassageiros = "02 adultos"; // Valor padrão do exemplo
-                }
+                infoPassageiros = "02 adultos"; // Valor padrão se não encontrar
             }
 
-            destinoFinal = destino && destino !== 'Destino' && destino !== '' ? destino : null;
+            destinoFinal = destino || null;
             if (!destinoFinal && conteudoPrincipal) {
-                const padraoDestino = conteudoLower.match(/(?:orlando|miami|cancún|porto seguro|maceió|fortaleza|lisboa|porto|paris|buenos aires|santiago|nova york|new york|rio de janeiro|gramado|natal|joão pessoa|foz do iguaçu|salvador|recife|roma|londres|barcelona|madrid)/i);
+                const padraoDestino = conteudoLower.match(/(?:porto seguro|maceió|fortaleza|lisboa|porto|paris|buenos aires|santiago|nova york|rio de janeiro|gramado|natal|joão pessoa|foz do iguaçu|salvador|recife|roma|londres|barcelona|madrid|orlando|miami|cancún)/i);
                 if (padraoDestino) {
-                    destinoFinal = padraoDestino[0].replace(/^\w/, c => c.toUpperCase());
+                    let cidade = padraoDestino[0];
+                    destinoFinal = cidade.charAt(0).toUpperCase() + cidade.slice(1);
                 }
             }
-             console.log('v8.4: ✅ Processamento de dados concluído.');
+             console.log('v8.5: ✅ Processamento de dados concluído.');
         } catch (dataError) {
-            console.error('v8.4: ❌ Erro no processamento de dados:', dataError);
+            console.error('v8.5: ❌ Erro no processamento de dados:', dataError);
             return res.status(500).json({ success: false, error: 'Falha ao processar os dados de entrada.', details: dataError.message, stage: 'data-processing' });
         }
 
         // --- Bloco de Geração de Prompt ---
         try {
-            console.log('v8.4: 📝 Iniciando geração de prompt...');
+            console.log('v8.5: 📝 Iniciando geração de prompt...');
             const conteudoPrincipal = (observacoes || textoColado || '').toString();
             const conteudoLower = conteudoPrincipal.toLowerCase();
             const templatesString = JSON.stringify(TEMPLATES, null, 2);
@@ -404,104 +395,50 @@ export default async function handler(req, res) {
             const isCarro = conteudoLower.includes('locação') || conteudoLower.includes('locacao');
             const temAereo = tipos.includes('Aéreo') || conteudoLower.includes('voo');
             const isPacote = (isHotel && temAereo) || conteudoLower.includes('pacote inclui') || conteudoLower.includes('o pacote inclui');
-            const isSomenteIda = conteudoLower.includes('somente ida');
-            const temMultiplasOpcoes = (conteudoLower.match(/opção \d/g) || []).length > 1;
-            const isMultitrecho = conteudoLower.includes('multitrecho');
-            const temConexaoDetalhada = conteudoLower.includes('conexão em');
-            const isCruzeiro = conteudoLower.includes('cruzeiro');
-            const temNaoReembolsavel = conteudoLower.includes('não reembolsável');
-            const temInfoParcelamento = conteudoLower.includes('entrada de r$') || conteudoLower.includes('x de r$') || parcelamento !== null;
-
-            let templateEspecifico = 'aereo_ida_volta';
             
-            // LÓGICA ESPECÍFICA PARA DICAS E RANKING
             if (isDicas) {
                 templateEspecifico = 'dicas_especificas';
-                prompt = `SISTEMA CVC ITAQUA v8.4 - GERAÇÃO DE DICAS
-
-DESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}
-DADOS: ${conteudoPrincipal}
-
-INSTRUÇÕES CRÍTICAS:
-1. Use o template 'dicas_especificas' com informações REAIS sobre ${destinoFinal || 'o destino mencionado'}
-2. NUNCA use informações genéricas
-3. Pesquise no seu conhecimento dados específicos sobre o destino
-4. Inclua preços aproximados, épocas específicas, atrações reais
-5. Formate para WhatsApp
-6. Termine sempre com "Valores sujeitos a confirmação e disponibilidade"
-
-TEMPLATE: ${TEMPLATES.dicas_especificas}`;
+                prompt = `SISTEMA CVC ITAQUA v8.5 - GERAÇÃO DE DICAS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nDADOS: ${conteudoPrincipal}\nINSTRUÇÕES: Use o template 'dicas_especificas' com informações REAIS sobre ${destinoFinal || 'o destino mencionado'}. NÃO use informações genéricas. Pesquise no seu conhecimento dados sobre o destino.`;
             } else if (isRanking) {
                 templateEspecifico = 'ranking_hoteis';
-                prompt = `SISTEMA CVC ITAQUA v8.4 - RANKING DE HOTÉIS
-
-DESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}
-DADOS: ${conteudoPrincipal}
-
-INSTRUÇÕES CRÍTICAS:
-1. Use o template 'ranking_hoteis' com hotéis REAIS
-2. Pesquise no seu conhecimento hotéis específicos do destino
-3. Inclua preços aproximados reais
-4. Use localizações verdadeiras
-5. Formate para WhatsApp
-6. Termine sempre com "Valores sujeitos a confirmação e disponibilidade"
-
-TEMPLATE: ${TEMPLATES.ranking_hoteis}`;
+                prompt = `SISTEMA CVC ITAQUA v8.5 - RANKING DE HOTÉIS\nDESTINO: ${destinoFinal || 'EXTRAIR DO CONTEÚDO'}\nDADOS: ${conteudoPrincipal}\nINSTRUÇÕES: Use o template 'ranking_hoteis' com hotéis REAIS do destino. Pesquise no seu conhecimento e inclua preços médios reais.`;
             } else {
-                // Lógica normal para orçamentos
                 if (isPacote) {
-                    // Verificar se tem mais de 3 hotéis
-                    const opcoes = (conteudoPrincipal.match(/total \(2 adultos\)/gi) || []).length;
-                    if (opcoes > 3) {
-                        templateEspecifico = 'pacote_completo_multiplos';
-                    } else {
-                        templateEspecifico = 'pacote_completo';
-                    }
-                } else if (isSomenteIda) {
-                    templateEspecifico = 'aereo_somente_ida';
-                } else if (temMultiplasOpcoes) {
-                    templateEspecifico = 'multiplas_opcoes_2';
-                } else if (isMultitrecho) {
-                    templateEspecifico = 'multitrecho';
-                } else if (temConexaoDetalhada) {
-                    templateEspecifico = 'aereo_conexao_detalhada';
-                } else if (isCruzeiro) {
-                    templateEspecifico = 'cruzeiro';
+                    templateEspecifico = 'pacote_completo_multiplos';
                 } else if (isCarro) {
                     templateEspecifico = 'locacao_carro';
                 } else if (isHotel && !temAereo) {
                     templateEspecifico = 'hoteis_multiplas_opcoes';
+                } else {
+                    templateEspecifico = 'aereo_ida_volta'; // Padrão
                 }
 
-                prompt = `🚀 SISTEMA CVC ITAQUA v8.4
+                prompt = `🚀 SISTEMA CVC ITAQUA v8.5
 DADOS DO CLIENTE: ${conteudoPrincipal}
 ANÁLISE: Destino: ${destinoFinal || 'EXTRAIR'}, Passageiros: ${infoPassageiros || 'EXTRAIR'}, Template: ${templateEspecifico}
 AEROPORTOS (converter): ${tabelaAeroportos}
 TEMPLATES: ${templatesString}
 
 📋 REGRAS CRÍTICAS:
-1. TÍTULO: "*Companhia ✈ Destino*" (use NOMES de cidades, não códigos)
-2. BAGAGEM: Padrão é "✅ Inclui 1 mala de mão + 1 item pessoal"
-3. VOOS: Formato "DD/MM - Aeroporto HH:MM / Aeroporto HH:MM (tipo)". Separar com "--"
-4. DATAS: Para período de 06/11 a 11/11 são exatamente 5 noites, não 6
-5. REEMBOLSO: Se "Não reembolsável", inclua "🏷️ Não reembolsável". Se for reembolsável, NÃO mencione
-6. LINKS: Mantenha os links originais da CVC quando fornecidos
-7. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"
-8. PASSAGEIROS: Detectar corretamente (exemplo tem "2 Adultos" = "02 adultos")
+1. TÍTULO: "*Companhia ✈ Destino*" (use NOMES de cidades, não códigos).
+2. DATAS: Para período de 06/nov a 11/nov são 5 noites, não 6.
+3. REEMBOLSO: Se o texto diz "Reembolsável", NÃO mencione nada no resultado. Se diz "Não reembolsável", inclua "🏷️ Não reembolsável".
+4. LINKS: Mantenha os links originais da CVC quando fornecidos.
+5. FINALIZAÇÃO: Sempre terminar com "Valores sujeitos a confirmação e disponibilidade".
+6. PASSAGEIROS: Use o valor detectado: "${infoPassageiros}".
 
-TEMPLATE ESPECÍFICO: ${templateEspecifico}
-Use este template exatamente e substitua as variáveis pelos dados reais.`;
+Use o template '${templateEspecifico}' e siga TODAS as regras.`;
             }
             
-            console.log('v8.4: ✅ Geração de prompt concluída.');
+            console.log('v8.5: ✅ Geração de prompt concluída.');
         } catch (promptError) {
-            console.error('v8.4: ❌ Erro na geração do prompt:', promptError);
+            console.error('v8.5: ❌ Erro na geração do prompt:', promptError);
             return res.status(500).json({ success: false, error: 'Falha ao montar a requisição para a IA.', details: promptError.message, stage: 'prompt-generation' });
         }
 
         // --- Bloco de Chamada da IA ---
         try {
-            console.log('v8.4: 🤖 Iniciando chamada à IA...');
+            console.log('v8.5: 🤖 Iniciando chamada à IA...');
             iaUsada = 'gpt-4o-mini';
             const usarClaude = imagemBase64 || arquivoBase64 || temImagem || (observacoes.length + textoColado.length > 2000);
             const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Siga EXATAMENTE os templates e regras fornecidos. NUNCA invente informações que não estejam nos dados. Converta todos os códigos de aeroportos para nomes. Formate para WhatsApp. Para dicas e rankings, use informações reais do seu conhecimento sobre o destino.';
@@ -521,27 +458,27 @@ Use este template exatamente e substitua as variáveis pelos dados reais.`;
                 const responseData = await apiResponse.json();
                 resultado = responseData.choices[0].message.content;
             }
-            console.log('v8.4: ✅ Chamada à IA concluída.');
+            console.log('v8.5: ✅ Chamada à IA concluída.');
         } catch (aiError) {
-            console.error('v8.4: ❌ Erro na chamada da IA:', aiError);
+            console.error('v8.5: ❌ Erro na chamada da IA:', aiError);
             return res.status(500).json({ success: false, error: 'Falha ao comunicar com o serviço de IA.', details: aiError.message, stage: 'ai-call' });
         }
 
-        console.log('v8.4: ✅ Processamento geral concluído. Enviando resposta...');
+        console.log('v8.5: ✅ Processamento geral concluído. Enviando resposta...');
         return res.status(200).json({
             success: true,
             result: resultado,
-            metadata: { version: '8.4', ia_usada: iaUsada, destino: destinoFinal, template_usado: templateEspecifico }
+            metadata: { version: '8.5', ia_usada: iaUsada, destino: destinoFinal, template_usado: templateEspecifico }
         });
 
     } catch (error) {
         // Este é o 'catch' final para erros totalmente inesperados.
-        console.error('v8.4: ❌ Erro INESPERADO no handler principal:', error);
+        console.error('v8.5: ❌ Erro INESPERADO no handler principal:', error);
         return res.status(500).json({
             success: false,
             error: 'Ocorreu um erro inesperado no servidor.',
             details: error.message,
-            version: '8.4',
+            version: '8.5',
             stage: 'handler-main'
         });
     }
