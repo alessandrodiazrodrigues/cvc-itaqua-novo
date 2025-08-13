@@ -913,9 +913,9 @@
     
     <script>
         // ================================================================================
-        // 🔧 CONFIGURAÇÃO DA API - NOVA URL MASTER v6.0 COMPLETO
+        // 🔧 CONFIGURAÇÃO DA API - PROXY VERCEL (SOLUÇÃO DEFINITIVA)
         // ================================================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxaWNtWWCLFlx1_TUJNwZ2YcHrQcTvN3OrdFyDzedg2zmvVa9xmTdWIKDRoOWwAfYp1/exec';
+        const API_URL = '/api/orbiuns'; // API Proxy no próprio Vercel
         
         let orbiunsData = [];
         let orbiunsFiltrados = [];
@@ -924,10 +924,10 @@
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema de Orbiuns CVC Itaqua v10.0 - SISTEMA MASTER COMPLETO v6.0!');
-            console.log('📡 URL da API Master v6.0 (TODOS OS SISTEMAS):', API_URL);
-            console.log('📋 Integrado: Orbiuns + Embarques + Vendas + Placar + Custos IA');
-            console.log('✅ CORS definitivamente corrigido');
+            console.log('🚀 Sistema de Orbiuns CVC Itaqua v11.0 - API PROXY DEFINITIVA!');
+            console.log('📡 Usando API Proxy Vercel (sem CORS): /api/orbiuns');
+            console.log('📋 Conecta diretamente com Google Sheets');
+            console.log('✅ CORS 100% resolvido com proxy próprio');
             
             // Carregar orbiuns ao iniciar
             carregarOrbiuns();
@@ -954,7 +954,7 @@
         // 📡 FUNÇÃO FETCH PARA API MASTER v5.0
         // ================================================================================
         async function chamarAPI(dados) {
-            console.log('📡 Enviando para API Master v5.0:', dados);
+            console.log('📡 Enviando para API Proxy Vercel:', dados);
             
             try {
                 const response = await fetch(API_URL, {
@@ -970,12 +970,12 @@
                 }
                 
                 const data = await response.json();
-                console.log('📥 Resposta da API Master v5.0:', data);
+                console.log('📥 Resposta da API Proxy:', data);
                 
                 return data;
                 
             } catch (error) {
-                console.error('❌ Erro na comunicação com API Master v5.0:', error);
+                console.error('❌ Erro na comunicação com API Proxy:', error);
                 mostrarAlertaErro(`Erro de conexão: ${error.message}`);
                 throw error;
             }
