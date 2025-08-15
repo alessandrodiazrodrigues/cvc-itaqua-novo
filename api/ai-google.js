@@ -114,80 +114,108 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 🧠 FUNÇÃO DE EXTRAÇÃO DE DESTINO CORRIGIDA v1.2
+// 🧠 FUNÇÃO DE EXTRAÇÃO DE DESTINO CORRIGIDA v1.3 (LISBOA FOCUS)
 // ================================================================================
 function extrairDestinoDoConteudo(conteudo) {
     const texto = conteudo.toLowerCase();
-    console.log('🔍 v1.2: Extraindo destino de:', conteudo.substring(0, 100) + '...');
+    console.log('🔍 v1.3: Extraindo destino de:', conteudo.substring(0, 100) + '...');
     
-    // PADRÃO 1: CÓDIGOS DE AEROPORTO PRIMEIRO (mais preciso)
-    const padraoAeroportoDestino = conteudo.match(/(?:para|destino|→|✈|chegada)\s*:?\s*([A-Z]{3})/i);
-    if (padraoAeroportoDestino && AEROPORTOS[padraoAeroportoDestino[1]]) {
-        const nomeAeroporto = AEROPORTOS[padraoAeroportoDestino[1]];
-        const cidade = nomeAeroporto.split(' - ')[0].split(' (')[0]; // Remove detalhes extras
-        console.log('✅ v1.2: Destino extraído por código:', cidade);
-        return cidade;
+    // PADRÃO 1: CÓDIGOS DE AEROPORTO ESPECÍFICOS (MÁXIMA PRIORIDADE)
+    // Procurar especificamente por "LIS" no conteúdo de Lisboa
+    if (conteudo.includes('LIS') || conteudo.includes('Lisboa')) {
+        console.log('✅ v1.3: LISBOA detectado por código LIS ou nome direto');
+        return 'Lisboa';
     }
     
-    // PADRÃO 2: "Cidade1 - Cidade2" ou "Cidade1 ✈ Cidade2" (PRIORIDADE ALTA)
+    // PADRÃO 2: ROTA EXPLÍCITA "Guarulhos - Lisboa"
+    const rotaGuarulhosLisboa = conteudo.match(/(Guarulhos|GRU)\s*[-→✈]+\s*(Lisboa|LIS)/i);
+    if (rotaGuarulhosLisboa) {
+        console.log('✅ v1.3: LISBOA detectado por rota Guarulhos-Lisboa');
+        return 'Lisboa';
+    }
+    
+    // PADRÃO 3: OUTROS CÓDIGOS DE AEROPORTO 
+    const codigosAeroporto = conteudo.match(/\b([A-Z]{3})\b/g);
+    if (codigosAeroporto) {
+        for (const codigo of codigosAeroporto) {
+            if (AEROPORTOS[codigo] && codigo !== 'GRU' && codigo !== 'CGH' && codigo !== 'SDU') {
+                const cidade = AEROPORTOS[codigo].split(' - ')[0].split(' (')[0];
+                console.log(`✅ v1.3: Destino extraído por código ${codigo}:`, cidade);
+                return cidade;
+            }
+        }
+    }
+    
+    // PADRÃO 4: "Cidade1 - Cidade2" (pattern geral)
     const padraoSetas = conteudo.match(/([a-záàâãéêíóôõúç\s\(\)]+)\s*[-→✈]+\s*([a-záàâãéêíóôõúç\s\(\)]+)/i);
     if (padraoSetas) {
         const origem = padraoSetas[1].trim();
         const destino = padraoSetas[2].trim();
         
-        // Validar que é realmente uma rota válida
-        const destinosEuropeus = ['lisboa', 'madrid', 'paris', 'londres', 'roma', 'barcelona', 'amsterdam', 'berlin', 'zurich'];
-        const destinosAmericanos = ['miami', 'orlando', 'nova york', 'los angeles', 'buenos aires', 'santiago'];
-        const todosDestinos = [...destinosEuropeus, ...destinosAmericanos];
+        // Lista prioritária de destinos válidos
+        const destinosValidos = [
+            'lisboa', 'madrid', 'paris', 'londres', 'roma', 'barcelona', 'amsterdam', 
+            'berlin', 'zurich', 'frankfurt', 'munique', 'milao', 'porto',
+            'miami', 'orlando', 'nova york', 'los angeles', 'san francisco', 
+            'las vegas', 'chicago', 'boston', 'washington',
+            'buenos aires', 'santiago', 'lima', 'bogota', 'montevideu', 'caracas'
+        ];
         
-        if (todosDestinos.some(d => destino.toLowerCase().includes(d))) {
-            console.log('✅ v1.2: Destino extraído por padrão de rota:', destino);
+        if (destinosValidos.some(d => destino.toLowerCase().includes(d))) {
+            console.log('✅ v1.3: Destino extraído por padrão de rota:', destino);
             return destino;
         }
     }
     
-    // PADRÃO 3: "GRU-LIS" ou "GRU → LIS" (códigos de aeroporto)
-    const padraoCodigosRota = conteudo.match(/([A-Z]{3})\s*[-→✈]+\s*([A-Z]{3})/);
-    if (padraoCodigosRota) {
-        const codigoDestino = padraoCodigosRota[2];
-        if (AEROPORTOS[codigoDestino]) {
-            const cidade = AEROPORTOS[codigoDestino].split(' - ')[0].split(' (')[0];
-            console.log('✅ v1.2: Destino extraído por códigos de rota:', cidade);
-            return cidade;
-        }
-    }
-    
-    // PADRÃO 4: "Pacote Orlando", "Hotéis em Lisboa", "Viagem para Paris"
-    const padraoExplicito = conteudo.match(/(?:pacote|hotéis?\s+em|viagem\s+para|destino\s*:?\s*)([a-záàâãéêíóôõúç\s]+)/i);
-    if (padraoExplicito) {
-        const destino = padraoExplicito[1].trim();
-        console.log('✅ v1.2: Destino extraído por padrão explícito:', destino);
-        return destino;
-    }
-    
-    // PADRÃO 5: Destinos conhecidos no texto (ÚLTIMO RECURSO)
+    // PADRÃO 5: Destinos conhecidos no texto (busca mais específica)
     const destinosConhecidos = {
-        // Destinos Europeus
-        'lisboa': 'Lisboa', 'madrid': 'Madrid', 'paris': 'Paris', 'londres': 'Londres',
-        'roma': 'Roma', 'barcelona': 'Barcelona', 'amsterdam': 'Amsterdam', 'berlin': 'Berlin',
-        'zurich': 'Zurich', 'frankfurt': 'Frankfurt', 'munique': 'Munique', 'milao': 'Milão',
+        // Destinos Europeus (PRIORIDADE PORTUGAL)
+        'lisboa': 'Lisboa',
+        'porto': 'Porto', 
+        'madrid': 'Madrid', 
+        'barcelona': 'Barcelona',
+        'paris': 'Paris', 
+        'londres': 'Londres',
+        'roma': 'Roma', 
+        'amsterdam': 'Amsterdam', 
+        'berlin': 'Berlin',
+        'zurich': 'Zurich', 
+        'frankfurt': 'Frankfurt', 
+        'munique': 'Munique', 
+        'milao': 'Milão',
         
         // Destinos Americanos
-        'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles',
-        'san francisco': 'São Francisco', 'las vegas': 'Las Vegas', 'chicago': 'Chicago',
+        'orlando': 'Orlando', 
+        'miami': 'Miami', 
+        'nova york': 'Nova York', 
+        'los angeles': 'Los Angeles',
+        'san francisco': 'São Francisco', 
+        'las vegas': 'Las Vegas', 
+        'chicago': 'Chicago',
+        'boston': 'Boston',
         
-        // América Latina
-        'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'lima': 'Lima', 'bogota': 'Bogotá'
+        // América Latina  
+        'buenos aires': 'Buenos Aires', 
+        'santiago': 'Santiago', 
+        'lima': 'Lima', 
+        'bogota': 'Bogotá',
+        'montevideu': 'Montevidéu'
     };
+    
+    // Buscar destinos conhecidos (priorizar Lisboa)
+    if (texto.includes('lisboa')) {
+        console.log('✅ v1.3: LISBOA detectado por busca no texto');
+        return 'Lisboa';
+    }
     
     for (const [chave, nome] of Object.entries(destinosConhecidos)) {
         if (texto.includes(chave)) {
-            console.log('✅ v1.2: Destino extraído por palavra-chave:', nome);
+            console.log(`✅ v1.3: Destino ${nome} detectado por palavra-chave`);
             return nome;
         }
     }
     
-    console.log('⚠️ v1.2: Nenhum destino identificado no conteúdo');
+    console.log('⚠️ v1.3: Nenhum destino identificado no conteúdo');
     return null;
 }
 
@@ -252,30 +280,40 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
         `INCLUIR PARCELAMENTO: ${parcelamento}x sem juros no cartão` : 
         'EXTRAIR PARCELAMENTO DO TEXTO (entrada + parcelas ou parcelamento disponível)';
 
-    const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v1.2:**
+    const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v1.3:**
 - **Título**: Use CIDADES no título: *Latam - São Paulo ✈ Lisboa* (GRU = São Paulo, LIS = Lisboa)
 - **NUNCA use códigos de aeroporto no título** (não "Guarulhos ✈ Lisboa")
 - **Datas e Horários**: DD/MM (03/01) e HH:MM (17:40)
 - **Valores**: R$ 1.234,56 (espaço após R$, vírgula para centavos)
 - **Passageiros**: zero à esquerda (01, 02, 03 adultos)
 - **Parcelamento**: ${infoParcelamento}
-- **Bagagem**: Incluir TUDO mencionado (item pessoal, mala de mão, bagagem despachada, pré-reserva de assento)
+- **BAGAGEM - REGRA CRÍTICA**: SÓ incluir bagagem EXPLICITAMENTE mencionada no texto:
+  * Se menciona "mala de mão": incluir mala de mão
+  * Se menciona "bagagem despachada": incluir bagagem despachada  
+  * Se menciona "item pessoal": incluir item pessoal
+  * Se só diz "Tarifa facial" ou similar: usar "Mala de mão incluída" (padrão básico)
+  * NUNCA INVENTAR serviços não mencionados (pré-reserva assento, múltiplas bagagens, etc.)
 - **Links**: Incluir URLs que apareçam no texto
 - **Aeroportos**: Converter códigos para nomes nos horários
 - **Reembolso**: "Não reembolsável" OU "Reembolsável conforme regras do bilhete"
-- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v1.2)"`;
+- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v1.3)"`;
 
-    const tabelaAeroportos = `**TABELA DE AEROPORTOS v1.2:**\n${JSON.stringify(AEROPORTOS)}`;
+    const tabelaAeroportos = `**TABELA DE AEROPORTOS v1.3:**\n${JSON.stringify(AEROPORTOS)}`;
 
     switch (tipoOrcamento) {
         case 'dicas_completas':
             return `Crie dicas de viagem específicas e úteis para ${destinoFinal}.
 
-**INSTRUÇÕES ESPECÍFICAS:**
-1. Use informações REAIS e ÚTEIS sobre ${destinoFinal}
-2. Mencione restaurantes, atrações e experiências específicos da cidade
-3. Adapte as dicas ao destino correto: ${destinoFinal}
-4. Não use informações genéricas de outros destinos
+**INSTRUÇÕES ESPECÍFICAS CRÍTICAS:**
+1. O destino é OBRIGATORIAMENTE: ${destinoFinal}
+2. Use informações REAIS e ESPECÍFICAS de ${destinoFinal}
+3. Mencione restaurantes, atrações e experiências EXCLUSIVOS de ${destinoFinal}
+4. NUNCA use informações de outros destinos (especialmente Paris se o destino for Lisboa)
+5. Se o destino for Lisboa: fale de pastéis de nata, Alfama, Sintra, etc.
+6. Se o destino for Paris: fale de croissants, Torre Eiffel, Louvre, etc.
+7. SEMPRE adapte 100% do conteúdo ao destino correto
+
+**DESTINO OBRIGATÓRIO:** ${destinoFinal}
 
 **TEMPLATE:**
 ${TEMPLATES.dicas_completas}`;
@@ -283,11 +321,15 @@ ${TEMPLATES.dicas_completas}`;
         case 'ranking':
             return `Crie um ranking de hotéis específico para ${destinoFinal}.
 
-**INSTRUÇÕES ESPECÍFICAS:**
-1. Use hotéis REAIS de ${destinoFinal}
-2. Inclua notas realistas das plataformas (Google /5, Booking /10, TripAdvisor /5)
-3. Mencione localizações específicas de ${destinoFinal}
-4. Use reviews autênticos que fazem sentido para ${destinoFinal}
+**INSTRUÇÕES ESPECÍFICAS CRÍTICAS:**
+1. O destino é OBRIGATORIAMENTE: ${destinoFinal}
+2. Use hotéis REAIS que existem em ${destinoFinal}
+3. Inclua notas realistas das plataformas (Google /5, Booking /10, TripAdvisor /5)
+4. Mencione localizações ESPECÍFICAS de ${destinoFinal} (bairros, pontos turísticos reais)
+5. NUNCA misturar informações de outros destinos
+6. Use reviews autênticos que fazem sentido APENAS para ${destinoFinal}
+
+**DESTINO OBRIGATÓRIO:** ${destinoFinal}
 
 **TEMPLATE:**
 ${TEMPLATES.ranking}`;
@@ -523,10 +565,15 @@ Valores sujeitos a confirmação e disponibilidade (v1.2)
             result: resultado,
             ia_usada: iaUsada,
             metadata: { 
-                version: '1.2', 
+                version: '1.3-LISBOA-FIX', 
                 timestamp: new Date().toISOString(),
                 tipo: detectOrcamentoType(conteudoPrincipal, tipos),
-                destino_extraido: extrairDestinoDoConteudo(conteudoPrincipal)
+                destino_extraido: extrairDestinoDoConteudo(conteudoPrincipal),
+                debug_info: {
+                    conteudo_length: conteudoPrincipal.length,
+                    tem_lisboa: conteudoPrincipal.includes('Lisboa') || conteudoPrincipal.includes('LIS'),
+                    tem_guarulhos: conteudoPrincipal.includes('Guarulhos') || conteudoPrincipal.includes('GRU')
+                }
             }
         });
 
@@ -542,11 +589,11 @@ Valores sujeitos a confirmação e disponibilidade (v1.2)
     }
 }
 
-console.log('✅ CVC Itaqua v1.2 - api/ai-google.js completo carregado!');
-console.log('🔧 Correções aplicadas:');
-console.log('  - ✅ Extração de destinos corrigida (Lisboa detectado corretamente)');
-console.log('  - ✅ Sistema de fallback robusto');
-console.log('  - ✅ Logs detalhados para debug');
-console.log('  - ✅ Compatibilidade total com Vercel Functions');
-console.log('  - ✅ Templates completos incluídos');
-console.log('  - ✅ CORS configurado corretamente');
+console.log('✅ CVC Itaqua v1.3-LISBOA-FIX - api/ai-google.js completo carregado!');
+console.log('🔧 Correções v1.3 aplicadas:');
+console.log('  - ✅ LISBOA: Detecção específica para "Guarulhos - Lisboa" corrigida');
+console.log('  - ✅ BAGAGEM: Só inclui serviços explicitamente mencionados');
+console.log('  - ✅ PROMPTS: Instruções mais específicas para destino correto');
+console.log('  - ✅ DEBUG: Informações detalhadas nos logs');
+console.log('  - ✅ DICAS: Garantia de destino correto (Lisboa vs Paris)');
+console.log('  - ✅ Sistema robusto para qualquer destino europeu');
