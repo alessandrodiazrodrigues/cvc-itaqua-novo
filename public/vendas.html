@@ -765,11 +765,11 @@
                         </div>
                         
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-success" onclick="adicionarRecibo()">
+                            <button type="button" class="btn btn-success" id="btnAdicionarRecibo">
                                 <i class="fas fa-plus-circle"></i> Adicionar Recibo
                             </button>
                             <button type="button" id="btnRemoverRecibo" class="btn btn-danger ms-2" 
-                                    onclick="removerUltimoRecibo()" style="display: none;">
+                                    style="display: none;">
                                 <i class="fas fa-minus-circle"></i> Remover Último
                             </button>
                         </div>
@@ -859,6 +859,9 @@
             // Radio/Checkbox visual
             configurarRadioCheckbox();
             
+            // Configurar eventos dos botões
+            configurarEventos();
+            
             // Adicionar primeiro recibo automaticamente
             adicionarRecibo();
             
@@ -874,6 +877,26 @@
             // Carregar estatísticas
             carregarEstatisticas();
         });
+
+        // ================================================================================
+        // 🎯 CONFIGURAR EVENTOS DOS BOTÕES
+        // ================================================================================
+
+        function configurarEventos() {
+            // Botão adicionar recibo
+            const btnAdicionar = document.getElementById('btnAdicionarRecibo');
+            if (btnAdicionar) {
+                btnAdicionar.addEventListener('click', adicionarRecibo);
+            }
+            
+            // Botão remover último recibo
+            const btnRemover = document.getElementById('btnRemoverRecibo');
+            if (btnRemover) {
+                btnRemover.addEventListener('click', removerUltimoRecibo);
+            }
+            
+            console.log('✅ Eventos dos botões configurados');
+        }
 
         // ================================================================================
         // 🌐 VERIFICAÇÃO DE CONEXÃO
@@ -959,7 +982,7 @@
                     <div class="recibo-number">
                         <i class="fas fa-receipt"></i> Recibo ${contadorRecibos}
                     </div>
-                    <button type="button" class="btn-remove-recibo" onclick="removerRecibo(${contadorRecibos})">
+                    <button type="button" class="btn-remove-recibo" data-recibo="${contadorRecibos}">
                         <i class="fas fa-trash"></i> Remover
                     </button>
                 </div>
@@ -992,7 +1015,7 @@
                         <label class="form-label">
                             <i class="fas fa-tag"></i> Tipo de Serviço
                         </label>
-                        <select class="form-select" name="tipo[]" onchange="toggleExtras(this, ${contadorRecibos})" required>
+                        <select class="form-select" name="tipo[]" data-recibo="${contadorRecibos}" required>
                             <option value="">Selecione...</option>
                             ${TIPOS_SERVICO.map(tipo => `<option value="${tipo}">${tipo}</option>`).join('')}
                         </select>
@@ -1071,7 +1094,7 @@
                         <label class="form-label">
                             <i class="fas fa-route"></i> É Multi Trecho?
                         </label>
-                        <select class="form-select" name="multiTrecho[]" onchange="toggleMulti(this, ${contadorRecibos})">
+                        <select class="form-select" name="multiTrecho[]" data-recibo="${contadorRecibos}">
                             <option value="Não">Não</option>
                             <option value="Sim">Sim</option>
                         </select>
@@ -1081,10 +1104,10 @@
                     <div class="multi-datas" id="multi-${contadorRecibos}">
                         <h6><i class="fas fa-calendar-plus"></i> Datas Intermediárias</h6>
                         <div class="datas-extras" id="datas-extras-${contadorRecibos}"></div>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="adicionarData(${contadorRecibos})">
+                        <button type="button" class="btn btn-sm btn-primary" data-action="adicionar-data" data-recibo="${contadorRecibos}">
                             <i class="fas fa-plus"></i> Adicionar Data
                         </button>
-                        <button type="button" class="btn btn-sm btn-secondary ms-2" onclick="removerData(${contadorRecibos})">
+                        <button type="button" class="btn btn-sm btn-secondary ms-2" data-action="remover-data" data-recibo="${contadorRecibos}">
                             <i class="fas fa-minus"></i> Remover Data
                         </button>
                     </div>
@@ -1100,9 +1123,55 @@
             `;
             
             container.appendChild(reciboDiv);
+            
+            // Configurar eventos específicos deste recibo
+            configurarEventosRecibo(reciboDiv, contadorRecibos);
+            
             atualizarBotaoRemover();
             
             console.log(`✅ Recibo ${contadorRecibos} adicionado`);
+        }
+
+        function configurarEventosRecibo(reciboDiv, reciboId) {
+            // Botão remover recibo
+            const btnRemover = reciboDiv.querySelector('.btn-remove-recibo');
+            if (btnRemover) {
+                btnRemover.addEventListener('click', function() {
+                    removerRecibo(reciboId);
+                });
+            }
+            
+            // Select tipo de serviço
+            const selectTipo = reciboDiv.querySelector('select[name="tipo[]"]');
+            if (selectTipo) {
+                selectTipo.addEventListener('change', function() {
+                    toggleExtras(this, reciboId);
+                });
+            }
+            
+            // Select multi trecho
+            const selectMulti = reciboDiv.querySelector('select[name="multiTrecho[]"]');
+            if (selectMulti) {
+                selectMulti.addEventListener('change', function() {
+                    toggleMulti(this, reciboId);
+                });
+            }
+            
+            // Botões de data
+            const btnAdicionarData = reciboDiv.querySelector('[data-action="adicionar-data"]');
+            if (btnAdicionarData) {
+                btnAdicionarData.addEventListener('click', function() {
+                    adicionarData(reciboId);
+                });
+            }
+            
+            const btnRemoverData = reciboDiv.querySelector('[data-action="remover-data"]');
+            if (btnRemoverData) {
+                btnRemoverData.addEventListener('click', function() {
+                    removerData(reciboId);
+                });
+            }
+        }
         }
 
         function removerRecibo(numero) {
