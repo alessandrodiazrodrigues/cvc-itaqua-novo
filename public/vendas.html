@@ -812,11 +812,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        console.log('🔄 Iniciando carregamento do script...');
+        
         // ================================================================================
         // 🔧 CONFIGURAÇÕES - CORS CORRIGIDO
         // ================================================================================
         
         const API_URL = 'https://script.google.com/macros/s/AKfycby0XtmImbxABi_ui-aItYqk1_a3zgXToHrtWPar_TY5D7WeVptKyu9Dw122q1xqdaKZ-g/exec';
+        
+        console.log('✅ Configurações carregadas');
+        console.log('🔗 API URL:', API_URL);
         
         const COMPANHIAS_AEREAS = [
             'LATAM', 'AZUL', 'GOL', 'VOEPASS',
@@ -883,16 +888,29 @@
         // ================================================================================
 
         function configurarEventos() {
+            console.log('🎯 Configurando eventos dos botões...');
+            
             // Botão adicionar recibo
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
+            console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
+            
             if (btnAdicionar) {
-                btnAdicionar.addEventListener('click', adicionarRecibo);
+                btnAdicionar.addEventListener('click', function() {
+                    console.log('🖱️ Clique no botão adicionar detectado!');
+                    adicionarRecibo();
+                });
+                console.log('✅ Event listener adicionado ao botão');
+            } else {
+                console.error('❌ Botão adicionar não encontrado!');
             }
             
             // Botão remover último recibo
             const btnRemover = document.getElementById('btnRemoverRecibo');
             if (btnRemover) {
-                btnRemover.addEventListener('click', removerUltimoRecibo);
+                btnRemover.addEventListener('click', function() {
+                    console.log('🖱️ Clique no botão remover detectado!');
+                    removerUltimoRecibo();
+                });
             }
             
             console.log('✅ Eventos dos botões configurados');
@@ -970,7 +988,18 @@
         // ================================================================================
 
         function adicionarRecibo() {
+            console.log('🧾 Função adicionarRecibo chamada!');
+            
             contadorRecibos++;
+            console.log('📊 Contador de recibos:', contadorRecibos);
+            
+            const container = document.getElementById('recibosContainer');
+            if (!container) {
+                console.error('❌ Container de recibos não encontrado!');
+                return;
+            }
+            
+            console.log('✅ Container encontrado, criando recibo...');
             
             const container = document.getElementById('recibosContainer');
             const reciboDiv = document.createElement('div');
