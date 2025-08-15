@@ -1,18 +1,18 @@
-// 🚀 CVC ITAQUA v11.1 - BASEADO NA VERSÃO FUNCIONAL v11.0 + CORREÇÕES
+// 🚀 CVC ITAQUA v11.0 - LÓGICA COMPLETA BASEADA NO MANUAL OFICIAL
 // ================================================================================
-// 📑 VERSÃO ESTÁVEL COM CORREÇÕES ESPECÍFICAS
+// 📑 ÍNDICE GERAL DO SISTEMA
 // ================================================================================
-// 1. TEMPLATES DE ORÇAMENTOS (CORRIGIDOS)
+// 1. TEMPLATES DE ORÇAMENTOS (FIÉIS AOS MODELOS APROVADOS)
 // 2. TABELA DE CONVERSÃO DE AEROPORTOS
-// 3. HANDLER PRINCIPAL DA API (MANTIDO FUNCIONAL)
-// 4. PROCESSAMENTO E DETECÇÃO DE TIPO
-// 5. GERAÇÃO DE PROMPTS (MELHORADA)
+// 3. HANDLER PRINCIPAL DA API
+// 4. PROCESSAMENTO E DETECÇÃO DE TIPO (LÓGICA DO MANUAL)
+// 5. GERAÇÃO DE PROMPTS (ESPECÍFICOS POR MODELO)
 // 6. PROCESSAMENTO COM IA
 // 7. RESPOSTA FINAL
 // ================================================================================
 
 // ================================================================================
-// 1. 📋 TEMPLATES DE ORÇAMENTOS (CORRIGIDOS)
+// 1. 📋 TEMPLATES DE ORÇAMENTOS (FIÉIS AOS MODELOS APROVADOS)
 // ================================================================================
 const TEMPLATES = {
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -22,12 +22,10 @@ const TEMPLATES = {
 {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
 💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
+🎒 Bagagem: {bagagem}
 🏷️ {reembolso}
-🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade.`,
 
     aereo_conexao_detalhada: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
@@ -38,12 +36,12 @@ Valores sujeitos a confirmação e disponibilidade`,
 {detalhes_volta}
 
 💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
+💳 Pagamento: {pagamento}
+🎒 Bagagem: {bagagem}
 🏷️ {reembolso}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade.`,
 
     multiplas_opcoes_voos: `*Cotação Aéreo ✈ {destino}*
 📅 Período: {data_inicio} a {data_fim}
@@ -53,7 +51,7 @@ Abaixo estão as opções que encontramos:
 ---
 {opcoes_formatadas}
 ---
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade.`,
 
     multitrecho: `*Multitrecho - {companhias}*
 📅 Período: {data_inicio} a {data_fim}
@@ -61,11 +59,11 @@ Valores sujeitos a confirmação e disponibilidade`,
 {trechos_formatados}
 
 💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
+💳 Pagamento: {pagamento}
+🎒 Bagagem: {bagagem}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade.`,
 
     pacote_completo: `*Pacote ✈ {destino}*
 Embarque: {data_embarque}
@@ -84,7 +82,7 @@ Pacote para {passageiros}
 
 {opcoes_hoteis}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade.`,
 
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
@@ -107,44 +105,6 @@ Além de voos e hotéis, a CVC Itaqua oferece tudo para deixar sua viagem ainda 
 - Chip de celular internacional
 
 Fale comigo para adicionar esses serviços ao seu pacote!`,
-
-    ranking: `🏆 *Ranking dos Melhores Hotéis em {destino}* 🏆
-
-Confira nossa seleção especial dos hotéis mais bem avaliados:
-
-🥇 **1º LUGAR** - {hotel1}
-📍 {localizacao1}
-⭐ Google: {nota_google1}/5 | Booking: {nota_booking1}/10 | TripAdvisor: {nota_tripadvisor1}/5
-✅ {ponto_positivo1}
-💬 "{review1}"
-
-🥈 **2º LUGAR** - {hotel2}
-📍 {localizacao2}
-⭐ Google: {nota_google2}/5 | Booking: {nota_booking2}/10 | TripAdvisor: {nota_tripadvisor2}/5
-✅ {ponto_positivo2}
-💬 "{review2}"
-
-🥉 **3º LUGAR** - {hotel3}
-📍 {localizacao3}
-⭐ Google: {nota_google3}/5 | Booking: {nota_booking3}/10 | TripAdvisor: {nota_tripadvisor3}/5
-✅ {ponto_positivo3}
-💬 "{review3}"
-
-🏅 **4º LUGAR** - {hotel4}
-📍 {localizacao4}
-⭐ Google: {nota_google4}/5 | Booking: {nota_booking4}/10 | TripAdvisor: {nota_tripadvisor4}/5
-✅ {ponto_positivo4}
-💬 "{review4}"
-
-🏅 **5º LUGAR** - {hotel5}
-📍 {localizacao5}
-⭐ Google: {nota_google5}/5 | Booking: {nota_booking5}/10 | TripAdvisor: {nota_tripadvisor5}/5
-✅ {ponto_positivo5}
-💬 "{review5}"
-
----
-✈️ *Quer reservar algum desses hotéis?*
-Fale comigo para verificar disponibilidade e fazer sua reserva com as melhores condições!`
 };
 
 // ================================================================================
@@ -167,7 +127,7 @@ const AEROPORTOS = {
 };
 
 // ================================================================================
-// 3. 🎯 HANDLER PRINCIPAL DA API v11.1 (MANTIDO FUNCIONAL)
+// 3. 🎯 HANDLER PRINCIPAL DA API v11.0
 // ================================================================================
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -175,21 +135,19 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method === 'GET') return res.status(200).json({ success: true, status: 'operational', version: '11.1', message: 'API CVC Itaqua v11.1 - Versão Corrigida' });
+    if (req.method === 'GET') return res.status(200).json({ success: true, status: 'operational', version: '11.0', message: 'API CVC Itaqua com Lógica do Manual' });
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Método não suportado.' });
 
     try {
         if (!req.body) {
-            console.error('v11.1: ❌ Erro: Requisição sem corpo.');
+            console.error('v11.0: ❌ Erro: Requisição sem corpo.');
             return res.status(400).json({ success: false, error: 'Requisição inválida: corpo não encontrado.' });
         }
         
-        console.log('v11.1: 📥 Início do processamento POST.');
+        console.log('v11.0: 📥 Início do processamento POST.');
         const {
             observacoes = '', textoColado = '', destino = '',
-            adultos = 1, criancas = 0, bebes = 0,
-            tipos = [], parcelamento = '',
-            imagemBase64 = null, arquivoBase64 = null, temImagem = false
+            tipos = [], imagemBase64 = null, arquivoBase64 = null, temImagem = false
         } = req.body;
 
         let prompt, resultado, iaUsada;
@@ -197,26 +155,19 @@ export default async function handler(req, res) {
         
         // --- Bloco de Geração de Prompt ---
         try {
-            console.log('v11.1: 📝 Iniciando geração de prompt...');
+            console.log('v11.0: 📝 Iniciando geração de prompt...');
             const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
+            prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino);
             
-            // Extrair destino automaticamente se não fornecido
-            let destinoFinal = destino;
-            if (!destinoFinal) {
-                destinoFinal = extrairDestinoDoConteudo(conteudoPrincipal);
-            }
-            
-            prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destinoFinal, parcelamento);
-            
-            console.log(`v11.1: ✅ Tipo detectado: ${tipoOrcamento}. Prompt gerado.`);
+            console.log(`v11.0: ✅ Tipo detectado: ${tipoOrcamento}. Prompt gerado.`);
         } catch (promptError) {
-            console.error('v11.1: ❌ Erro na geração do prompt:', promptError);
+            console.error('v11.0: ❌ Erro na geração do prompt:', promptError);
             return res.status(500).json({ success: false, error: 'Falha ao montar a requisição para a IA.', details: promptError.message, stage: 'prompt-generation' });
         }
 
         // --- Bloco de Chamada da IA ---
         try {
-            console.log('v11.1: 🤖 Iniciando chamada à IA...');
+            console.log('v11.0: 🤖 Iniciando chamada à IA...');
             iaUsada = 'gpt-4o-mini';
             const usarClaude = imagemBase64 || arquivoBase64 || temImagem || (conteudoPrincipal.length > 2500);
             const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Sua única função é analisar os dados brutos e gerar um orçamento formatado para WhatsApp, seguindo o modelo, o exemplo e as regras fornecidas no prompt do usuário. Seja preciso e atento aos detalhes. Sua resposta deve ser apenas o texto final, sem comentários ou explicações.';
@@ -236,120 +187,159 @@ export default async function handler(req, res) {
                 const responseData = await apiResponse.json();
                 resultado = responseData.choices[0].message.content;
             }
-            console.log('v11.1: ✅ Chamada à IA concluída.');
+            console.log('v11.0: ✅ Chamada à IA concluída.');
         } catch (aiError) {
-            console.error('v11.1: ❌ Erro na chamada da IA:', aiError);
+            console.error('v11.0: ❌ Erro na chamada da IA:', aiError);
             return res.status(500).json({ success: false, error: 'Falha ao comunicar com o serviço de IA.', details: aiError.message, stage: 'ai-call' });
         }
 
-        // Limpar resultado
-        resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
-
-        console.log('v11.1: ✅ Processamento geral concluído. Enviando resposta...');
+        console.log('v11.0: ✅ Processamento geral concluído. Enviando resposta...');
         return res.status(200).json({
             success: true,
             result: resultado,
-            metadata: { version: '11.1', ia_usada: iaUsada, tipo: detectOrcamentoType(conteudoPrincipal, tipos) }
+            metadata: { version: '11.0', ia_usada: iaUsada }
         });
 
     } catch (error) {
-        console.error('v11.1: ❌ Erro INESPERADO no handler principal:', error);
+        console.error('v11.0: ❌ Erro INESPERADO no handler principal:', error);
         return res.status(500).json({
             success: false,
             error: 'Ocorreu um erro inesperado no servidor.',
             details: error.message,
-            version: '11.1',
+            version: '11.0',
             stage: 'handler-main'
         });
     }
 }
 
 // ================================================================================
-// 4. 🕵️‍♂️ FUNÇÃO DE DETECÇÃO DE TIPO (MELHORADA)
+// 4. 🕵️‍♂️ FUNÇÃO DE DETECÇÃO DE TIPO (LÓGICA DO MANUAL)
 // ================================================================================
 function detectOrcamentoType(conteudoPrincipal, tipos) {
     const conteudoLower = conteudoPrincipal.toLowerCase();
     
-    if (tipos.includes('Dicas')) return 'dicas_completas';
-    if (tipos.includes('Ranking') || conteudoLower.includes('ranking')) return 'ranking';
+    if (tipos.includes('Dicas')) return 'dicas';
     if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio')) return 'cruzeiro';
     if (conteudoLower.includes('multitrecho') || (conteudoLower.match(/trecho \d/gi) || []).length > 1) return 'multitrecho';
     if ((conteudoPrincipal.match(/Total \(/gi) || []).length > 1 || (conteudoPrincipal.match(/OPÇÃO \d/gi) || []).length > 1 || (conteudoPrincipal.match(/Plano \d/gi) || []).length > 1) return 'multiplas_opcoes_voos';
     if (tipos.includes('Hotel') && tipos.includes('Aéreo')) return 'pacote_completo';
     if (conteudoLower.includes('conexão em') && conteudoLower.includes('espera')) return 'aereo_conexao_detalhada';
     
+    // Padrão para voo simples se nenhuma outra condição for atendida
     return 'aereo_simples';
 }
 
 // ================================================================================
-// 5. 🧠 FUNÇÃO DE EXTRAÇÃO DE DESTINO
+// 5. 📝 FUNÇÃO DE GERAÇÃO DE PROMPTS (ESPECÍFICOS POR MODELO)
 // ================================================================================
-function extrairDestinoDoConteudo(conteudo) {
-    const texto = conteudo.toLowerCase();
-    
-    // PADRÃO 1: "São Paulo - Lisboa" ou "São Paulo ✈ Lisboa"
-    const padraoSetas = conteudo.match(/([a-záàâãéêíóôõúç\s]+)\s*[→✈-]+\s*([a-záàâãéêíóôõúç\s]+)/i);
-    if (padraoSetas) {
-        return padraoSetas[2].trim();
-    }
-    
-    // PADRÃO 2: Códigos de aeroporto de destino
-    const codigosDestino = conteudo.match(/(?:para|destino|chegada)\s*:?\s*([A-Z]{3})/i);
-    if (codigosDestino && AEROPORTOS[codigosDestino[1]]) {
-        const nomeAeroporto = AEROPORTOS[codigosDestino[1]];
-        return nomeAeroporto.split(' - ')[0];
-    }
-    
-    // PADRÃO 3: Destinos conhecidos
-    const destinosComuns = ['orlando', 'miami', 'lisboa', 'madrid', 'paris', 'londres', 'roma', 'barcelona'];
-    for (const destino of destinosComuns) {
-        if (texto.includes(destino)) {
-            return destino.charAt(0).toUpperCase() + destino.slice(1);
-        }
-    }
-    
-    return null;
-}
-
-// ================================================================================
-// 6. 📝 FUNÇÃO DE GERAÇÃO DE PROMPTS (MELHORADA)
-// ================================================================================
-function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento) {
+function generatePrompt(tipoOrcamento, conteudoPrincipal, destino) {
+    let prompt = '';
     let destinoFinal = destino || 'EXTRAIR DO CONTEÚDO';
-    let infoParcelamento = parcelamento ? `INCLUIR PARCELAMENTO: ${parcelamento}x sem juros no cartão` : 'EXTRAIR PARCELAMENTO DO TEXTO SE HOUVER';
 
-    const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO:**
-- **Título**: Use CIDADES no título: *Latam - São Paulo ✈ Lisboa* (GRU = São Paulo, não "Guarulhos")
-- **Datas e Horários**: DD/MM e HH:MM
-- **Valores**: R$ 1.234,56
-- **Passageiros**: zero à esquerda (01, 02, 03)
-- **Parcelamento**: ${infoParcelamento}
-- **Bagagem**: Seja específico - inclua TUDO mencionado (item pessoal, mala de mão, bagagem despachada, assento)
-- **Links**: Incluir URLs que apareçam no texto
-- **Aeroportos**: Converter códigos para nomes
-- **Finalização**: "Valores sujeitos a confirmação e disponibilidade"`;
+    const regrasGerais = `**REGRAS GERAIS DE FORMATAÇÃO (SEMPRE SEGUIR):**
+- **Título**: Use o formato \`*{Companhia} - {Cidade Origem} ✈ {Cidade Destino}*\`. NUNCA use códigos de aeroporto no título.
+- **Datas e Horários**: Formate datas como \`DD/MM\` e horários como \`HH:MM\`.
+- **Passageiros**: Use zero à esquerda e idades. Ex: \`02 adultos + 01 criança (7 anos)\`.
+- **Pagamento**: Use "Primeira parcela" em vez de "Entrada".
+- **Bagagem**: Use os termos exatos do manual: "Só mala de mão incluída", "Mala de mão + bagagem despachada", etc.
+- **Reembolso**: Use "Não reembolsável" ou "Reembolsável conforme regras do bilhete".
+- **Links**: Limpe o texto extra, deixando apenas a URL.
+- **Aeroportos**: Converta TODOS os códigos de aeroporto para nomes completos usando a tabela fornecida.
+- **Finalização**: SEMPRE termine com "Valores sujeitos a confirmação e disponibilidade."`;
 
-    const tabelaAeroportos = `**TABELA DE AEROPORTOS:**\n${JSON.stringify(AEROPORTOS)}`;
+    const tabelaAeroportos = `**TABELA DE AEROPORTOS PARA CONSULTA:**\n${JSON.stringify(AEROPORTOS)}`;
 
     switch (tipoOrcamento) {
-        case 'dicas_completas':
-            return `Crie dicas de viagem para ${destinoFinal}, usando o template. Preencha com informações reais e úteis.\n\n**TEMPLATE:**\n${TEMPLATES.dicas_completas}`;
+        case 'dicas':
+            return `Sua tarefa é criar um texto com dicas de viagem para ${destinoFinal}, usando o template 'dicas_completas'. Preencha cada campo com informações REAIS e úteis. Mantenha a seção final da CVC exatamente como está. Sua resposta final deve ser APENAS o texto do template preenchido.\n\n**TEMPLATE:**\n${TEMPLATES.dicas_completas}`;
 
-        case 'ranking':
-            return `Crie um ranking de hotéis para ${destinoFinal}, usando o template. Use notas reais das plataformas.\n\n**TEMPLATE:**\n${TEMPLATES.ranking}`;
-
-        default:
-            return `Converta os dados brutos em um orçamento formatado para WhatsApp.
+        case 'multitrecho':
+            return `Sua tarefa é converter os dados brutos de uma cotação MULTITRECHO em um orçamento formatado para WhatsApp.
 
 **DADOS BRUTOS:**
 ${conteudoPrincipal}
 
-**TEMPLATE:**
-${TEMPLATES[tipoOrcamento] || TEMPLATES.aereo_simples}
+**TEMPLATE A SER PREENCHIDO:**
+${TEMPLATES.multitrecho}
 
-${regrasGerais}
-${tabelaAeroportos}`;
+**INSTRUÇÕES:**
+1.  **IDENTIFIQUE OS TRECHOS**: Encontre e liste CADA trecho da viagem (Trecho 1, 2, 3, etc.).
+2.  **FORMATE CADA TRECHO**: Para cada um, formate a linha do voo como: \`*Trecho X:* {Origem} → {Destino}\\n{Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({Tipo de Voo})\`.
+3.  **EXTRAIA DADOS GERAIS**: Encontre o valor total, a forma de pagamento, a política de bagagem e o link.
+${regrasGerais}\n${tabelaAeroportos}`;
+
+        case 'multiplas_opcoes_voos':
+            return `Sua tarefa é converter os dados brutos de uma cotação com MÚLTIPLAS OPÇÕES de voos em um único orçamento formatado para WhatsApp.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**MODELO DE SAÍDA / EXEMPLO:**
+*Cotação Aéreo ✈ Lisboa*
+📅 Período: 11/07 a 23/07
+👥 Passageiros: 04 adultos e 01 criança
+
+Abaixo estão as opções que encontramos:
+---
+*OPÇÃO 1 - Iberia (Com bagagem despachada)*
+
+11/07 - Guarulhos 19:15 / Lisboa 16:05 (com conexão)
+--
+23/07 - Lisboa 08:25 / Guarulhos 17:35 (com conexão)
+
+💰 **Valor:** R$ 28.975,58
+💳 **Pagamento:** Primeira parcela de R$ 8.698,70 + 4x de R$ 5.069,22
+🏷️ Não reembolsável
+🔗 https://www.cvc.com.br/link-exemplo-1
+---
+Valores sujeitos a confirmação e disponibilidade.
+
+**INSTRUÇÕES:**
+1.  **CABEÇALHO GERAL**: Crie o cabeçalho com o destino, período e passageiros.
+2.  **PARA CADA OPÇÃO**: Crie um título claro, formate os voos, extraia valor, pagamento, reembolso e o link limpo.
+3.  **BAGAGEM**: Analise CADA opção para determinar a bagagem e mencione no título da opção.
+${regrasGerais}\n${tabelaAeroportos}`;
+
+        case 'aereo_conexao_detalhada':
+             return `Sua tarefa é converter os dados brutos de um voo com CONEXÃO DETALHADA em um orçamento formatado.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**TEMPLATE A SER PREENCHIDO:**
+${TEMPLATES.aereo_conexao_detalhada}
+
+**INSTRUÇÕES:**
+1.  Extraia os detalhes de cada trecho da conexão, incluindo os horários e o tempo de espera.
+2.  Preencha os campos \`{detalhes_ida}\` e \`{detalhes_volta}\` com as informações formatadas.
+${regrasGerais}\n${tabelaAeroportos}`;
+
+        case 'pacote_completo':
+            return `Sua tarefa é converter os dados brutos de um PACOTE COMPLETO em um orçamento formatado.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**TEMPLATE A SER PREENCHIDO:**
+${TEMPLATES.pacote_completo}
+
+**INSTRUÇÕES:**
+1.  Extraia os detalhes do voo.
+2.  Liste TODAS as opções de hotéis encontradas no texto, formatando cada uma com Localização, Quarto, Regime, Preço e Link.
+${regrasGerais}\n${tabelaAeroportos}`;
+            
+        default: // aereo_simples e outros
+            return `Sua tarefa é converter os dados brutos de um voo em um orçamento formatado para WhatsApp.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**TEMPLATE A SER PREENCHIDO:**
+${TEMPLATES.aereo_simples}
+
+**INSTRUÇÕES:**
+1.  Extraia todas as informações do voo (companhia, datas, horários, etc.).
+2.  Preencha o template com os dados encontrados.
+${regrasGerais}\n${tabelaAeroportos}`;
     }
 }
-
-console.log('✅ CVC Itaqua v11.1 - Versão funcional corrigida carregada!');
