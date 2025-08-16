@@ -863,10 +863,11 @@ ${tabelaAeroportos}`;
 // 5. HANDLER PRINCIPAL ROBUSTO v2.0
 // ================================================================================
 export default async function handler(req, res) {
-    // CORS obrigatório
+    // CORS e Headers obrigatórios - PRIMEIRO
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json'); // GARANTIR JSON
 
     // Responder OPTIONS
     if (req.method === 'OPTIONS') {
@@ -1198,7 +1199,7 @@ Valores sujeitos a confirmação e disponibilidade`;
 
         console.log('✅ v2.0: Processamento concluído. Enviando resposta...');
         
-        return res.status(200).json({
+        const responseData = {
             success: true,
             result: resultado,
             ia_usada: iaUsada,
@@ -1218,17 +1219,27 @@ Valores sujeitos a confirmação e disponibilidade`;
                     codigos_aeroporto: conteudoPrincipal.match(/\b[A-Z]{3}\b/g)
                 }
             }
-        });
+        };
+        
+        // Garantir Content-Type JSON
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(200).json(responseData);
 
     } catch (error) {
         console.error('❌ v2.0: Erro INESPERADO no handler principal:', error);
-        return res.status(500).json({
+        
+        // RESPOSTA JSON GARANTIDA
+        const errorResponse = {
             success: false,
             error: 'Erro interno do servidor',
-            details: error.message,
+            details: error.message || 'Erro desconhecido',
             version: '2.0-COMPLETA-FUNCIONAL',
             timestamp: new Date().toISOString()
-        });
+        };
+        
+        // Garantir que sempre retorna JSON
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(500).json(errorResponse);
     }
 }
 
