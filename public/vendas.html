@@ -817,7 +817,7 @@
         let conexaoOnline = false;
 
         // ================================================================================
-        // 🚀 INICIALIZAÇÃO
+        // 🚀 INICIALIZAÇÃO ROBUSTA
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -825,6 +825,11 @@
             console.log('🚀 Sistema de Vendas CVC v6.2 - CORS CORRIGIDO');
             console.log('✅ Compatível com aba EMBARQUES');
             console.log('✅ Sistema completo de recibos mantido');
+            
+            // Verificar dependências essenciais
+            if (typeof bootstrap === 'undefined') {
+                console.warn('⚠️ Bootstrap não carregado completamente');
+            }
             
             // Verificar se elementos existem
             const form = document.getElementById('formVendaCompleta');
@@ -836,6 +841,12 @@
             console.log('   - Container recibos:', !!container);
             console.log('   - Botão adicionar:', !!btnAdicionar);
             
+            if (!form || !container || !btnAdicionar) {
+                console.error('❌ Elementos essenciais não encontrados!');
+                mostrarAlerta('❌ Erro na inicialização do sistema', 'error');
+                return;
+            }
+            
             // Máscaras
             configurarMascaras();
             
@@ -845,9 +856,16 @@
             // Configurar eventos dos botões
             configurarEventos();
             
-            // Adicionar primeiro recibo automaticamente
+            // Adicionar primeiro recibo com verificação
             console.log('📋 Adicionando primeiro recibo automaticamente...');
-            adicionarRecibo();
+            setTimeout(() => {
+                try {
+                    adicionarRecibo();
+                } catch (error) {
+                    console.error('Erro ao adicionar primeiro recibo:', error);
+                    mostrarAlerta('❌ Erro ao inicializar formulário', 'error');
+                }
+            }, 100); // Reduzido de 500ms para 100ms
             
             // Configurar envio do formulário
             if (form) {
@@ -1185,12 +1203,22 @@
         }
 
         function removerRecibo(numero) {
-            const recibo = document.getElementById(`recibo-${numero}`);
-            if (recibo) {
-                recibo.remove();
-                console.log(`🗑️ Recibo ${numero} removido`);
+            try {
+                const recibo = document.getElementById(`recibo-${numero}`);
+                if (recibo) {
+                    // Remover todos os event listeners antes de deletar
+                    const elementos = recibo.querySelectorAll('button, select, input');
+                    elementos.forEach(el => {
+                        el.replaceWith(el.cloneNode(true)); // Remove todos os listeners
+                    });
+                    
+                    recibo.remove();
+                    console.log(`🗑️ Recibo ${numero} removido`);
+                }
+                atualizarBotaoRemover();
+            } catch (error) {
+                console.error('Erro ao remover recibo:', error);
             }
-            atualizarBotaoRemover();
         }
 
         function removerUltimoRecibo() {
@@ -1275,69 +1303,93 @@
         // ================================================================================
 
         function configurarMascaras() {
-            // Máscara CPF
-            const cpfInput = document.getElementById('cpfCliente');
-            if (cpfInput) {
-                cpfInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                    e.target.value = value;
-                });
-            }
-
-            // Máscara WhatsApp
-            const whatsappInput = document.getElementById('whatsappCliente');
-            if (whatsappInput) {
-                whatsappInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
-                    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
-                    e.target.value = value;
-                });
-            }
-
-            // Máscara para campos de recibo (apenas números)
-            document.addEventListener('input', function(e) {
-                if (e.target.name === 'recibo[]') {
-                    e.target.value = e.target.value.replace(/\D/g, '');
+            try {
+                // Máscara CPF
+                const cpfInput = document.getElementById('cpfCliente');
+                if (cpfInput) {
+                    cpfInput.addEventListener('input', function(e) {
+                        try {
+                            let value = e.target.value.replace(/\D/g, '');
+                            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                            e.target.value = value;
+                        } catch (error) {
+                            console.error('Erro na máscara CPF:', error);
+                        }
+                    });
                 }
-            });
+
+                // Máscara WhatsApp
+                const whatsappInput = document.getElementById('whatsappCliente');
+                if (whatsappInput) {
+                    whatsappInput.addEventListener('input', function(e) {
+                        try {
+                            let value = e.target.value.replace(/\D/g, '');
+                            value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                            value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                            e.target.value = value;
+                        } catch (error) {
+                            console.error('Erro na máscara WhatsApp:', error);
+                        }
+                    });
+                }
+
+                // Máscara para campos de recibo (apenas números)
+                document.addEventListener('input', function(e) {
+                    try {
+                        if (e.target.name === 'recibo[]') {
+                            e.target.value = e.target.value.replace(/\D/g, '');
+                        }
+                    } catch (error) {
+                        console.error('Erro na máscara recibo:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao configurar máscaras:', error);
+            }
         }
 
         function configurarRadioCheckbox() {
-            // Radio buttons visuais
-            document.addEventListener('change', function(e) {
-                if (e.target.type === 'radio') {
-                    const groupName = e.target.name;
-                    const radioItems = document.querySelectorAll(`input[name="${groupName}"]`);
-                    
-                    radioItems.forEach(radio => {
-                        const radioItem = radio.closest('.radio-item');
-                        if (radioItem) {
-                            radioItem.classList.remove('selected');
+            try {
+                // Radio buttons visuais
+                document.addEventListener('change', function(e) {
+                    try {
+                        if (e.target.type === 'radio') {
+                            const groupName = e.target.name;
+                            const radioItems = document.querySelectorAll(`input[name="${groupName}"]`);
+                            
+                            radioItems.forEach(radio => {
+                                const radioItem = radio.closest('.radio-item');
+                                if (radioItem) {
+                                    radioItem.classList.remove('selected');
+                                }
+                            });
+                            
+                            const selectedRadioItem = e.target.closest('.radio-item');
+                            if (selectedRadioItem) {
+                                selectedRadioItem.classList.add('selected');
+                            }
                         }
-                    });
-                    
-                    const selectedRadioItem = e.target.closest('.radio-item');
-                    if (selectedRadioItem) {
-                        selectedRadioItem.classList.add('selected');
-                    }
-                }
-                
-                // Checkboxes visuais
-                if (e.target.type === 'checkbox') {
-                    const checkboxItem = e.target.closest('.checkbox-item');
-                    if (checkboxItem) {
-                        if (e.target.checked) {
-                            checkboxItem.classList.add('selected');
-                        } else {
-                            checkboxItem.classList.remove('selected');
+                        
+                        // Checkboxes visuais
+                        if (e.target.type === 'checkbox') {
+                            const checkboxItem = e.target.closest('.checkbox-item');
+                            if (checkboxItem) {
+                                if (e.target.checked) {
+                                    checkboxItem.classList.add('selected');
+                                } else {
+                                    checkboxItem.classList.remove('selected');
+                                }
+                            }
                         }
+                    } catch (error) {
+                        console.error('Erro no evento de mudança:', error);
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Erro ao configurar radio/checkbox:', error);
+            }
         }
 
         // ================================================================================
@@ -1561,6 +1613,34 @@
             
             if (!dados.dataIda || dados.dataIda.length === 0 || !dados.dataIda[0]) {
                 erros.push('Informe a data de ida do primeiro recibo');
+            }
+            
+            // Validar datas (ida não pode ser no passado, volta deve ser posterior à ida)
+            if (dados.dataIda && dados.dataIda[0]) {
+                const dataIda = new Date(dados.dataIda[0]);
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                
+                if (dataIda < hoje) {
+                    erros.push('Data de ida não pode ser no passado');
+                }
+                
+                if (dados.dataVolta && dados.dataVolta[0]) {
+                    const dataVolta = new Date(dados.dataVolta[0]);
+                    if (dataVolta <= dataIda) {
+                        erros.push('Data de volta deve ser posterior à data de ida');
+                    }
+                }
+            }
+            
+            // Sanitizar dados de texto
+            if (dados.nomeCliente) {
+                dados.nomeCliente = dados.nomeCliente.trim().replace(/[<>]/g, '');
+            }
+            if (dados.observacoes) {
+                dados.observacoes = dados.observacoes.map(obs => 
+                    obs ? obs.trim().replace(/[<>]/g, '') : ''
+                );
             }
             
             return {
