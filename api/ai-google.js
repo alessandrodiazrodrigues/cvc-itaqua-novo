@@ -48,7 +48,7 @@ const TEMPLATES = {
 🏷️ {reembolso}
 {link}
 
-Valores sujeitos a confirmação e disponibilidade (v2.0)`,
+Valores sujeitos a confirmação e disponibilidade (v2.1)`,
 
     // ⭐ TEMPLATE VOOS COM CONEXÃO v2.0
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -69,7 +69,7 @@ Valores sujeitos a confirmação e disponibilidade (v2.0)`,
 ✅ {bagagem}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade (v2.0)`,
+Valores sujeitos a confirmação e disponibilidade (v2.1)`,
 
     // 1.2 Hotéis e Pacotes
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
@@ -247,7 +247,7 @@ Valores sujeitos a confirmação e disponibilidade (v2.0)`,
 🔗 {link3}
 
 🏷️ {reembolso}
-Valores sujeitos a confirmação e disponibilidade (v2.0)`
+Valores sujeitos a confirmação e disponibilidade (v2.1)`
 };
 
 // ================================================================================
@@ -879,9 +879,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true, 
             status: 'operational', 
-            version: '2.0-COMPLETA-FUNCIONAL',
+            version: '2.1-CORRIGIDA-ESTAVEL',
             timestamp: new Date().toISOString(),
-            message: 'CVC Itaqua API v2.0 - Sistema completo, robusto e funcional com todos os templates',
+            message: 'CVC Itaqua API v2.1 - Bug de redeclaração corrigido, sistema estável',
             ia_usada: 'ready',
             funcionalidades_v2: [
                 '✅ Base sólida v1.7: Estrutura que funcionava mantida',
