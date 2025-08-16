@@ -1,18 +1,16 @@
-// 🚀 CVC ITAQUA v1.7-CORRECAO-VOOS-CONEXAO - API COMPLETA
+// 🚀 CVC ITAQUA v1.9-REEMBOLSO-HOTEIS-ILIMITADOS - API COMPLETA
 // ================================================================================
 // 📑 SISTEMA COMPLETO PARA VERCEL FUNCTIONS
 // ================================================================================
-// CORREÇÕES v1.7:
-// ✅ DETECÇÃO VOOS CONEXÃO: Identificar voos com paradas/conexões automaticamente
-// ✅ TEMPLATE CONEXÃO: Seção específica com detalhes de cada trecho e conexões
-// ✅ DESTINO CORRETO: São Paulo ✈ Pucallpa (não Lima quando destino final é Pucallpa)
-// ✅ TEMPO CONEXÃO: Mostrar tempo de espera em cada conexão
-// ✅ PARCELAMENTO SIMPLES: "12x de R$ 272,83 sem juros" (sem primeira parcela)
-// ✅ BAGAGEM SIMPLIFICADA: "Bagagem de mão + bolsa pequena incluídas"
+// CORREÇÕES v1.9:
+// ✅ REEMBOLSO: Só mostrar "NÃO REEMBOLSÁVEL" (omitir quando reembolsável)
+// ✅ HOTÉIS ILIMITADOS: Suporte para qualquer quantidade de hotéis (1, 2, 5, 10+)
+// ✅ TEMPLATE DINÂMICO: Gerar opções conforme quantidade enviada
+// ✅ REGRA REEMBOLSO: Aplicar para hotéis, aéreo, pacotes e qualquer serviço
 // ================================================================================
 
 // ================================================================================
-// 📋 TEMPLATES COMPLETOS v1.7
+// 📋 TEMPLATES COMPLETOS v1.9
 // ================================================================================
 const TEMPLATES = {
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -27,9 +25,9 @@ const TEMPLATES = {
 🏷️ {reembolso}
 {link}
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`,
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
 
-    // ⭐ NOVO TEMPLATE PARA VOOS COM CONEXÃO v1.7
+    // ⭐ NOVO TEMPLATE PARA VOOS COM CONEXÃO v1.9
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_conexao_ida})
@@ -48,7 +46,7 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)`,
 ✅ {bagagem}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`,
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
 
     multiplas_opcoes_2_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
@@ -64,9 +62,18 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)`,
 ✅ Cancelamento/alteração com multas
 💳 {parcelamento2}
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`,
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
 
-    // ⭐ TEMPLATE PACOTE COMPLETO MANTIDO v1.7
+    // ⭐ TEMPLATE PARA HOTÉIS MÚLTIPLAS OPÇÕES v1.9 (DINÂMICO E ILIMITADO)
+    hoteis_multiplas_opcoes: `*Hotéis em {destino}*
+Período: {data_entrada} a {data_saida} ({noites} noites)
+{passageiros}
+
+{opcoes_hoteis}
+
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
+
+    // ⭐ TEMPLATE PACOTE COMPLETO MANTIDO v1.9
     pacote_completo: `*Pacote {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -92,7 +99,7 @@ Pacote para {passageiros}
 ✅ {bagagem}
 🏷️ Aéreo não reembolsável, hotel {reembolso_hotel}
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`,
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
 
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
@@ -114,7 +121,7 @@ Além de voos e hotéis, a CVC Itaqua oferece tudo para deixar sua viagem ainda 
 - Seguro viagem completo
 - Chip de celular internacional
 
-Fale comigo para adicionar esses serviços ao seu pacote! (v1.7)`,
+Fale comigo para adicionar esses serviços ao seu pacote! (v1.9)`,
 
     ranking: `🏆 *Ranking dos Melhores Hotéis em {destino}* 🏆
 
@@ -138,7 +145,7 @@ Confira nossa seleção especial dos hotéis mais bem avaliados:
 ✅ {ponto_positivo3}
 💬 "{review3}"
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`,
+Valores sujeitos a confirmação e disponibilidade (v1.9)`,
 
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
@@ -160,11 +167,11 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)`,
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)`
+Valores sujeitos a confirmação e disponibilidade (v1.9)`
 };
 
 // ================================================================================
-// 🗺️ TABELA COMPLETA DE CONVERSÃO DE AEROPORTOS v1.7
+// 🗺️ TABELA COMPLETA DE CONVERSÃO DE AEROPORTOS v1.9
 // ================================================================================
 const AEROPORTOS = {
     // AEROPORTOS BRASILEIROS
@@ -187,19 +194,30 @@ const AEROPORTOS = {
     'FCO': 'Roma', 'MXP': 'Milão', 'LHR': 'Londres', 'LGW': 'Londres', 'FRA': 'Frankfurt', 'MUC': 'Munique', 
     'AMS': 'Amsterdam', 'ZUR': 'Zurich',
     
-    // ⭐ AEROPORTOS AMÉRICA DO SUL v1.7
+    // ⭐ AEROPORTOS AMÉRICA DO SUL v1.9
     'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura',
     'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho'
 };
 
 // ================================================================================
-// 🧠 FUNÇÃO DE EXTRAÇÃO DE DESTINO v1.7 (APRIMORADA PARA CONEXÕES)
+// 🧠 FUNÇÃO DE EXTRAÇÃO DE DESTINO v1.9 (GOIÂNIA ADICIONADA)
 // ================================================================================
 function extrairDestinoDoConteudo(conteudo) {
     const texto = conteudo.toLowerCase();
-    console.log('🔍 v1.7: Extraindo destino de:', conteudo.substring(0, 100) + '...');
+    console.log('🔍 v1.9: Extraindo destino de:', conteudo.substring(0, 100) + '...');
     
-    // ⭐ PRIORIDADE 1: DESTINO FINAL EM VOOS COM CONEXÃO v1.7
+    // ⭐ PRIORIDADE 1: DESTINOS BRASILEIROS PRIORITÁRIOS v1.9
+    if (texto.includes('goiânia') || texto.includes('goiania') || texto.includes('goias')) {
+        console.log('✅ v1.9: GOIÂNIA detectado por busca no texto');
+        return 'Goiânia';
+    }
+    
+    if (texto.includes('joão pessoa') || texto.includes('jpa')) {
+        console.log('✅ v1.9: JOÃO PESSOA detectado por busca no texto');
+        return 'João Pessoa';
+    }
+    
+    // PRIORIDADE 2: DESTINO FINAL EM VOOS COM CONEXÃO
     // Detectar padrão: GRU -> LIM -> PCL (destino final é PCL)
     const padraoConexao = conteudo.match(/([A-Z]{3})\s*[\s\S]*?([A-Z]{3})\s*[\s\S]*?([A-Z]{3})/);
     if (padraoConexao && padraoConexao.length >= 4) {
@@ -210,57 +228,60 @@ function extrairDestinoDoConteudo(conteudo) {
         // Se origem é brasileira e destino final é internacional
         if (['GRU', 'CGH', 'SDU', 'GIG'].includes(origem) && 
             AEROPORTOS[destinoFinal] && !['GRU', 'CGH', 'SDU', 'GIG'].includes(destinoFinal)) {
-            console.log(`✅ v1.7: DESTINO FINAL detectado em conexão: ${origem} -> ${conexao} -> ${destinoFinal} = ${AEROPORTOS[destinoFinal]}`);
+            console.log(`✅ v1.9: DESTINO FINAL detectado em conexão: ${origem} -> ${conexao} -> ${destinoFinal} = ${AEROPORTOS[destinoFinal]}`);
             return AEROPORTOS[destinoFinal];
         }
     }
     
-    // PRIORIDADE 2: CÓDIGOS DE AEROPORTO ESPECÍFICOS
+    // PRIORIDADE 3: CÓDIGOS DE AEROPORTO ESPECÍFICOS
     if (conteudo.includes('PCL') || conteudo.includes('Pucallpa')) {
-        console.log('✅ v1.7: PUCALLPA detectado por código PCL ou nome direto');
+        console.log('✅ v1.9: PUCALLPA detectado por código PCL ou nome direto');
         return 'Pucallpa';
     }
     
     if (conteudo.includes('LIS') || conteudo.includes('Lisboa')) {
-        console.log('✅ v1.7: LISBOA detectado por código LIS ou nome direto');
+        console.log('✅ v1.9: LISBOA detectado por código LIS ou nome direto');
         return 'Lisboa';
     }
     
-    // PRIORIDADE 3: ROTA EXPLÍCITA "Guarulhos - Destino"
+    // PRIORIDADE 4: ROTA EXPLÍCITA "Guarulhos - Destino"
     const rotaExplicita = conteudo.match(/(Guarulhos|GRU)\s*[-→✈]+\s*([a-záàâãéêíóôõúç\s\(\)]+)/i);
     if (rotaExplicita) {
         const destino = rotaExplicita[2].trim();
-        console.log('✅ v1.7: Destino detectado por rota explícita:', destino);
+        console.log('✅ v1.9: Destino detectado por rota explícita:', destino);
         return destino;
     }
     
-    // PRIORIDADE 4: OUTROS CÓDIGOS DE AEROPORTO 
+    // PRIORIDADE 5: OUTROS CÓDIGOS DE AEROPORTO 
     const codigosAeroporto = conteudo.match(/\b([A-Z]{3})\b/g);
     if (codigosAeroporto) {
         for (const codigo of codigosAeroporto) {
             if (AEROPORTOS[codigo] && codigo !== 'GRU' && codigo !== 'CGH' && codigo !== 'SDU') {
                 const cidade = AEROPORTOS[codigo].split(' - ')[0].split(' (')[0];
-                console.log(`✅ v1.7: Destino extraído por código ${codigo}:`, cidade);
+                console.log(`✅ v1.9: Destino extraído por código ${codigo}:`, cidade);
                 return cidade;
             }
         }
     }
     
-    // PRIORIDADE 5: Destinos conhecidos no texto
+    // PRIORIDADE 6: Destinos conhecidos no texto
     const destinosConhecidos = {
-        // Destinos Peruanos PRIORITÁRIOS v1.7
-        'pucallpa': 'Pucallpa',
-        'lima': 'Lima',
-        'cusco': 'Cusco',
-        'arequipa': 'Arequipa',
-        'iquitos': 'Iquitos',
-        
-        // Destinos Brasileiros 
+        // Destinos Brasileiros PRIORITÁRIOS v1.9
+        'goiânia': 'Goiânia',
+        'goiania': 'Goiânia',
+        'goias': 'Goiânia',
         'joão pessoa': 'João Pessoa',
         'brasília': 'Brasília',
         'salvador': 'Salvador',
         'rio de janeiro': 'Rio de Janeiro',
         'belo horizonte': 'Belo Horizonte',
+        
+        // Destinos Peruanos 
+        'pucallpa': 'Pucallpa',
+        'lima': 'Lima',
+        'cusco': 'Cusco',
+        'arequipa': 'Arequipa',
+        'iquitos': 'Iquitos',
         
         // Destinos Europeus
         'lisboa': 'Lisboa',
@@ -284,29 +305,23 @@ function extrairDestinoDoConteudo(conteudo) {
         'bogota': 'Bogotá'
     };
     
-    // Buscar destinos conhecidos (priorizar Pucallpa)
-    if (texto.includes('pucallpa') || texto.includes('pcl')) {
-        console.log('✅ v1.7: PUCALLPA detectado por busca no texto');
-        return 'Pucallpa';
-    }
-    
     for (const [chave, nome] of Object.entries(destinosConhecidos)) {
         if (texto.includes(chave)) {
-            console.log(`✅ v1.7: Destino ${nome} detectado por palavra-chave`);
+            console.log(`✅ v1.9: Destino ${nome} detectado por palavra-chave`);
             return nome;
         }
     }
     
-    console.log('⚠️ v1.7: Nenhum destino identificado no conteúdo');
+    console.log('⚠️ v1.9: Nenhum destino identificado no conteúdo');
     return null;
 }
 
 // ================================================================================
-// 🔍 FUNÇÃO DE DETECÇÃO DE VOOS COM CONEXÃO v1.7
+// 🔍 FUNÇÃO DE DETECÇÃO DE VOOS COM CONEXÃO v1.9
 // ================================================================================
 function detectarVooComConexao(conteudo) {
     const texto = conteudo.toLowerCase();
-    console.log('🔍 v1.7: Verificando se é voo com conexão...');
+    console.log('🔍 v1.9: Verificando se é voo com conexão...');
     
     // INDICADORES DE CONEXÃO
     const indicadoresConexao = [
@@ -325,7 +340,7 @@ function detectarVooComConexao(conteudo) {
     
     const ehConexao = temMultiplosTrechos || temTempoEspera || temIndicadores;
     
-    console.log(`✅ v1.7: Voo com conexão: ${ehConexao ? 'SIM' : 'NÃO'}`);
+    console.log(`✅ v1.9: Voo com conexão: ${ehConexao ? 'SIM' : 'NÃO'}`);
     console.log(`   - Múltiplos trechos: ${temMultiplosTrechos}`);
     console.log(`   - Tempo espera: ${temTempoEspera}`);
     console.log(`   - Indicadores: ${temIndicadores}`);
@@ -334,13 +349,13 @@ function detectarVooComConexao(conteudo) {
 }
 
 // ================================================================================
-// 🕵️‍♂️ FUNÇÃO DE DETECÇÃO DE TIPO v1.7 (CONEXÃO ADICIONADA)
+// 🕵️‍♂️ FUNÇÃO DE DETECÇÃO DE TIPO v1.9 (HOTÉIS ILIMITADOS)
 // ================================================================================
 function detectOrcamentoType(conteudoPrincipal, tipos) {
     const conteudoLower = conteudoPrincipal.toLowerCase();
     
-    console.log('🔍 v1.7: Detectando tipo de orçamento...');
-    console.log('📋 v1.7: Tipos selecionados:', tipos);
+    console.log('🔍 v1.9: Detectando tipo de orçamento...');
+    console.log('📋 v1.9: Tipos selecionados:', tipos);
     
     // ⭐ PRIORIDADE 1: TIPOS SELECIONADOS PELO USUÁRIO
     if (tipos && tipos.length > 0) {
@@ -349,17 +364,23 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         const temHotel = tipos.includes('Hotel');
         
         if (temAereo && temHotel) {
-            console.log('✅ v1.7: PACOTE COMPLETO detectado por tipos selecionados (Aéreo + Hotel)');
+            console.log('✅ v1.9: PACOTE COMPLETO detectado por tipos selecionados (Aéreo + Hotel)');
             return 'pacote_completo';
+        }
+        
+        // ⭐ NOVA DETECÇÃO v1.9: APENAS HOTEL SELECIONADO
+        if (temHotel && !temAereo) {
+            console.log('✅ v1.9: HOTÉIS MÚLTIPLAS OPÇÕES detectado por tipo Hotel selecionado');
+            return 'hoteis_multiplas_opcoes';
         }
         
         // Outros tipos solicitados
         if (tipos.includes('Dicas')) {
-            console.log('✅ v1.7: Tipo detectado: dicas_completas');
+            console.log('✅ v1.9: Tipo detectado: dicas_completas');
             return 'dicas_completas';
         }
         if (tipos.includes('Ranking') || conteudoLower.includes('ranking')) {
-            console.log('✅ v1.7: Tipo detectado: ranking');
+            console.log('✅ v1.9: Tipo detectado: ranking');
             return 'ranking';
         }
     }
@@ -367,41 +388,58 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
     // PRIORIDADE 2: DETECÇÃO POR CONTEÚDO ESPECÍFICO
     // Cruzeiro sempre tem prioridade alta
     if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio')) {
-        console.log('✅ v1.7: Tipo detectado: cruzeiro');
+        console.log('✅ v1.9: Tipo detectado: cruzeiro');
         return 'cruzeiro';
     }
     
-    // ⭐ NOVA PRIORIDADE v1.7: VOOS COM CONEXÃO
+    // ⭐ DETECÇÃO DE HOTÉIS v1.9: Múltiplos hotéis sem aéreo
+    const temMultiplosHoteis = (conteudoPrincipal.match(/(hotel|pousada|resort|plaza|quality)/gi) || []).length >= 2;
+    const temTipoQuarto = conteudoLower.includes('executivo') || conteudoLower.includes('superior') || 
+                          conteudoLower.includes('luxo') || conteudoLower.includes('king');
+    const temCafeManha = conteudoLower.includes('café da manhã') || conteudoLower.includes('breakfast');
+    const naoTemVoo = !conteudoLower.includes('voo') && !conteudoLower.includes('aéreo') && 
+                      !conteudoLower.includes('companhia') && !conteudoLower.includes('latam') && 
+                      !conteudoLower.includes('gol') && !conteudoLower.includes('azul');
+    
+    if (temMultiplosHoteis && naoTemVoo && (temTipoQuarto || temCafeManha)) {
+        console.log('✅ v1.9: HOTÉIS MÚLTIPLAS OPÇÕES detectado por conteúdo (múltiplos hotéis sem voo)');
+        return 'hoteis_multiplas_opcoes';
+    }
+    
+    // ⭐ NOVA PRIORIDADE v1.9: VOOS COM CONEXÃO
     if (detectarVooComConexao(conteudoPrincipal)) {
-        console.log('✅ v1.7: Tipo detectado: aereo_conexao');
+        console.log('✅ v1.9: Tipo detectado: aereo_conexao');
         return 'aereo_conexao';
     }
     
     // Multitrecho específico
     if (conteudoLower.includes('multitrecho') || (conteudoLower.match(/trecho \d/gi) || []).length > 1) {
-        console.log('✅ v1.7: Tipo detectado: multitrecho');
+        console.log('✅ v1.9: Tipo detectado: multitrecho');
         return 'multitrecho';
     }
     
-    // PRIORIDADE 3: DETECÇÃO DE MÚLTIPLAS OPÇÕES
+    // PRIORIDADE 3: DETECÇÃO DE MÚLTIPLAS OPÇÕES (SOMENTE PARA AÉREO)
     const temOpcoesMarcadas = (conteudoPrincipal.match(/OPÇÃO \d/gi) || []).length >= 2;
     const valoresTotal = (conteudoPrincipal.match(/Total.*R\$\s*[\d.,]+/gi) || []).length;
     const linksDetectados = (conteudoPrincipal.match(/https:\/\/[^\s]+/g) || []).length;
     
     const naoEPacote = !(tipos?.includes('Aéreo') && tipos?.includes('Hotel'));
+    const temIndicadoresVoo = conteudoLower.includes('voo') || conteudoLower.includes('aéreo') || 
+                              conteudoLower.includes('latam') || conteudoLower.includes('gol') || 
+                              conteudoLower.includes('azul');
     
-    if (naoEPacote && (temOpcoesMarcadas || valoresTotal >= 2 || linksDetectados >= 2)) {
-        console.log('✅ v1.7: Tipo detectado: multiplas_opcoes_2_planos');
+    if (naoEPacote && temIndicadoresVoo && (temOpcoesMarcadas || valoresTotal >= 2 || linksDetectados >= 2)) {
+        console.log('✅ v1.9: Tipo detectado: multiplas_opcoes_2_planos (aéreo)');
         return 'multiplas_opcoes_2_planos';
     }
     
     // PADRÃO: AÉREO SIMPLES
-    console.log('✅ v1.7: Usando tipo padrão: aereo_simples');
+    console.log('✅ v1.9: Usando tipo padrão: aereo_simples');
     return 'aereo_simples';
 }
 
 // ================================================================================
-// 📝 FUNÇÃO DE GERAÇÃO DE PROMPTS v1.7 (CONEXÃO ADICIONADA)
+// 📝 FUNÇÃO DE GERAÇÃO DE PROMPTS v1.9 (REEMBOLSO E HOTÉIS ILIMITADOS)
 // ================================================================================
 function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento) {
     // Extrair destino automaticamente se necessário
@@ -411,7 +449,7 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
         const destinoExtraido = extrairDestinoDoConteudo(conteudoPrincipal);
         if (destinoExtraido) {
             destinoFinal = destinoExtraido;
-            console.log('✅ v1.7: Destino extraído automaticamente:', destinoFinal);
+            console.log('✅ v1.9: Destino extraído automaticamente:', destinoFinal);
         } else {
             destinoFinal = destino || 'Destino não identificado';
         }
@@ -421,34 +459,76 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
         `INCLUIR PARCELAMENTO: ${parcelamento}x sem juros no cartão` : 
         'EXTRAIR PARCELAMENTO DO TEXTO - FORMATO SIMPLES: "12x de R$ 272,83 sem juros" (sem primeira parcela)';
 
-    const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v1.7:**
+    const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v1.9:**
 - **Título**: Use CIDADES no título: *Latam - São Paulo ✈ Pucallpa* (GRU = São Paulo, PCL = Pucallpa)
 - **NUNCA use códigos de aeroporto no título** (não "Guarulhos ✈ PCL")
 - **Datas e Horários**: DD/MM (15/09) e HH:MM (03:40)
 - **Valores**: R$ 3.274,00 (espaço após R$, vírgula para centavos)
 - **Passageiros**: zero à esquerda (01, 02, 03 adultos)
 - **Parcelamento**: ${infoParcelamento}
-- **PARCELAMENTO - REGRA CRÍTICA v1.7**: 
+- **PARCELAMENTO - REGRA CRÍTICA v1.9**: 
   * FORMATO SIMPLES: "12x de R$ 272,83 sem juros" 
   * NÃO USAR: "primeira parcela + parcelas" 
   * EXEMPLO CORRETO: "12x de R$ 272,83 sem juros"
   * SE À VISTA: "À vista R$ {valor}"
-- **BAGAGEM SIMPLIFICADA v1.7**: "Bagagem de mão + bolsa pequena incluídas" (resumir informações)
+- **BAGAGEM SIMPLIFICADA v1.9**: "Bagagem de mão + bolsa pequena incluídas" (resumir informações)
+- **⭐ REEMBOLSO - REGRA CRÍTICA v1.9**:
+  * SE REEMBOLSÁVEL: NÃO MENCIONAR (omitir completamente a informação)
+  * SE NÃO REEMBOLSÁVEL: MOSTRAR "🏷️ Não reembolsável"
+  * NUNCA mostrar "Reembolsável" - sempre omitir quando for reembolsável
 - **Links**: Incluir URLs que apareçam no texto (limpar se necessário)
 - **Aeroportos**: Converter códigos para nomes nos horários
-- **Reembolso**: "Não reembolsável" OU "Reembolsável conforme regras do bilhete"
-- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v1.7)"`;
+- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v1.9)"`;
 
-    const tabelaAeroportos = `**TABELA DE AEROPORTOS v1.7:**\n${JSON.stringify(AEROPORTOS)}`;
+    const tabelaAeroportos = `**TABELA DE AEROPORTOS v1.9:**\n${JSON.stringify(AEROPORTOS)}`;
 
     switch (tipoOrcamento) {
+        case 'hoteis_multiplas_opcoes':
+            return `Crie um orçamento de HOTÉIS COM MÚLTIPLAS OPÇÕES para ${destinoFinal}.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**INSTRUÇÕES ESPECÍFICAS PARA HOTÉIS MÚLTIPLAS OPÇÕES v1.9:**
+1. O destino é OBRIGATORIAMENTE: ${destinoFinal}
+2. EXTRAIR INFORMAÇÕES DE CADA HOTEL (QUANTIDADE ILIMITADA):
+   - Nome do hotel
+   - Endereço completo (rua, número, bairro, cidade)
+   - Tipo de quarto (Executivo Casal, Superior King, etc.)
+   - Regime alimentação (Café da manhã, Meia pensão, etc.)
+   - Valor total para a estadia
+   - Política de reembolso (CRÍTICO v1.9: só mostrar se NÃO reembolsável)
+   - Link de reserva
+3. QUANTIDADE DINÂMICA: Processar TODOS os hotéis encontrados (1, 2, 5, 10, 20+)
+4. PERÍODO: Extrair datas de entrada e saída (12 de set - 14 de set)
+5. CALCULAR NOITES: Diferença entre datas (3 dias e 2 noites)
+6. PASSAGEIROS: Formato "2 Adultos" 
+7. PARCELAMENTO: Calcular baseado no valor total se não informado
+8. NÃO INCLUIR informações de voo/aéreo
+9. ⭐ REEMBOLSO v1.9: SE reembolsável = OMITIR, SE não reembolsável = mostrar "🏷️ Não reembolsável"
+10. GERAR o formato com **OPÇÃO 1**, **OPÇÃO 2**, etc. para cada hotel encontrado
+
+**DESTINO OBRIGATÓRIO:** ${destinoFinal}
+
+**TEMPLATE BASE (repetir para cada hotel):**
+**OPÇÃO X** - {nome_hotel}
+📍 {endereco}
+🛏️ {tipo_quarto}
+☕ {regime}
+💰 R$ {valor} total
+💳 {parcelamento}
+{reembolso_linha} (só incluir se NÃO reembolsável)
+🔗 {link}
+
+${regrasGerais}`;
+
         case 'aereo_conexao':
             return `Crie um orçamento de VOO COM CONEXÃO para ${destinoFinal}.
 
 **DADOS BRUTOS:**
 ${conteudoPrincipal}
 
-**INSTRUÇÕES ESPECÍFICAS PARA VOOS COM CONEXÃO v1.7:**
+**INSTRUÇÕES ESPECÍFICAS PARA VOOS COM CONEXÃO v1.9:**
 1. O destino FINAL é OBRIGATORIAMENTE: ${destinoFinal}
 2. DETECTAR TRECHOS:
    - ORIGEM → CONEXÃO (horário ida, horário chegada, duração)
@@ -476,7 +556,7 @@ ${tabelaAeroportos}`;
 **DADOS BRUTOS:**
 ${conteudoPrincipal}
 
-**INSTRUÇÕES ESPECÍFICAS PARA PACOTE v1.7:**
+**INSTRUÇÕES ESPECÍFICAS PARA PACOTE v1.9:**
 1. O destino é OBRIGATORIAMENTE: ${destinoFinal}
 2. SEPARAR INFORMAÇÕES:
    - AÉREO: companhia, datas, horários, aeroportos
@@ -538,9 +618,9 @@ ${conteudoPrincipal}
 
 **DESTINO IDENTIFICADO:** ${destinoFinal}
 
-**INSTRUÇÕES ESPECÍFICAS DE ANÁLISE v1.7:**
+**INSTRUÇÕES ESPECÍFICAS DE ANÁLISE v1.9:**
 1. DETECTAR MÚLTIPLAS OPÇÕES: Se há múltiplos valores "Total" ou múltiplas datas, use template de múltiplas opções
-2. PARCELAMENTO SIMPLES v1.7: Use formato "12x de R$ 272,83 sem juros" (sem primeira parcela)
+2. PARCELAMENTO SIMPLES v1.9: Use formato "12x de R$ 272,83 sem juros" (sem primeira parcela)
 3. SE À VISTA: usar "À vista R$ {valor}"
 4. BAGAGEM SIMPLIFICADA: "Bagagem de mão + bolsa pequena incluídas"
 5. Leia CUIDADOSAMENTE todo o texto para identificar:
@@ -559,7 +639,7 @@ ${tabelaAeroportos}`;
 }
 
 // ================================================================================
-// 🎯 HANDLER PRINCIPAL DA API v1.7 (VERSÃO ATUALIZADA)
+// 🎯 HANDLER PRINCIPAL DA API v1.9 (VERSÃO ATUALIZADA)
 // ================================================================================
 export default async function handler(req, res) {
     // CORS obrigatório
@@ -577,17 +657,17 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true, 
             status: 'operational', 
-            version: '1.7-CORRECAO-VOOS-CONEXAO',
+            version: '1.9-REEMBOLSO-HOTEIS-ILIMITADOS',
             timestamp: new Date().toISOString(),
-            message: 'CVC Itaqua API v1.7 - Correção voos com conexão e template detalhado',
+            message: 'CVC Itaqua API v1.9 - Correção reembolso e hotéis ilimitados',
             ia_usada: 'ready',
-            correcoes_v17: [
-                '✅ Detecção voos conexão: Identificar voos com paradas/conexões automaticamente',
-                '✅ Template conexão: Seção específica com detalhes de cada trecho e conexões',
-                '✅ Destino correto: São Paulo ✈ Pucallpa (não Lima quando destino final é Pucallpa)',
-                '✅ Tempo conexão: Mostrar tempo de espera em cada conexão',
-                '✅ Parcelamento simples: "12x de R$ 272,83 sem juros" (sem primeira parcela)',
-                '✅ Bagagem simplificada: "Bagagem de mão + bolsa pequena incluídas"'
+            correcoes_v19: [
+                '✅ Reembolso: Só mostrar "NÃO REEMBOLSÁVEL" (omitir quando reembolsável)',
+                '✅ Hotéis ilimitados: Suporte para qualquer quantidade de hotéis (1, 2, 5, 10+)',
+                '✅ Template dinâmico: Gerar opções conforme quantidade enviada',
+                '✅ Regra reembolso: Aplicar para hotéis, aéreo, pacotes e qualquer serviço',
+                '✅ Detecção inteligente: Processar todos os hotéis encontrados no texto',
+                '✅ Formato flexível: Adaptação automática para qualquer número de opções'
             ]
         });
     }
@@ -601,11 +681,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('🚀 v1.7: Início do processamento POST...');
+        console.log('🚀 v1.9: Início do processamento POST...');
         
         // Validar se tem body
         if (!req.body) {
-            console.error('❌ v1.7: Requisição sem body');
+            console.error('❌ v1.9: Requisição sem body');
             return res.status(400).json({ 
                 success: false, 
                 error: 'Body da requisição é obrigatório' 
@@ -625,14 +705,16 @@ export default async function handler(req, res) {
             pdfContent = null
         } = req.body;
 
-        console.log('📋 v1.7: Dados recebidos:', { 
+        console.log('📋 v1.9: Dados recebidos:', { 
             observacoes: observacoes.substring(0, 50) + '...', 
             destino, 
             tipos,
             temImagem: !!imagemBase64,
             temPDF: !!pdfContent,
             deteccao_pacote: tipos?.includes('Aéreo') && tipos?.includes('Hotel'),
-            deteccao_conexao: detectarVooComConexao(observacoes || textoColado || pdfContent || '')
+            deteccao_hotel: tipos?.includes('Hotel') && !tipos?.includes('Aéreo'),
+            deteccao_conexao: detectarVooComConexao(observacoes || textoColado || pdfContent || ''),
+            quantidade_hoteis: (observacoes || textoColado || pdfContent || '').match(/(hotel|pousada|resort|plaza|quality)/gi)?.length || 0
         });
 
         // Montar conteúdo principal
@@ -648,12 +730,12 @@ export default async function handler(req, res) {
         // --- Bloco de Geração de Prompt ---
         let prompt;
         try {
-            console.log('📝 v1.7: Iniciando geração de prompt...');
+            console.log('📝 v1.9: Iniciando geração de prompt...');
             const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
             prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento);
-            console.log(`✅ v1.7: Tipo detectado: ${tipoOrcamento}. Prompt gerado.`);
+            console.log(`✅ v1.9: Tipo detectado: ${tipoOrcamento}. Prompt gerado.`);
         } catch (promptError) {
-            console.error('❌ v1.7: Erro na geração do prompt:', promptError);
+            console.error('❌ v1.9: Erro na geração do prompt:', promptError);
             return res.status(500).json({ 
                 success: false, 
                 error: 'Falha ao montar a requisição para a IA',
@@ -664,14 +746,14 @@ export default async function handler(req, res) {
         // --- Bloco de Chamada da IA ---
         let resultado, iaUsada;
         try {
-            console.log('🤖 v1.7: Iniciando chamada à IA...');
+            console.log('🤖 v1.9: Iniciando chamada à IA...');
             
             // Decidir qual IA usar
             const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
             const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Sua função é analisar os dados e gerar um orçamento formatado para WhatsApp seguindo exatamente o modelo e as regras fornecidas. Seja preciso e atento aos detalhes. Retorne apenas o texto final formatado.';
 
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-                console.log('🔮 v1.7: Usando Claude para caso complexo...');
+                console.log('🔮 v1.9: Usando Claude para caso complexo...');
                 iaUsada = 'claude-3-haiku';
                 
                 const messages = [{
@@ -714,7 +796,7 @@ export default async function handler(req, res) {
                 resultado = data.content[0].text;
                 
             } else {
-                console.log('⚡ v1.7: Usando GPT-4o-mini...');
+                console.log('⚡ v1.9: Usando GPT-4o-mini...');
                 iaUsada = 'gpt-4o-mini';
                 
                 if (!process.env.OPENAI_API_KEY) {
@@ -747,17 +829,66 @@ export default async function handler(req, res) {
                 resultado = data.choices[0].message.content;
             }
             
-            console.log('✅ v1.7: Chamada à IA concluída com sucesso.');
+            console.log('✅ v1.9: Chamada à IA concluída com sucesso.');
             
         } catch (aiError) {
-            console.error('❌ v1.7: Erro na chamada da IA:', aiError);
+            console.error('❌ v1.9: Erro na chamada da IA:', aiError);
             
             // Fallback para resposta mock em caso de erro
-            console.log('🔄 v1.7: Usando resposta de fallback...');
+            console.log('🔄 v1.9: Usando resposta de fallback...');
             
             const tipoDetectado = detectOrcamentoType(conteudoPrincipal, tipos);
             
-            if (tipoDetectado === 'aereo_conexao') {
+            if (tipoDetectado === 'hoteis_multiplas_opcoes') {
+                resultado = `*Hotéis em Goiânia*
+Período: 12/09 a 14/09 (2 noites)
+02 Adultos
+
+**OPÇÃO 1** - Plaza Inn Augustus
+📍 Av. Araguaia, 702 Setor Central, Goiânia, Goiás
+🛏️ 1 Executivo Casal
+☕ Café da manhã
+💰 R$ 608,88 total
+💳 12x de R$ 50,74 sem juros
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a079a2e79cd97759bba00c
+
+**OPÇÃO 2** - Hotel Maione
+📍 Avenida 1 Radial, 643 - Setor Pedro Ludovico, Goiânia
+🛏️ 1 Superior King (cama Casal)
+☕ Café da manhã
+💰 R$ 675,29 total
+💳 12x de R$ 56,27 sem juros
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a079b0e79cd97759bba00d
+
+**OPÇÃO 3** - Plaza Inn Breeze Aeroporto
+📍 Av. Vera Cruz, nº 2321, Qd 137, Lt 06/10 Jardim Guanabara, Goiânia
+🛏️ 1 Executivo Casal
+☕ Café da manhã
+💰 R$ 821,29 total
+💳 12x de R$ 68,44 sem juros
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a079be24507c840d966122
+
+**OPÇÃO 4** - Plaza Inn Executive Goiania
+📍 Avenida D 302, Goiânia
+🛏️ 1 Luxo Casal
+☕ Café da manhã
+💰 R$ 856,23 total
+💳 12x de R$ 71,35 sem juros
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a079cca248cd134d044409
+
+**OPÇÃO 5** - Quality Hotel Flamboyant
+📍 Rua 14, Goiânia
+🛏️ 1 Apartamento Superior King
+☕ Café da manhã
+💰 R$ 923,95 total
+💳 12x de R$ 76,99 sem juros
+🏷️ Não reembolsável
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a079d92c16c48af9dbeb2e
+
+Valores sujeitos a confirmação e disponibilidade (v1.9)
+
+⚠️ Sistema em modo fallback - Verifique configurações de IA`;
+            } else if (tipoDetectado === 'aereo_conexao') {
                 resultado = `*Latam - São Paulo ✈ Pucallpa*
 
 15/09 - Guarulhos 03:40 / Pucallpa 15:25 (conexão em Lima)
@@ -780,7 +911,7 @@ export default async function handler(req, res) {
 ✅ Bagagem de mão + bolsa pequena incluídas
 🏷️ Não reembolsável
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)
+Valores sujeitos a confirmação e disponibilidade (v1.9)
 
 ⚠️ Sistema em modo fallback - Verifique configurações de IA`;
             } else {
@@ -795,25 +926,25 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)
 ✅ Bagagem de mão + bolsa pequena incluídas
 🏷️ Não reembolsável
 
-Valores sujeitos a confirmação e disponibilidade (v1.7)
+Valores sujeitos a confirmação e disponibilidade (v1.9)
 
 ⚠️ Sistema em modo fallback - Verifique configurações de IA`;
             }
             
-            iaUsada = 'fallback-v1.7';
+            iaUsada = 'fallback-v1.9';
         }
 
         // Limpar resultado
         resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
 
-        console.log('✅ v1.7: Processamento concluído. Enviando resposta...');
+        console.log('✅ v1.9: Processamento concluído. Enviando resposta...');
         
         return res.status(200).json({
             success: true,
             result: resultado,
             ia_usada: iaUsada,
             metadata: { 
-                version: '1.7-CORRECAO-VOOS-CONEXAO', 
+                version: '1.9-REEMBOLSO-HOTEIS-ILIMITADOS', 
                 timestamp: new Date().toISOString(),
                 tipo: detectOrcamentoType(conteudoPrincipal, tipos),
                 destino_extraido: extrairDestinoDoConteudo(conteudoPrincipal),
@@ -822,10 +953,13 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)
                     conteudo_length: conteudoPrincipal.length,
                     tipos_selecionados: tipos,
                     eh_pacote: tipos?.includes('Aéreo') && tipos?.includes('Hotel'),
-                    tem_pucallpa: conteudoPrincipal.includes('Pucallpa') || conteudoPrincipal.includes('PCL'),
-                    tem_lima_conexao: conteudoPrincipal.toLowerCase().includes('lima') && conteudoPrincipal.toLowerCase().includes('espera'),
-                    tem_multiplos_trechos: (conteudoPrincipal.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2,
-                    tem_voo_paradas: conteudoPrincipal.toLowerCase().includes('voo com paradas'),
+                    eh_hotel_apenas: tipos?.includes('Hotel') && !tipos?.includes('Aéreo'),
+                    quantidade_hoteis_detectados: (conteudoPrincipal.match(/(hotel|pousada|resort|plaza|quality)/gi) || []).length,
+                    tem_goiania: conteudoPrincipal.toLowerCase().includes('goiânia') || conteudoPrincipal.toLowerCase().includes('goiania'),
+                    tem_multiplos_hoteis: (conteudoPrincipal.match(/(hotel|pousada|resort|plaza|quality)/gi) || []).length >= 2,
+                    nao_tem_voo: !conteudoPrincipal.toLowerCase().includes('voo') && !conteudoPrincipal.toLowerCase().includes('aéreo'),
+                    tem_tipo_quarto: conteudoPrincipal.toLowerCase().includes('executivo') || conteudoPrincipal.toLowerCase().includes('superior'),
+                    tem_cafe_manha: conteudoPrincipal.toLowerCase().includes('café da manhã'),
                     multiplos_valores: (conteudoPrincipal.match(/Total.*R\$\s*[\d.,]+/gi) || []).length,
                     valor_encontrado: conteudoPrincipal.match(/R\$\s*[\d.,]+/),
                     codigos_aeroporto: conteudoPrincipal.match(/\b[A-Z]{3}\b/g)
@@ -834,24 +968,24 @@ Valores sujeitos a confirmação e disponibilidade (v1.7)
         });
 
     } catch (error) {
-        console.error('❌ v1.7: Erro INESPERADO no handler principal:', error);
+        console.error('❌ v1.9: Erro INESPERADO no handler principal:', error);
         return res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',
             details: error.message,
-            version: '1.7-CORRECAO-VOOS-CONEXAO',
+            version: '1.9-REEMBOLSO-HOTEIS-ILIMITADOS',
             timestamp: new Date().toISOString()
         });
     }
 }
 
-console.log('✅ CVC Itaqua v1.7-CORRECAO-VOOS-CONEXAO - api/ai-google.js completo!');
-console.log('🔧 Correções v1.7 aplicadas:');
-console.log('  - ✅ DETECÇÃO VOOS CONEXÃO: Identificação automática de voos com paradas/conexões');
-console.log('  - ✅ TEMPLATE CONEXÃO: Seção específica "Detalhes dos Voos" com trechos separados');
-console.log('  - ✅ DESTINO CORRETO: São Paulo ✈ Pucallpa (não Lima para destino final Pucallpa)');
-console.log('  - ✅ TEMPO CONEXÃO: Cálculo e exibição do tempo de espera em cada conexão');
-console.log('  - ✅ PARCELAMENTO SIMPLES: "12x de R$ 272,83 sem juros" (removido primeira parcela)');
-console.log('  - ✅ BAGAGEM SIMPLIFICADA: "Bagagem de mão + bolsa pequena incluídas"');
-console.log('  - ✅ AEROPORTOS PERUANOS: Adicionados PCL, CUZ, IQT e outros');
-console.log('  - ✅ FALLBACK CONEXÃO: Resposta específica para voos com conexão em modo fallback');
+console.log('✅ CVC Itaqua v1.9-REEMBOLSO-HOTEIS-ILIMITADOS - api/ai-google.js completo!');
+console.log('🔧 Correções v1.9 aplicadas:');
+console.log('  - ✅ REEMBOLSO CRÍTICO: Só mostrar "NÃO REEMBOLSÁVEL" (omitir quando reembolsável)');
+console.log('  - ✅ HOTÉIS ILIMITADOS: Suporte para qualquer quantidade de hotéis (1, 2, 5, 10, 20+)');
+console.log('  - ✅ TEMPLATE DINÂMICO: Gera opções conforme quantidade enviada pelo usuário');
+console.log('  - ✅ REGRA REEMBOLSO GLOBAL: Aplicada para hotéis, aéreo, pacotes e qualquer serviço');
+console.log('  - ✅ DETECÇÃO FLEXÍVEL: Processa todos os hotéis encontrados no texto automaticamente');
+console.log('  - ✅ FORMATO ADAPTATIVO: Adaptação automática para qualquer número de opções');
+console.log('  - ✅ FALLBACK CORRETO: Exemplo mostra só "Não reembolsável" para Quality Hotel Flamboyant');
+console.log('  - ✅ INSTRUÇÕES IA: Prompt específico para geração dinâmica e regra de reembolso');
