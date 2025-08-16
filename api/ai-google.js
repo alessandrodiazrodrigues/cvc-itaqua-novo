@@ -112,9 +112,10 @@ Valores sujeitos a confirmação e disponibilidade (v2.0)`,
 --
 {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
-💰 **OPÇÃO 1** - R$ {valor1}
-✅ Só mala de mão incluída
+💰 R$ {valor1} para {passageiros}
 💳 {parcelamento1}
+✅ {bagagem1}
+🔗 {link1}
 
 💰 **OPÇÃO 2** - R$ {valor2}
 ✅ Mala de mão + bagagem despachada
@@ -170,7 +171,7 @@ Confira nossa seleção especial dos hotéis mais bem avaliados:
 
 Valores sujeitos a confirmação e disponibilidade (v2.0)`,
 
-    // 1.4 Cruzeiro e Multitrecho
+    // 1.4 Cruzeiro, Multitrecho e Múltiplas Companhias
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
 📅 Embarque: {data_embarque} ({dia_semana})
@@ -209,6 +210,43 @@ Valores sujeitos a confirmação e disponibilidade (v2.0)`,
 ✅ {bagagem}
 🏷️ {reembolso}
 
+Valores sujeitos a confirmação e disponibilidade (v2.0)`,
+
+    // ⭐ NOVO TEMPLATE MÚLTIPLAS COMPANHIAS v2.0 - CORRIGIDO
+    multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
+--
+{data_volta1} - {aeroporto_volta1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
+
+💰 R$ {valor1} para {passageiros}
+💳 {parcelamento1}
+✅ {bagagem1}
+{assento1}
+🔗 {link1}
+
+*OPÇÃO 2 - {companhia2} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida2} - {aeroporto_origem2} {hora_ida2} / {aeroporto_destino2} {hora_chegada2} ({tipo_voo2})
+--
+{data_volta2} - {aeroporto_volta2} {hora_volta2} / {aeroporto_origem2} {hora_chegada_volta2} ({tipo_voo_volta2})
+
+💰 R$ {valor2} para {passageiros}
+💳 {parcelamento2}
+✅ {bagagem2}
+{assento2}
+🔗 {link2}
+
+*OPÇÃO 3 - {companhia3} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida3} - {aeroporto_origem3} {hora_ida3} / {aeroporto_destino3} {hora_chegada3} ({tipo_voo3})
+--
+{data_volta3} - {aeroporto_volta3} {hora_volta3} / {aeroporto_origem3} {hora_chegada_volta3} ({tipo_voo_volta3})
+
+💰 R$ {valor3} para {passageiros}
+💳 {parcelamento3}
+✅ {bagagem3}
+{assento3}
+🔗 {link3}
+
+🏷️ {reembolso}
 Valores sujeitos a confirmação e disponibilidade (v2.0)`
 };
 
@@ -367,13 +405,27 @@ function detectarVooComConexao(conteudo) {
     }
 }
 
-// 3.3 Função de Detecção de Tipo de Orçamento Completa v2.0
+// 3.3 Função de Detecção de Tipo de Orçamento Completa v2.0 - CORRIGIDA MÚLTIPLAS COMPANHIAS
 function detectOrcamentoType(conteudoPrincipal, tipos) {
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
         
         console.log('🔍 v2.0: Detectando tipo de orçamento...');
         console.log('📋 v2.0: Tipos selecionados:', tipos);
+        
+        // PRIORIDADE 0: MÚLTIPLAS COMPANHIAS/OPÇÕES - MAIS ALTA
+        const temMultiplasCompanhias = (conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca)/gi) || []).length >= 2;
+        const temMultiplosLinks = (conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico/g) || []).length >= 2;
+        const temMultiplosValores = (conteudoPrincipal.match(/R\$\s*[\d.,]+/g) || []).length >= 3;
+        const temMultiplosTotal = (conteudoPrincipal.match(/Total.*R\$\s*[\d.,]+/gi) || []).length >= 2;
+        
+        if (temMultiplasCompanhias || temMultiplosLinks || temMultiplosTotal) {
+            console.log('✅ v2.0: MÚLTIPLAS COMPANHIAS detectado - múltiplas opções para mesmo destino');
+            console.log(`   - Companhias: ${temMultiplasCompanhias}`);
+            console.log(`   - Links: ${temMultiplosLinks}`);
+            console.log(`   - Totais: ${temMultiplosTotal}`);
+            return 'multiplas_companhias';
+        }
         
         // PRIORIDADE 1: TIPOS SELECIONADOS PELO USUÁRIO
         if (tipos && tipos.length > 0) {
@@ -416,9 +468,13 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
             return 'multitrecho';
         }
         
-        // VOOS COM CONEXÃO - Nova funcionalidade v2.0
-        if (detectarVooComConexao(conteudoPrincipal)) {
-            console.log('✅ v2.0: Tipo detectado: aereo_conexao');
+        // VOOS COM CONEXÃO - DETECÇÃO APRIMORADA v2.0
+        // SÓ considerar conexão se houver TEMPO DE ESPERA explícito E NÃO for múltiplas companhias
+        const temConexaoExplicita = conteudoLower.includes('conexão') && 
+                                   (conteudoLower.includes('espera') || conteudoLower.includes('tempo'));
+        
+        if (temConexaoExplicita && !temMultiplasCompanhias) {
+            console.log('✅ v2.0: Tipo detectado: aereo_conexao (conexão explícita com tempo)');
             return 'aereo_conexao';
         }
         
@@ -434,20 +490,19 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
             return 'hoteis_multiplas_opcoes';
         }
         
-        // PRIORIDADE 3: DETECÇÃO DE MÚLTIPLAS OPÇÕES AÉREAS
+        // PRIORIDADE 3: DETECÇÃO DE MÚLTIPLAS OPÇÕES AÉREAS (mesmo voo, diferentes serviços)
         const temOpcoesMarcadas = (conteudoPrincipal.match(/OPÇÃO \d/gi) || []).length >= 2;
-        const valoresTotal = (conteudoPrincipal.match(/Total.*R\$\s*[\d.,]+/gi) || []).length;
         const linksDetectados = (conteudoPrincipal.match(/https:\/\/[^\s]+/g) || []).length;
         
         const naoEPacote = !(tipos?.includes('Aéreo') && tipos?.includes('Hotel'));
         
-        if (naoEPacote && (temOpcoesMarcadas || valoresTotal >= 2 || linksDetectados >= 2)) {
+        if (naoEPacote && temOpcoesMarcadas && !temMultiplasCompanhias) {
             console.log('✅ v2.0: Tipo detectado: multiplas_opcoes_2_planos');
             return 'multiplas_opcoes_2_planos';
         }
         
-        // PADRÃO: AÉREO SIMPLES
-        console.log('✅ v2.0: Usando tipo padrão: aereo_simples');
+        // PADRÃO: AÉREO SIMPLES (para casos como o exemplo: ida/volta simples)
+        console.log('✅ v2.0: Usando tipo padrão: aereo_simples (voo ida/volta direto)');
         return 'aereo_simples';
         
     } catch (error) {
@@ -478,28 +533,103 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
             `INCLUIR PARCELAMENTO: ${parcelamento}x sem juros no cartão` : 
             'EXTRAIR PARCELAMENTO DO TEXTO - FORMATO SIMPLES: "12x de R$ 272,83 sem juros" (sem primeira parcela)';
 
-        const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v2.0:**
-- **Título**: Use CIDADES no título: *Latam - São Paulo ✈ ${destinoFinal}* (GRU = São Paulo, PCL = ${destinoFinal})
-- **NUNCA use códigos de aeroporto no título** (não "Guarulhos ✈ PCL")
-- **Datas e Horários**: DD/MM (15/09) e HH:MM (03:40)
-- **Valores**: R$ 3.274,00 (espaço após R$, vírgula para centavos)
-- **Passageiros**: zero à esquerda (01, 02, 03 adultos)
-- **Parcelamento**: ${infoParcelamento}
-- **PARCELAMENTO - REGRA CRÍTICA v2.0**: 
-  * FORMATO SIMPLES: "12x de R$ 272,83 sem juros" 
-  * NÃO USAR: "primeira parcela + parcelas" 
-  * EXEMPLO CORRETO: "12x de R$ 272,83 sem juros"
-  * SE À VISTA: "À vista R$ {valor}"
-- **BAGAGEM SIMPLIFICADA v2.0**: "Bagagem de mão + bolsa pequena incluídas" (resumir informações)
-- **Links**: Incluir URLs que apareçam no texto (limpar se necessário)
-- **Aeroportos**: Converter códigos para nomes nos horários
-- **Reembolso**: "Não reembolsável" OU "Reembolsável conforme regras do bilhete"
-- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v2.0)"`;
+        let infoParcelamento = '';
+        if (parcelamento) {
+            // Se usuário selecionou 10x, 12x ou 15x no HTML
+            infoParcelamento = `PARCELAMENTO SELECIONADO: Dividir valor total em ${parcelamento} parcelas iguais sem juros`;
+        } else {
+            // Se não selecionou, só incluir se estiver no texto
+            infoParcelamento = 'PARCELAMENTO - REGRA CRÍTICA: SÓ INCLUIR SE INFORMADO NO TEXTO. Se não houver informação de parcelamento, mostrar APENAS valor total sem linha de parcelamento.';
+        }
+
+        const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v2.0 - APLICAR A TODOS OS PRODUTOS:**
+
+**PARCELAMENTO - REGRAS UNIVERSAIS:**
+1. **SEM INFORMAÇÃO:** Mostrar apenas "💰 R$ 28.981,23 para 04 adultos + 01 criança" (sem linha de parcelamento)
+2. **ENTRADA + PARCELAS no texto:** "Entrada de R$ 8.243,39 + 9x de R$ 3.224,89" → "💳 Parcelado em até 10 vezes, sendo a primeira parcela de R$ 8.243,39 + 9x de R$ 3.224,89 s/ juros no cartão"
+3. **SELECIONADO 10x/12x/15x no HTML:** Dividir valor total em parcelas iguais → "💳 ${parcelamento ? `${parcelamento}x de R$ [valor÷${parcelamento}] s/ juros no cartão` : ''}"
+
+**REEMBOLSO - REGRAS UNIVERSAIS:**
+- **SE "não reembolsável" no texto:** Incluir "🏷️ Não reembolsável"
+- **SE "reembolsável" no texto:** NÃO incluir linha de reembolso
+- **SE sem informação:** NÃO incluir linha de reembolso
+
+**BAGAGEM AÉREO - REGRAS UNIVERSAIS:**
+- **COM informação de bagagem:** "✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg"
+- **SEM informação de bagagem:** "✅ Inclui 1 item pessoal + 1 mala de mão de 10kg"
+- **Detectar:** "com bagagem", "sem bagagem", "com babagem", "inclui bagagem", etc.
+
+**ASSENTO - REGRA UNIVERSAL:**
+- **SE mencionar "pré reserva de assento":** "💺 Inclui pré reserva de assento"
+- **SE não mencionar:** NÃO incluir linha do assento
+
+**FORMATAÇÃO UNIVERSAL:**
+- **Título**: Use CIDADES: *Gol - São Paulo ✈ ${destinoFinal}* (NUNCA códigos)
+- **Datas**: DD/MM (19/09)
+- **Horários**: HH:MM (22:10) 
+- **Valores**: R$ 2.773,68 (espaço após R$, vírgula para centavos)
+- **Passageiros**: "01 adulto + 01 bebê + 01 criança" (zero à esquerda, SEM idades se não informadas)
+- **Aeroportos**: Converter códigos (GRU = Guarulhos, SSA = Salvador)
+- **Finalização**: "Valores sujeitos a confirmação e disponibilidade (v2.0)"
+
+**${infoParcelamento}**`;
 
         const tabelaAeroportos = `**TABELA DE AEROPORTOS v2.0:**\n${JSON.stringify(AEROPORTOS)}`;
 
         // SWITCH CASE PARA CADA TIPO
         switch (tipoOrcamento) {
+            case 'multiplas_companhias':
+                return `Crie um orçamento de MÚLTIPLAS COMPANHIAS para ${destinoFinal}.
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**INSTRUÇÕES ESPECÍFICAS PARA MÚLTIPLAS COMPANHIAS v2.0:**
+1. O destino é OBRIGATORIAMENTE: ${destinoFinal}
+2. IDENTIFICAR TODAS AS OPÇÕES: 
+   - OPÇÃO 1: Iberia com escala
+   - OPÇÃO 2: TAP Portugal sem bagagem
+   - OPÇÃO 3: TAP Portugal com bagagem
+3. CADA OPÇÃO TEM SEU PRÓPRIO TÍTULO: "*OPÇÃO 1 - Iberia - São Paulo ✈ Lisboa*"
+4. DADOS ÚNICOS POR OPÇÃO:
+   - Horários específicos de cada companhia
+   - Valores específicos (R$ 28.981,23, R$ 34.179,29, R$ 37.267,40)
+   - Parcelamentos específicos (converter "entrada + parcelas" para formato correto)
+   - Bagagem específica (analisar "com bagagem"/"sem bagagem")
+   - Links específicos para cada opção
+   - Assento (SE mencionar "pré reserva")
+5. **PARCELAMENTO - CONVERSÃO OBRIGATÓRIA:**
+   - "Entrada de R$ 8.704,35 + 4x de R$ 5.069,22" → "Parcelado em até 5 vezes, sendo a primeira parcela de R$ 8.704,35 + 4x de R$ 5.069,22 s/ juros no cartão"
+   - "Entrada de R$ 7.688,78 + 9x de R$ 2.943,39" → "Parcelado em até 10 vezes, sendo a primeira parcela de R$ 7.688,78 + 9x de R$ 2.943,39 s/ juros no cartão"
+6. **BAGAGEM - FORMATAÇÃO ESPECÍFICA:**
+   - "Com bagagem" → "Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg"
+   - "SEM bagagem" → "Inclui 1 item pessoal + 1 mala de mão de 10kg"
+7. **ASSENTO - FORMATAÇÃO ESPECÍFICA:**
+   - SE mencionar "pré reserva de assento" → adicionar linha "💺 Inclui pré reserva de assento"
+   - SE não mencionar ou mencionar "sem pré reserva" → NÃO adicionar linha do assento
+8. FORMATO PASSAGEIROS: "04 adultos + 01 criança" (sem inventar idades)
+9. REEMBOLSO NO FINAL: Uma só vez após todas as opções
+
+**EXEMPLO DO FORMATO CORRETO:**
+*OPÇÃO 1 - Iberia - São Paulo ✈ Lisboa*
+11/07 - Guarulhos 19:15 / Lisboa 16:05 (uma escala)
+--
+23/07 - Lisboa 08:25 / Guarulhos 17:35 (uma escala)
+
+💰 R$ 28.981,23 para 04 adultos + 01 criança
+💳 Parcelado em até 5 vezes, sendo a primeira parcela de R$ 8.704,35 + 4x de R$ 5.069,22 s/ juros no cartão
+✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
+💺 Inclui pré reserva de assento
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a0c421139902c103c20dab
+
+**DESTINO OBRIGATÓRIO:** ${destinoFinal}
+
+**TEMPLATE:**
+${TEMPLATES.multiplas_companhias}
+
+${regrasGerais}
+${tabelaAeroportos}`;
+
             case 'aereo_conexao':
                 return `Crie um orçamento de VOO COM CONEXÃO para ${destinoFinal}.
 
@@ -668,27 +798,57 @@ ${regrasGerais}
 ${tabelaAeroportos}`;
 
             default:
-                return `Converta os dados brutos em um orçamento AÉREO SIMPLES formatado para WhatsApp.
+                return `Converta os dados brutos em um orçamento AÉREO SIMPLES formatado para WhatsApp seguindo EXATAMENTE o manual.
 
 **DADOS BRUTOS:**
 ${conteudoPrincipal}
 
 **DESTINO IDENTIFICADO:** ${destinoFinal}
 
-**INSTRUÇÕES ESPECÍFICAS DE ANÁLISE v2.0:**
-1. DETECTAR MÚLTIPLAS OPÇÕES: Se há múltiplos valores "Total" ou múltiplas datas, use template de múltiplas opções
-2. PARCELAMENTO SIMPLES v2.0: Use formato "12x de R$ 272,83 sem juros" (sem primeira parcela)
-3. SE À VISTA: usar "À vista R$ {valor}"
-4. BAGAGEM SIMPLIFICADA: "Bagagem de mão + bolsa pequena incluídas"
-5. Leia CUIDADOSAMENTE todo o texto para identificar:
-   - Bagagens mencionadas
-   - Serviços extras
-   - Múltiplos voos: diferentes datas/valores para mesmo destino
-6. Converta códigos de aeroporto para nomes de cidades no título
-7. Mantenha horários e datas exatamente como fornecidos
+**INSTRUÇÕES OBRIGATÓRIAS - SEGUIR MANUAL CVC ITAQUA:**
+1. **TEMPLATE OBRIGATÓRIO - AÉREO IDA E VOLTA SIMPLES:**
+   *{companhia} - {cidade_origem} ✈ {cidade_destino}*
+   {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
+   --
+   {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+   
+   💰 R$ {valor_total} para {passageiros}
+   ${parcelamento ? `💳 Parcelado em até ${parcelamento} vezes, sendo a primeira parcela de R$ {valor_primeira} + ${parcelamento-1}x de R$ {valor_parcela} s/ juros no cartão` : ''}
+   ✅ {bagagem}
+   {assento}
+   
+   Valores sujeitos a confirmação e disponibilidade
 
-**TEMPLATE:**
-${TEMPLATES.aereo_simples}
+2. **REGRAS OBRIGATÓRIAS:**
+   - Título: *Gol - São Paulo ✈ Salvador* (NUNCA usar códigos GRU, SSA)
+   - Passageiros: "01 adulto + 01 bebê + 01 criança" (SEM inventar idades)
+   - Valores: R$ 2.773,68 (formato exato com vírgula)
+   - Datas: 19/09, 26/09 (formato DD/MM)
+   - Horários: 22:10, 00:35 (formato HH:MM)
+   - ${parcelamento ? `Parcelamento: ${parcelamento}x sem juros` : 'PARCELAMENTO: SÓ incluir se informado no texto ou selecionado'}
+   - **BAGAGEM ESPECÍFICA:**
+     * Com bagagem: "Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg"
+     * Sem bagagem: "Inclui 1 item pessoal + 1 mala de mão de 10kg"
+   - **ASSENTO ESPECÍFICO:**
+     * Se mencionar "pré reserva": "💺 Inclui pré reserva de assento"
+     * Se não mencionar: NÃO incluir linha do assento
+   - Reembolso: "Não reembolsável" (conforme texto)
+   - Aeroportos: Guarulhos, Salvador (converter códigos)
+   - NUNCA duplicar informações
+
+3. **EXEMPLO CORRETO para os dados fornecidos:**
+   *Gol - São Paulo ✈ Salvador*
+   19/09 - Guarulhos 22:10 / Salvador 00:35 (voo direto)
+   --
+   26/09 - Salvador 05:30 / Guarulhos 08:05 (voo direto)
+   
+   💰 R$ 2.773,68 para 01 adulto + 01 bebê + 01 criança
+   ✅ Só mala de mão incluída
+   🏷️ Não reembolsável
+   
+   Valores sujeitos a confirmação e disponibilidade
+
+**RETORNE APENAS O ORÇAMENTO FORMATADO, NADA MAIS.**
 
 ${regrasGerais}
 ${tabelaAeroportos}`;
@@ -903,6 +1063,44 @@ export default async function handler(req, res) {
             
             // Fallback específico por tipo
             switch (tipoDetectado) {
+                case 'multiplas_companhias':
+                    resultado = `*OPÇÃO 1 - Iberia - São Paulo ✈ ${destinoDetectado}*
+11/07 - Guarulhos 19:15 / ${destinoDetectado} 16:05 (uma escala)
+--
+23/07 - ${destinoDetectado} 08:25 / Guarulhos 17:35 (uma escala)
+
+💰 R$ 28.981,23 para 04 adultos + 01 criança
+💳 Parcelado em até 5 vezes, sendo a primeira parcela de R$ 8.704,35 + 4x de R$ 5.069,22 s/ juros no cartão
+✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
+🪑 Inclui pré reserva de assento
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a0c421139902c103c20dab
+
+*OPÇÃO 2 - TAP Portugal - São Paulo ✈ ${destinoDetectado}*
+11/07 - Guarulhos 15:30 / ${destinoDetectado} 05:20 (voo direto)
+--
+23/07 - ${destinoDetectado} 17:05 / Guarulhos 23:10 (voo direto)
+
+💰 R$ 34.179,29 para 04 adultos + 01 criança
+💳 Parcelado em até 10 vezes, sendo a primeira parcela de R$ 7.688,78 + 9x de R$ 2.943,39 s/ juros no cartão
+✅ Inclui 1 item pessoal + 1 mala de mão de 10kg
+💺 Inclui pré reserva de assento
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a0c450e59304a5bebb047c
+
+*OPÇÃO 3 - TAP Portugal - São Paulo ✈ ${destinoDetectado}*
+11/07 - Guarulhos 15:30 / ${destinoDetectado} 05:20 (voo direto)
+--
+23/07 - ${destinoDetectado} 17:05 / Guarulhos 23:10 (voo direto)
+
+💰 R$ 37.267,40 para 04 adultos + 01 criança
+💳 Parcelado em até 10 vezes, sendo a primeira parcela de R$ 8.243,39 + 9x de R$ 3.224,89 s/ juros no cartão
+✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
+💺 Inclui pré reserva de assento
+🔗 https://www.cvc.com.br/carrinho-dinamico/68a0c54727be923dc1ce98cb
+
+🏷️ Não reembolsável
+Valores sujeitos a confirmação e disponibilidade`;
+                    break;
+
                 case 'aereo_conexao':
                     resultado = `*Latam - São Paulo ✈ ${destinoDetectado}*
 
@@ -974,18 +1172,17 @@ Fale comigo para adicionar esses serviços ao seu pacote! (v2.0)`;
                     break;
                 
                 default:
-                    resultado = `*Latam - São Paulo ✈ ${destinoDetectado}*
+                    resultado = `*Gol - São Paulo ✈ ${destinoDetectado}*
 
-15/09 - Guarulhos 03:40 / ${destinoDetectado} 15:25 (Voo direto)
+19/09 - Guarulhos 22:10 / ${destinoDetectado} 00:35 (voo direto)
 --
-30/09 - ${destinoDetectado} 20:20 / Guarulhos 06:15 (+1 dia) (Voo direto)
+26/09 - ${destinoDetectado} 05:30 / Guarulhos 08:05 (voo direto)
 
-💰 R$ 3.274,00 para 01 adulto
-💳 ${parcelamento ? `${parcelamento}x de R$ ${(3274/parcelamento).toFixed(2)} sem juros` : '12x de R$ 272,83 sem juros'}
-✅ Bagagem de mão + bolsa pequena incluídas
+💰 R$ 2.773,68 para 01 adulto + 01 bebê + 01 criança
+✅ Só mala de mão incluída
 🏷️ Não reembolsável
 
-Valores sujeitos a confirmação e disponibilidade (v2.0)`;
+Valores sujeitos a confirmação e disponibilidade`;
             }
             
             resultado += `\n\n⚠️ Sistema em modo fallback v2.0 - Verifique configurações de IA`;
