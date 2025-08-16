@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📈 Sistema de Vendas - CVC Itaqua</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -88,53 +86,6 @@
             font-size: 1.1rem;
         }
         
-        /* ESTATÍSTICAS */
-        .stats-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-card {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .stat-card i {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            color: var(--cvc-amarelo);
-        }
-        
-        .stat-card h6 {
-            margin: 5px 0;
-            font-weight: 600;
-        }
-        
-        .stat-card span {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--cvc-amarelo);
-        }
-        
-        .stat-card small {
-            display: block;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-        
-        /* NAVEGAÇÃO */
         .nav-pills {
             background: #f8f9fa;
             padding: 20px;
@@ -160,12 +111,10 @@
             color: white;
         }
         
-        /* SEÇÃO PRINCIPAL */
         .content-section {
             padding: 30px;
         }
         
-        /* FORMULÁRIO */
         .form-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 15px;
@@ -217,14 +166,13 @@
             box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
         }
         
-        /* RADIO E CHECKBOX CUSTOM */
-        .radio-group {
+        .radio-group, .checkbox-group {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
         }
         
-        .radio-item {
+        .radio-item, .checkbox-item {
             background: white;
             border: 2px solid #e9ecef;
             border-radius: 10px;
@@ -236,49 +184,18 @@
             gap: 10px;
         }
         
-        .radio-item:hover {
+        .radio-item:hover, .checkbox-item:hover {
             border-color: var(--cvc-azul);
             background: rgba(0, 51, 153, 0.05);
             transform: translateY(-2px);
         }
         
-        .radio-item.selected {
+        .radio-item.selected, .checkbox-item.selected {
             border-color: var(--cvc-azul);
             background: rgba(0, 51, 153, 0.1);
             font-weight: 600;
         }
         
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .checkbox-item {
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-item:hover {
-            border-color: var(--cvc-azul);
-            background: rgba(0, 51, 153, 0.05);
-            transform: translateY(-2px);
-        }
-        
-        .checkbox-item.selected {
-            border-color: var(--cvc-azul);
-            background: rgba(0, 51, 153, 0.1);
-            font-weight: 600;
-        }
-        
-        /* RECIBOS */
         .recibo-container {
             background: white;
             border-radius: 15px;
@@ -287,20 +204,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             border-left: 4px solid var(--cvc-verde);
             position: relative;
-            overflow: hidden;
-        }
-        
-        .recibo-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: var(--cvc-amarelo);
-            border-radius: 50%;
-            opacity: 0.05;
-            transform: translate(30%, -30%);
         }
         
         .recibo-header {
@@ -319,23 +222,6 @@
             font-size: 0.95rem;
         }
         
-        .btn-remove-recibo {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-remove-recibo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-        }
-        
-        /* CAMPOS EXTRAS */
         .extra-fields {
             margin-top: 20px;
             padding: 20px;
@@ -343,87 +229,6 @@
             border-radius: 12px;
             border-left: 4px solid var(--cvc-amarelo);
             display: none;
-        }
-        
-        .multi-datas {
-            margin-top: 15px;
-            padding: 15px;
-            background: linear-gradient(135deg, #d1ecf1 0%, #b8daff 100%);
-            border-radius: 10px;
-            border-left: 3px solid #17a2b8;
-            display: none;
-        }
-        
-        .datas-extras {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        /* BAGAGEM E ASSENTO */
-        .bagagem-assento {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        /* BOTÕES */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 51, 153, 0.3);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--cvc-verde) 0%, #007C42 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(0, 168, 89, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
         }
         
         .btn-submit {
@@ -446,13 +251,6 @@
             box-shadow: 0 8px 25px rgba(0, 168, 89, 0.4);
         }
         
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        /* LOADING */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -469,7 +267,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* ALERTAS */
         .alert-custom {
             position: fixed;
             top: 20px;
@@ -480,186 +277,73 @@
             border-radius: 12px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
             animation: slideIn 0.3s ease;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
-        .alert-success-custom {
-            background: linear-gradient(135deg, #d4edda 0%, #b8dfca 100%);
-            color: #155724;
-            border: 1px solid #28a745;
-        }
-        
-        .alert-error-custom {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 100%);
-            color: #721c24;
-            border: 1px solid #dc3545;
-        }
-        
-        .alert-info-custom {
-            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-            color: #0c5460;
-            border: 1px solid #17a2b8;
-        }
-        
-        /* STATUS DE CONEXÃO */
         .status-conexao {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: var(--cvc-azul);
             color: white;
             padding: 10px 15px;
             border-radius: 20px;
-            font-size: 0.9rem;
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(0, 51, 153, 0.3);
             z-index: 1000;
             display: none;
         }
         
-        .status-conexao.online {
-            background: var(--cvc-verde);
-        }
-        
-        .status-conexao.offline {
-            background: #dc3545;
-        }
-        
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .header-title { 
-                font-size: 1.6rem; 
-            }
-            
-            .radio-group {
-                flex-direction: column;
-            }
-            
-            .bagagem-assento {
-                grid-template-columns: 1fr;
-            }
-            
-            .stat-card {
-                margin: 10px 0;
-            }
-            
-            .main-container {
-                margin: 10px;
-                border-radius: 15px;
-            }
-            
-            .header-section {
-                border-radius: 15px 15px 0 0;
-            }
-        }
+        .status-conexao.online { background: var(--cvc-verde); }
+        .status-conexao.offline { background: #dc3545; }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="main-container">
-            <!-- Header com Logo CVC -->
             <div class="header-section">
                 <div class="header-content">
                     <div class="d-flex align-items-center justify-content-center flex-wrap">
-                        <div class="cvc-logo me-4">
-                            CVC
-                        </div>
-                        <div class="text-center">
-                            <h1 class="header-title">
-                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
-                            </h1>
-                            <p class="header-subtitle">
-                                Formulário para cadastro de vendas completas - CVC Itaquaquecetuba
-                            </p>
+                        <div class="cvc-logo me-4">CVC</div>
+                        <div>
+                            <h1 class="header-title"><i class="fas fa-shopping-cart"></i> Cadastro de Vendas</h1>
+                            <p class="header-subtitle">Formulário para cadastro de vendas completas - CVC Itaquaquecetuba</p>
                         </div>
                     </div>
-                    
-
                 </div>
             </div>
             
-            <!-- Navigation -->
             <nav class="nav-pills">
                 <ul class="nav nav-pills justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="orcamentos.html">
-                            <i class="fas fa-calculator"></i> Orçamentos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="vendas.html">
-                            <i class="fas fa-shopping-cart"></i> Vendas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="embarques.html">
-                            <i class="fas fa-plane-departure"></i> Embarques
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="orbiuns.html">
-                            <i class="fas fa-clipboard-list"></i> Orbiuns
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orcamentos.html"><i class="fas fa-calculator"></i> Orçamentos</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="vendas.html"><i class="fas fa-shopping-cart"></i> Vendas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="embarques.html"><i class="fas fa-plane-departure"></i> Embarques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orbiuns.html"><i class="fas fa-clipboard-list"></i> Orbiuns</a></li>
                 </ul>
             </nav>
             
-            <!-- Main Content -->
             <div class="content-section">
                 <form id="formVendaCompleta">
-                    <!-- Informações Gerais -->
                     <div class="form-section">
                         <h4><i class="fas fa-info-circle"></i> Informações Gerais</h4>
-                        
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="nInforme" class="form-label">
-                                    <i class="fas fa-hashtag"></i> Nº do Informe
-                                </label>
-                                <input type="number" class="form-control" id="nInforme" name="nInforme" 
-                                       placeholder="Deixe em branco para gerar automático">
-                                <small class="text-muted">Será gerado automaticamente se vazio</small>
+                                <label for="nInforme" class="form-label"><i class="fas fa-hashtag"></i> Nº do Informe</label>
+                                <input type="number" class="form-control" id="nInforme" name="nInforme" placeholder="Deixe em branco para gerar automático">
                             </div>
-                            
                             <div class="col-md-4">
-                                <label class="form-label">
-                                    <i class="fas fa-building"></i> Filial
-                                </label>
+                                <label class="form-label"><i class="fas fa-building"></i> Filial</label>
                                 <div class="radio-group">
-                                    <div class="radio-item">
-                                        <input type="radio" name="filial" value="6220" id="filial6220" required>
-                                        <label for="filial6220">6220 - Itaquaquecetuba</label>
-                                    </div>
-                                    <div class="radio-item">
-                                        <input type="radio" name="filial" value="6223" id="filial6223">
-                                        <label for="filial6223">6223</label>
-                                    </div>
+                                    <div class="radio-item"><input type="radio" name="filial" value="6220" id="filial6220" required><label for="filial6220">6220 - Itaqua</label></div>
+                                    <div class="radio-item"><input type="radio" name="filial" value="6223" id="filial6223"><label for="filial6223">6223</label></div>
                                 </div>
                             </div>
-                            
                             <div class="col-md-4">
-                                <label for="vendedor" class="form-label">
-                                    <i class="fas fa-user-tie"></i> Vendedor
-                                </label>
+                                <label for="vendedor" class="form-label"><i class="fas fa-user-tie"></i> Vendedor</label>
                                 <select class="form-select" id="vendedor" name="vendedor" required>
                                     <option value="">Selecione...</option>
                                     <option value="Alessandro">Alessandro</option>
@@ -672,759 +356,218 @@
                                 </select>
                             </div>
                         </div>
-                        
-                        <div class="mt-3">
-                            <label class="form-label">
-                                <i class="fas fa-box"></i> Tipo de Pacote
-                            </label>
-                            <div class="checkbox-group">
-                                <div class="checkbox-item">
-                                    <input type="checkbox" name="pacote" value="Nacional" id="pacoteNacional">
-                                    <label for="pacoteNacional">🇧🇷 Nacional</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" name="pacote" value="Internacional" id="pacoteInternacional">
-                                    <label for="pacoteInternacional">🌍 Internacional</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" name="pacote" value="Marítimo" id="pacoteMaritimo">
-                                    <label for="pacoteMaritimo">🚢 Marítimo</label>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Dados do Cliente -->
                     <div class="form-section">
                         <h4><i class="fas fa-user"></i> Dados do Cliente</h4>
-                        
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="cpfCliente" class="form-label">
-                                    <i class="fas fa-id-card"></i> CPF
-                                </label>
-                                <input type="text" class="form-control" id="cpfCliente" name="cpfCliente" 
-                                       required placeholder="000.000.000-00" maxlength="14">
+                                <label for="cpfCliente" class="form-label"><i class="fas fa-id-card"></i> CPF</label>
+                                <input type="text" class="form-control" id="cpfCliente" name="cpfCliente" required placeholder="000.000.000-00" maxlength="14">
                             </div>
-                            
                             <div class="col-md-4">
-                                <label for="nomeCliente" class="form-label">
-                                    <i class="fas fa-signature"></i> Nome Completo
-                                </label>
+                                <label for="nomeCliente" class="form-label"><i class="fas fa-signature"></i> Nome Completo</label>
                                 <input type="text" class="form-control" id="nomeCliente" name="nomeCliente" required>
                             </div>
-                            
                             <div class="col-md-4">
-                                <label for="whatsappCliente" class="form-label">
-                                    <i class="fab fa-whatsapp"></i> WhatsApp
-                                </label>
-                                <input type="text" class="form-control" id="whatsappCliente" name="whatsappCliente" 
-                                       placeholder="(11) 99999-9999" maxlength="15">
+                                <label for="whatsappCliente" class="form-label"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                <input type="text" class="form-control" id="whatsappCliente" name="whatsappCliente" placeholder="(11) 99999-9999" maxlength="15">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recibos e Serviços -->
                     <div class="form-section">
                         <h4><i class="fas fa-receipt"></i> Recibos e Serviços</h4>
-                        
-                        <div id="recibosContainer">
-                            <!-- Recibos serão adicionados dinamicamente aqui -->
-                        </div>
-                        
+                        <div id="recibosContainer"></div>
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-success" id="btnAdicionarRecibo">
-                                <i class="fas fa-plus-circle"></i> Adicionar Recibo
-                            </button>
-                            <button type="button" id="btnRemoverRecibo" class="btn btn-danger ms-2" style="display: none;">
-                                <i class="fas fa-minus-circle"></i> Remover Último
-                            </button>
+                            <button type="button" class="btn btn-success" id="btnAdicionarRecibo"><i class="fas fa-plus-circle"></i> Adicionar Recibo</button>
                         </div>
                     </div>
 
-                    <!-- Seguro Viagem -->
                     <div class="form-section">
                         <h4><i class="fas fa-shield-alt"></i> Seguro Viagem</h4>
-                        
                         <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado">
-                                <label for="seguroRecusado">❌ Oferecido e RECUSADO</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" name="seguro" value="nao_oferecido" id="seguroNaoOferecido">
-                                <label for="seguroNaoOferecido">⚠️ Não Ofertou</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" name="seguro" value="comprou" id="seguroComprou">
-                                <label for="seguroComprou">✅ COMPROU</label>
-                            </div>
+                            <div class="radio-item"><input type="radio" name="seguro" value="recusado" id="seguroRecusado"><label for="seguroRecusado">❌ Oferecido e RECUSADO</label></div>
+                            <div class="radio-item"><input type="radio" name="seguro" value="nao_oferecido" id="seguroNaoOferecido"><label for="seguroNaoOferecido">⚠️ Não Ofertou</label></div>
+                            <div class="radio-item"><input type="radio" name="seguro" value="comprou" id="seguroComprou"><label for="seguroComprou">✅ COMPROU</label></div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i> Cadastrar Venda Completa
-                    </button>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Cadastrar Venda Completa</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Status de Conexão -->
     <div id="statusConexao" class="status-conexao">
         <i class="fas fa-wifi"></i> <span id="statusTexto">Verificando conexão...</span>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Sistema de Vendas CVC v6.2 - CORS CORRIGIDO + RECIBOS COMPLETOS');
-        
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES - CORS CORRIGIDO + URL ATUALIZADA
+        // 🔧 CONFIGURAÇÕES
         // ================================================================================
-        
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
-        
-        console.log('✅ Configurações carregadas');
-        console.log('🔗 API URL:', API_URL);
-        
-        const COMPANHIAS_AEREAS = [
-            'LATAM', 'AZUL', 'GOL', 'VOEPASS',
-            '──────────────',
-            'CRUZEIRO MSC', 'CRUZEIRO COSTA', 'CRUZEIRO TEMÁTICO', 'CRUZEIRO NCL', 
-            'CRUZEIRO DISNEY', 'CRUZEIROS OUTROS',
-            '──────────────',
-            'Aerolíneas Argentinas', 'Aeroméxico', 'Air Canada', 'Air China', 
-            'Air Europa', 'Air France', 'American Airlines', 'Arajet', 'Avianca',
-            'Boliviana de Aviación (BoA)', 'British Airways', 'Copa Airlines',
-            'Delta Air Lines', 'Emirates', 'Ethiopian Airlines', 'Flybondi',
-            'Iberia', 'ITA Airways', 'JetSmart', 'KLM', 'Lufthansa',
-            'Qatar Airways', 'Royal Air Maroc', 'Sky Airline', 
-            'Swiss International Air Lines', 'TAAG Linhas Aéreas de Angola',
-            'TAP Air Portugal', 'Turkish Airlines', 'United Airlines',
-            'OUTRAS CIAS'
-        ];
-
-        const TIPOS_SERVICO = [
-            'Aéreo', 'Aéreo Facial', 'Hotel', 'A+H', 'A+H+S',
-            'Passeios', 'Traslados', 'Traslados + Passeios', 'Ingressos',
-            'Seguro', 'Cruzeiro', 'SVA e Outros', 'Locação'
-        ];
-
+        const COMPANHIAS_AEREAS = ['LATAM', 'AZUL', 'GOL', 'VOEPASS', '──────────────', 'CRUZEIRO MSC', 'CRUZEIRO COSTA', '──────────────', 'Aerolíneas Argentinas', 'Aeroméxico', 'Air Canada', 'Air China', 'Air Europa', 'Air France', 'American Airlines', 'Arajet', 'Avianca', 'Boliviana de Aviación (BoA)', 'British Airways', 'Copa Airlines', 'Delta Air Lines', 'Emirates', 'Ethiopian Airlines', 'Flybondi', 'Iberia', 'ITA Airways', 'JetSmart', 'KLM', 'Lufthansa', 'Qatar Airways', 'Royal Air Maroc', 'Sky Airline', 'Swiss International Air Lines', 'TAAG Linhas Aéreas de Angola', 'TAP Air Portugal', 'Turkish Airlines', 'United Airlines', 'OUTRAS CIAS'];
+        const TIPOS_SERVICO = ['Aéreo', 'Aéreo Facial', 'Hotel', 'A+H', 'A+H+S', 'Passeios', 'Traslados', 'Ingressos', 'Seguro', 'Cruzeiro', 'Locação'];
         let contadorRecibos = 0;
         let conexaoOnline = false;
 
         // ================================================================================
         // 🚀 INICIALIZAÇÃO
         // ================================================================================
-        
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM carregado! Iniciando sistema...');
-            console.log('🚀 Sistema de Vendas CVC v6.2 - CORS CORRIGIDO');
-            console.log('✅ Compatível com aba EMBARQUES');
-            console.log('✅ Sistema completo de recibos mantido');
-            
-            // Verificar se elementos existem
-            const form = document.getElementById('formVendaCompleta');
-            const container = document.getElementById('recibosContainer');
-            const btnAdicionar = document.getElementById('btnAdicionarRecibo');
-            
-            console.log('🔍 Verificação de elementos:');
-            console.log('   - Formulário:', !!form);
-            console.log('   - Container recibos:', !!container);
-            console.log('   - Botão adicionar:', !!btnAdicionar);
-            
-            // Máscaras
             configurarMascaras();
-            
-            // Radio/Checkbox visual
             configurarRadioCheckbox();
-            
-            // Configurar eventos dos botões
             configurarEventos();
-            
-            // Adicionar primeiro recibo automaticamente
-            console.log('📋 Adicionando primeiro recibo automaticamente...');
             adicionarRecibo();
-            
-            // Configurar envio do formulário
-            if (form) {
-                form.addEventListener('submit', enviarVendaCompleta);
-                console.log('✅ Event listener do formulário configurado');
-            }
-            
-            // Verificar conexão
+            document.getElementById('formVendaCompleta').addEventListener('submit', enviarVendaCompleta);
             verificarConexao();
-            
-            console.log('🎉 Sistema totalmente carregado!');
         });
 
         // ================================================================================
-        // 🎯 CONFIGURAR EVENTOS DOS BOTÕES
+        // 🎯 CONFIGURAÇÃO DE EVENTOS
         // ================================================================================
-
         function configurarEventos() {
-            console.log('🎯 Configurando eventos dos botões...');
-            
-            // Botão adicionar recibo
-            const btnAdicionar = document.getElementById('btnAdicionarRecibo');
-            console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
-            
-            if (btnAdicionar) {
-                btnAdicionar.addEventListener('click', function() {
-                    console.log('🖱️ Clique no botão adicionar detectado!');
-                    adicionarRecibo();
-                });
-                console.log('✅ Event listener adicionado ao botão');
-            } else {
-                console.error('❌ Botão adicionar não encontrado!');
-            }
-            
-            // Botão remover último recibo
-            const btnRemover = document.getElementById('btnRemoverRecibo');
-            if (btnRemover) {
-                btnRemover.addEventListener('click', function() {
-                    console.log('🖱️ Clique no botão remover detectado!');
-                    removerUltimoRecibo();
-                });
-            }
-            
-            console.log('✅ Eventos dos botões configurados');
+            document.getElementById('btnAdicionarRecibo').addEventListener('click', adicionarRecibo);
         }
 
         // ================================================================================
         // 🌐 VERIFICAÇÃO DE CONEXÃO
         // ================================================================================
-
         async function verificarConexao() {
             const statusDiv = document.getElementById('statusConexao');
             const statusTexto = document.getElementById('statusTexto');
-            
             statusDiv.style.display = 'block';
-            
+
             try {
-                console.log('🔍 Verificando conexão com API...');
-                
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
+                // ✅ CORREÇÃO 1: Simplificando a requisição GET
                 const response = await fetch(API_URL, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'text/plain', // ✅ CORS CORRIGIDO
-                        'Cache-Control': 'no-cache'
-                    },
                     signal: controller.signal
                 });
-                
+
                 clearTimeout(timeoutId);
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        conexaoOnline = true;
-                        statusDiv.className = 'status-conexao online';
-                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema Online';
-                        console.log('✅ Conexão OK:', data.cors_status || data.message);
-                        
-                        // Esconder após 3 segundos
-                        setTimeout(() => {
-                            statusDiv.style.display = 'none';
-                        }, 3000);
-                    } else {
-                        throw new Error('Resposta inválida da API');
-                    }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    conexaoOnline = true;
+                    statusDiv.className = 'status-conexao online';
+                    statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema Online';
+                    setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    throw new Error('Resposta inválida da API');
                 }
-                
             } catch (error) {
                 conexaoOnline = false;
                 statusDiv.className = 'status-conexao offline';
-                statusTexto.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conexão falhou';
-                
-                console.error('❌ Erro de conexão:', error.message);
-                
-                if (error.name === 'AbortError') {
-                    console.log('⏱️ Timeout na conexão');
-                    mostrarAlerta('⏱️ Timeout na conexão. Verifique sua internet.', 'error');
-                } else {
-                    mostrarAlerta('❌ Problema de conexão com o servidor. Verifique se o Google Apps Script foi reimplantado.', 'error');
-                }
-                
-                // Manter visível se houver erro
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 10000);
+                statusTexto.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conexão Falhou';
+                mostrarAlerta('❌ Problema de conexão com o servidor. Verifique se o Google Apps Script foi reimplantado.', 'error');
             }
         }
 
         // ================================================================================
-        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO MANTIDO
+        // 🧾 GERENCIAMENTO DE RECIBOS
         // ================================================================================
-
         function adicionarRecibo() {
-            console.log('🧾 Função adicionarRecibo chamada!');
-            
             contadorRecibos++;
-            console.log('📊 Contador de recibos:', contadorRecibos);
-            
             const container = document.getElementById('recibosContainer');
-            if (!container) {
-                console.error('❌ Container de recibos não encontrado!');
-                return;
-            }
-            
-            console.log('✅ Container encontrado, criando recibo...');
-            
             const reciboDiv = document.createElement('div');
             reciboDiv.className = 'recibo-container';
             reciboDiv.id = `recibo-${contadorRecibos}`;
             
             reciboDiv.innerHTML = `
                 <div class="recibo-header">
-                    <div class="recibo-number">
-                        <i class="fas fa-receipt"></i> Recibo ${contadorRecibos}
-                    </div>
-                    <button type="button" class="btn-remove-recibo" data-recibo="${contadorRecibos}">
-                        <i class="fas fa-trash"></i> Remover
-                    </button>
+                    <div class="recibo-number"><i class="fas fa-receipt"></i> Recibo ${contadorRecibos}</div>
+                    ${contadorRecibos > 1 ? `<button type="button" class="btn btn-sm btn-danger" onclick="removerRecibo(${contadorRecibos})"><i class="fas fa-trash"></i> Remover</button>` : ''}
                 </div>
-
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-hashtag"></i> Nº do Recibo
-                        </label>
-                        <input type="text" class="form-control" name="recibo[]" placeholder="Apenas números">
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-file-alt"></i> Nº do Pedido
-                        </label>
-                        <input type="text" class="form-control" name="pedido[]">
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-ticket-alt"></i> Reserva
-                        </label>
-                        <input type="text" class="form-control" name="reserva[]">
-                    </div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-hashtag"></i> Nº do Recibo</label><input type="text" class="form-control" name="recibo[]"></div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-file-alt"></i> Nº do Pedido</label><input type="text" class="form-control" name="pedido[]"></div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-ticket-alt"></i> Reserva</label><input type="text" class="form-control" name="reserva[]"></div>
                 </div>
-
                 <div class="row g-3 mt-2">
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-tag"></i> Tipo de Serviço
-                        </label>
-                        <select class="form-select" name="tipo[]" data-recibo="${contadorRecibos}" required>
-                            <option value="">Selecione...</option>
-                            ${TIPOS_SERVICO.map(tipo => `<option value="${tipo}">${tipo}</option>`).join('')}
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-calendar-alt"></i> Data Ida
-                        </label>
-                        <input type="date" class="form-control" name="dataIda[]" required>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fas fa-calendar-check"></i> Data Volta
-                        </label>
-                        <input type="date" class="form-control" name="dataVolta[]">
-                    </div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-tag"></i> Tipo de Serviço</label><select class="form-select" name="tipo[]" data-recibo="${contadorRecibos}" required>${TIPOS_SERVICO.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-calendar-alt"></i> Data Ida</label><input type="date" class="form-control" name="dataIda[]" required></div>
+                    <div class="col-md-4"><label class="form-label"><i class="fas fa-calendar-check"></i> Data Volta</label><input type="date" class="form-control" name="dataVolta[]"></div>
                 </div>
-
-                <!-- CAMPOS EXTRAS PARA AÉREO -->
                 <div class="extra-fields" id="extras-${contadorRecibos}">
                     <h5 class="mb-3"><i class="fas fa-plane"></i> Detalhes Aéreos</h5>
-                    
                     <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-building"></i> Companhia Aérea
-                            </label>
-                            <select class="form-select" name="cia[]">
-                                <option value="">Selecione...</option>
-                                ${COMPANHIAS_AEREAS.map(cia => 
-                                    cia.startsWith('──') ? 
-                                    `<option disabled>${cia}</option>` : 
-                                    `<option value="${cia}">${cia}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-link"></i> LOC GDS
-                            </label>
-                            <input type="text" class="form-control" name="locGds[]">
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-link"></i> LOC CIA
-                            </label>
-                            <input type="text" class="form-control" name="locCia[]">
-                        </div>
-                    </div>
-
-                    <!-- BAGAGEM E ASSENTO -->
-                    <div class="bagagem-assento mt-3" id="bagagem-${contadorRecibos}">
-                        <div class="checkbox-item">
-                            <input type="hidden" name="temBagagem[]" value="false">
-                            <input type="checkbox" name="temBagagem[]" value="true" id="bagagem-${contadorRecibos}-check">
-                            <label for="bagagem-${contadorRecibos}-check">
-                                <i class="fas fa-suitcase"></i> Tem Bagagem?
-                            </label>
-                        </div>
-                        
-                        <div class="checkbox-item">
-                            <input type="hidden" name="temAssento[]" value="false">
-                            <input type="checkbox" name="temAssento[]" value="true" id="assento-${contadorRecibos}-check">
-                            <label for="assento-${contadorRecibos}-check">
-                                <i class="fas fa-chair"></i> Tem Assento Marcado?
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- MULTI TRECHO -->
-                    <div class="mt-3">
-                        <label class="form-label">
-                            <i class="fas fa-route"></i> É Multi Trecho?
-                        </label>
-                        <select class="form-select" name="multiTrecho[]" data-recibo="${contadorRecibos}">
-                            <option value="Não">Não</option>
-                            <option value="Sim">Sim</option>
-                        </select>
-                    </div>
-
-                    <!-- DATAS MULTI TRECHO -->
-                    <div class="multi-datas" id="multi-${contadorRecibos}">
-                        <h6><i class="fas fa-calendar-plus"></i> Datas Intermediárias</h6>
-                        <div class="datas-extras" id="datas-extras-${contadorRecibos}"></div>
-                        <button type="button" class="btn btn-sm btn-primary" data-action="adicionar-data" data-recibo="${contadorRecibos}">
-                            <i class="fas fa-plus"></i> Adicionar Data
-                        </button>
-                        <button type="button" class="btn btn-sm btn-secondary ms-2" data-action="remover-data" data-recibo="${contadorRecibos}">
-                            <i class="fas fa-minus"></i> Remover Data
-                        </button>
+                        <div class="col-md-4"><label class="form-label"><i class="fas fa-building"></i> Cia Aérea</label><select class="form-select" name="cia[]">${COMPANHIAS_AEREAS.map(c => c.startsWith('─') ? `<option disabled>${c}</option>` : `<option value="${c}">${c}</option>`).join('')}</select></div>
+                        <div class="col-md-4"><label class="form-label"><i class="fas fa-link"></i> LOC GDS</label><input type="text" class="form-control" name="locGds[]"></div>
+                        <div class="col-md-4"><label class="form-label"><i class="fas fa-link"></i> LOC CIA</label><input type="text" class="form-control" name="locCia[]"></div>
                     </div>
                 </div>
-
-                <div class="mt-3">
-                    <label class="form-label">
-                        <i class="fas fa-comment-dots"></i> Observações
-                    </label>
-                    <textarea class="form-control" name="observacoes[]" rows="2" 
-                              placeholder="Informações adicionais sobre este recibo..."></textarea>
-                </div>
+                <div class="mt-3"><label class="form-label"><i class="fas fa-comment-dots"></i> Observações</label><textarea class="form-control" name="observacoes[]" rows="2"></textarea></div>
             `;
-            
             container.appendChild(reciboDiv);
-            
-            // Configurar eventos específicos deste recibo
-            configurarEventosRecibo(reciboDiv, contadorRecibos);
-            
-            atualizarBotaoRemover();
-            
-            console.log(`✅ Recibo ${contadorRecibos} adicionado`);
-        }
-
-        function configurarEventosRecibo(reciboDiv, reciboId) {
-            // Botão remover recibo
-            const btnRemover = reciboDiv.querySelector('.btn-remove-recibo');
-            if (btnRemover) {
-                btnRemover.addEventListener('click', function() {
-                    removerRecibo(reciboId);
-                });
-            }
-            
-            // Select tipo de serviço
-            const selectTipo = reciboDiv.querySelector('select[name="tipo[]"]');
-            if (selectTipo) {
-                selectTipo.addEventListener('change', function() {
-                    toggleExtras(this, reciboId);
-                });
-            }
-            
-            // Select multi trecho
-            const selectMulti = reciboDiv.querySelector('select[name="multiTrecho[]"]');
-            if (selectMulti) {
-                selectMulti.addEventListener('change', function() {
-                    toggleMulti(this, reciboId);
-                });
-            }
-            
-            // Botões de data
-            const btnAdicionarData = reciboDiv.querySelector('[data-action="adicionar-data"]');
-            if (btnAdicionarData) {
-                btnAdicionarData.addEventListener('click', function() {
-                    adicionarData(reciboId);
-                });
-            }
-            
-            const btnRemoverData = reciboDiv.querySelector('[data-action="remover-data"]');
-            if (btnRemoverData) {
-                btnRemoverData.addEventListener('click', function() {
-                    removerData(reciboId);
-                });
-            }
+            reciboDiv.querySelector('select[name="tipo[]"]').addEventListener('change', (e) => toggleExtras(e.target, contadorRecibos));
         }
 
         function removerRecibo(numero) {
-            const recibo = document.getElementById(`recibo-${numero}`);
-            if (recibo) {
-                recibo.remove();
-                console.log(`🗑️ Recibo ${numero} removido`);
-            }
-            atualizarBotaoRemover();
+            document.getElementById(`recibo-${numero}`).remove();
         }
 
-        function removerUltimoRecibo() {
-            const container = document.getElementById('recibosContainer');
-            const ultimoRecibo = container.lastElementChild;
-            
-            if (ultimoRecibo) {
-                ultimoRecibo.remove();
-                console.log('🗑️ Último recibo removido');
-            }
-            
-            atualizarBotaoRemover();
-        }
-
-        function atualizarBotaoRemover() {
-            const container = document.getElementById('recibosContainer');
-            const btnRemover = document.getElementById('btnRemoverRecibo');
-            const temRecibos = container.children.length > 0;
-            
-            btnRemover.style.display = temRecibos ? 'inline-block' : 'none';
-        }
-
-        // ================================================================================
-        // 🔄 CAMPOS DINÂMICOS
-        // ================================================================================
-
-        function toggleExtras(selectElement, reciboId) {
-            const extrasDiv = document.getElementById(`extras-${reciboId}`);
-            const bagagemDiv = document.getElementById(`bagagem-${reciboId}`);
-            
-            const tiposAereos = ['Aéreo', 'Aéreo Facial', 'A+H', 'A+H+S'];
-            const isAereo = tiposAereos.includes(selectElement.value);
-            
-            if (extrasDiv) {
-                extrasDiv.style.display = isAereo ? 'block' : 'none';
-            }
-            
-            if (bagagemDiv) {
-                bagagemDiv.style.display = isAereo ? 'grid' : 'none';
-            }
-            
-            console.log(`🔄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
-        }
-
-        function toggleMulti(selectElement, reciboId) {
-            const multiDiv = document.getElementById(`multi-${reciboId}`);
-            const isMulti = selectElement.value === 'Sim';
-            
-            if (multiDiv) {
-                multiDiv.style.display = isMulti ? 'block' : 'none';
-            }
-            
-            console.log(`🔄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
-        }
-
-        function adicionarData(reciboId) {
-            const container = document.getElementById(`datas-extras-${reciboId}`);
-            if (!container) return;
-            
-            const input = document.createElement('input');
-            input.type = 'date';
-            input.name = 'datasExtras[]';
-            input.className = 'form-control';
-            
-            container.appendChild(input);
-            console.log(`📅 Data extra adicionada`);
-        }
-
-        function removerData(reciboId) {
-            const container = document.getElementById(`datas-extras-${reciboId}`);
-            if (!container) return;
-            
-            const ultimaData = container.lastElementChild;
-            if (ultimaData) {
-                ultimaData.remove();
-                console.log(`📅 Data extra removida`);
+        function toggleExtras(select, id) {
+            const extras = document.getElementById(`extras-${id}`);
+            if (['Aéreo', 'Aéreo Facial', 'A+H', 'A+H+S'].includes(select.value)) {
+                extras.style.display = 'block';
+            } else {
+                extras.style.display = 'none';
             }
         }
 
         // ================================================================================
-        // 📝 MÁSCARAS E FORMATAÇÃO
+        // 📤 ENVIO DO FORMULÁRIO
         // ================================================================================
-
-        function configurarMascaras() {
-            // Máscara CPF
-            const cpfInput = document.getElementById('cpfCliente');
-            if (cpfInput) {
-                cpfInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                    e.target.value = value;
-                });
-            }
-
-            // Máscara WhatsApp
-            const whatsappInput = document.getElementById('whatsappCliente');
-            if (whatsappInput) {
-                whatsappInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
-                    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
-                    e.target.value = value;
-                });
-            }
-
-            // Máscara para campos de recibo (apenas números)
-            document.addEventListener('input', function(e) {
-                if (e.target.name === 'recibo[]') {
-                    e.target.value = e.target.value.replace(/\D/g, '');
-                }
-            });
-        }
-
-        function configurarRadioCheckbox() {
-            // Radio buttons visuais
-            document.addEventListener('change', function(e) {
-                if (e.target.type === 'radio') {
-                    const groupName = e.target.name;
-                    const radioItems = document.querySelectorAll(`input[name="${groupName}"]`);
-                    
-                    radioItems.forEach(radio => {
-                        const radioItem = radio.closest('.radio-item');
-                        if (radioItem) {
-                            radioItem.classList.remove('selected');
-                        }
-                    });
-                    
-                    const selectedRadioItem = e.target.closest('.radio-item');
-                    if (selectedRadioItem) {
-                        selectedRadioItem.classList.add('selected');
-                    }
-                }
-                
-                // Checkboxes visuais
-                if (e.target.type === 'checkbox') {
-                    const checkboxItem = e.target.closest('.checkbox-item');
-                    if (checkboxItem) {
-                        if (e.target.checked) {
-                            checkboxItem.classList.add('selected');
-                        } else {
-                            checkboxItem.classList.remove('selected');
-                        }
-                    }
-                }
-            });
-        }
-
-        // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM ABA EMBARQUES
-        // ================================================================================
-
         async function enviarVendaCompleta(e) {
             e.preventDefault();
-            
-            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA...');
-            
             const submitBtn = e.target.querySelector('.btn-submit');
             const textoOriginal = submitBtn.innerHTML;
             
+            if (!conexaoOnline) {
+                mostrarAlerta('❌ Sem conexão com o servidor. Tente novamente.', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando...';
+
             try {
-                // Verificar se tem conexão
-                if (!conexaoOnline) {
-                    mostrarAlerta('❌ Sem conexão com o servidor. Verifique sua internet.', 'error');
-                    return;
-                }
-                
-                // Mostrar loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando venda...';
-                
-                // Coletar dados do formulário
                 const dadosVenda = coletarDadosFormulario(e.target);
-                console.log('📋 Dados da venda coletados:', dadosVenda);
-                
-                // Validar dados
-                const validacao = validarDadosVenda(dadosVenda);
-                if (!validacao.valido) {
-                    throw new Error(validacao.erros.join('\n'));
-                }
-                
-                // ✅ CONVERTER PARA FORMATO EMBARQUES
+                if (!validarDadosVenda(dadosVenda)) return;
+
                 const dadosEmbarque = converterParaEmbarques(dadosVenda);
-                console.log('🔄 Dados convertidos para EMBARQUES:', dadosEmbarque);
+                const payload = { action: 'cadastrar_embarque', dados: dadosEmbarque };
                 
-                // Preparar payload para aba EMBARQUES
-                const payload = {
-                    action: 'cadastrar_embarque',
-                    dados: dadosEmbarque
-                };
-                
-                console.log('📤 PAYLOAD final para API:', payload);
-                
-                // Enviar para Google Apps Script
+                // ✅ CORREÇÃO 2 (PRINCIPAL): Alterando o Content-Type para o POST
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // ✅ CORS CORRIGIDO
-                        'Accept': 'application/json'
+                        'Content-Type': 'text/plain;charset=utf-8',
                     },
                     body: JSON.stringify(payload)
                 });
                 
-                console.log('📡 Response status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
+                if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
                 const result = await response.json();
-                console.log('📊 RESPOSTA da API:', result);
                 
                 if (result.success) {
-                    mostrarAlerta('✅ Venda cadastrada com sucesso na aba EMBARQUES!', 'success');
-                    console.log('✅ SUCESSO! Venda processada:', result.data);
+                    mostrarAlerta('✅ Venda cadastrada com sucesso!', 'success');
                     limparFormulario();
                 } else {
-                    throw new Error(result.error || result.message || 'Erro desconhecido');
+                    throw new Error(result.error || result.message || 'Erro do servidor');
                 }
-                
             } catch (error) {
-                console.error('❌ Erro ao enviar venda:', error);
-                
-                let mensagemErro = error.message;
-                
-                // Tratar erros específicos
-                if (error.message.includes('Failed to fetch') || error.message.includes('AbortError')) {
-                    mensagemErro = '🌐 Erro de conexão. Verifique:\n' +
-                                  '• Sua conexão com a internet\n' +
-                                  '• Se o Google Apps Script foi reimplantado\n' +
-                                  '• Tente novamente em alguns segundos';
-                } else if (error.message.includes('CORS')) {
-                    mensagemErro = '⚙️ Erro de configuração CORS.\n' +
-                                  'Verifique se o Google Apps Script foi implantado corretamente.';
-                }
-                
-                mostrarAlerta('❌ Erro ao cadastrar venda:\n' + mensagemErro, 'error');
-                
+                mostrarAlerta(`❌ Erro ao cadastrar: ${error.message}`, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = textoOriginal;
@@ -1432,79 +575,11 @@
         }
 
         // ================================================================================
-        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES
+        // ⚙️ FUNÇÕES AUXILIARES DE DADOS
         // ================================================================================
-
-        function converterParaEmbarques(dadosVenda) {
-            // Pegar dados do primeiro recibo (principal)
-            const primeiroTipo = dadosVenda.tipo && dadosVenda.tipo[0] ? dadosVenda.tipo[0] : 'Nacional';
-            const primeiraDataIda = dadosVenda.dataIda && dadosVenda.dataIda[0] ? dadosVenda.dataIda[0] : '';
-            const primeiraDataVolta = dadosVenda.dataVolta && dadosVenda.dataVolta[0] ? dadosVenda.dataVolta[0] : '';
-            
-            // Determinar tipo de viagem
-            let tipoViagem = 'Nacional';
-            if (dadosVenda.pacotes && dadosVenda.pacotes.includes('Internacional')) {
-                tipoViagem = 'Internacional';
-            } else if (dadosVenda.pacotes && dadosVenda.pacotes.includes('Marítimo')) {
-                tipoViagem = 'Marítimo';
-            }
-            
-            // Juntar informações de múltiplos recibos nas observações
-            let observacoesCompletas = `Filial: ${dadosVenda.filial || 'N/A'}. `;
-            observacoesCompletas += `WhatsApp: ${dadosVenda.whatsappCliente || 'N/A'}. `;
-            observacoesCompletas += `Informe: ${dadosVenda.nInforme || 'Auto'}. `;
-            
-            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
-                observacoesCompletas += `Pacotes: ${dadosVenda.pacotes.join(', ')}. `;
-            }
-            
-            // Adicionar informações dos recibos
-            if (dadosVenda.tipo && dadosVenda.tipo.length > 0) {
-                observacoesCompletas += `Serviços: `;
-                dadosVenda.tipo.forEach((tipo, index) => {
-                    observacoesCompletas += `${index + 1}) ${tipo}`;
-                    if (dadosVenda.recibo && dadosVenda.recibo[index]) {
-                        observacoesCompletas += ` (Recibo: ${dadosVenda.recibo[index]})`;
-                    }
-                    if (dadosVenda.observacoes && dadosVenda.observacoes[index]) {
-                        observacoesCompletas += ` - ${dadosVenda.observacoes[index]}`;
-                    }
-                    observacoesCompletas += '; ';
-                });
-            }
-            
-            // Determinar seguro
-            let seguroFinal = 'Não';
-            if (dadosVenda.seguro === 'comprou') {
-                seguroFinal = 'Sim';
-            } else if (dadosVenda.seguro === 'recusado') {
-                seguroFinal = 'Recusado';
-            } else if (dadosVenda.seguro === 'nao_oferecido') {
-                seguroFinal = 'Não Oferecido';
-            }
-            
-            // Criar objeto no formato exato da aba EMBARQUES
-            return {
-                cpfCliente: dadosVenda.cpfCliente,
-                nomeCliente: dadosVenda.nomeCliente,
-                vendedor: dadosVenda.vendedor,
-                tipoViagem: tipoViagem,
-                destino: 'A definir', // Pode ser melhorado futuramente
-                dataIda: primeiraDataIda,
-                dataVolta: primeiraDataVolta,
-                vooIda: dadosVenda.cia && dadosVenda.cia[0] ? dadosVenda.cia[0] : '',
-                vooVolta: '',
-                bagagem: dadosVenda.temBagagem && dadosVenda.temBagagem.includes('true') ? 'Incluída' : '',
-                seguro: seguroFinal,
-                observacoes: observacoesCompletas.trim()
-            };
-        }
-
         function coletarDadosFormulario(form) {
             const formData = new FormData(form);
             const dados = {};
-            
-            // Processar campos simples e arrays
             for (let [key, value] of formData.entries()) {
                 if (key.endsWith('[]')) {
                     const baseKey = key.slice(0, -2);
@@ -1514,134 +589,92 @@
                     dados[key] = value;
                 }
             }
-            
-            // Processar checkboxes de pacote
-            const pacotes = [];
-            document.querySelectorAll('input[name="pacote"]:checked').forEach(cb => {
-                pacotes.push(cb.value);
-            });
-            dados.pacotes = pacotes;
-            
-            // Adicionar timestamp
-            dados.timestamp = new Date().toISOString();
-            dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
-            
             return dados;
         }
 
         function validarDadosVenda(dados) {
-            const erros = [];
-            
-            // Validações obrigatórias
-            if (!dados.filial) erros.push('Selecione a filial');
-            if (!dados.vendedor) erros.push('Selecione o vendedor');
-            if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
-            if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
-            if (!dados.seguro) erros.push('Informe a situação do seguro');
-            
-            // Validar CPF
-            if (dados.cpfCliente && !validarCPF(dados.cpfCliente)) {
-                erros.push('CPF inválido');
+            if (!dados.filial || !dados.vendedor || !dados.cpfCliente || !dados.nomeCliente || !dados.seguro) {
+                mostrarAlerta('Preencha todos os campos obrigatórios (Filial, Vendedor, CPF, Nome, Seguro).', 'error');
+                return false;
             }
-            
-            // Validar recibos
-            if (!dados.tipo || dados.tipo.length === 0 || !dados.tipo[0]) {
-                erros.push('Adicione pelo menos um recibo com tipo de serviço');
+            if (!dados.tipo || !dados.tipo[0] || !dados.dataIda || !dados.dataIda[0]) {
+                mostrarAlerta('Adicione pelo menos um recibo com Tipo de Serviço e Data de Ida.', 'error');
+                return false;
             }
+            return true;
+        }
+        
+        function converterParaEmbarques(dadosVenda) {
+            let tipoViagem = 'Nacional';
+            if (document.querySelector('#pacoteInternacional')?.checked) tipoViagem = 'Internacional';
+            else if (document.querySelector('#pacoteMaritimo')?.checked) tipoViagem = 'Marítimo';
             
-            if (!dados.dataIda || dados.dataIda.length === 0 || !dados.dataIda[0]) {
-                erros.push('Informe a data de ida do primeiro recibo');
-            }
+            let seguroFinal = 'Não';
+            if (dadosVenda.seguro === 'comprou') seguroFinal = 'Sim';
+            else if (dadosVenda.seguro === 'recusado') seguroFinal = 'Recusado';
             
+            let observacoes = `Filial: ${dadosVenda.filial}. WhatsApp: ${dadosVenda.whatsappCliente || 'N/A'}. `;
+            dadosVenda.recibo.forEach((rec, i) => {
+                observacoes += `Recibo ${i+1}: ${rec}, Pedido: ${dadosVenda.pedido[i]}, Reserva: ${dadosVenda.reserva[i]}, Tipo: ${dadosVenda.tipo[i]}; `;
+            });
+
             return {
-                valido: erros.length === 0,
-                erros: erros
+                cpfCliente: dadosVenda.cpfCliente,
+                nomeCliente: dadosVenda.nomeCliente,
+                vendedor: dadosVenda.vendedor,
+                tipoViagem: tipoViagem,
+                destino: 'A definir',
+                dataIda: dadosVenda.dataIda[0],
+                dataVolta: dadosVenda.dataVolta[0] || '',
+                vooIda: dadosVenda.cia ? dadosVenda.cia[0] : '',
+                seguro: seguroFinal,
+                observacoes: observacoes.trim()
             };
         }
 
-        function validarCPF(cpf) {
-            cpf = cpf.replace(/\D/g, '');
-            
-            if (cpf.length !== 11) return false;
-            if (/^(\d)\1{10}$/.test(cpf)) return false;
-            
-            let soma = 0;
-            for (let i = 0; i < 9; i++) {
-                soma += parseInt(cpf.charAt(i)) * (10 - i);
-            }
-            let digito1 = (soma * 10) % 11;
-            if (digito1 === 10) digito1 = 0;
-            
-            soma = 0;
-            for (let i = 0; i < 10; i++) {
-                soma += parseInt(cpf.charAt(i)) * (11 - i);
-            }
-            let digito2 = (soma * 10) % 11;
-            if (digito2 === 10) digito2 = 0;
-            
-            return digito1 === parseInt(cpf.charAt(9)) && digito2 === parseInt(cpf.charAt(10));
-        }
-
         function limparFormulario() {
-            const form = document.getElementById('formVendaCompleta');
-            form.reset();
-            
-            // Limpar recibos e adicionar um novo
+            document.getElementById('formVendaCompleta').reset();
             document.getElementById('recibosContainer').innerHTML = '';
             contadorRecibos = 0;
             adicionarRecibo();
-            
-            // Remover classes selected
-            document.querySelectorAll('.radio-item.selected').forEach(item => {
-                item.classList.remove('selected');
-            });
-            document.querySelectorAll('.checkbox-item.selected').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            console.log('🧹 Formulário limpo');
+            document.querySelectorAll('.radio-item.selected, .checkbox-item.selected').forEach(el => el.classList.remove('selected'));
         }
 
         // ================================================================================
-        // 🛠️ FUNÇÕES AUXILIARES
+        // 🛠️ OUTRAS FUNÇÕES AUXILIARES
         // ================================================================================
+        function configurarMascaras() {
+            const cpf = document.getElementById('cpfCliente');
+            if(cpf) cpf.addEventListener('input', e => {
+                let v = e.target.value.replace(/\D/g, '');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
+            });
+        }
 
-        function mostrarAlerta(mensagem, tipo = 'info') {
-            // Remover alertas existentes
-            document.querySelectorAll('.alert-custom').forEach(alerta => alerta.remove());
-            
-            const alerta = document.createElement('div');
-            let icone = 'info-circle';
-            let classe = 'alert-info-custom';
-            
-            if (tipo === 'success') {
-                icone = 'check-circle';
-                classe = 'alert-success-custom';
-            } else if (tipo === 'error') {
-                icone = 'exclamation-triangle';
-                classe = 'alert-error-custom';
-            }
-            
-            alerta.className = `alert-custom ${classe}`;
-            alerta.innerHTML = `
-                <i class="fas fa-${icone}"></i>
-                <span>${mensagem.replace(/\n/g, '<br>')}</span>
-                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
-            `;
-            
-            document.body.appendChild(alerta);
-            
-            // Auto remover após 8 segundos
-            setTimeout(() => {
-                if (alerta.parentElement) {
-                    alerta.remove();
+        function configurarRadioCheckbox() {
+            document.addEventListener('change', e => {
+                if (e.target.type === 'radio') {
+                    document.querySelectorAll(`input[name="${e.target.name}"]`).forEach(r => r.closest('.radio-item').classList.remove('selected'));
+                    e.target.closest('.radio-item').classList.add('selected');
                 }
-            }, 8000);
+                if (e.target.type === 'checkbox') {
+                    e.target.closest('.checkbox-item').classList.toggle('selected', e.target.checked);
+                }
+            });
         }
         
-        console.log('✅ Script de vendas com sistema completo de recibos carregado!');
-        console.log('🔗 Integração com aba EMBARQUES configurada!');
-        console.log('📋 Sistema de múltiplos recibos mantido!');
+        function mostrarAlerta(mensagem, tipo = 'info') {
+            document.querySelectorAll('.alert-custom').forEach(a => a.remove());
+            const alerta = document.createElement('div');
+            const icons = { info: 'info-circle', success: 'check-circle', error: 'exclamation-triangle' };
+            alerta.className = `alert-custom alert alert-${tipo === 'error' ? 'danger' : tipo} d-flex align-items-center`;
+            alerta.innerHTML = `<i class="fas fa-${icons[tipo]} me-2"></i> ${mensagem.replace(/\n/g, '<br>')} <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>`;
+            document.body.appendChild(alerta);
+            setTimeout(() => alerta.remove(), 8000);
+        }
     </script>
 </body>
 </html>
