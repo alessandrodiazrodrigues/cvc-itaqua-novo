@@ -102,7 +102,7 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8', // 👈 CORREÇÃO CORS
                     },
                     body: JSON.stringify({
                         action: 'listar_embarques'
@@ -152,14 +152,14 @@
                 vooVolta: 'TAM456',
                 bagagem: '23kg',
                 seguro: 'Sim',
-                observacoes: 'Embarque de teste do sistema v6.1 - ' + new Date().toLocaleString()
+                observacoes: 'Embarque de teste do sistema v6.2 - CORS CORRIGIDO - ' + new Date().toLocaleString()
             };
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8', // 👈 CORREÇÃO CORS
                     },
                     body: JSON.stringify({
                         action: 'cadastrar_embarque',
