@@ -2,137 +2,201 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>🧪 Teste Direto - Embarques</title>
+    <title>🧪 Teste Direto - Embarques v2</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 10px; cursor: pointer; }
-        .btn:hover { background: #0056b3; }
-        .result { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; }
-        .success { border-color: #28a745; background: #d4edda; }
-        .error { border-color: #dc3545; background: #f8d7da; }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .btn { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 6px; margin: 8px; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #0056b3; transform: translateY(-1px); }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .result { background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .info { background: #d1ecf1; border-left-color: #17a2b8; }
+        .url-info { background: #e9ecef; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; word-break: break-all; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-online { background: #d4edda; color: #155724; }
+        .status-offline { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <h1>🧪 Teste Direto - Sistema de Embarques</h1>
-    <p>Use este utilitário para testar diretamente a integração com a aba EMBARQUES.</p>
-    
-    <button class="btn" onclick="testarConexao()">🔗 Testar Conexão</button>
-    <button class="btn" onclick="listarEmbarques()">📋 Listar Embarques</button>
-    <button class="btn" onclick="cadastrarTeste()">✈️ Cadastrar Teste</button>
-    <button class="btn" onclick="limparResultados()">🧹 Limpar</button>
-    
-    <div id="resultados"></div>
+    <div class="container">
+        <h1>🧪 Teste Direto - Sistema de Embarques v2</h1>
+        <p>Use este utilitário para testar diretamente a integração com a aba <strong>EMBARQUES</strong>.</p>
+        
+        <div class="url-info">
+            <strong>📍 API URL:</strong><br>
+            https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn" onclick="testarConexao()">🔗 Testar Conexão</button>
+            <button class="btn btn-success" onclick="listarEmbarques()">📋 Listar Embarques</button>
+            <button class="btn btn-warning" onclick="cadastrarTeste()">✈️ Cadastrar Teste</button>
+            <button class="btn btn-danger" onclick="limparResultados()">🧹 Limpar</button>
+        </div>
+        
+        <div id="status"></div>
+        <div id="resultados"></div>
+    </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycby0XtmImbxABi_ui-aItYqk1_a3zgXToHrtWPar_TY5D7WeVptKyu9Dw122q1xqdaKZ-g/exec';
+        // 🔗 NOVA URL ATUALIZADA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec';
+        
+        let testCount = 0;
         
         function adicionarResultado(titulo, conteudo, tipo = 'result') {
+            testCount++;
             const div = document.createElement('div');
             div.className = `result ${tipo}`;
-            div.innerHTML = `<strong>${titulo}</strong>\n${conteudo}`;
+            div.innerHTML = `<strong>[${testCount}] ${titulo}</strong>\n${conteudo}`;
             document.getElementById('resultados').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function atualizarStatus(mensagem, tipo = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="result ${tipo}"><strong>🚀 Status:</strong> ${mensagem}</div>`;
+        }
+        
+        function limparResultados() {
+            document.getElementById('resultados').innerHTML = '';
+            document.getElementById('status').innerHTML = '';
+            testCount = 0;
         }
         
         async function testarConexao() {
-            adicionarResultado('🔗 Testando Conexão...', 'Enviando requisição GET...');
+            atualizarStatus('Testando conexão...', 'info');
+            adicionarResultado('🔗 Testando Conexão...', 'Enviando requisição GET...', 'info');
             
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
                 if (data.success) {
-                    adicionarResultado(
-                        '✅ Conexão OK', 
-                        `Status: ${data.status}\nCORS: ${data.cors_status}\nSistemas: ${JSON.stringify(data.sistemas, null, 2)}`,
-                        'success'
-                    );
+                    atualizarStatus(`Conexão OK - ${data.cors_status}`, 'success');
+                    adicionarResultado('✅ Conexão OK', 
+                        `Status: ${data.status}\n` +
+                        `CORS: ${data.cors_status}\n` +
+                        `Timestamp: ${data.timestamp}\n\n` +
+                        `Sistemas:\n${JSON.stringify(data.sistemas, null, 2)}`, 
+                        'success');
                 } else {
-                    adicionarResultado('❌ Conexão com Problema', JSON.stringify(data, null, 2), 'error');
+                    throw new Error('Resposta inválida da API');
                 }
             } catch (error) {
-                adicionarResultado('❌ Erro de Conexão', error.message, 'error');
+                atualizarStatus('Erro na conexão', 'error');
+                adicionarResultado('❌ Erro na Conexão', error.message, 'error');
             }
         }
         
         async function listarEmbarques() {
-            adicionarResultado('📋 Listando Embarques...', 'Verificando aba EMBARQUES...');
+            atualizarStatus('Listando embarques...', 'info');
+            adicionarResultado('📋 Listando Embarques...', 'Verificando aba EMBARQUES...', 'info');
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({
                         action: 'listar_embarques'
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
-                    adicionarResultado(
-                        '✅ Aba EMBARQUES Encontrada', 
-                        `Total de embarques: ${data.data.total}\nPrimeiros registros: ${JSON.stringify(data.data.embarques.slice(0, 3), null, 2)}`,
-                        'success'
-                    );
+                    atualizarStatus(`Embarques listados - Total: ${data.data.total}`, 'success');
+                    adicionarResultado('✅ Embarques Listados', 
+                        `Total: ${data.data.total}\n\n` +
+                        `Dados:\n${JSON.stringify(data.data, null, 2)}`, 
+                        'success');
                 } else {
-                    adicionarResultado('❌ Problema com Aba EMBARQUES', JSON.stringify(data, null, 2), 'error');
+                    throw new Error(data.message || 'Erro desconhecido');
                 }
             } catch (error) {
-                adicionarResultado('❌ Erro ao Listar', error.message, 'error');
+                atualizarStatus('Erro ao listar embarques', 'error');
+                adicionarResultado('❌ Erro ao Listar', 
+                    `Erro: ${error.message}\n\n` +
+                    `Possíveis causas:\n` +
+                    `- Aba EMBARQUES não existe\n` +
+                    `- Problema de CORS\n` +
+                    `- Erro no código do script`, 
+                    'error');
             }
         }
         
         async function cadastrarTeste() {
-            adicionarResultado('✈️ Cadastrando Embarque de Teste...', 'Enviando dados...');
+            atualizarStatus('Cadastrando embarque de teste...', 'info');
+            adicionarResultado('✈️ Cadastrando Embarque de Teste...', 'Enviando dados...', 'info');
             
             const dadosTeste = {
-                cpfCliente: '999.999.999-99',
-                nomeCliente: 'TESTE DIRETO ' + new Date().getTime(),
-                vendedor: 'Alessandro',
+                cpfCliente: '11111111111',
+                nomeCliente: 'TESTE SISTEMA V2',
+                vendedor: 'Vendedor Teste',
                 tipoViagem: 'Nacional',
-                destino: 'São Paulo - Teste',
+                destino: 'São Paulo - SP',
                 dataIda: '2025-08-20',
                 dataVolta: '2025-08-25',
-                vooIda: 'TESTE123',
-                vooVolta: 'TESTE456',
+                vooIda: 'TAM123',
+                vooVolta: 'TAM456',
                 bagagem: '23kg',
-                seguro: 'Não',
-                observacoes: 'Embarque de teste criado via utilitário de debug'
+                seguro: 'Sim',
+                observacoes: 'Embarque de teste do sistema v6.1 - ' + new Date().toLocaleString()
             };
             
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({
                         action: 'cadastrar_embarque',
                         dados: dadosTeste
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
-                    adicionarResultado(
-                        '✅ Embarque Cadastrado!', 
-                        `Sucesso! Verifique a aba EMBARQUES na planilha.\nResposta: ${JSON.stringify(data, null, 2)}`,
-                        'success'
-                    );
+                    atualizarStatus('Embarque cadastrado com sucesso!', 'success');
+                    adicionarResultado('✅ Embarque Cadastrado', 
+                        `Mensagem: ${data.message}\n\n` +
+                        `Dados retornados:\n${JSON.stringify(data.data, null, 2)}\n\n` +
+                        `Dados enviados:\n${JSON.stringify(dadosTeste, null, 2)}`, 
+                        'success');
                 } else {
-                    adicionarResultado('❌ Erro ao Cadastrar', JSON.stringify(data, null, 2), 'error');
+                    throw new Error(data.error || data.message || 'Erro desconhecido');
                 }
             } catch (error) {
-                adicionarResultado('❌ Erro no Cadastro', error.message, 'error');
+                atualizarStatus('Erro no cadastro', 'error');
+                adicionarResultado('❌ Erro no Cadastro', 
+                    `Erro: ${error.message}\n\n` +
+                    `Dados que tentamos enviar:\n${JSON.stringify(dadosTeste, null, 2)}`, 
+                    'error');
             }
         }
         
-        function limparResultados() {
-            document.getElementById('resultados').innerHTML = '';
-        }
-        
-        // Teste automático ao carregar
-        window.addEventListener('load', () => {
-            adicionarResultado('🚀 Utilitário Carregado', 'Pronto para testar!\nAPI: ' + API_URL);
+        // Mostrar que o utilitário carregou
+        document.addEventListener('DOMContentLoaded', function() {
+            atualizarStatus('Utilitário carregado e pronto para teste!', 'info');
+            console.log('🧪 Utilitário de Teste EMBARQUES v2 carregado!');
+            console.log('URL API:', API_URL);
         });
     </script>
 </body>
