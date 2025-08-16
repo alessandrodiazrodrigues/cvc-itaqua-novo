@@ -580,47 +580,15 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-shopping-cart"></i> Sistema de Vendas
+                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
                             </h1>
                             <p class="header-subtitle">
-                                Cadastro completo de vendas e embarques - CVC Itaquaquecetuba
+                                Formulário para cadastro de vendas completas - CVC Itaquaquecetuba
                             </p>
                         </div>
                     </div>
                     
-                    <!-- Estatísticas -->
-                    <div class="stats-container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="stat-card">
-                                    <i class="fas fa-calendar-day"></i>
-                                    <h6>Vendas Hoje</h6>
-                                    <span id="vendasHoje">0</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="stat-card">
-                                    <i class="fas fa-calendar-week"></i>
-                                    <h6>Vendas Semana</h6>
-                                    <span id="vendasSemana">0</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="stat-card">
-                                    <i class="fas fa-plane"></i>
-                                    <h6>Embarques Próximos</h6>
-                                    <span id="embarquesProximos">0</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="stat-card">
-                                    <i class="fas fa-percentage"></i>
-                                    <h6>Taxa Conversão</h6>
-                                    <span id="taxaConversao">0%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
             
@@ -890,9 +858,6 @@
             // Verificar conexão
             verificarConexao();
             
-            // Carregar estatísticas
-            carregarEstatisticas();
-            
             console.log('🎉 Sistema totalmente carregado!');
         });
 
@@ -948,7 +913,7 @@
                 const response = await fetch(API_URL, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'application/json',
+                        'Accept': 'text/plain', // ✅ CORS CORRIGIDO
                         'Cache-Control': 'no-cache'
                     },
                     signal: controller.signal
@@ -1438,7 +1403,6 @@
                     mostrarAlerta('✅ Venda cadastrada com sucesso na aba EMBARQUES!', 'success');
                     console.log('✅ SUCESSO! Venda processada:', result.data);
                     limparFormulario();
-                    carregarEstatisticas(); // Atualizar estatísticas
                 } else {
                     throw new Error(result.error || result.message || 'Erro desconhecido');
                 }
@@ -1636,48 +1600,6 @@
             });
             
             console.log('🧹 Formulário limpo');
-        }
-
-        // ================================================================================
-        // 📊 ESTATÍSTICAS
-        // ================================================================================
-
-        async function carregarEstatisticas() {
-            try {
-                // Simular estatísticas (em produção, buscar da API)
-                const vendasHoje = Math.floor(Math.random() * 10) + 1;
-                const vendasSemana = Math.floor(Math.random() * 50) + 10;
-                const embarques = Math.floor(Math.random() * 30) + 5;
-                const taxa = (Math.random() * 30 + 10).toFixed(1);
-                
-                // Animar números
-                animarNumero('vendasHoje', vendasHoje);
-                animarNumero('vendasSemana', vendasSemana);
-                animarNumero('embarquesProximos', embarques);
-                
-                document.getElementById('taxaConversao').textContent = taxa + '%';
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar estatísticas:', error);
-            }
-        }
-
-        function animarNumero(elementId, valorFinal) {
-            const elemento = document.getElementById(elementId);
-            const valorInicial = 0;
-            const duracao = 1000; // 1 segundo
-            const incremento = valorFinal / (duracao / 50);
-            let valorAtual = valorInicial;
-            
-            const timer = setInterval(() => {
-                valorAtual += incremento;
-                if (valorAtual >= valorFinal) {
-                    elemento.textContent = valorFinal;
-                    clearInterval(timer);
-                } else {
-                    elemento.textContent = Math.floor(valorAtual);
-                }
-            }, 50);
         }
 
         // ================================================================================
