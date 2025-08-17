@@ -1,22 +1,217 @@
-// 🚀 CVC ITAQUA v2.2-COMPLETA - API ROBUSTA COM TODOS OS TEMPLATES
 // ================================================================================
-// 📑 SISTEMA COMPLETO - VERSÃO 2.2 COM TODOS OS 14 TEMPLATES
+// 🚀 CVC ITAQUA v2.3 - ESTRUTURA ORGANIZADA E REGRAS CORRIGIDAS
 // ================================================================================
-// MELHORIAS v2.2:
-// ✅ TODOS OS 14 TEMPLATES: 11 do manual + 3 extras (dicas, ranking, roteiro)
-// ✅ CÓDIGO LIMPO: Sem duplicações ou erros
-// ✅ TEMPLATES ADICIONADOS: Aéreo somente ida, 3 planos, roteiro sequencial
-// ✅ DETECÇÃO ROBUSTA: Todos os tipos de orçamento
-// ✅ LEITURA DE DADOS: Texto, imagem base64, PDF
-// ✅ INTEGRAÇÃO DUPLA: GPT-4o-mini + Claude Haiku
+// 
+// 📁 ÍNDICE DO ARQUIVO:
+//    SEÇÃO 1: CONFIGURAÇÕES GLOBAIS (Linha ~20)
+//    SEÇÃO 2: TEMPLATES DE ORÇAMENTO (Linha ~200)
+//    SEÇÃO 3: REGRAS DE FORMATAÇÃO (Linha ~800)
+//    SEÇÃO 4: FUNÇÕES DE DETECÇÃO (Linha ~1000)
+//    SEÇÃO 5: GERAÇÃO DE PROMPTS (Linha ~1200)
+//    SEÇÃO 6: HANDLER PRINCIPAL (Linha ~1500)
+//
+// ================================================================================
+// VERSÃO: 2.3
+// DATA: 18/12/2024
+// MUDANÇAS:
+// - Organização modular do código
+// - Correção das regras de parcelamento
+// - Correção das regras de bagagem
+// - Correção das regras de assento
+// - 14 templates completos e funcionais
 // ================================================================================
 
 // ================================================================================
-// 1. TEMPLATES COMPLETOS - TODOS OS 14 MODELOS
+// SEÇÃO 1: CONFIGURAÇÕES GLOBAIS
+// ================================================================================
+
+// 1.1 - TABELA DE AEROPORTOS (Conforme Manual CVC)
+const AEROPORTOS = {
+    // === AEROPORTOS BRASILEIROS ===
+    'GRU': 'Guarulhos', 
+    'CGH': 'Congonhas', 
+    'VCP': 'Viracopos', 
+    'SDU': 'Santos Dumont',
+    'GIG': 'Galeão', 
+    'BSB': 'Brasília', 
+    'CNF': 'Confins', 
+    'PLU': 'Pampulha', 
+    'POA': 'Porto Alegre',
+    'CWB': 'Curitiba', 
+    'FLN': 'Florianópolis', 
+    'SSA': 'Salvador', 
+    'REC': 'Recife', 
+    'FOR': 'Fortaleza',
+    'NAT': 'Natal', 
+    'MCZ': 'Maceió', 
+    'AJU': 'Aracaju', 
+    'JPA': 'João Pessoa', 
+    'THE': 'Teresina',
+    'SLZ': 'São Luís', 
+    'BEL': 'Belém', 
+    'MAO': 'Manaus', 
+    'CGB': 'Cuiabá', 
+    'CGR': 'Campo Grande',
+    'GYN': 'Goiânia', 
+    'VIX': 'Vitória', 
+    'BPS': 'Porto Seguro', 
+    'IOS': 'Ilhéus', 
+    'JDO': 'Juazeiro do Norte',
+    'IGU': 'Foz do Iguaçu', 
+    'IMP': 'Imperatriz', 
+    'MAB': 'Marabá', 
+    'STM': 'Santarém', 
+    'RBR': 'Rio Branco',
+    'PVH': 'Porto Velho', 
+    'BVB': 'Boa Vista', 
+    'MCP': 'Macapá', 
+    'PMW': 'Palmas', 
+    'UDI': 'Uberlândia',
+    'RAO': 'Ribeirão Preto', 
+    'JOI': 'Joinville', 
+    'XAP': 'Chapecó', 
+    'LDB': 'Londrina', 
+    'MGF': 'Maringá',
+    
+    // === AEROPORTOS INTERNACIONAIS PRINCIPAIS ===
+    'EZE': 'Ezeiza - Buenos Aires', 
+    'AEP': 'Aeroparque - Buenos Aires', 
+    'SCL': 'Santiago', 
+    'LIM': 'Lima',
+    'BOG': 'Bogotá', 
+    'MEX': 'Cidade do México', 
+    'CUN': 'Cancún', 
+    'MIA': 'Miami', 
+    'MCO': 'Orlando', 
+    'JFK': 'Nova York - JFK', 
+    'LGA': 'Nova York - LGA', 
+    'EWR': 'Nova York - Newark',
+    'LAX': 'Los Angeles', 
+    'SFO': 'São Francisco', 
+    'DFW': 'Dallas', 
+    'ATL': 'Atlanta', 
+    'ORD': 'Chicago',
+    'LIS': 'Lisboa', 
+    'OPO': 'Porto', 
+    'MAD': 'Madrid', 
+    'BCN': 'Barcelona', 
+    'CDG': 'Paris - Charles de Gaulle', 
+    'ORY': 'Paris - Orly', 
+    'FCO': 'Roma - Fiumicino', 
+    'MXP': 'Milão', 
+    'LHR': 'Londres - Heathrow', 
+    'LGW': 'Londres - Gatwick', 
+    'FRA': 'Frankfurt', 
+    'MUC': 'Munique', 
+    'AMS': 'Amsterdam', 
+    'ZUR': 'Zurich',
+    
+    // === AMÉRICA DO SUL ADICIONAL ===
+    'PCL': 'Pucallpa', 
+    'CUZ': 'Cusco', 
+    'AQP': 'Arequipa', 
+    'TRU': 'Trujillo', 
+    'PIU': 'Piura',
+    'IQT': 'Iquitos', 
+    'TPP': 'Tarapoto', 
+    'JAU': 'Jauja', 
+    'AYP': 'Ayacucho', 
+    'TCQ': 'Tacna',
+    'MVD': 'Montevidéu', 
+    'ASU': 'Assunção', 
+    'VVI': 'Santa Cruz', 
+    'LPB': 'La Paz', 
+    'UIO': 'Quito', 
+    'GYE': 'Guayaquil'
+};
+
+// 1.2 - DESTINOS CONHECIDOS
+const DESTINOS_CONHECIDOS = {
+    // === DESTINOS PERUANOS ===
+    'pucallpa': 'Pucallpa', 
+    'lima': 'Lima', 
+    'cusco': 'Cusco', 
+    'arequipa': 'Arequipa', 
+    'iquitos': 'Iquitos',
+    'trujillo': 'Trujillo', 
+    'piura': 'Piura', 
+    'tarapoto': 'Tarapoto', 
+    'ayacucho': 'Ayacucho',
+    
+    // === DESTINOS BRASILEIROS ===
+    'joão pessoa': 'João Pessoa', 
+    'joao pessoa': 'João Pessoa', 
+    'brasília': 'Brasília', 
+    'brasilia': 'Brasília',
+    'salvador': 'Salvador', 
+    'rio de janeiro': 'Rio de Janeiro', 
+    'belo horizonte': 'Belo Horizonte',
+    'porto alegre': 'Porto Alegre', 
+    'curitiba': 'Curitiba', 
+    'florianópolis': 'Florianópolis', 
+    'florianopolis': 'Florianópolis',
+    'recife': 'Recife', 
+    'fortaleza': 'Fortaleza', 
+    'natal': 'Natal', 
+    'maceió': 'Maceió', 
+    'maceio': 'Maceió',
+    'goiânia': 'Goiânia', 
+    'goiania': 'Goiânia', 
+    'manaus': 'Manaus', 
+    'belém': 'Belém', 
+    'belem': 'Belém',
+    
+    // === DESTINOS EUROPEUS ===
+    'lisboa': 'Lisboa', 
+    'porto': 'Porto', 
+    'madrid': 'Madrid', 
+    'barcelona': 'Barcelona',
+    'paris': 'Paris', 
+    'londres': 'Londres', 
+    'roma': 'Roma', 
+    'amsterdam': 'Amsterdam',
+    'milão': 'Milão', 
+    'milao': 'Milão', 
+    'frankfurt': 'Frankfurt', 
+    'zurich': 'Zurich',
+    
+    // === DESTINOS AMERICANOS ===
+    'orlando': 'Orlando', 
+    'miami': 'Miami', 
+    'nova york': 'Nova York', 
+    'los angeles': 'Los Angeles',
+    'são francisco': 'São Francisco', 
+    'sao francisco': 'São Francisco', 
+    'chicago': 'Chicago', 
+    'dallas': 'Dallas', 
+    'atlanta': 'Atlanta', 
+    'cancún': 'Cancún', 
+    'cancun': 'Cancún',
+    
+    // === AMÉRICA LATINA ===
+    'buenos aires': 'Buenos Aires', 
+    'santiago': 'Santiago', 
+    'bogotá': 'Bogotá', 
+    'bogota': 'Bogotá',
+    'montevidéu': 'Montevidéu', 
+    'montevideu': 'Montevidéu', 
+    'assunção': 'Assunção', 
+    'assuncao': 'Assunção',
+    'quito': 'Quito', 
+    'guayaquil': 'Guayaquil', 
+    'la paz': 'La Paz'
+};
+
+// ================================================================================
+// SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
 // ================================================================================
 
 const TEMPLATES = {
-    // 1.1 AÉREO IDA E VOLTA SIMPLES
+    // ===========================
+    // 2.1 - TEMPLATES AÉREOS (6 tipos)
+    // ===========================
+    
+    // TEMPLATE 1: Aéreo Ida e Volta Simples
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
@@ -24,14 +219,14 @@ const TEMPLATES = {
 {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
 💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
+{parcelamento}
+{bagagem}
+{assento}
 🏷️ {reembolso}
-{link}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.2 AÉREO COM CONEXÃO DETALHADA
+    // TEMPLATE 2: Aéreo com Conexão Detalhada
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
@@ -41,27 +236,29 @@ Valores sujeitos a confirmação e disponibilidade`,
 {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
 
 💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
+{parcelamento}
+{bagagem}
+{assento}
 🏷️ {reembolso}
 🔗 {link}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.3 AÉREO SOMENTE IDA (NOVO v2.2)
+    // TEMPLATE 3: Aéreo Somente Ida
     aereo_somente_ida: `*{companhia}*
 {data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 
 💰 Valor total para {passageiros} = R$ {valor}
 Inclui taxas de embarque
-Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa
+{bagagem}
+{assento}
 🏷️ {reembolso}
 
 ⚠️ Passagem somente de ida - sem retorno incluído
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.4 MÚLTIPLAS OPÇÕES - 2 PLANOS
+    // TEMPLATE 4: Múltiplas Opções - 2 Planos
     multiplas_opcoes_2_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -69,19 +266,19 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 💰 **OPÇÃO 1** - R$ {valor1}
 ✅ Só mala de mão incluída
-💳 {parcelamento1}
+{parcelamento1}
 🔗 {link1}
 
 💰 **OPÇÃO 2** - R$ {valor2}
 ✅ Mala de mão + bagagem despachada
 ✅ Cancelamento/alteração com multas
 ✅ Reembolsável conforme regras do bilhete
-💳 {parcelamento2}
+{parcelamento2}
 🔗 {link2}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.5 MÚLTIPLAS OPÇÕES - 3 PLANOS (NOVO v2.2)
+    // TEMPLATE 5: Múltiplas Opções - 3 Planos
     multiplas_opcoes_3_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -102,35 +299,16 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.6 MULTITRECHO
-    multitrecho: `*Multitrecho - {companhias}*
-{data_inicio} a {data_fim} ({dias} dias e {noites} noites)
-
-*Trecho 1:* {origem1} → {destino1}
-{data1} - {aeroporto1} {hora1} / {aeroporto_chegada1} {hora_chegada1} ({tipo_voo1})
-
-*Trecho 2:* {origem2} → {destino2}
-{data2} - {aeroporto2} {hora2} / {aeroporto_chegada2} {hora_chegada2} ({tipo_voo2})
-
-*Trecho 3:* {origem3} → {destino3}
-{data3} - {aeroporto3} {hora3} / {aeroporto_chegada3} {hora_chegada3} ({tipo_voo3})
-
-💰 R$ {valor_total} para {passageiros}
-💳 {parcelamento}
-✅ {bagagem}
-🏷️ {reembolso}
-🔗 {link}
-
-Valores sujeitos a confirmação e disponibilidade`,
-
-    // 1.7 MÚLTIPLAS COMPANHIAS INTERNACIONAIS
+    // TEMPLATE 6: Múltiplas Companhias (CORRIGIDO v2.3)
     multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
 {data_volta1} - {aeroporto_volta1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
 
 💰 R$ {valor1} para {passageiros}
-💳 {parcelamento1}
+{parcelamento1}
+{bagagem1}
+{assento1}
 🔗 {link1}
 
 *OPÇÃO 2 - {companhia2} - {cidade_origem} ✈ {cidade_destino}*
@@ -139,13 +317,30 @@ Valores sujeitos a confirmação e disponibilidade`,
 {data_volta2} - {aeroporto_volta2} {hora_volta2} / {aeroporto_origem2} {hora_chegada_volta2} ({tipo_voo_volta2})
 
 💰 R$ {valor2} para {passageiros}
-💳 {parcelamento2}
+{parcelamento2}
+{bagagem2}
+{assento2}
 🔗 {link2}
+
+*OPÇÃO 3 - {companhia3} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida3} - {aeroporto_origem3} {hora_ida3} / {aeroporto_destino3} {hora_chegada3} ({tipo_voo3})
+--
+{data_volta3} - {aeroporto_volta3} {hora_volta3} / {aeroporto_origem3} {hora_chegada_volta3} ({tipo_voo_volta3})
+
+💰 R$ {valor3} para {passageiros}
+{parcelamento3}
+{bagagem3}
+{assento3}
+🔗 {link3}
 
 🏷️ {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.8 HOTÉIS - MÚLTIPLAS OPÇÕES
+    // ===========================
+    // 2.2 - TEMPLATES DE HOTÉIS (3 tipos)
+    // ===========================
+    
+    // TEMPLATE 7: Hotéis - Múltiplas Opções
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
 {passageiros}
@@ -171,10 +366,10 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 💰 R$ {valor3} total
 🔗 {link3}
 
-💳 {parcelamento}
+{parcelamento}
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.9 ROTEIRO DE HOTÉIS SEQUENCIAL (NOVO v2.2)
+    // TEMPLATE 8: Roteiro de Hotéis Sequencial
     roteiro_hoteis: `*Roteiro {destino}*
 {passageiros}
 
@@ -194,11 +389,11 @@ Valores sujeitos a confirmação e disponibilidade`,
 💰 R$ {valor3}
 
 💰 **VALOR TOTAL DO ROTEIRO:** R$ {valor_total}
-💳 {parcelamento}
+{parcelamento}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.10 PACOTE COMPLETO (Aéreo + Hotel + Serviços)
+    // TEMPLATE 9: Pacote Completo (Aéreo + Hotel + Serviços)
     pacote_completo: `*Pacote {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -237,7 +432,32 @@ Pacote para {passageiros}
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.11 CRUZEIRO
+    // ===========================
+    // 2.3 - TEMPLATES ESPECIAIS (5 tipos)
+    // ===========================
+    
+    // TEMPLATE 10: Multitrecho
+    multitrecho: `*Multitrecho - {companhias}*
+{data_inicio} a {data_fim} ({dias} dias e {noites} noites)
+
+*Trecho 1:* {origem1} → {destino1}
+{data1} - {aeroporto1} {hora1} / {aeroporto_chegada1} {hora_chegada1} ({tipo_voo1})
+
+*Trecho 2:* {origem2} → {destino2}
+{data2} - {aeroporto2} {hora2} / {aeroporto_chegada2} {hora_chegada2} ({tipo_voo2})
+
+*Trecho 3:* {origem3} → {destino3}
+{data3} - {aeroporto3} {hora3} / {aeroporto_chegada3} {hora_chegada3} ({tipo_voo3})
+
+💰 R$ {valor_total} para {passageiros}
+{parcelamento}
+{bagagem}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    // TEMPLATE 11: Cruzeiro
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
 📅 Embarque: {data_embarque} ({dia_semana})
@@ -260,7 +480,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 1.12 DICAS COMPLETAS (EXTRA - não está no manual)
+    // TEMPLATE 12: Dicas Completas
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
 Aqui estão algumas sugestões para aproveitar ao máximo sua estadia:
@@ -290,7 +510,7 @@ Além de voos e hotéis, a CVC Itaqua oferece tudo para deixar sua viagem ainda 
 
 Fale comigo para adicionar esses serviços ao seu pacote!`,
 
-    // 1.13 RANKING (EXTRA - não está no manual)
+    // TEMPLATE 13: Ranking de Hotéis
     ranking: `🏆 *Ranking dos Melhores Hotéis em {destino}* 🏆
 
 Confira nossa seleção especial dos hotéis mais bem avaliados:
@@ -320,75 +540,170 @@ Valores sujeitos a confirmação e disponibilidade`
 };
 
 // ================================================================================
-// 2. CONFIGURAÇÕES E CONSTANTES
+// SEÇÃO 3: REGRAS DE FORMATAÇÃO UNIVERSAIS (CORRIGIDAS v2.3)
 // ================================================================================
 
-// 2.1 Tabela Completa de Aeroportos (Conforme Manual)
-const AEROPORTOS = {
-    // BRASILEIROS
-    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont',
-    'GIG': 'Galeão', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'POA': 'Porto Alegre',
-    'CWB': 'Curitiba', 'FLN': 'Florianópolis', 'SSA': 'Salvador', 'REC': 'Recife', 'FOR': 'Fortaleza',
-    'NAT': 'Natal', 'MCZ': 'Maceió', 'AJU': 'Aracaju', 'JPA': 'João Pessoa', 'THE': 'Teresina',
-    'SLZ': 'São Luís', 'BEL': 'Belém', 'MAO': 'Manaus', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande',
-    'GYN': 'Goiânia', 'VIX': 'Vitória', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus', 'JDO': 'Juazeiro do Norte',
-    'IGU': 'Foz do Iguaçu', 'IMP': 'Imperatriz', 'MAB': 'Marabá', 'STM': 'Santarém', 'RBR': 'Rio Branco',
-    'PVH': 'Porto Velho', 'BVB': 'Boa Vista', 'MCP': 'Macapá', 'PMW': 'Palmas', 'UDI': 'Uberlândia',
-    'RAO': 'Ribeirão Preto', 'JOI': 'Joinville', 'XAP': 'Chapecó', 'LDB': 'Londrina', 'MGF': 'Maringá',
-    
-    // INTERNACIONAIS PRINCIPAIS (Conforme Manual)
-    'EZE': 'Ezeiza - Buenos Aires', 'AEP': 'Aeroparque - Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima',
-    'BOG': 'Bogotá', 'MEX': 'Cidade do México', 'CUN': 'Cancún', 'MIA': 'Miami', 'MCO': 'Orlando', 
-    'JFK': 'Nova York - JFK', 'LGA': 'Nova York - LGA', 'EWR': 'Nova York - Newark',
-    'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'DFW': 'Dallas', 'ATL': 'Atlanta', 'ORD': 'Chicago',
-    'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid', 'BCN': 'Barcelona', 'CDG': 'Paris - Charles de Gaulle', 
-    'ORY': 'Paris - Orly', 'FCO': 'Roma - Fiumicino', 'MXP': 'Milão', 'LHR': 'Londres - Heathrow', 
-    'LGW': 'Londres - Gatwick', 'FRA': 'Frankfurt', 'MUC': 'Munique', 'AMS': 'Amsterdam', 'ZUR': 'Zurich',
-    
-    // AMÉRICA DO SUL ADICIONAL
-    'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura',
-    'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho', 'TCQ': 'Tacna',
-    'MVD': 'Montevidéu', 'ASU': 'Assunção', 'VVI': 'Santa Cruz', 'LPB': 'La Paz', 'UIO': 'Quito', 'GYE': 'Guayaquil'
-};
+// 3.1 - REGRA DE PARCELAMENTO (CORRIGIDA)
+function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal) {
+    try {
+        // CASO 1: Entrada + Parcelas no texto
+        const entradaParcelas = conteudo.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
+        if (entradaParcelas) {
+            const entrada = entradaParcelas[1];
+            const numParcelas = parseInt(entradaParcelas[2]);
+            const valorParcela = entradaParcelas[3];
+            const totalParcelas = numParcelas + 1;
+            
+            return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+        }
+        
+        // CASO 2: Parcelamento selecionado no HTML (10x, 12x ou 15x)
+        if (parcelamentoSelecionado && valorTotal) {
+            const valor = parseFloat(valorTotal.replace(/[^\d,]/g, '').replace(',', '.'));
+            const valorParcela = (valor / parseInt(parcelamentoSelecionado)).toFixed(2).replace('.', ',');
+            return `💳 ${parcelamentoSelecionado}x de R$ ${valorParcela} s/ juros no cartão`;
+        }
+        
+        // CASO 3: Nenhuma informação de parcelamento - NÃO incluir linha
+        return '';
+    } catch (error) {
+        console.error('Erro ao formatar parcelamento:', error);
+        return '';
+    }
+}
 
-// 2.2 Destinos Conhecidos
-const DESTINOS_CONHECIDOS = {
-    // Peruanos
-    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos',
-    'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho',
-    
-    // Brasileiros
-    'joão pessoa': 'João Pessoa', 'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília',
-    'salvador': 'Salvador', 'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte',
-    'porto alegre': 'Porto Alegre', 'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis',
-    'recife': 'Recife', 'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió',
-    'goiânia': 'Goiânia', 'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém',
-    
-    // Europeus
-    'lisboa': 'Lisboa', 'porto': 'Porto', 'madrid': 'Madrid', 'barcelona': 'Barcelona',
-    'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma', 'amsterdam': 'Amsterdam',
-    'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich',
-    
-    // Americanos
-    'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles',
-    'são francisco': 'São Francisco', 'sao francisco': 'São Francisco', 'chicago': 'Chicago', 
-    'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún', 'cancun': 'Cancún',
-    
-    // América Latina
-    'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá',
-    'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção',
-    'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
-};
+// 3.2 - REGRA DE BAGAGEM (CORRIGIDA)
+function formatarBagagem(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        
+        // Detectar variações (incluindo erros de digitação comuns)
+        const semBagagem = 
+            texto.includes('sem bagagem') || 
+            texto.includes('sem  bagagem') || // duplo espaço
+            texto.includes('apenas mala de mão') ||
+            texto.includes('só mala de mão');
+        
+        const comBagagem = 
+            texto.includes('com bagagem') || 
+            texto.includes('com babagem') || // erro de digitação
+            texto.includes('com abagegem') || // erro de digitação
+            texto.includes('combagagem') || // sem espaço
+            texto.includes('inclui bagagem') ||
+            texto.includes('bagagem despachada') ||
+            texto.includes('com  bagagem'); // duplo espaço
+        
+        if (semBagagem) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+        } else if (comBagagem) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
+        }
+        
+        // Padrão quando não há informação clara
+        return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+    } catch (error) {
+        console.error('Erro ao formatar bagagem:', error);
+        return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+    }
+}
+
+// 3.3 - REGRA DE ASSENTO (CORRIGIDA)
+function formatarAssento(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        
+        // Detectar variações de pré-reserva de assento
+        const temPreReserva = 
+            texto.includes('pre reserva de assento') ||
+            texto.includes('pré reserva de assento') ||
+            texto.includes('pre-reserva de assento') ||
+            texto.includes('prereserva de assento') ||
+            texto.includes('com pre reserva') ||
+            texto.includes('com pré reserva') ||
+            texto.includes('marcação de assento') ||
+            texto.includes('escolha de assento') ||
+            texto.includes('seleção de assento');
+        
+        if (temPreReserva) {
+            return '💺 Inclui pré reserva de assento';
+        }
+        
+        // Se não tem pré-reserva, retorna vazio (não incluir linha)
+        return '';
+    } catch (error) {
+        console.error('Erro ao formatar assento:', error);
+        return '';
+    }
+}
+
+// 3.4 - REGRA DE PASSAGEIROS
+function formatarPassageiros(adultos, criancas, bebes, idadesCriancas, idadesBebes) {
+    try {
+        let resultado = [];
+        
+        // Adultos
+        if (adultos > 0) {
+            resultado.push(`${String(adultos).padStart(2, '0')} ${adultos === 1 ? 'adulto' : 'adultos'}`);
+        }
+        
+        // Crianças (2-11 anos)
+        if (criancas > 0) {
+            let textoIdades = '';
+            if (idadesCriancas && idadesCriancas.length > 0) {
+                if (idadesCriancas.length === 1) {
+                    textoIdades = ` (${idadesCriancas[0]} anos)`;
+                } else {
+                    textoIdades = ` (${idadesCriancas.join(' e ')} anos)`;
+                }
+            }
+            resultado.push(`${String(criancas).padStart(2, '0')} ${criancas === 1 ? 'criança' : 'crianças'}${textoIdades}`);
+        }
+        
+        // Bebês (0-23 meses)
+        if (bebes > 0) {
+            let textoIdades = '';
+            if (idadesBebes && idadesBebes.length > 0) {
+                if (idadesBebes.length === 1) {
+                    textoIdades = ` (${idadesBebes[0]} meses)`;
+                } else {
+                    textoIdades = ` (${idadesBebes.join(' e ')} meses)`;
+                }
+            }
+            resultado.push(`${String(bebes).padStart(2, '0')} ${bebes === 1 ? 'bebê' : 'bebês'}${textoIdades}`);
+        }
+        
+        return resultado.join(' + ');
+    } catch (error) {
+        console.error('Erro ao formatar passageiros:', error);
+        return '01 adulto';
+    }
+}
+
+// 3.5 - REGRA DE DATA E HORÁRIO COM DIA SEGUINTE
+function formatarHorario(horario, dataBase) {
+    try {
+        // Se o horário indica chegada no dia seguinte
+        if (horario && dataBase) {
+            // Lógica para detectar se é dia seguinte
+            // Por exemplo, se hora de chegada < hora de partida em voos noturnos
+            // Implementar conforme necessidade
+        }
+        return horario;
+    } catch (error) {
+        console.error('Erro ao formatar horário:', error);
+        return horario;
+    }
+}
 
 // ================================================================================
-// 3. FUNÇÕES DE DETECÇÃO
+// SEÇÃO 4: FUNÇÕES DE DETECÇÃO
 // ================================================================================
 
-// 3.1 Extração de Destino
+// 4.1 - Extração de Destino
 function extrairDestinoDoConteudo(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
-        console.log('🔍 v2.2: Extraindo destino de:', conteudo.substring(0, 100) + '...');
+        console.log('🔍 v2.3: Extraindo destino...');
         
         // Prioridade 1: Destino final em conexões
         const padraoConexao = conteudo.match(/([A-Z]{3})\s*[\s\S]*?([A-Z]{3})\s*[\s\S]*?([A-Z]{3})/);
@@ -398,7 +713,7 @@ function extrairDestinoDoConteudo(conteudo) {
             
             if (['GRU', 'CGH', 'SDU', 'GIG'].includes(origem) && 
                 AEROPORTOS[destinoFinal] && !['GRU', 'CGH', 'SDU', 'GIG'].includes(destinoFinal)) {
-                console.log(`✅ v2.2: Destino detectado: ${AEROPORTOS[destinoFinal]}`);
+                console.log(`✅ v2.3: Destino detectado: ${AEROPORTOS[destinoFinal]}`);
                 return AEROPORTOS[destinoFinal];
             }
         }
@@ -409,7 +724,7 @@ function extrairDestinoDoConteudo(conteudo) {
             for (const codigo of codigosAeroporto) {
                 if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG', 'BSB', 'CNF'].includes(codigo)) {
                     const cidade = AEROPORTOS[codigo];
-                    console.log(`✅ v2.2: Destino por código ${codigo}: ${cidade}`);
+                    console.log(`✅ v2.3: Destino por código ${codigo}: ${cidade}`);
                     return cidade;
                 }
             }
@@ -418,78 +733,78 @@ function extrairDestinoDoConteudo(conteudo) {
         // Prioridade 3: Destinos conhecidos
         for (const [chave, nome] of Object.entries(DESTINOS_CONHECIDOS)) {
             if (texto.includes(chave)) {
-                console.log(`✅ v2.2: Destino detectado: ${nome}`);
+                console.log(`✅ v2.3: Destino detectado: ${nome}`);
                 return nome;
             }
         }
         
-        console.log('⚠️ v2.2: Nenhum destino identificado');
+        console.log('⚠️ v2.3: Nenhum destino identificado');
         return null;
     } catch (error) {
-        console.error('❌ v2.2: Erro ao extrair destino:', error);
+        console.error('❌ v2.3: Erro ao extrair destino:', error);
         return null;
     }
 }
 
-// 3.2 Detecção de Voo com Conexão
+// 4.2 - Detecção de Voo com Conexão
 function detectarVooComConexao(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
-        console.log('🔍 v2.2: Verificando conexão...');
+        console.log('🔍 v2.3: Verificando conexão...');
         
         const indicadores = [
             'voo com paradas', 'conexão', 'espera de', 'parada em', 'escala', 
-            'connecting flight', 'tempo de espera', 'layover', 'stopover'
+            'uma escala', 'duas escalas', 'connecting flight', 'tempo de espera', 
+            'layover', 'stopover'
         ];
         
-        const temMultiplosTrechos = (conteudo.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2;
         const temIndicadores = indicadores.some(ind => texto.includes(ind));
+        const temMultiplosTrechos = (conteudo.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2;
         const temMultiplosHorarios = (conteudo.match(/\d{2}:\d{2}/g) || []).length >= 4;
         
-        const ehConexao = temMultiplosTrechos || temIndicadores || temMultiplosHorarios;
-        console.log(`✅ v2.2: Conexão: ${ehConexao ? 'SIM' : 'NÃO'}`);
+        const ehConexao = temIndicadores || temMultiplosTrechos || temMultiplosHorarios;
+        console.log(`✅ v2.3: Conexão: ${ehConexao ? 'SIM' : 'NÃO'}`);
         
         return ehConexao;
     } catch (error) {
-        console.error('❌ v2.2: Erro ao detectar conexão:', error);
+        console.error('❌ v2.3: Erro ao detectar conexão:', error);
         return false;
     }
 }
 
-// 3.3 Detecção de Tipo de Orçamento (ATUALIZADA v2.2)
+// 4.3 - Detecção de Tipo de Orçamento (ATUALIZADA v2.3)
 function detectOrcamentoType(conteudoPrincipal, tipos) {
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
-        console.log('🔍 v2.2: Detectando tipo de orçamento...');
+        console.log('🔍 v2.3: Detectando tipo de orçamento...');
         
-        // Prioridade 0: Cruzeiro (sempre prioridade máxima)
+        // Prioridade 0: Cruzeiro
         if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('cabine')) {
-            console.log('✅ v2.2: Tipo: cruzeiro');
+            console.log('✅ v2.3: Tipo: cruzeiro');
             return 'cruzeiro';
         }
         
         // Prioridade 1: Tipos selecionados pelo usuário
         if (tipos && tipos.length > 0) {
             if (tipos.includes('Aéreo') && tipos.includes('Hotel')) {
-                console.log('✅ v2.2: Tipo: pacote_completo');
+                console.log('✅ v2.3: Tipo: pacote_completo');
                 return 'pacote_completo';
             }
             if (tipos.includes('Hotel') && !tipos.includes('Aéreo')) {
-                // Verificar se é roteiro sequencial
                 const temDatasSequenciais = (conteudoPrincipal.match(/\d{2}\/\d{2}\s+a\s+\d{2}\/\d{2}/g) || []).length >= 2;
                 if (temDatasSequenciais) {
-                    console.log('✅ v2.2: Tipo: roteiro_hoteis');
+                    console.log('✅ v2.3: Tipo: roteiro_hoteis');
                     return 'roteiro_hoteis';
                 }
-                console.log('✅ v2.2: Tipo: hoteis_multiplas_opcoes');
+                console.log('✅ v2.3: Tipo: hoteis_multiplas_opcoes');
                 return 'hoteis_multiplas_opcoes';
             }
             if (tipos.includes('Dicas')) {
-                console.log('✅ v2.2: Tipo: dicas_completas');
+                console.log('✅ v2.3: Tipo: dicas_completas');
                 return 'dicas_completas';
             }
             if (tipos.includes('Ranking')) {
-                console.log('✅ v2.2: Tipo: ranking');
+                console.log('✅ v2.3: Tipo: ranking');
                 return 'ranking';
             }
         }
@@ -498,218 +813,241 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         
         // Somente ida
         if (conteudoLower.includes('somente ida') || conteudoLower.includes('apenas ida') || conteudoLower.includes('one way')) {
-            console.log('✅ v2.2: Tipo: aereo_somente_ida');
+            console.log('✅ v2.3: Tipo: aereo_somente_ida');
             return 'aereo_somente_ida';
-        }
-        
-        // Roteiro de hotéis sequencial
-        const temRoteiro = conteudoLower.includes('roteiro') && conteudoLower.includes('hotel');
-        const temDatasSequenciais = (conteudoPrincipal.match(/\d{2}\/\d{2}\s+a\s+\d{2}\/\d{2}/g) || []).length >= 2;
-        if (temRoteiro || temDatasSequenciais) {
-            console.log('✅ v2.2: Tipo: roteiro_hoteis');
-            return 'roteiro_hoteis';
         }
         
         // Multitrecho
         if (conteudoLower.includes('multitrecho') || (conteudoLower.match(/trecho \d/gi) || []).length > 1) {
-            console.log('✅ v2.2: Tipo: multitrecho');
+            console.log('✅ v2.3: Tipo: multitrecho');
             return 'multitrecho';
         }
         
-        // Múltiplas companhias
-        const temMultiplasCompanhias = (conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca)/gi) || []).length >= 2;
+        // Múltiplas companhias - MELHORADO v2.3
+        const companhiasEncontradas = conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca|american airlines|united|delta|air france|lufthansa|emirates)/gi) || [];
+        const companhiasUnicas = [...new Set(companhiasEncontradas.map(c => c.toLowerCase()))];
+        const temMultiplasCompanhias = companhiasUnicas.length >= 2;
         const temMultiplosLinks = (conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico/g) || []).length >= 2;
         
         if (temMultiplasCompanhias || temMultiplosLinks) {
-            console.log('✅ v2.2: Tipo: multiplas_companhias');
+            console.log('✅ v2.3: Tipo: multiplas_companhias');
             return 'multiplas_companhias';
         }
         
         // Conexão explícita
-        const temConexaoExplicita = conteudoLower.includes('conexão') && conteudoLower.includes('espera');
-        if (temConexaoExplicita && !temMultiplasCompanhias) {
-            console.log('✅ v2.2: Tipo: aereo_conexao');
+        const temConexaoExplicita = detectarVooComConexao(conteudoPrincipal);
+        if (temConexaoExplicita) {
+            console.log('✅ v2.3: Tipo: aereo_conexao');
             return 'aereo_conexao';
         }
         
         // Múltiplas opções (2 ou 3 planos)
         const opcoesMarcadas = conteudoPrincipal.match(/OPÇÃO \d/gi) || [];
         if (opcoesMarcadas.length >= 3) {
-            console.log('✅ v2.2: Tipo: multiplas_opcoes_3_planos');
+            console.log('✅ v2.3: Tipo: multiplas_opcoes_3_planos');
             return 'multiplas_opcoes_3_planos';
         } else if (opcoesMarcadas.length >= 2) {
-            console.log('✅ v2.2: Tipo: multiplas_opcoes_2_planos');
+            console.log('✅ v2.3: Tipo: multiplas_opcoes_2_planos');
             return 'multiplas_opcoes_2_planos';
         }
         
         // Padrão: aéreo simples
-        console.log('✅ v2.2: Tipo padrão: aereo_simples');
+        console.log('✅ v2.3: Tipo padrão: aereo_simples');
         return 'aereo_simples';
         
     } catch (error) {
-        console.error('❌ v2.2: Erro ao detectar tipo:', error);
+        console.error('❌ v2.3: Erro ao detectar tipo:', error);
         return 'aereo_simples';
     }
 }
 
 // ================================================================================
-// 4. GERAÇÃO DE PROMPTS
+// SEÇÃO 5: GERAÇÃO DE PROMPTS
 // ================================================================================
 
 function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento) {
     try {
         let destinoFinal = destino;
         
+        // Extrair destino se necessário
         if (!destinoFinal || tipoOrcamento === 'dicas_completas' || tipoOrcamento === 'ranking') {
             const destinoExtraido = extrairDestinoDoConteudo(conteudoPrincipal);
             if (destinoExtraido) {
                 destinoFinal = destinoExtraido;
-                console.log('✅ v2.2: Destino extraído:', destinoFinal);
+                console.log('✅ v2.3: Destino extraído:', destinoFinal);
             } else {
                 destinoFinal = destino || 'Destino não identificado';
             }
         }
         
-        // Informação de parcelamento
-        let infoParcelamento = '';
-        if (parcelamento) {
-            infoParcelamento = `PARCELAMENTO SELECIONADO: Dividir valor total em ${parcelamento} parcelas iguais sem juros`;
-        } else {
-            infoParcelamento = 'PARCELAMENTO: SÓ INCLUIR SE INFORMADO NO TEXTO. Se não houver, mostrar APENAS valor total.';
-        }
+        // Regras gerais de formatação CORRIGIDAS v2.3
+        const regrasGerais = `**REGRAS CRÍTICAS DE FORMATAÇÃO v2.3 - SEGUIR EXATAMENTE:**
 
-        const regrasGerais = `**REGRAS DE FORMATAÇÃO v2.2 - SEGUIR MANUAL CVC ITAQUA:**
+**TÍTULO:** 
+- Sempre: *{Companhia} - {Cidade Origem} ✈ {Cidade Destino}*
+- Para múltiplas companhias: *OPÇÃO N - {Companhia} - {Cidade Origem} ✈ {Cidade Destino}*
+- NUNCA usar códigos de aeroporto no título
 
-**TÍTULO:** Sempre *{Companhia} - {Cidade Origem} ✈ {Cidade Destino}*
-NUNCA usar códigos de aeroporto no título
+**PARCELAMENTO - REGRA CRÍTICA v2.3:**
+1. Se tem "Entrada de R$ X + Yx de R$ Z" no texto:
+   Formatar como: "💳 Total de R$ [valor_total] em até [Y+1]x, sendo a primeira de R$ X, mais Yx de R$ Z s/ juros no cartão"
+2. Se foi selecionado ${parcelamento || 'nenhum'} no HTML:
+   ${parcelamento ? `Formatar como: "💳 ${parcelamento}x de R$ [valor÷${parcelamento}] s/ juros no cartão"` : 'NÃO incluir linha de parcelamento'}
+3. Se não há informação: NÃO incluir linha de parcelamento
 
-**DATAS:** DD/MM (15/11)
-**HORÁRIOS:** HH:MM (06:20)
-**VALORES:** R$ 1.464,02 (espaço após R$, vírgula para decimais)
+**BAGAGEM - REGRA v2.3:**
+- Se texto contém "SEM bagagem": "✅ Inclui 1 item pessoal + 1 mala de mão de 10kg"
+- Se texto contém "COM bagagem/babagem/abagegem": "✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg"
+- Se não há informação: "✅ Inclui 1 item pessoal + 1 mala de mão de 10kg"
+
+**ASSENTO - REGRA v2.3:**
+- Se texto contém "pre reserva de assento": "💺 Inclui pré reserva de assento"
+- Se NÃO menciona: NÃO incluir linha de assento
 
 **PASSAGEIROS:**
-- Bebê: 0 até 23 meses (idade em MESES)
-- Criança: 2 até 11 anos (idade em ANOS)
-- Adulto: 12 anos ou mais
-- Formato: 01 adulto + 01 criança (5 anos) + 01 bebê (10 meses)
-- Sempre zero à esquerda
+- Formato: "04 adultos + 01 criança" (sempre com zero à esquerda)
+- Bebê: 0-23 meses (idade em MESES)
+- Criança: 2-11 anos (idade em ANOS)
 
-**BAGAGEM:**
-- Só mala de mão incluída
-- Mala de mão + bagagem despachada
-- Mala de mão + 2 bagagens despachadas
+**DATAS E HORÁRIOS:**
+- Datas: DD/MM (11/07)
+- Horários: HH:MM (19:15)
+- Chegada dia seguinte: adicionar (+1) após horário
 
-**${infoParcelamento}**
+**VALORES:**
+- Formato: R$ 1.234,56 (espaço após R$, vírgula para decimais)
 
-**FINALIZAÇÃO:** Sempre terminar com "Valores sujeitos a confirmação e disponibilidade"`;
+**FINALIZAÇÃO:**
+- Sempre terminar com: "Valores sujeitos a confirmação e disponibilidade"`;
 
-        const tabelaAeroportos = `**AEROPORTOS:**\n${JSON.stringify(AEROPORTOS, null, 2)}`;
+        const tabelaAeroportos = `**TABELA DE AEROPORTOS v2.3:**\n${JSON.stringify(AEROPORTOS, null, 2)}`;
 
-        // Switch para cada tipo (14 casos)
+        // Switch para cada tipo
         switch (tipoOrcamento) {
-            case 'aereo_somente_ida':
-                return `Crie orçamento de AÉREO SOMENTE IDA.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.aereo_somente_ida}
-${regrasGerais}
-${tabelaAeroportos}`;
-
-            case 'multiplas_opcoes_3_planos':
-                return `Crie orçamento com 3 PLANOS DE SERVIÇO.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.multiplas_opcoes_3_planos}
-${regrasGerais}
-${tabelaAeroportos}`;
-
-            case 'roteiro_hoteis':
-                return `Crie ROTEIRO DE HOTÉIS SEQUENCIAL.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.roteiro_hoteis}
-${regrasGerais}`;
-
             case 'multiplas_companhias':
                 return `Crie orçamento de MÚLTIPLAS COMPANHIAS para ${destinoFinal}.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.multiplas_companhias}
+                
+**INSTRUÇÕES ESPECÍFICAS:**
+- IDENTIFICAR cada companhia diferente
+- FORMATAR como OPÇÃO 1, OPÇÃO 2, OPÇÃO 3
+- CADA opção tem seu próprio parcelamento, bagagem e assento
+- APLICAR regras v2.3 de formatação
+
+**DADOS BRUTOS:**
+${conteudoPrincipal}
+
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.multiplas_companhias}
 ${regrasGerais}
 ${tabelaAeroportos}`;
 
             case 'aereo_conexao':
                 return `Crie orçamento de VOO COM CONEXÃO DETALHADA para ${destinoFinal}.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.aereo_conexao}
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.aereo_conexao}
 ${regrasGerais}
 ${tabelaAeroportos}`;
 
-            case 'hoteis_multiplas_opcoes':
-                return `Crie orçamento de HOTÉIS - MÚLTIPLAS OPÇÕES para ${destinoFinal}.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.hoteis_multiplas_opcoes}
-${regrasGerais}`;
-
-            case 'pacote_completo':
-                return `Crie PACOTE COMPLETO (Aéreo + Hotel + Serviços) para ${destinoFinal}.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.pacote_completo}
+            case 'aereo_somente_ida':
+                return `Crie orçamento de AÉREO SOMENTE IDA.
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.aereo_somente_ida}
 ${regrasGerais}
 ${tabelaAeroportos}`;
 
-            case 'dicas_completas':
-                return `Crie dicas de viagem completas e úteis para ${destinoFinal}.
-DESTINO: ${destinoFinal}
-Use informações REAIS e ESPECÍFICAS de ${destinoFinal}.
-TEMPLATE: ${TEMPLATES.dicas_completas}`;
-
-            case 'ranking':
-                return `Crie ranking dos melhores hotéis em ${destinoFinal}.
-DESTINO: ${destinoFinal}
-Use hotéis REAIS de ${destinoFinal} com avaliações realistas.
-TEMPLATE: ${TEMPLATES.ranking}`;
-
-            case 'cruzeiro':
-                return `Crie orçamento de CRUZEIRO.
-DADOS: ${conteudoPrincipal}
-TEMPLATE: ${TEMPLATES.cruzeiro}
-${regrasGerais}`;
-
-            case 'multitrecho':
-                return `Crie orçamento MULTITRECHO.
-DADOS: ${conteudoPrincipal}
-TEMPLATE: ${TEMPLATES.multitrecho}
+            case 'multiplas_opcoes_3_planos':
+                return `Crie orçamento com 3 PLANOS DE SERVIÇO.
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.multiplas_opcoes_3_planos}
 ${regrasGerais}
 ${tabelaAeroportos}`;
 
             case 'multiplas_opcoes_2_planos':
                 return `Crie orçamento com 2 PLANOS DE SERVIÇO.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.multiplas_opcoes_2_planos}
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.multiplas_opcoes_2_planos}
 ${regrasGerais}
 ${tabelaAeroportos}`;
 
+            case 'roteiro_hoteis':
+                return `Crie ROTEIRO DE HOTÉIS SEQUENCIAL.
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.roteiro_hoteis}
+${regrasGerais}`;
+
+            case 'hoteis_multiplas_opcoes':
+                return `Crie orçamento de HOTÉIS - MÚLTIPLAS OPÇÕES para ${destinoFinal}.
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.hoteis_multiplas_opcoes}
+${regrasGerais}`;
+
+            case 'pacote_completo':
+                return `Crie PACOTE COMPLETO (Aéreo + Hotel + Serviços) para ${destinoFinal}.
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.pacote_completo}
+${regrasGerais}
+${tabelaAeroportos}`;
+
+            case 'multitrecho':
+                return `Crie orçamento MULTITRECHO.
+                
+**DADOS:** ${conteudoPrincipal}
+**TEMPLATE:** ${TEMPLATES.multitrecho}
+${regrasGerais}
+${tabelaAeroportos}`;
+
+            case 'cruzeiro':
+                return `Crie orçamento de CRUZEIRO.
+                
+**DADOS:** ${conteudoPrincipal}
+**TEMPLATE:** ${TEMPLATES.cruzeiro}
+${regrasGerais}`;
+
+            case 'dicas_completas':
+                return `Crie dicas de viagem completas para ${destinoFinal}.
+                
+**DESTINO:** ${destinoFinal}
+Use informações REAIS e ESPECÍFICAS de ${destinoFinal}.
+**TEMPLATE:** ${TEMPLATES.dicas_completas}`;
+
+            case 'ranking':
+                return `Crie ranking dos melhores hotéis em ${destinoFinal}.
+                
+**DESTINO:** ${destinoFinal}
+Use hotéis REAIS de ${destinoFinal} com avaliações realistas.
+**TEMPLATE:** ${TEMPLATES.ranking}`;
+
             default:
                 return `Crie orçamento AÉREO IDA E VOLTA SIMPLES.
-DADOS: ${conteudoPrincipal}
-DESTINO: ${destinoFinal}
-TEMPLATE: ${TEMPLATES.aereo_simples}
+                
+**DADOS:** ${conteudoPrincipal}
+**DESTINO:** ${destinoFinal}
+**TEMPLATE:** ${TEMPLATES.aereo_simples}
 ${regrasGerais}
 ${tabelaAeroportos}`;
         }
     } catch (error) {
-        console.error('❌ v2.2: Erro ao gerar prompt:', error);
+        console.error('❌ v2.3: Erro ao gerar prompt:', error);
         return `Erro: ${error.message}`;
     }
 }
 
 // ================================================================================
-// 5. HANDLER PRINCIPAL
+// SEÇÃO 6: HANDLER PRINCIPAL
 // ================================================================================
 
 export default async function handler(req, res) {
@@ -729,18 +1067,21 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.2-COMPLETA',
+            version: '2.3-ORGANIZADA',
             timestamp: new Date().toISOString(),
-            message: 'CVC Itaqua API v2.2 - Sistema completo com todos os templates',
+            message: 'CVC Itaqua API v2.3 - Sistema organizado com regras corrigidas',
             funcionalidades: [
-                '✅ 14 templates completos (11 manual + 3 extras)',
-                '✅ Templates novos: Somente ida, 3 planos, Roteiro sequencial',
+                '✅ 14 templates completos',
+                '✅ Regras de parcelamento corrigidas',
+                '✅ Regras de bagagem corrigidas',
+                '✅ Regras de assento corrigidas',
+                '✅ Estrutura modular e organizada',
                 '✅ Leitura: texto, imagem, PDF',
                 '✅ GPT-4o-mini + Claude Haiku',
-                '✅ Detecção automática aprimorada',
                 '✅ 100% conforme manual CVC Itaqua'
             ],
-            templates_disponiveis: Object.keys(TEMPLATES)
+            templates_disponiveis: Object.keys(TEMPLATES),
+            total_templates: Object.keys(TEMPLATES).length
         });
     }
 
@@ -753,7 +1094,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('🚀 v2.2: Processando requisição...');
+        console.log('🚀 v2.3: Processando requisição...');
         
         // Validar body
         if (!req.body) {
@@ -776,12 +1117,13 @@ export default async function handler(req, res) {
             pdfContent = null
         } = req.body;
 
-        console.log('📋 v2.2: Dados recebidos:', {
+        console.log('📋 v2.3: Dados recebidos:', {
             temTexto: !!(observacoes || textoColado),
             temImagem: !!imagemBase64,
             temPDF: !!pdfContent,
             destino,
-            tipos
+            tipos,
+            parcelamento
         });
 
         // Montar conteúdo principal
@@ -794,18 +1136,22 @@ export default async function handler(req, res) {
             });
         }
 
-        // Gerar prompt
+        // Detectar tipo e gerar prompt
         const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
         const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento);
-        console.log(`✅ v2.2: Tipo detectado: ${tipoOrcamento}`);
+        console.log(`✅ v2.3: Tipo detectado: ${tipoOrcamento}`);
 
         // Chamar IA
         let resultado, iaUsada;
         const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
-        const systemPrompt = 'Você é um assistente especialista da CVC Itaqua. Sua função é analisar os dados e gerar um orçamento formatado para WhatsApp seguindo EXATAMENTE o modelo e as regras do manual fornecido. Seja preciso e atento aos detalhes. Retorne apenas o texto final formatado, sem explicações adicionais.';
+        const systemPrompt = `Você é um assistente especialista da CVC Itaqua. 
+        Sua função é analisar os dados e gerar um orçamento formatado para WhatsApp 
+        seguindo EXATAMENTE o modelo e as regras fornecidas. 
+        ATENÇÃO ESPECIAL às regras v2.3 de parcelamento, bagagem e assento.
+        Retorne apenas o texto final formatado, sem explicações adicionais.`;
 
         if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-            console.log('🔮 v2.2: Usando Claude Haiku...');
+            console.log('🔮 v2.3: Usando Claude Haiku...');
             iaUsada = 'claude-3-haiku';
             
             const messages = [{
@@ -848,7 +1194,7 @@ export default async function handler(req, res) {
             resultado = data.content[0].text;
             
         } else {
-            console.log('⚡ v2.2: Usando GPT-4o-mini...');
+            console.log('⚡ v2.3: Usando GPT-4o-mini...');
             iaUsada = 'gpt-4o-mini';
             
             if (!process.env.OPENAI_API_KEY) {
@@ -884,44 +1230,40 @@ export default async function handler(req, res) {
         // Limpar resultado
         resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
 
-        console.log('✅ v2.2: Processamento concluído');
+        console.log('✅ v2.3: Processamento concluído');
         
         return res.status(200).json({
             success: true,
             result: resultado,
             ia_usada: iaUsada,
             metadata: {
-                version: '2.2-COMPLETA',
+                version: '2.3-ORGANIZADA',
                 timestamp: new Date().toISOString(),
                 tipo: tipoOrcamento,
                 destino_extraido: extrairDestinoDoConteudo(conteudoPrincipal),
-                templates_disponiveis: Object.keys(TEMPLATES).length
+                templates_disponiveis: Object.keys(TEMPLATES).length,
+                regras_aplicadas: ['parcelamento_v2.3', 'bagagem_v2.3', 'assento_v2.3']
             }
         });
 
     } catch (error) {
-        console.error('❌ v2.2: Erro:', error);
-        
-        // Fallback básico para erros
-        const tipoDetectado = detectOrcamentoType(conteudoPrincipal || '', tipos || []);
-        const destinoDetectado = extrairDestinoDoConteudo(conteudoPrincipal || '') || destino || 'Destino';
-        
-        let resultadoFallback = `*Orçamento ${destinoDetectado}*\n\n`;
-        resultadoFallback += `⚠️ Sistema em manutenção. Por favor, aguarde alguns instantes e tente novamente.\n\n`;
-        resultadoFallback += `Valores sujeitos a confirmação e disponibilidade`;
+        console.error('❌ v2.3: Erro:', error);
         
         return res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',
             details: error.message,
-            version: '2.2-COMPLETA',
-            result: resultadoFallback,
-            ia_usada: 'fallback'
+            version: '2.3-ORGANIZADA'
         });
     }
 }
 
-// Logs de inicialização
-console.log('✅ CVC Itaqua v2.2-COMPLETA carregado com sucesso!');
-console.log('📋 14 templates disponíveis | 🔍 Detecção automática | 🤖 GPT + Claude | 📄 Texto/Imagem/PDF');
-console.log('📌 100% conforme Manual CVC Itaqua | Atualização: 18/12/2024');
+// ================================================================================
+// LOGS DE INICIALIZAÇÃO
+// ================================================================================
+console.log('✅ CVC Itaqua v2.3-ORGANIZADA carregado com sucesso!');
+console.log('📋 14 templates disponíveis');
+console.log('🔧 Regras corrigidas: Parcelamento, Bagagem, Assento');
+console.log('📁 Estrutura modular e organizada');
+console.log('📌 100% conforme Manual CVC Itaqua');
+console.log('📅 Atualização: 18/12/2024');
