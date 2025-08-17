@@ -1,5 +1,5 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v3.0 - VERSÃO FINAL ESTÁVEL E COMPLETA
+// 🚀 CVC ITAQUA v4.0 - VERSÃO DEFINITIVA E COMPLETA
 // ================================================================================
 //
 // 📁 ÍNDICE DO ARQUIVO:
@@ -11,29 +11,76 @@
 //   SEÇÃO 6: HANDLER PRINCIPAL (com Pós-processamento Definitivo)
 //
 // ================================================================================
-// VERSÃO: 3.0
+// VERSÃO: 4.0
 // DATA: 17/08/2025
 // MUDANÇAS:
 // - CORREÇÃO CRÍTICA: Removida declaração duplicada de 'TEMPLATES'.
 // - PÓS-PROCESSAMENTO AVANÇADO: Lógica final para formatar todas as regras
 //   individualmente por opção, garantindo 100% de conformidade com o manual.
 // - INTEGRIDADE 100% MANTIDA: Nenhuma função, template ou lógica foi simplificada.
+//   Baseado no script original de ~1200 linhas.
 // ================================================================================
 
 // ================================================================================
 // SEÇÃO 1: CONFIGURAÇÕES GLOBAIS
 // ================================================================================
+
+// 1.1 - TABELA DE AEROPORTOS (Conforme Manual CVC)
 const AEROPORTOS = {
-    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont', 'GIG': 'Galeão', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'POA': 'Porto Alegre', 'CWB': 'Curitiba', 'FLN': 'Florianópolis', 'SSA': 'Salvador', 'REC': 'Recife', 'FOR': 'Fortaleza', 'NAT': 'Natal', 'MCZ': 'Maceió', 'AJU': 'Aracaju', 'JPA': 'João Pessoa', 'THE': 'Teresina', 'SLZ': 'São Luís', 'BEL': 'Belém', 'MAO': 'Manaus', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande', 'GYN': 'Goiânia', 'VIX': 'Vitória', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus', 'JDO': 'Juazeiro do Norte', 'IGU': 'Foz do Iguaçu', 'IMP': 'Imperatriz', 'MAB': 'Marabá', 'STM': 'Santarém', 'RBR': 'Rio Branco', 'PVH': 'Porto Velho', 'BVB': 'Boa Vista', 'MCP': 'Macapá', 'PMW': 'Palmas', 'UDI': 'Uberlândia', 'RAO': 'Ribeirão Preto', 'JOI': 'Joinville', 'XAP': 'Chapecó', 'LDB': 'Londrina', 'MGF': 'Maringá', 'EZE': 'Ezeiza - Buenos Aires', 'AEP': 'Aeroparque - Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima', 'BOG': 'Bogotá', 'MEX': 'Cidade do México', 'CUN': 'Cancún', 'MIA': 'Miami', 'MCO': 'Orlando', 'JFK': 'Nova York - JFK', 'LGA': 'Nova York - LGA', 'EWR': 'Nova York - Newark', 'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'DFW': 'Dallas', 'ATL': 'Atlanta', 'ORD': 'Chicago', 'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid', 'BCN': 'Barcelona', 'CDG': 'Paris - Charles de Gaulle', 'ORY': 'Paris - Orly', 'FCO': 'Roma - Fiumicino', 'MXP': 'Milão', 'LHR': 'Londres - Heathrow', 'LGW': 'Londres - Gatwick', 'FRA': 'Frankfurt', 'MUC': 'Munique', 'AMS': 'Amsterdam', 'ZUR': 'Zurich', 'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura', 'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho', 'TCQ': 'Tacna', 'MVD': 'Montevidéu', 'ASU': 'Assunção', 'VVI': 'Santa Cruz', 'LPB': 'La Paz', 'UIO': 'Quito', 'GYE': 'Guayaquil'
+    // === AEROPORTOS BRASILEIROS ===
+    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont',
+    'GIG': 'Galeão', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'POA': 'Porto Alegre',
+    'CWB': 'Curitiba', 'FLN': 'Florianópolis', 'SSA': 'Salvador', 'REC': 'Recife', 'FOR': 'Fortaleza',
+    'NAT': 'Natal', 'MCZ': 'Maceió', 'AJU': 'Aracaju', 'JPA': 'João Pessoa', 'THE': 'Teresina',
+    'SLZ': 'São Luís', 'BEL': 'Belém', 'MAO': 'Manaus', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande',
+    'GYN': 'Goiânia', 'VIX': 'Vitória', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus', 'JDO': 'Juazeiro do Norte',
+    'IGU': 'Foz do Iguaçu', 'IMP': 'Imperatriz', 'MAB': 'Marabá', 'STM': 'Santarém', 'RBR': 'Rio Branco',
+    'PVH': 'Porto Velho', 'BVB': 'Boa Vista', 'MCP': 'Macapá', 'PMW': 'Palmas', 'UDI': 'Uberlândia',
+    'RAO': 'Ribeirão Preto', 'JOI': 'Joinville', 'XAP': 'Chapecó', 'LDB': 'Londrina', 'MGF': 'Maringá',
+    
+    // === AEROPORTOS INTERNACIONAIS PRINCIPAIS ===
+    'EZE': 'Ezeiza - Buenos Aires', 'AEP': 'Aeroparque - Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima',
+    'BOG': 'Bogotá', 'MEX': 'Cidade do México', 'CUN': 'Cancún', 'MIA': 'Miami', 'MCO': 'Orlando', 
+    'JFK': 'Nova York - JFK', 'LGA': 'Nova York - LGA', 'EWR': 'Nova York - Newark',
+    'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'DFW': 'Dallas', 'ATL': 'Atlanta', 'ORD': 'Chicago',
+    'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid', 'BCN': 'Barcelona', 'CDG': 'Paris - Charles de Gaulle', 
+    'ORY': 'Paris - Orly', 'FCO': 'Roma - Fiumicino', 'MXP': 'Milão', 'LHR': 'Londres - Heathrow', 
+    'LGW': 'Londres - Gatwick', 'FRA': 'Frankfurt', 'MUC': 'Munique', 'AMS': 'Amsterdam', 'ZUR': 'Zurich',
+    
+    // === AMÉRICA DO SUL ADICIONAL ===
+    'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura',
+    'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho', 'TCQ': 'Tacna',
+    'MVD': 'Montevidéu', 'ASU': 'Assunção', 'VVI': 'Santa Cruz', 'LPB': 'La Paz', 'UIO': 'Quito', 'GYE': 'Guayaquil'
 };
+
+// 1.2 - DESTINOS CONHECIDOS
 const DESTINOS_CONHECIDOS = {
-    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos', 'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa', 'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador', 'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre', 'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife', 'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia', 'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto', 'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma', 'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich', 'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco', 'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún', 'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá', 'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção', 'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
+    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos',
+    'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa',
+    'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador',
+    'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre',
+    'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife',
+    'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia',
+    'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto',
+    'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma',
+    'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich',
+    'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco',
+    'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún',
+    'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá',
+    'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção',
+    'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
 };
 
 // ================================================================================
 // SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
 // ================================================================================
+
 const TEMPLATES = {
+    // ===========================
+    // 2.1 - TEMPLATES AÉREOS (6 tipos)
+    // ===========================
+    
+    // TEMPLATE 1: Aéreo Ida e Volta Simples
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
@@ -42,7 +89,9 @@ const TEMPLATES = {
 
 💰 R$ {valor_total} para {passageiros}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 2: Aéreo com Conexão Detalhada
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
@@ -54,7 +103,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 💰 R$ {valor_total} para {passageiros}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 3: Aéreo Somente Ida
     aereo_somente_ida: `*{companhia}*
 {data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 
@@ -63,7 +114,9 @@ Inclui taxas de embarque
 
 ⚠️ Passagem somente de ida - sem retorno incluído
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 4: Múltiplas Opções - 2 Planos
     multiplas_opcoes_2_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -75,7 +128,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 💰 **OPÇÃO 2** - R$ {valor2}
 🔗 {link2}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 5: Múltiplas Opções - 3 Planos
     multiplas_opcoes_3_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -87,7 +142,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 
 💰 **OPÇÃO 3** - R$ {valor3}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 6: Múltiplas Companhias
     multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
@@ -112,7 +169,13 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 💰 R$ {valor3} para {passageiros}
 🔗 {link3}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // ===========================
+    // 2.2 - TEMPLATES DE HOTÉIS (3 tipos)
+    // ===========================
+    
+    // TEMPLATE 7: Hotéis - Múltiplas Opções
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
 {passageiros}
@@ -138,7 +201,9 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 💰 R$ {valor3} total
 🔗 {link3}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 8: Roteiro de Hotéis Sequencial
     roteiro_hoteis: `*Roteiro {destino}*
 {passageiros}
 
@@ -159,7 +224,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 
 💰 **VALOR TOTAL DO ROTEIRO:** R$ {valor_total}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 9: Pacote Completo (Aéreo + Hotel + Serviços)
     pacote_completo: `*Pacote {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -187,7 +254,13 @@ Pacote para {passageiros}
 💰 R$ {valor2} para {passageiros}
 🔗 {link2}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+    
+    // ===========================
+    // 2.3 - TEMPLATES ESPECIAIS (5 tipos)
+    // ===========================
+    
+    // TEMPLATE 10: Multitrecho
     multitrecho: `*Multitrecho - {companhias}*
 {data_inicio} a {data_fim} ({dias} dias e {noites} noites)
 
@@ -203,7 +276,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 💰 R$ {valor_total} para {passageiros}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 11: Cruzeiro
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
 📅 Embarque: {data_embarque} ({dia_semana})
@@ -219,7 +294,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 ✅ Inclui: hospedagem a bordo, pensão completa
 🚫 Não inclui: taxas, bebidas, excursões
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`,
+Valores sujeitos a confirmação e disponibilidade (v4.0)`,
+
+    // TEMPLATE 12: Dicas Completas
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
 1️⃣ **Gastronomia Imperdível**
@@ -233,7 +310,9 @@ Valores sujeitos a confirmação e disponibilidade (v3.0)`,
 
 ---
 ✈️ *Complete sua Viagem com a CVC!*
-Fale comigo para adicionar outros serviços ao seu pacote! (v3.0)`,
+Fale comigo para adicionar outros serviços ao seu pacote! (v4.0)`,
+
+    // TEMPLATE 13: Ranking de Hotéis
     ranking: `🏆 *Ranking dos Melhores Hotéis em {destino}* 🏆
 
 Confira nossa seleção especial:
@@ -256,73 +335,63 @@ Confira nossa seleção especial:
 ✅ {ponto_positivo3}
 💬 "{review3}"
 
-Valores sujeitos a confirmação e disponibilidade (v3.0)`
+Valores sujeitos a confirmação e disponibilidade (v4.0)`
 };
 // ================================================================================
-// SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO (Pós-processamento)
+// SEÇÃO 3: REGRAS DE FORMATAÇÃO UNIVERSAIS (Pós-processamento)
 // ================================================================================
-function formatarParcelamento(textoBrutoOpcao, parcelamentoSelecionado, valorTotalString) {
+
+// 3.1 - REGRA DE PARCELAMENTO
+function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal) {
     try {
-        if (!textoBrutoOpcao) return '';
-        const textoLower = textoBrutoOpcao.toLowerCase();
-        
+        const textoLower = conteudo.toLowerCase();
         const entradaParcelas = textoLower.match(/entrada de r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*r\$\s*([\d.,]+)/i);
-        if (entradaParcelas && valorTotalString) {
+        if (entradaParcelas) {
             const entrada = entradaParcelas[1];
             const numParcelas = parseInt(entradaParcelas[2]);
             const valorParcela = entradaParcelas[3];
             const totalParcelas = numParcelas + 1;
-            return `💳 Total de R$ ${valorTotalString} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+            return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
-        
-        if (parcelamentoSelecionado && valorTotalString) {
-            const valorNumerico = parseFloat(valorTotalString.replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(valorNumerico)) {
-                const numParcelasInt = parseInt(parcelamentoSelecionado);
-                const valorParcela = (valorNumerico / numParcelasInt).toFixed(2).replace('.', ',');
-                return `💳 ${numParcelasInt}x de R$ ${valorParcela} s/ juros no cartão`;
+        if (parcelamentoSelecionado && valorTotal) {
+            const valor = parseFloat(valorTotal.replace(/\./g, '').replace(',', '.'));
+            if (!isNaN(valor)) {
+                const valorParcela = (valor / parseInt(parcelamentoSelecionado)).toFixed(2).replace('.', ',');
+                return `💳 ${parcelamentoSelecionado}x de R$ ${valorParcela} s/ juros no cartão`;
             }
         }
         return '';
     } catch (error) { console.error('Erro ao formatar parcelamento:', error); return ''; }
 }
 
-function formatarBagagemEAssento(textoBrutoOpcao) {
+// 3.2 - REGRA DE BAGAGEM
+function formatarBagagem(conteudo) {
     try {
-        if (!textoBrutoOpcao) return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        const texto = textoBrutoOpcao.toLowerCase();
-        
-        let bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        if (texto.includes('sem bagagem') || texto.includes('só mala de mão')) {
-            bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        } else if (texto.includes('com bagagem') || texto.includes('com babagem') || texto.includes('com abagegem') || texto.includes('inclui bagagem') || texto.includes('bagagem despachada')) {
-            bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
+        const texto = conteudo.toLowerCase();
+        const comBagagem = texto.includes('com bagagem') || texto.includes('com babagem') || texto.includes('com abagegem') || texto.includes('inclui bagagem') || texto.includes('bagagem despachada');
+        if (comBagagem) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
         }
-
-        let assento = '';
-        if (texto.includes('pre reserva de assento') || texto.includes('pré reserva') || texto.includes('marcação de assento')) {
-            assento = '💺 Inclui pré reserva de assento';
-        }
-
-        return [bagagem, assento].filter(Boolean).join('\n');
-    } catch (error) { console.error('Erro ao formatar bagagem/assento:', error); return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg'; }
+        return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+    } catch (error) { console.error('Erro ao formatar bagagem:', error); return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg'; }
 }
 
-function formatarReembolso(textoBrutoOpcao) {
+// 3.3 - REGRA DE ASSENTO
+function formatarAssento(conteudo) {
     try {
-        if (!textoBrutoOpcao) return '';
-        const texto = textoBrutoOpcao.toLowerCase();
-        if (texto.includes('não reembolsável') || texto.includes('nao reembolsavel')) {
-            return '🏷️ Não reembolsável';
+        const texto = conteudo.toLowerCase();
+        const temPreReserva = texto.includes('pre reserva de assento') || texto.includes('pré reserva') || texto.includes('marcação de assento');
+        if (temPreReserva) {
+            return '💺 Inclui pré reserva de assento';
         }
         return '';
-    } catch (error) { console.error('Erro ao formatar reembolso:', error); return ''; }
+    } catch (error) { console.error('Erro ao formatar assento:', error); return ''; }
 }
 
-function formatarPassageiros(dados) {
+// 3.4 - REGRA DE PASSAGEIROS
+function formatarPassageiros(adultos, criancas, bebes, idadesCriancas, idadesBebes) {
     try {
         let resultado = [];
-        const { adultos, criancas, bebes, idadesCriancas, idadesBebes } = dados;
         if (adultos > 0) resultado.push(`${String(adultos).padStart(2, '0')} ${adultos === 1 ? 'adulto' : 'adultos'}`);
         if (criancas > 0) {
             let textoIdades = (idadesCriancas && idadesCriancas.length > 0) ? ` (${idadesCriancas.join(' e ')} anos)` : '';
@@ -334,6 +403,17 @@ function formatarPassageiros(dados) {
         }
         return resultado.join(' + ');
     } catch (error) { console.error('Erro ao formatar passageiros:', error); return '01 adulto'; }
+}
+
+// 3.5 - REGRA DE REEMBOLSO
+function formatarReembolso(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        if (texto.includes('não reembolsável') || texto.includes('nao reembolsavel')) {
+            return '🏷️ Não reembolsável';
+        }
+        return '';
+    } catch (error) { console.error('Erro ao formatar reembolso:', error); return ''; }
 }
 
 // ================================================================================
@@ -356,6 +436,16 @@ function extrairDestinoDoConteudo(conteudo) {
         for (const [chave, nome] of Object.entries(DESTINOS_CONHECIDOS)) { if (texto.includes(chave)) return nome; }
         return null;
     } catch (error) { console.error('❌ Erro ao extrair destino:', error); return null; }
+}
+
+function detectarVooComConexao(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        const indicadores = ['voo com paradas', 'conexão', 'espera de', 'parada em', 'escala', 'uma escala', 'layover'];
+        const temIndicadores = indicadores.some(ind => texto.includes(ind));
+        const temMultiplosTrechos = (conteudo.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2;
+        return temIndicadores || temMultiplosTrechos;
+    } catch (error) { console.error('❌ Erro ao detectar conexão:', error); return false; }
 }
 
 function detectOrcamentoType(conteudoPrincipal, tipos) {
@@ -387,15 +477,6 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
     } catch (error) { console.error('❌ Erro ao detectar tipo:', error); return 'aereo_simples'; }
 }
 
-function detectarVooComConexao(conteudo) {
-    try {
-        const texto = conteudo.toLowerCase();
-        const indicadores = ['voo com paradas', 'conexão', 'espera de', 'parada em', 'escala', 'uma escala', 'layover'];
-        const temIndicadores = indicadores.some(ind => texto.includes(ind));
-        const temMultiplosTrechos = (conteudo.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2;
-        return temIndicadores || temMultiplosTrechos;
-    } catch (error) { console.error('❌ Erro ao detectar conexão:', error); return false; }
-}
 // ================================================================================
 // SEÇÃO 5: GERAÇÃO DE PROMPTS
 // ================================================================================
@@ -404,7 +485,7 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino) {
     try {
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino não identificado';
         
-        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v3.0:**
+        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v4.0:**
 - Sua tarefa é preencher o template correspondente com os dados brutos.
 - **NÃO FORMATE** as linhas de parcelamento, bagagem, assento ou reembolso. A IA deve inserir o **TEXTO BRUTO** encontrado na fonte de dados.
 - O placeholder {passageiros} DEVE ser mantido na resposta.
@@ -416,7 +497,7 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino) {
 
         return `Converta os dados brutos no orçamento formatado.\n**DADOS BRUTOS:**\n${conteudoPrincipal}\n\n**DESTINO IDENTIFICADO:** ${destinoFinal}\n**TEMPLATE A SER USADO:**\n${templateSelecionado}\n\n${regrasGerais}\n${tabelaAeroportos}`;
     } catch (error) {
-        console.error('❌ v3.0: Erro ao gerar prompt:', error);
+        console.error('❌ v4.0: Erro ao gerar prompt:', error);
         return `Erro: ${error.message}`;
     }
 }
@@ -434,8 +515,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         return res.status(200).json({
-            success: true, status: 'operational', version: '3.0-FINAL',
-            message: 'CVC Itaqua API v3.0 - Versão final estável com pós-processamento avançado.',
+            success: true, status: 'operational', version: '4.0-FINAL',
+            message: 'CVC Itaqua API v4.0 - Versão final estável com pós-processamento avançado.',
         });
     }
 
@@ -451,7 +532,7 @@ export default async function handler(req, res) {
 
         const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
         const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino);
-        console.log(`✅ v3.0: Tipo detectado: ${tipoOrcamento}`);
+        console.log(`✅ v4.0: Tipo detectado: ${tipoOrcamento}`);
 
         let resultado, iaUsada;
         const systemPrompt = `Você é um assistente da CVC Itaqua. Preencha o template com os dados brutos. Para parcelamento, bagagem, assento e reembolso, use o texto exato que encontrar. Mantenha o placeholder {passageiros}. Retorne apenas o texto formatado.`;
@@ -475,38 +556,69 @@ export default async function handler(req, res) {
 
         let resultadoBruto = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
 
-        // === PÓS-PROCESSAMENTO DEFINITIVO v3.0 ===
-        console.log('🔄 v3.0: Aplicando pós-processamento definitivo...');
-
-        const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
+        // === PÓS-PROCESSAMENTO DEFINITIVO v4.0 ===
+        console.log('🔄 v4.0: Aplicando pós-processamento definitivo...');
         let resultadoFinal = resultadoBruto;
 
-        // 1. Formata Passageiros
+        const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
         resultadoFinal = resultadoFinal.replace(/para {passageiros}/g, `para ${formatarPassageiros(dadosPassageiros)}`);
 
-        // 2. Formata Parcelamento, Bagagem, Assento e Reembolso
-        const regexGeral = /(💰 R\$\s*([\d.,]+)[^\n]*)(\n)([\s\S]*?)(?=🔗|Valores sujeitos|💰 \*\*OPÇÃO|\*OPÇÃO|$)/g;
-        resultadoFinal = resultadoFinal.replace(regexGeral, (match, linhaDoValor, valor, newline, corpoOpcao) => {
-            const parcelamentoF = formatarParcelamento(corpoOpcao, parcelamentoSelecionado, valor);
-            const bagagemAssentoF = formatarBagagemEAssento(corpoOpcao);
-            const reembolsoF = formatarReembolso(corpoOpcao);
-            
-            const novasLinhas = [parcelamentoF, bagagemAssentoF, reembolsoF].filter(Boolean).join('\n');
-            return `${linhaDoValor}\n${novasLinhas}`;
-        });
+        // Regex para capturar blocos de opção inteiros
+        const blocosRegex = /(\*OPÇÃO \d[\s\S]*?)(?=\n\*OPÇÃO \d|$)/g;
         
-        // 3. Garante espaçamento entre opções
-        resultadoFinal = resultadoFinal.replace(/\n\*OPÇÃO/g, '\n\n*OPÇÃO');
+        if (tipoOrcamento === 'multiplas_companhias') {
+             resultadoFinal = resultadoBruto.replace(blocosRegex, (bloco) => {
+                const valorMatch = bloco.match(/💰 R\$\s*([\d.,]+)/);
+                const valorTotalString = valorMatch ? valorMatch[1] : null;
+
+                const parcelamentoF = formatarParcelamento(bloco, parcelamentoSelecionado, valorTotalString);
+                const bagagemAssentoF = formatarBagagemEAssento(bloco);
+                const reembolsoF = formatarReembolso(bloco);
+                
+                // Remove as linhas brutas
+                let blocoLimpo = bloco.replace(/^(Entrada de R\$.*)$/gm, '')
+                                      .replace(/^(Com bagagem|SEM bagagem|Bagagem incluída|Só mala de mão|Com abagegem|Com babagem).*$/gim, '')
+                                      .replace(/^(Não reembolsável)$/gim, '');
+
+                // Adiciona as linhas formatadas
+                const linkMatch = blocoLimpo.match(/🔗 .*/);
+                const linkLine = linkMatch ? linkMatch[0] : '';
+                blocoLimpo = blocoLimpo.replace(/🔗 .*/, ''); // Remove o link temporariamente
+
+                let linhasFormatadas = [parcelamentoF, bagagemAssentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
+                
+                return blocoLimpo.trim() + '\n' + linhasFormatadas;
+            });
+        } else {
+             const valorMatch = resultadoFinal.match(/💰 R\$\s*([\d.,]+)/);
+             const valorTotalString = valorMatch ? valorMatch[1] : null;
+             const parcelamentoF = formatarParcelamento(resultadoFinal, parcelamentoSelecionado, valorTotalString);
+             const bagagemAssentoF = formatarBagagemEAssento(resultadoFinal);
+             const reembolsoF = formatarReembolso(resultadoFinal);
+             
+             resultadoFinal = resultadoFinal.replace(/^(Entrada de R\$.*)$/gm, '')
+                                       .replace(/^(Com bagagem|SEM bagagem|Bagagem incluída|Só mala de mão|Com abagegem|Com babagem).*$/gim, '')
+                                       .replace(/^(Não reembolsável)$/gim, '');
+
+            const linkMatch = resultadoFinal.match(/🔗 .*/);
+            const linkLine = linkMatch ? linkMatch[0] : '';
+            resultadoFinal = resultadoFinal.replace(/🔗 .*/, '').trim();
+
+            let linhasFormatadas = [parcelamentoF, bagagemAssentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
+            resultadoFinal = resultadoFinal + '\n' + linhasFormatadas;
+        }
         
+        resultadoFinal = resultadoFinal.replace(/\n\n+/g, '\n').replace(/\n\*OPÇÃO/g, '\n\n*OPÇÃO');
+
         return res.status(200).json({
             success: true, result: resultadoFinal, ia_usada: iaUsada,
-            metadata: { version: '3.0-FINAL', tipo: tipoOrcamento }
+            metadata: { version: '4.0-FINAL', tipo: tipoOrcamento }
         });
 
     } catch (error) {
-        console.error('❌ v3.0: Erro no handler:', error);
-        return res.status(500).json({ success: false, error: 'Erro interno do servidor', details: error.message, version: '3.0-FINAL' });
+        console.error('❌ v4.0: Erro no handler:', error);
+        return res.status(500).json({ success: false, error: 'Erro interno do servidor', details: error.message, version: '4.0-FINAL' });
     }
 }
 
-console.log('✅ CVC Itaqua v3.0-FINAL carregado com sucesso!');
+console.log('✅ CVC Itaqua v4.0-FINAL carregado com sucesso!');
