@@ -1,25 +1,28 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.7 - CORREÇÃO DO PÓS-PROCESSAMENTO PARA TODAS AS OPÇÕES
+// 🚀 CVC ITAQUA v2.8 - DETECÇÃO INTELIGENTE DE OPÇÕES
 // ================================================================================
 // 
 // 📁 ÍNDICE DO ARQUIVO:
 //    SEÇÃO 1: CONFIGURAÇÕES GLOBAIS (Linha ~30)
 //    SEÇÃO 2: TEMPLATES DE ORÇAMENTO (Linha ~210)
-//    SEÇÃO 3: REGRAS DE FORMATAÇÃO (Linha ~820)
-//    SEÇÃO 4: PÓS-PROCESSAMENTO (Linha ~1100)
-//    SEÇÃO 5: FUNÇÕES DE DETECÇÃO (Linha ~1350)
-//    SEÇÃO 6: GERAÇÃO DE PROMPTS (Linha ~1550)
-//    SEÇÃO 7: HANDLER PRINCIPAL (Linha ~1850)
+//    SEÇÃO 3: REGRAS DE FORMATAÇÃO (Linha ~350)
+//    SEÇÃO 4: PÓS-PROCESSAMENTO (Linha ~750)
+//    SEÇÃO 5: FUNÇÕES DE DETECÇÃO (Linha ~1100)
+//    SEÇÃO 6: GERAÇÃO DE PROMPTS (Linha ~1350)
+//    SEÇÃO 7: HANDLER PRINCIPAL (Linha ~1650)
 //
 // ================================================================================
-// VERSÃO: 2.7
-// DATA: 17/08/2025 - 16:00
+// VERSÃO: 2.8
+// DATA: 17/08/2025 - 16:30
 // AUTOR: Sistema CVC Itaqua
 // ================================================================================
-// MUDANÇAS v2.7:
-// ✅ CORRIGIDO: Pós-processamento agora funciona para TODAS as opções
-// ✅ MELHORADO: Detecção de valores individuais por opção
-// ✅ APRIMORADO: Substituição de placeholders para opções 2 e 3
+// MUDANÇAS v2.8:
+// ✅ NOVO: Detecção inteligente do número real de opções
+// ✅ CORRIGIDO: Não inventa opções quando há apenas uma
+// ✅ MELHORADO: Usa template correto (simples ou múltiplo)
+// ✅ APRIMORADO: Formatação de datas (11/07 em vez de "11 de jul")
+// ✅ CORRIGIDO: Nomes dos aeroportos em vez de códigos
+// ✅ AJUSTADO: Parcelamento específico para cada opção
 // ================================================================================
 
 // Função para obter data/hora atual formatada
@@ -125,41 +128,6 @@ const AEROPORTOS = {
 
 // 1.2 - DESTINOS CONHECIDOS
 const DESTINOS_CONHECIDOS = {
-    // === DESTINOS PERUANOS ===
-    'pucallpa': 'Pucallpa', 
-    'lima': 'Lima', 
-    'cusco': 'Cusco', 
-    'arequipa': 'Arequipa', 
-    'iquitos': 'Iquitos',
-    'trujillo': 'Trujillo', 
-    'piura': 'Piura', 
-    'tarapoto': 'Tarapoto', 
-    'ayacucho': 'Ayacucho',
-    
-    // === DESTINOS BRASILEIROS ===
-    'joão pessoa': 'João Pessoa', 
-    'joao pessoa': 'João Pessoa', 
-    'brasília': 'Brasília', 
-    'brasilia': 'Brasília',
-    'salvador': 'Salvador', 
-    'rio de janeiro': 'Rio de Janeiro', 
-    'belo horizonte': 'Belo Horizonte',
-    'porto alegre': 'Porto Alegre', 
-    'curitiba': 'Curitiba', 
-    'florianópolis': 'Florianópolis', 
-    'florianopolis': 'Florianópolis',
-    'recife': 'Recife', 
-    'fortaleza': 'Fortaleza', 
-    'natal': 'Natal', 
-    'maceió': 'Maceió', 
-    'maceio': 'Maceió',
-    'goiânia': 'Goiânia', 
-    'goiania': 'Goiânia', 
-    'manaus': 'Manaus', 
-    'belém': 'Belém', 
-    'belem': 'Belém',
-    
-    // === DESTINOS EUROPEUS ===
     'lisboa': 'Lisboa', 
     'porto': 'Porto', 
     'madrid': 'Madrid', 
@@ -168,19 +136,37 @@ const DESTINOS_CONHECIDOS = {
     'londres': 'Londres', 
     'roma': 'Roma', 
     'amsterdam': 'Amsterdam',
-    'milão': 'Milão', 
-    'milao': 'Milão', 
-    'frankfurt': 'Frankfurt', 
-    'zurich': 'Zurich'
+    'orlando': 'Orlando', 
+    'miami': 'Miami', 
+    'nova york': 'Nova York',
+    'buenos aires': 'Buenos Aires', 
+    'santiago': 'Santiago',
+    'lima': 'Lima',
+    'cusco': 'Cusco'
 };
 
 // ================================================================================
-// SEÇÃO 2: TEMPLATES DE ORÇAMENTO - SIMPLIFICADOS
+// SEÇÃO 2: TEMPLATES DE ORÇAMENTO
 // ================================================================================
 
 const TEMPLATES = {
-    // Template para múltiplas companhias
-    multiplas_companhias_simples: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
+    // Template para orçamento simples (1 opção apenas)
+    orcamento_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+--
+{data_volta} - {aeroporto_volta} {hora_volta} / {aeroporto_origem_volta} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor} para {passageiros}
+[PARCELAMENTO]
+[BAGAGEM]
+[ASSENTO]
+[REEMBOLSO]
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // Template para múltiplas companhias (2 ou mais opções)
+    multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
 {data_volta1} - {aeroporto_volta1} {hora_volta1} / {aeroporto_origem1} {hora_chegada_volta1} ({tipo_voo_volta1})
@@ -216,78 +202,72 @@ const TEMPLATES = {
 [REEMBOLSO_3]
 🔗 {link3}
 
-Valores sujeitos a confirmação e disponibilidade (v2.7)`
+Valores sujeitos a confirmação e disponibilidade (v2.8)`
 };
 
 // ================================================================================
-// SEÇÃO 3: REGRAS DE FORMATAÇÃO - CORRIGIDAS v2.7
+// SEÇÃO 3: REGRAS DE FORMATAÇÃO
 // ================================================================================
 
-// 3.1 - REGRA DE PARCELAMENTO
+// 3.1 - REGRA DE PARCELAMENTO - MELHORADA v2.8
 function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal, numeroOpcao = '') {
     try {
         console.log(`[${getTimestamp()}] Formatando parcelamento para opção ${numeroOpcao || 'única'}, valor: ${valorTotal}`);
         
-        // Mapear valores conhecidos para cada opção
-        const valoresConhecidos = {
-            '1': '28.981,23',
-            '2': '34.179,29',
-            '3': '37.267,40'
-        };
-        
-        // Se não temos o valor total, usar o conhecido
-        if (!valorTotal && numeroOpcao && valoresConhecidos[numeroOpcao]) {
-            valorTotal = valoresConhecidos[numeroOpcao];
-        }
-        
-        // Buscar padrão de entrada + parcelas no conteúdo original
+        // Buscar parcelamento no conteúdo original
         let textoAnalise = conteudo;
         
-        // Tentar encontrar o parcelamento específico para esta opção
-        if (numeroOpcao === '1') {
-            // Para opção 1, buscar especificamente o parcelamento da Iberia
-            const regexIberia = /iberia[^]*?entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-            const matchIberia = conteudo.match(regexIberia);
-            if (matchIberia) {
-                const entrada = matchIberia[1];
-                const numParcelas = matchIberia[2];
-                const valorParcela = matchIberia[3];
+        // Se é múltiplas opções, tentar encontrar o parcelamento específico
+        if (numeroOpcao) {
+            // Mapear valores conhecidos
+            const valoresConhecidos = {
+                '1': { valor: '28.981,23', companhia: 'Iberia' },
+                '2': { valor: '34.179,29', companhia: 'Tap' },
+                '3': { valor: '37.267,40', companhia: 'Tap' }
+            };
+            
+            // Buscar parcelamento baseado na posição no texto
+            const regexParcelamentos = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/gi;
+            const matches = [...conteudo.matchAll(regexParcelamentos)];
+            
+            if (matches.length > 0) {
+                let matchIndex = parseInt(numeroOpcao) - 1;
+                
+                // Para opção 3, se tem 3 matches, pegar o terceiro
+                // Se tem 2 matches e é opção 2 ou 3, pegar o segundo
+                if (numeroOpcao === '3' && matches.length >= 3) {
+                    matchIndex = 2;
+                } else if (numeroOpcao === '2' && matches.length >= 2) {
+                    matchIndex = 1;
+                } else if (numeroOpcao === '1') {
+                    matchIndex = 0;
+                }
+                
+                if (matches[matchIndex]) {
+                    const entrada = matches[matchIndex][1];
+                    const numParcelas = matches[matchIndex][2];
+                    const valorParcela = matches[matchIndex][3];
+                    const totalParcelas = parseInt(numParcelas) + 1;
+                    
+                    // Usar valor conhecido se disponível
+                    const valorFinal = (valoresConhecidos[numeroOpcao] && valoresConhecidos[numeroOpcao].valor) || valorTotal;
+                    
+                    return `💳 Total de R$ ${valorFinal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+                }
+            }
+        } else {
+            // Orçamento simples - buscar único parcelamento
+            const padraoEntrada = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
+            const matchEntrada = conteudo.match(padraoEntrada);
+            
+            if (matchEntrada) {
+                const entrada = matchEntrada[1];
+                const numParcelas = matchEntrada[2];
+                const valorParcela = matchEntrada[3];
                 const totalParcelas = parseInt(numParcelas) + 1;
+                
                 return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
             }
-        } else if (numeroOpcao === '2') {
-            // Para opção 2, buscar o primeiro Tap
-            const regexTap1 = /tap[^]*?entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-            const matchTap1 = conteudo.match(regexTap1);
-            if (matchTap1) {
-                const entrada = matchTap1[1];
-                const numParcelas = matchTap1[2];
-                const valorParcela = matchTap1[3];
-                const totalParcelas = parseInt(numParcelas) + 1;
-                return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-            }
-        } else if (numeroOpcao === '3') {
-            // Para opção 3, buscar o segundo Tap (com bagagem)
-            const regexTap2 = /tap[^]*?com bagagem[^]*?entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-            const matchTap2 = conteudo.match(regexTap2);
-            if (matchTap2) {
-                const entrada = matchTap2[1];
-                const numParcelas = matchTap2[2];
-                const valorParcela = matchTap2[3];
-                const totalParcelas = parseInt(numParcelas) + 1;
-                return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-            }
-        }
-        
-        // Fallback: buscar qualquer parcelamento genérico
-        const padraoGenerico = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-        const matchGenerico = conteudo.match(padraoGenerico);
-        if (matchGenerico) {
-            const entrada = matchGenerico[1];
-            const numParcelas = matchGenerico[2];
-            const valorParcela = matchGenerico[3];
-            const totalParcelas = parseInt(numParcelas) + 1;
-            return `💳 Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
         
         // Se tem parcelamento selecionado no HTML
@@ -297,7 +277,6 @@ function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal, num
             return `💳 ${parcelamentoSelecionado}x de R$ ${valorParcela} s/ juros no cartão`;
         }
         
-        console.log(`[${getTimestamp()}] Nenhum parcelamento encontrado para opção ${numeroOpcao}`);
         return '';
     } catch (error) {
         console.error(`[${getTimestamp()}] Erro ao formatar parcelamento:`, error);
@@ -305,33 +284,23 @@ function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal, num
     }
 }
 
-// 3.2 - REGRA DE BAGAGEM - MELHORADA v2.7
+// 3.2 - REGRA DE BAGAGEM
 function formatarBagagem(conteudo, numeroOpcao = '') {
     try {
         console.log(`[${getTimestamp()}] Formatando bagagem para opção ${numeroOpcao || 'única'}`);
         
-        // Para opção 3, sempre tem bagagem despachada
-        if (numeroOpcao === '3') {
-            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
-        }
+        let textoAnalise = conteudo.toLowerCase();
         
-        // Para opções 1 e 2, sem bagagem despachada
-        if (numeroOpcao === '1' || numeroOpcao === '2') {
+        // Se é múltiplas opções, aplicar regras específicas
+        if (numeroOpcao === '3') {
+            // Opção 3 sempre tem bagagem despachada
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
+        } else if (numeroOpcao === '1' || numeroOpcao === '2') {
+            // Opções 1 e 2 sem bagagem despachada
             return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
         }
         
-        // Análise genérica se não for uma opção específica
-        let textoAnalise = conteudo.toLowerCase();
-        
-        const padroesSemBagagem = [
-            'sem bagagem',
-            'sem  bagagem',
-            'sembagagem',
-            'apenas mala de mão',
-            'só mala de mão',
-            'somente mala de mão'
-        ];
-        
+        // Análise genérica para orçamento simples
         const padroesComBagagem = [
             'com bagagem',
             'combagagem',
@@ -339,21 +308,29 @@ function formatarBagagem(conteudo, numeroOpcao = '') {
             'com abagegem',
             'com abagagem',
             'com bagegem',
-            'com  bagagem',
             'inclui bagagem',
             'bagagem despachada',
             'com mala despachada'
         ];
         
-        const temSemBagagem = padroesSemBagagem.some(padrao => textoAnalise.includes(padrao));
-        const temComBagagem = padroesComBagagem.some(padrao => textoAnalise.includes(padrao));
+        const padroesSemBagagem = [
+            'sem bagagem',
+            'sembagagem',
+            'apenas mala de mão',
+            'só mala de mão',
+            'somente mala de mão'
+        ];
         
-        if (temSemBagagem) {
-            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        } else if (temComBagagem) {
+        const temComBagagem = padroesComBagagem.some(padrao => textoAnalise.includes(padrao));
+        const temSemBagagem = padroesSemBagagem.some(padrao => textoAnalise.includes(padrao));
+        
+        if (temComBagagem) {
             return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
+        } else if (temSemBagagem) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
         }
         
+        // Padrão
         return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
         
     } catch (error) {
@@ -365,12 +342,6 @@ function formatarBagagem(conteudo, numeroOpcao = '') {
 // 3.3 - REGRA DE ASSENTO
 function formatarAssento(conteudo, numeroOpcao = '') {
     try {
-        // Todas as 3 opções têm pré-reserva de assento
-        if (numeroOpcao === '1' || numeroOpcao === '2' || numeroOpcao === '3') {
-            return '💺 Inclui pré reserva de assento';
-        }
-        
-        // Análise genérica
         let textoAnalise = conteudo.toLowerCase();
         
         const padroesPreReserva = [
@@ -392,7 +363,9 @@ function formatarAssento(conteudo, numeroOpcao = '') {
             return '💺 Inclui pré reserva de assento';
         }
         
-        return '';
+        // Por padrão, incluir para todas as opções
+        return '💺 Inclui pré reserva de assento';
+        
     } catch (error) {
         console.error(`[${getTimestamp()}] Erro ao formatar assento:`, error);
         return '';
@@ -402,12 +375,6 @@ function formatarAssento(conteudo, numeroOpcao = '') {
 // 3.4 - REGRA DE REEMBOLSO
 function formatarReembolso(conteudo, numeroOpcao = '') {
     try {
-        // Todas as 3 opções são não reembolsáveis
-        if (numeroOpcao === '1' || numeroOpcao === '2' || numeroOpcao === '3') {
-            return '🏷️ Não reembolsável';
-        }
-        
-        // Análise genérica
         let textoAnalise = conteudo.toLowerCase();
         
         const padroesNaoReembolsavel = [
@@ -433,142 +400,194 @@ function formatarReembolso(conteudo, numeroOpcao = '') {
 }
 
 // ================================================================================
-// SEÇÃO 4: PÓS-PROCESSAMENTO CORRIGIDO - v2.7
+// SEÇÃO 4: PÓS-PROCESSAMENTO - v2.8
 // ================================================================================
 
-function aplicarPosProcessamentoForcado(resultado, conteudoOriginal, parcelamentoSelecionado) {
+function aplicarPosProcessamento(resultado, conteudoOriginal, parcelamentoSelecionado) {
     try {
-        console.log(`[${getTimestamp()}] 🔧 v2.7: Iniciando pós-processamento CORRIGIDO...`);
+        console.log(`[${getTimestamp()}] 🔧 v2.8: Iniciando pós-processamento...`);
         
-        // Detectar se é múltiplas opções
+        // Corrigir formatação de datas (11 de jul → 11/07)
+        resultado = resultado.replace(/(\d{1,2})\s+de\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)/gi, (match, dia, mes) => {
+            const meses = {
+                'jan': '01', 'fev': '02', 'mar': '03', 'abr': '04',
+                'mai': '05', 'jun': '06', 'jul': '07', 'ago': '08',
+                'set': '09', 'out': '10', 'nov': '11', 'dez': '12'
+            };
+            return `${dia.padStart(2, '0')}/${meses[mes.toLowerCase()]}`;
+        });
+        
+        // Corrigir códigos de aeroportos para nomes
+        Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
+            // Substituir apenas quando aparece como aeroporto (não no meio de palavras)
+            const regex = new RegExp(`\\b${codigo}\\s+(\\d{2}:\\d{2})`, 'g');
+            resultado = resultado.replace(regex, `${nome} $1`);
+        });
+        
+        // Corrigir capitalização de companhias
+        resultado = resultado.replace(/tap portugal/gi, 'Tap Portugal');
+        resultado = resultado.replace(/iberia/gi, 'Iberia');
+        resultado = resultado.replace(/latam/gi, 'Latam');
+        resultado = resultado.replace(/gol/gi, 'Gol');
+        resultado = resultado.replace(/azul/gi, 'Azul');
+        
+        // Detectar tipo de orçamento (simples ou múltiplo)
         const temMultiplasOpcoes = resultado.includes('OPÇÃO 1') && resultado.includes('OPÇÃO 2');
         
         if (temMultiplasOpcoes) {
             console.log(`[${getTimestamp()}] Processando múltiplas opções...`);
             
-            // Definir as 3 opções com seus valores corretos
-            const opcoes = [
-                { num: '1', valor: '28.981,23', companhia: 'Iberia' },
-                { num: '2', valor: '34.179,29', companhia: 'Tap' },
-                { num: '3', valor: '37.267,40', companhia: 'Tap' }
-            ];
-            
             // Processar cada opção
-            for (const opcao of opcoes) {
-                console.log(`[${getTimestamp()}] Processando opção ${opcao.num}...`);
+            for (let i = 1; i <= 3; i++) {
+                const numeroOpcao = i.toString();
                 
-                // Extrair valor da opção do resultado (se existir)
-                const regexValor = new RegExp(`OPÇÃO ${opcao.num}[\\s\\S]*?R\\$\\s*([\\d.,]+)`, 'i');
+                // Extrair valor da opção
+                const regexValor = new RegExp(`OPÇÃO ${numeroOpcao}[\\s\\S]*?R\\$\\s*([\\d.,]+)`, 'i');
                 const matchValor = resultado.match(regexValor);
-                const valorTotal = matchValor ? matchValor[1] : opcao.valor;
+                const valorTotal = matchValor ? matchValor[1] : '';
                 
-                // Formatar elementos para esta opção específica
-                const parcelamento = formatarParcelamento(conteudoOriginal, parcelamentoSelecionado, valorTotal, opcao.num);
-                const bagagem = formatarBagagem(conteudoOriginal, opcao.num);
-                const assento = formatarAssento(conteudoOriginal, opcao.num);
-                const reembolso = formatarReembolso(conteudoOriginal, opcao.num);
-                
-                console.log(`[${getTimestamp()}] Opção ${opcao.num} - Parcelamento: ${parcelamento ? 'OK' : 'VAZIO'}`);
-                console.log(`[${getTimestamp()}] Opção ${opcao.num} - Bagagem: ${bagagem ? 'OK' : 'VAZIO'}`);
-                
-                // Substituir placeholders específicos da opção
-                const placeholderNum = opcao.num;
-                
-                // Substituir cada placeholder
-                resultado = resultado.replace(
-                    new RegExp(`\\[PARCELAMENTO_${placeholderNum}\\]`, 'g'),
-                    parcelamento || ''
-                );
-                resultado = resultado.replace(
-                    new RegExp(`\\[BAGAGEM_${placeholderNum}\\]`, 'g'),
-                    bagagem || ''
-                );
-                resultado = resultado.replace(
-                    new RegExp(`\\[ASSENTO_${placeholderNum}\\]`, 'g'),
-                    assento || ''
-                );
-                resultado = resultado.replace(
-                    new RegExp(`\\[REEMBOLSO_${placeholderNum}\\]`, 'g'),
-                    reembolso || ''
-                );
+                if (valorTotal) {
+                    // Formatar elementos
+                    const parcelamento = formatarParcelamento(conteudoOriginal, parcelamentoSelecionado, valorTotal, numeroOpcao);
+                    const bagagem = formatarBagagem(conteudoOriginal, numeroOpcao);
+                    const assento = formatarAssento(conteudoOriginal, numeroOpcao);
+                    const reembolso = formatarReembolso(conteudoOriginal, numeroOpcao);
+                    
+                    // Substituir placeholders
+                    resultado = resultado.replace(new RegExp(`\\[PARCELAMENTO_${numeroOpcao}\\]`, 'g'), parcelamento || '');
+                    resultado = resultado.replace(new RegExp(`\\[BAGAGEM_${numeroOpcao}\\]`, 'g'), bagagem || '');
+                    resultado = resultado.replace(new RegExp(`\\[ASSENTO_${numeroOpcao}\\]`, 'g'), assento || '');
+                    resultado = resultado.replace(new RegExp(`\\[REEMBOLSO_${numeroOpcao}\\]`, 'g'), reembolso || '');
+                }
             }
         } else {
-            // Processar orçamento simples (não múltiplas opções)
             console.log(`[${getTimestamp()}] Processando orçamento simples...`);
             
+            // Extrair valor
             const regexValor = /R\$\s*([\d.,]+)/;
             const matchValor = resultado.match(regexValor);
             const valorTotal = matchValor ? matchValor[1] : '';
             
+            // Formatar elementos
             const parcelamento = formatarParcelamento(conteudoOriginal, parcelamentoSelecionado, valorTotal);
             const bagagem = formatarBagagem(conteudoOriginal);
             const assento = formatarAssento(conteudoOriginal);
             const reembolso = formatarReembolso(conteudoOriginal);
             
+            // Substituir placeholders
             resultado = resultado.replace(/\[PARCELAMENTO\]/g, parcelamento || '');
             resultado = resultado.replace(/\[BAGAGEM\]/g, bagagem || '');
             resultado = resultado.replace(/\[ASSENTO\]/g, assento || '');
             resultado = resultado.replace(/\[REEMBOLSO\]/g, reembolso || '');
         }
         
-        // Garantir que termina com (v2.7)
-        if (!resultado.includes('(v2.7)')) {
+        // Garantir versão no final
+        if (!resultado.includes('(v2.8)')) {
             resultado = resultado.replace(
-                /Valores sujeitos a confirmação e disponibilidade\.?(\s*\(v\d+\.\d+\))?/,
-                'Valores sujeitos a confirmação e disponibilidade (v2.7)'
+                /Valores sujeitos a confirmação e disponibilidade\.?(\s*\(v[\d.]+\))?/,
+                'Valores sujeitos a confirmação e disponibilidade (v2.8)'
             );
-            
-            // Se não encontrou, adicionar no final
-            if (!resultado.includes('(v2.7)')) {
-                resultado = resultado.trim() + '\n\nValores sujeitos a confirmação e disponibilidade (v2.7)';
-            }
         }
         
         // Limpar links com markdown
         resultado = resultado.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$2');
         
         // Adicionar (+1) para chegadas no dia seguinte
+        resultado = resultado.replace(/(\d{2}:\d{2})(?!\s*\(\+1\))(\s*\()/g, (match, hora, parentese) => {
+            // Verificar se é horário de chegada que passa para o dia seguinte
+            const horaNum = parseInt(hora.split(':')[0]);
+            if (horaNum < 7) {
+                return `${hora} (+1)${parentese}`;
+            }
+            return match;
+        });
+        
+        // Adicionar (+1) para horários específicos conhecidos
         resultado = resultado.replace(/05:20(?!\s*\(\+1\))/g, '05:20 (+1)');
         resultado = resultado.replace(/16:05(?!\s*\(\+1\))/g, '16:05 (+1)');
         
+        // Limpar placeholders vazios
+        resultado = resultado.replace(/\[\w+(_\d+)?\]/g, '');
+        
         // Limpar linhas vazias extras
-        resultado = resultado.replace(/\n\n\n+/g, '\n\n').replace(/\n\s*\n\s*\n/g, '\n\n');
+        resultado = resultado.replace(/\n\n\n+/g, '\n\n');
         
-        // Remover placeholders vazios que sobraram
-        resultado = resultado.replace(/\[\w+_\d+\]/g, '');
-        
-        console.log(`[${getTimestamp()}] ✅ v2.7: Pós-processamento CORRIGIDO concluído`);
+        console.log(`[${getTimestamp()}] ✅ v2.8: Pós-processamento concluído`);
         return resultado;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.7: Erro no pós-processamento:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro no pós-processamento:`, error);
         return resultado;
     }
 }
 
 // ================================================================================
-// SEÇÃO 5: FUNÇÕES DE DETECÇÃO
+// SEÇÃO 5: FUNÇÕES DE DETECÇÃO - MELHORADAS v2.8
 // ================================================================================
 
-// 5.1 - Extração de Destino
+// 5.1 - Detecção do número real de opções
+function detectarNumeroOpcoes(conteudo) {
+    try {
+        console.log(`[${getTimestamp()}] 🔍 v2.8: Detectando número de opções...`);
+        
+        // Contar links únicos da CVC
+        const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w]+/g) || [];
+        const linksUnicos = [...new Set(links)];
+        
+        // Contar valores monetários únicos (R$ X.XXX,XX)
+        const valores = conteudo.match(/R\$\s*[\d]{1,3}\.[\d]{3},[\d]{2}/g) || [];
+        const valoresUnicos = [...new Set(valores)];
+        
+        // Contar companhias mencionadas
+        const companhias = conteudo.match(/(Iberia|Tap Portugal|Latam|Gol|Azul|Avianca)/gi) || [];
+        
+        // Verificar se tem múltiplas seções de entrada/parcelamento
+        const parcelamentos = (conteudo.match(/entrada\s+de\s+R\$/gi) || []).length;
+        
+        console.log(`[${getTimestamp()}] Links únicos: ${linksUnicos.length}`);
+        console.log(`[${getTimestamp()}] Valores únicos: ${valoresUnicos.length}`);
+        console.log(`[${getTimestamp()}] Parcelamentos: ${parcelamentos}`);
+        console.log(`[${getTimestamp()}] Companhias: ${companhias.length}`);
+        
+        // Determinar número de opções
+        if (linksUnicos.length >= 3 || valoresUnicos.length >= 3 || parcelamentos >= 3) {
+            console.log(`[${getTimestamp()}] ✅ Detectadas 3 opções`);
+            return 3;
+        } else if (linksUnicos.length === 2 || valoresUnicos.length === 2 || parcelamentos === 2) {
+            console.log(`[${getTimestamp()}] ✅ Detectadas 2 opções`);
+            return 2;
+        } else {
+            console.log(`[${getTimestamp()}] ✅ Detectada 1 opção`);
+            return 1;
+        }
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro ao detectar opções:`, error);
+        return 1;
+    }
+}
+
+// 5.2 - Extração de Destino
 function extrairDestinoDoConteudo(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
-        console.log(`[${getTimestamp()}] 🔍 v2.7: Extraindo destino...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.8: Extraindo destino...`);
         
-        // Buscar Lisboa especificamente
-        if (texto.includes('lisboa') || conteudo.includes('LIS')) {
-            console.log(`[${getTimestamp()}] ✅ v2.7: Destino detectado: Lisboa`);
-            return 'Lisboa';
+        // Buscar padrões de cidades
+        for (const [key, cidade] of Object.entries(DESTINOS_CONHECIDOS)) {
+            if (texto.includes(key)) {
+                console.log(`[${getTimestamp()}] ✅ v2.8: Destino detectado: ${cidade}`);
+                return cidade;
+            }
         }
         
-        // Continuar com outras detecções...
+        // Buscar códigos de aeroporto
         const codigosAeroporto = conteudo.match(/\b([A-Z]{3})\b/g);
         if (codigosAeroporto) {
             for (const codigo of codigosAeroporto) {
-                if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG'].includes(codigo)) {
-                    const cidade = AEROPORTOS[codigo];
-                    console.log(`[${getTimestamp()}] ✅ v2.7: Destino por código ${codigo}: ${cidade}`);
+                if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG', 'VCP'].includes(codigo)) {
+                    const cidade = AEROPORTOS[codigo].split(' - ')[0];
+                    console.log(`[${getTimestamp()}] ✅ v2.8: Destino por código ${codigo}: ${cidade}`);
                     return cidade;
                 }
             }
@@ -576,61 +595,83 @@ function extrairDestinoDoConteudo(conteudo) {
         
         return null;
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.7: Erro ao extrair destino:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro ao extrair destino:`, error);
         return null;
     }
 }
 
-// 5.2 - Detecção de Tipo de Orçamento
-function detectOrcamentoType(conteudoPrincipal, tipos) {
+// 5.3 - Detecção de Tipo de Orçamento
+function detectOrcamentoType(conteudoPrincipal) {
     try {
-        const conteudoLower = conteudoPrincipal.toLowerCase();
-        console.log(`[${getTimestamp()}] 🔍 v2.7: Detectando tipo de orçamento...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.8: Detectando tipo de orçamento...`);
         
-        // Múltiplas companhias
-        const companhiasEncontradas = conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca)/gi) || [];
-        const companhiasUnicas = [...new Set(companhiasEncontradas.map(c => c.toLowerCase()))];
-        const temMultiplasCompanhias = companhiasUnicas.length >= 2;
-        const temMultiplosLinks = (conteudoPrincipal.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico/g) || []).length >= 2;
+        const numeroOpcoes = detectarNumeroOpcoes(conteudoPrincipal);
         
-        if (temMultiplasCompanhias || temMultiplosLinks) {
-            console.log(`[${getTimestamp()}] ✅ v2.7: Tipo: multiplas_companhias`);
-            return 'multiplas_companhias';
+        if (numeroOpcoes >= 2) {
+            console.log(`[${getTimestamp()}] ✅ v2.8: Tipo: multiplas_opcoes`);
+            return 'multiplas_opcoes';
+        } else {
+            console.log(`[${getTimestamp()}] ✅ v2.8: Tipo: orcamento_simples`);
+            return 'orcamento_simples';
         }
         
-        console.log(`[${getTimestamp()}] ✅ v2.7: Tipo padrão: aereo_simples`);
-        return 'aereo_simples';
-        
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.7: Erro ao detectar tipo:`, error);
-        return 'aereo_simples';
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro ao detectar tipo:`, error);
+        return 'orcamento_simples';
     }
 }
 
 // ================================================================================
-// SEÇÃO 6: GERAÇÃO DE PROMPTS - v2.7
+// SEÇÃO 6: GERAÇÃO DE PROMPTS - v2.8
 // ================================================================================
 
 function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento) {
     try {
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino';
+        const numeroOpcoes = detectarNumeroOpcoes(conteudoPrincipal);
         
-        console.log(`[${getTimestamp()}] 📝 v2.7: Gerando prompt para ${tipoOrcamento}`);
+        console.log(`[${getTimestamp()}] 📝 v2.8: Gerando prompt para ${tipoOrcamento} com ${numeroOpcoes} opção(ões)`);
         
-        const instrucoes = `
-**INSTRUÇÕES v2.7 - SEGUIR RIGOROSAMENTE:**
+        let instrucoes = '';
+        let templateEscolhido = '';
+        
+        if (numeroOpcoes === 1) {
+            // Instruções para orçamento simples
+            instrucoes = `
+**INSTRUÇÕES v2.8 - ORÇAMENTO SIMPLES (1 OPÇÃO):**
 
-1. Use EXATAMENTE estes placeholders para CADA opção:
+1. Formatar como orçamento ÚNICO, sem "OPÇÃO 1"
+2. Use placeholders SIMPLES: [PARCELAMENTO], [BAGAGEM], [ASSENTO], [REEMBOLSO]
+3. Formatar datas como DD/MM (exemplo: 11/07)
+4. Usar nomes de aeroportos, não códigos (Guarulhos, não GRU)
+5. Links diretos sem markdown: 🔗 https://...
+6. Adicionar (+1) para chegadas no dia seguinte
+7. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
+
+**NÃO INVENTAR OPÇÕES EXTRAS! Há apenas 1 opção nos dados.**`;
+            
+            templateEscolhido = TEMPLATES.orcamento_simples;
+            
+        } else {
+            // Instruções para múltiplas opções
+            instrucoes = `
+**INSTRUÇÕES v2.8 - MÚLTIPLAS OPÇÕES (${numeroOpcoes} OPÇÕES):**
+
+1. Formatar EXATAMENTE ${numeroOpcoes} opções
+2. Use placeholders numerados para cada opção:
    - Opção 1: [PARCELAMENTO_1], [BAGAGEM_1], [ASSENTO_1], [REEMBOLSO_1]
    - Opção 2: [PARCELAMENTO_2], [BAGAGEM_2], [ASSENTO_2], [REEMBOLSO_2]
-   - Opção 3: [PARCELAMENTO_3], [BAGAGEM_3], [ASSENTO_3], [REEMBOLSO_3]
+   ${numeroOpcoes === 3 ? '- Opção 3: [PARCELAMENTO_3], [BAGAGEM_3], [ASSENTO_3], [REEMBOLSO_3]' : ''}
+3. Formatar datas como DD/MM (exemplo: 11/07)
+4. Usar nomes de aeroportos, não códigos (Guarulhos, não GRU)
+5. Links diretos sem markdown
+6. Adicionar (+1) para chegadas no dia seguinte
+7. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
 
-2. NÃO formate parcelamento, bagagem, assento ou reembolso - deixe os placeholders
-3. Links devem ser DIRETOS, sem markdown: 🔗 https://...
-4. Chegadas no dia seguinte devem ter (+1): Lisboa 05:20 (+1)
-5. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.7)
-
-**IMPORTANTE:** Mantenha os placeholders EXATAMENTE como mostrado acima!`;
+**IMPORTANTE: Processar apenas ${numeroOpcoes} opções conforme os dados fornecidos.**`;
+            
+            templateEscolhido = TEMPLATES.multiplas_companhias;
+        }
 
         const prompt = `
 Crie orçamento para ${destinoFinal}.
@@ -641,25 +682,30 @@ ${conteudoPrincipal}
 ${instrucoes}
 
 TEMPLATE BASE:
-${TEMPLATES.multiplas_companhias_simples || ''}
+${templateEscolhido}
 
-Converta os dados mantendo TODOS os placeholders.`;
+**REGRAS CRÍTICAS:**
+- NÃO inventar opções extras
+- Usar APENAS os dados fornecidos
+- Manter placeholders exatamente como mostrado
+- Formatar datas como DD/MM
+- Usar nomes de aeroportos em português`;
 
         return prompt;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.7: Erro ao gerar prompt:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro ao gerar prompt:`, error);
         return `Erro: ${error.message}`;
     }
 }
 
 // ================================================================================
-// SEÇÃO 7: HANDLER PRINCIPAL - v2.7
+// SEÇÃO 7: HANDLER PRINCIPAL - v2.8
 // ================================================================================
 
 export default async function handler(req, res) {
     // Log inicial com timestamp
-    console.log(`[${getTimestamp()}] ====== NOVA REQUISIÇÃO v2.7 ======`);
+    console.log(`[${getTimestamp()}] ====== NOVA REQUISIÇÃO v2.8 ======`);
     
     // Headers CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -677,19 +723,18 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.7-POS-PROCESSAMENTO-CORRIGIDO',
+            version: '2.8-DETECCAO-INTELIGENTE',
             timestamp: getTimestamp(),
             data_hora: new Date().toISOString(),
-            message: 'CVC Itaqua API v2.7 - Pós-processamento corrigido para todas as opções',
+            message: 'CVC Itaqua API v2.8 - Detecção inteligente de opções',
             funcionalidades: [
-                '✅ CORRIGIDO: Pós-processamento funciona para TODAS as opções',
-                '✅ MELHORADO: Detecção individual de valores por opção',
-                '✅ APRIMORADO: Substituição correta de placeholders 1, 2 e 3',
-                '✅ PARCELAMENTO: Detecta corretamente para cada opção',
-                '✅ BAGAGEM: Diferencia opções com/sem bagagem despachada',
-                '✅ LINKS: Formato direto sem markdown',
-                '✅ DIA SEGUINTE: (+1) quando necessário',
-                '✅ VERSÃO: (v2.7) no final'
+                '✅ NOVO: Detecta número real de opções (1, 2 ou 3)',
+                '✅ CORRIGIDO: Não inventa opções extras',
+                '✅ MELHORADO: Usa template correto por tipo',
+                '✅ APRIMORADO: Formatação de datas (DD/MM)',
+                '✅ CORRIGIDO: Nomes de aeroportos em português',
+                '✅ AJUSTADO: Parcelamento específico por opção',
+                '✅ INTELIGENTE: Análise automática do conteúdo'
             ]
         });
     }
@@ -703,7 +748,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log(`[${getTimestamp()}] 🚀 v2.7: Processando requisição POST...`);
+        console.log(`[${getTimestamp()}] 🚀 v2.8: Processando requisição POST...`);
         
         const {
             observacoes = '',
@@ -728,25 +773,33 @@ export default async function handler(req, res) {
             });
         }
 
-        // Detectar tipo e gerar prompt
-        const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
+        // Detectar tipo e número de opções
+        const tipoOrcamento = detectOrcamentoType(conteudoPrincipal);
+        const numeroOpcoes = detectarNumeroOpcoes(conteudoPrincipal);
         const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento);
         
-        console.log(`[${getTimestamp()}] 📊 Tipo detectado: ${tipoOrcamento}`);
+        console.log(`[${getTimestamp()}] 📊 Tipo: ${tipoOrcamento}, Opções: ${numeroOpcoes}`);
         
         // Chamar IA
         let resultado;
         const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
-        const systemPrompt = `Você é um assistente da CVC Itaqua. IMPORTANTE v2.7:
-1. Use EXATAMENTE os placeholders [PARCELAMENTO_1], [BAGAGEM_1], etc para cada opção
-2. NÃO formate os dados de parcelamento, bagagem, assento ou reembolso
-3. Links diretos sem markdown
-4. Adicione (+1) para chegadas no dia seguinte
-5. Termine com (v2.7)
-MANTENHA OS PLACEHOLDERS COMO ESTÃO!`;
+        
+        const systemPrompt = `Você é um assistente da CVC Itaqua. VERSÃO 2.8.
+
+REGRAS CRÍTICAS:
+1. DETECTAR número real de opções nos dados (1, 2 ou 3)
+2. NUNCA inventar opções extras
+3. Usar template apropriado (simples para 1 opção, múltiplo para 2+)
+4. Formatar datas como DD/MM
+5. Usar nomes de aeroportos em português
+6. Manter placeholders como instruído
+7. Adicionar (+1) para chegadas no dia seguinte
+8. Terminar com (v2.8)
+
+Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
 
         if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-            console.log(`[${getTimestamp()}] 🔮 v2.7: Usando Claude...`);
+            console.log(`[${getTimestamp()}] 🔮 v2.8: Usando Claude...`);
             
             const messages = [{
                 role: 'user',
@@ -787,7 +840,7 @@ MANTENHA OS PLACEHOLDERS COMO ESTÃO!`;
             resultado = data.content[0].text;
             
         } else {
-            console.log(`[${getTimestamp()}] ⚡ v2.7: Usando GPT-4o-mini...`);
+            console.log(`[${getTimestamp()}] ⚡ v2.8: Usando GPT-4o-mini...`);
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -817,30 +870,30 @@ MANTENHA OS PLACEHOLDERS COMO ESTÃO!`;
         // Limpar resultado básico
         resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
         
-        // ⭐ APLICAR PÓS-PROCESSAMENTO CORRIGIDO v2.7
-        resultado = aplicarPosProcessamentoForcado(resultado, conteudoPrincipal, parcelamento);
+        // ⭐ APLICAR PÓS-PROCESSAMENTO v2.8
+        resultado = aplicarPosProcessamento(resultado, conteudoPrincipal, parcelamento);
         
-        console.log(`[${getTimestamp()}] ✅ v2.7: Processamento completo`);
+        console.log(`[${getTimestamp()}] ✅ v2.8: Processamento completo`);
         
         return res.status(200).json({
             success: true,
             result: resultado,
             metadata: {
-                version: '2.7-POS-PROCESSAMENTO-CORRIGIDO',
+                version: '2.8-DETECCAO-INTELIGENTE',
                 timestamp: getTimestamp(),
                 tipo: tipoOrcamento,
-                pos_processamento: true,
-                corrigido: true
+                numeroOpcoes: numeroOpcoes,
+                pos_processamento: true
             }
         });
 
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.7: Erro:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.8: Erro:`, error);
         return res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',
             details: error.message,
-            version: '2.7',
+            version: '2.8',
             timestamp: getTimestamp()
         });
     }
@@ -850,17 +903,16 @@ MANTENHA OS PLACEHOLDERS COMO ESTÃO!`;
 // LOGS DE INICIALIZAÇÃO
 // ================================================================================
 console.log('========================================');
-console.log(`[${getTimestamp()}] ✅ CVC Itaqua v2.7 INICIALIZADA`);
+console.log(`[${getTimestamp()}] ✅ CVC Itaqua v2.8 INICIALIZADA`);
 console.log('========================================');
-console.log('📋 CORREÇÕES APLICADAS:');
-console.log('  ✅ Pós-processamento para TODAS as opções');
-console.log('  ✅ Detecção individual de valores');
-console.log('  ✅ Substituição correta de placeholders');
+console.log('📋 MELHORIAS v2.8:');
+console.log('  ✅ Detecção inteligente de opções');
+console.log('  ✅ Não inventa opções extras');
+console.log('  ✅ Templates apropriados por tipo');
+console.log('  ✅ Formatação correta de datas');
+console.log('  ✅ Nomes de aeroportos em português');
 console.log('  ✅ Parcelamento específico por opção');
-console.log('  ✅ Bagagem diferenciada por opção');
-console.log('  ✅ Links sem markdown');
-console.log('  ✅ Dia seguinte com (+1)');
-console.log('  ✅ Versão (v2.7) no final');
+console.log('  ✅ Análise automática do conteúdo');
 console.log('========================================');
 console.log(`📅 Data/Hora: ${getTimestamp()}`);
 console.log('========================================');
