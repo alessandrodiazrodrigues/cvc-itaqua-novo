@@ -1,17 +1,17 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.83 - FORMATAÇÃO SEQUENCIAL CORRIGIDA
+// 🚀 CVC ITAQUA v2.84 - PARCELAMENTO HTML CORRIGIDO
 // ================================================================================
 // 
-// 📁 CORREÇÕES v2.83:
-//    ✅ Parcelamento: só incluir se houver dados reais
-//    ✅ Quebras de linha: remover espaços vazios
-//    ✅ Fluxo sequencial: sem linhas em branco desnecessárias
-//    ✅ Validação de elementos opcionais
+// 📁 CORREÇÕES v2.84:
+//    ✅ Parcelamento HTML: aplicar seleção do formulário
+//    ✅ Prioridades: texto original > seleção HTML > omissão
+//    ✅ Cálculos automáticos: 10x, 12x, 15x sem juros
+//    ✅ Aplicação universal: todos os tipos de aéreo
 //
 // ================================================================================
-// VERSÃO: 2.83
-// DATA: 17/08/2025 - 21:00
-// STATUS: FORMATAÇÃO SEQUENCIAL IMPLEMENTADA
+// VERSÃO: 2.84
+// DATA: 17/08/2025 - 22:00
+// STATUS: PARCELAMENTO HTML IMPLEMENTADO
 // ================================================================================
 
 function getTimestamp() {
@@ -51,11 +51,10 @@ const DESTINOS_CONHECIDOS = {
 };
 
 // ================================================================================
-// SEÇÃO 2: TEMPLATES DINÂMICOS v2.83
+// SEÇÃO 2: TEMPLATES DINÂMICOS v2.84
 // ================================================================================
 
 function gerarTemplateSequencial(temParcelamento, temAssento, temReembolso) {
-    // Template base para cabeçalho e voos
     let template = `*{companhia} - {origem} ✈ {destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 --
@@ -63,26 +62,21 @@ function gerarTemplateSequencial(temParcelamento, temAssento, temReembolso) {
 
 💰 R$ {valor} para {passageiros}`;
 
-    // Adicionar parcelamento apenas se existir
     if (temParcelamento) {
         template += '\n{parcelamento}';
     }
 
-    // Adicionar bagagem (sempre tem)
     template += '\n{bagagem}';
 
-    // Adicionar assento apenas se existir
     if (temAssento) {
         template += '\n{assento}';
     }
 
-    // Adicionar reembolso apenas se existir
     if (temReembolso) {
         template += '\n{reembolso}';
     }
 
-    // Adicionar link e final
-    template += '\n🔗 {link}\n\nValores sujeitos a confirmação e disponibilidade (v2.83)';
+    template += '\n🔗 {link}\n\nValores sujeitos a confirmação e disponibilidade (v2.84)';
 
     return template;
 }
@@ -120,12 +114,12 @@ function gerarTemplateMultiplasOpcoes(temParcelamento, temAssento, temReembolso)
 
 function dividirEmBlocosOpcoes(conteudo) {
     try {
-        console.log(`[${getTimestamp()}] 🔍 v2.83: Dividindo em blocos estruturais...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.84: Dividindo em blocos estruturais...`);
         
         const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w]+/g) || [];
         const linksUnicos = [...new Set(links)];
         
-        console.log(`[${getTimestamp()}] 📊 v2.83: ${linksUnicos.length} link(s) único(s) encontrado(s)`);
+        console.log(`[${getTimestamp()}] 📊 v2.84: ${linksUnicos.length} link(s) único(s) encontrado(s)`);
         
         if (linksUnicos.length === 0) {
             return [{ conteudo, numero: 1 }];
@@ -149,22 +143,109 @@ function dividirEmBlocosOpcoes(conteudo) {
                     link: link
                 });
                 
-                console.log(`[${getTimestamp()}] ✅ v2.83: Bloco ${numeroOpcao} criado`);
+                console.log(`[${getTimestamp()}] ✅ v2.84: Bloco ${numeroOpcao} criado`);
             }
         });
         
         return blocos.length > 0 ? blocos : [{ conteudo, numero: 1 }];
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro divisão blocos:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro divisão blocos:`, error);
         return [{ conteudo, numero: 1 }];
     }
 }
 
-function extrairDadosEstruturais(bloco) {
+// ================================================================================
+// SEÇÃO 4: SISTEMA DE PARCELAMENTO v2.84
+// ================================================================================
+
+function calcularParcelamentoHTML(valor, parcelas) {
+    try {
+        if (!valor || !parcelas) return null;
+        
+        // Converter valor para número
+        const valorNumerico = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+        const numeroParcelas = parseInt(parcelas);
+        
+        if (isNaN(valorNumerico) || isNaN(numeroParcelas) || numeroParcelas <= 0) {
+            return null;
+        }
+        
+        // Calcular valor da parcela
+        const valorParcela = (valorNumerico / numeroParcelas).toFixed(2).replace('.', ',');
+        
+        console.log(`[${getTimestamp()}] 💳 v2.84: Calculado ${numeroParcelas}x de R$ ${valorParcela}`);
+        
+        return `💳 ${numeroParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro cálculo parcelamento:`, error);
+        return null;
+    }
+}
+
+function detectarParcelamento(conteudo, valor, parcelamentoSelecionado) {
+    try {
+        console.log(`[${getTimestamp()}] 💳 v2.84: Detectando parcelamento...`);
+        console.log(`[${getTimestamp()}] 📋 v2.84: Valor: ${valor}, Selecionado: ${parcelamentoSelecionado}`);
+        
+        // PRIORIDADE 1: Parcelamento do texto original (entrada + parcelas)
+        const regexParcelamento = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
+        const matchParcelamento = conteudo.match(regexParcelamento);
+        
+        if (matchParcelamento) {
+            const entrada = matchParcelamento[1];
+            const parcelas = matchParcelamento[2];
+            const valorParcela = matchParcelamento[3];
+            const totalParcelas = parseInt(parcelas) + 1;
+            
+            console.log(`[${getTimestamp()}] ✅ v2.84: Parcelamento do texto encontrado`);
+            
+            return {
+                temParcelamento: true,
+                parcelamento: `💳 Total de R$ ${valor} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`
+            };
+        }
+        
+        // PRIORIDADE 2: Parcelamento selecionado no HTML
+        if (parcelamentoSelecionado && valor) {
+            console.log(`[${getTimestamp()}] ✅ v2.84: Aplicando parcelamento HTML: ${parcelamentoSelecionado}x`);
+            
+            const parcelamentoCalculado = calcularParcelamentoHTML(valor, parcelamentoSelecionado);
+            
+            if (parcelamentoCalculado) {
+                return {
+                    temParcelamento: true,
+                    parcelamento: parcelamentoCalculado
+                };
+            }
+        }
+        
+        // PRIORIDADE 3: Sem parcelamento (omitir)
+        console.log(`[${getTimestamp()}] ℹ️ v2.84: Nenhum parcelamento aplicado`);
+        
+        return {
+            temParcelamento: false,
+            parcelamento: ''
+        };
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro detecção parcelamento:`, error);
+        return {
+            temParcelamento: false,
+            parcelamento: ''
+        };
+    }
+}
+
+// ================================================================================
+// SEÇÃO 5: EXTRAÇÃO DE DADOS CORRIGIDA
+// ================================================================================
+
+function extrairDadosEstruturais(bloco, parcelamentoSelecionado) {
     try {
         const { conteudo, numero, link } = bloco;
-        console.log(`[${getTimestamp()}] 🔍 v2.83: Extraindo dados do bloco ${numero}...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.84: Extraindo dados do bloco ${numero}...`);
         
         const dados = {
             numero,
@@ -222,20 +303,12 @@ function extrairDadosEstruturais(bloco) {
             }
         }
         
-        // 3. DETECTAR PARCELAMENTO - APENAS SE EXISTIR
-        const regexParcelamento = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-        const matchParcelamento = conteudo.match(regexParcelamento);
-        if (matchParcelamento) {
-            dados.temParcelamento = true;
-            const entrada = matchParcelamento[1];
-            const parcelas = matchParcelamento[2];
-            const valorParcela = matchParcelamento[3];
-            const totalParcelas = parseInt(parcelas) + 1;
-            
-            dados.parcelamento = `💳 Total de R$ ${dados.valor} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-        }
+        // 3. DETECTAR PARCELAMENTO (NOVO SISTEMA v2.84)
+        const resultadoParcelamento = detectarParcelamento(conteudo, dados.valor, parcelamentoSelecionado);
+        dados.temParcelamento = resultadoParcelamento.temParcelamento;
+        dados.parcelamento = resultadoParcelamento.parcelamento;
         
-        // 4. DETECTAR BAGAGEM (sempre presente)
+        // 4. DETECTAR BAGAGEM
         const bagagemPatterns = ['com bagagem', 'com abagegem', 'com babagem'];
         const semBagagemPatterns = ['sem bagagem', 'sem  bagagem'];
         
@@ -247,36 +320,38 @@ function extrairDadosEstruturais(bloco) {
             dados.bagagem = true; // padrão: com bagagem
         }
         
-        // 5. DETECTAR ASSENTO - APENAS SE EXISTIR
+        // 5. DETECTAR ASSENTO
         if (textoAnalise.includes('pre reserva') || textoAnalise.includes('pré reserva')) {
             dados.temAssento = true;
             dados.assento = '💺 Inclui pré reserva de assento';
         }
         
-        // 6. DETECTAR REEMBOLSO - APENAS SE EXISTIR
+        // 6. DETECTAR REEMBOLSO
         if (textoAnalise.includes('não reembolsável') || textoAnalise.includes('nao reembolsavel')) {
             dados.temReembolso = true;
             dados.reembolso = '🏷️ Não reembolsável';
         }
         
-        console.log(`[${getTimestamp()}] ✅ v2.83: Dados extraídos - ${dados.companhia}, R$ ${dados.valor}, Parc: ${dados.temParcelamento}, Assento: ${dados.temAssento}, Reemb: ${dados.temReembolso}`);
+        console.log(`[${getTimestamp()}] ✅ v2.84: Dados extraídos - ${dados.companhia}, R$ ${dados.valor}, Parc: ${dados.temParcelamento}, Assento: ${dados.temAssento}, Reemb: ${dados.temReembolso}`);
         
         return dados;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro extração estrutural:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro extração estrutural:`, error);
         return null;
     }
 }
 
+// ================================================================================
+// SEÇÃO 6: MONTAGEM SEQUENCIAL CORRIGIDA
+// ================================================================================
+
 function montarOpcaoSequencial(dados, destino, ehMultiplas = false) {
     try {
-        // Escolher template baseado em quais elementos existem
         const template = ehMultiplas 
             ? gerarTemplateMultiplasOpcoes(dados.temParcelamento, dados.temAssento, dados.temReembolso)
             : gerarTemplateSequencial(dados.temParcelamento, dados.temAssento, dados.temReembolso);
         
-        // Formatação de bagagem
         const bagagem = dados.bagagem 
             ? '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg'
             : '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
@@ -316,30 +391,27 @@ function montarOpcaoSequencial(dados, destino, ehMultiplas = false) {
             resultado = resultado.replace('{reembolso}', dados.reembolso);
         }
         
-        console.log(`[${getTimestamp()}] ✅ v2.83: Opção ${dados.numero} montada sequencialmente`);
+        console.log(`[${getTimestamp()}] ✅ v2.84: Opção ${dados.numero} montada com parcelamento: ${dados.temParcelamento}`);
         
         return resultado;
             
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro montagem sequencial:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro montagem sequencial:`, error);
         return '';
     }
 }
 
-// ================================================================================
-// SEÇÃO 4: MONTAGEM FINAL SEQUENCIAL
-// ================================================================================
-
-function montarOrcamentoSequencial(conteudo, destino) {
+function montarOrcamentoSequencial(conteudo, destino, parcelamentoSelecionado) {
     try {
-        console.log(`[${getTimestamp()}] 🔧 v2.83: Iniciando montagem sequencial...`);
+        console.log(`[${getTimestamp()}] 🔧 v2.84: Iniciando montagem sequencial...`);
+        console.log(`[${getTimestamp()}] 💳 v2.84: Parcelamento selecionado: ${parcelamentoSelecionado || 'nenhum'}`);
         
         const blocos = dividirEmBlocosOpcoes(conteudo);
-        console.log(`[${getTimestamp()}] 📊 v2.83: ${blocos.length} bloco(s) identificado(s)`);
+        console.log(`[${getTimestamp()}] 📊 v2.84: ${blocos.length} bloco(s) identificado(s)`);
         
         if (blocos.length === 1) {
             // Orçamento simples
-            const dados = extrairDadosEstruturais(blocos[0]);
+            const dados = extrairDadosEstruturais(blocos[0], parcelamentoSelecionado);
             if (!dados) return null;
             
             return montarOpcaoSequencial(dados, destino, false);
@@ -349,7 +421,7 @@ function montarOrcamentoSequencial(conteudo, destino) {
             let resultado = '';
             
             for (let i = 0; i < blocos.length; i++) {
-                const dados = extrairDadosEstruturais(blocos[i]);
+                const dados = extrairDadosEstruturais(blocos[i], parcelamentoSelecionado);
                 if (dados) {
                     const opcaoFormatada = montarOpcaoSequencial(dados, destino, true);
                     resultado += opcaoFormatada;
@@ -360,12 +432,12 @@ function montarOrcamentoSequencial(conteudo, destino) {
                 }
             }
             
-            resultado += '\n\nValores sujeitos a confirmação e disponibilidade (v2.83)';
+            resultado += '\n\nValores sujeitos a confirmação e disponibilidade (v2.84)';
             return resultado;
         }
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro montagem sequencial:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro montagem sequencial:`, error);
         return null;
     }
 }
@@ -376,7 +448,7 @@ function extrairDestino(conteudo) {
         
         for (const [key, cidade] of Object.entries(DESTINOS_CONHECIDOS)) {
             if (texto.includes(key)) {
-                console.log(`[${getTimestamp()}] ✅ v2.83: Destino: ${cidade}`);
+                console.log(`[${getTimestamp()}] ✅ v2.84: Destino: ${cidade}`);
                 return cidade;
             }
         }
@@ -386,7 +458,7 @@ function extrairDestino(conteudo) {
             for (const codigo of codigosAeroporto) {
                 if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG', 'VCP'].includes(codigo)) {
                     const cidade = AEROPORTOS[codigo];
-                    console.log(`[${getTimestamp()}] ✅ v2.83: Destino por código ${codigo}: ${cidade}`);
+                    console.log(`[${getTimestamp()}] ✅ v2.84: Destino por código ${codigo}: ${cidade}`);
                     return cidade;
                 }
             }
@@ -395,13 +467,13 @@ function extrairDestino(conteudo) {
         return 'Lisboa';
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro extrair destino:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro extrair destino:`, error);
         return 'Lisboa';
     }
 }
 
 // ================================================================================
-// SEÇÃO 5: SISTEMA DE DICAS
+// SEÇÃO 7: SISTEMA DE DICAS
 // ================================================================================
 
 function gerarDicasDestino(destino) {
@@ -458,11 +530,11 @@ ${dados.importante}`;
 }
 
 // ================================================================================
-// SEÇÃO 6: HANDLER PRINCIPAL
+// SEÇÃO 8: HANDLER PRINCIPAL
 // ================================================================================
 
 export default async function handler(req, res) {
-    console.log(`[${getTimestamp()}] ========== CVC ITAQUA v2.83 ==========`);
+    console.log(`[${getTimestamp()}] ========== CVC ITAQUA v2.84 ==========`);
     
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -477,9 +549,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.83',
+            version: '2.84',
             timestamp: getTimestamp(),
-            message: 'CVC Itaqua v2.83 - Formatação Sequencial Operacional'
+            message: 'CVC Itaqua v2.84 - Parcelamento HTML Operacional'
         });
     }
 
@@ -496,26 +568,28 @@ export default async function handler(req, res) {
             textoColado = '',
             destino = '',
             tipos = [],
-            parcelamento = '',
+            parcelamento = '', // ⭐ AQUI É ONDE VEM A SELEÇÃO HTML
             imagemBase64 = null,
             pdfContent = null
         } = req.body;
 
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
         
+        console.log(`[${getTimestamp()}] 📋 v2.84: Parcelamento recebido do HTML: "${parcelamento}"`);
+        
         // Verificar se é solicitação de dicas
         const ehDicas = conteudoPrincipal.includes('CONSULTE O MANUAL E GERE DICAS') || 
                        tipos.includes('Dicas');
         
         if (ehDicas) {
-            console.log(`[${getTimestamp()}] 🧭 v2.83: Gerando dicas para ${destino}`);
+            console.log(`[${getTimestamp()}] 🧭 v2.84: Gerando dicas para ${destino}`);
             const dicasGeradas = gerarDicasDestino(destino || 'Lisboa');
             
             return res.status(200).json({
                 success: true,
                 result: dicasGeradas,
                 metadata: {
-                    version: '2.83',
+                    version: '2.84',
                     timestamp: getTimestamp(),
                     tipo: 'dicas',
                     destino: destino || 'Lisboa'
@@ -527,29 +601,30 @@ export default async function handler(req, res) {
             return res.status(400).json({
                 success: false,
                 error: 'Adicione informações sobre a viagem',
-                version: '2.83'
+                version: '2.84'
             });
         }
 
-        // Extração e montagem sequencial
+        // Extração e montagem sequencial com parcelamento HTML
         const destinoDetectado = destino || extrairDestino(conteudoPrincipal);
-        console.log(`[${getTimestamp()}] 🎯 v2.83: Destino detectado: ${destinoDetectado}`);
+        console.log(`[${getTimestamp()}] 🎯 v2.84: Destino detectado: ${destinoDetectado}`);
         
-        // MONTAGEM SEQUENCIAL v2.83
-        let resultado = montarOrcamentoSequencial(conteudoPrincipal, destinoDetectado);
+        // MONTAGEM SEQUENCIAL v2.84 COM PARCELAMENTO HTML
+        let resultado = montarOrcamentoSequencial(conteudoPrincipal, destinoDetectado, parcelamento);
         
         if (!resultado) {
             // Fallback para IA se montagem sequencial falhar
-            console.log(`[${getTimestamp()}] 🤖 v2.83: Usando IA como fallback...`);
+            console.log(`[${getTimestamp()}] 🤖 v2.84: Usando IA como fallback...`);
             
-            const prompt = `Você é um formatador da CVC v2.83. 
+            const prompt = `Você é um formatador da CVC v2.84. 
 
-REGRAS CRÍTICAS v2.83:
-1. PARCELAMENTO: Só incluir se houver dados reais (entrada + parcelas)
+REGRAS CRÍTICAS v2.84:
+1. PARCELAMENTO: 
+   - Prioridade 1: dados do texto (entrada + parcelas)
+   - Prioridade 2: ${parcelamento ? `${parcelamento}x sem juros` : 'nenhum selecionado'}
+   - Prioridade 3: omitir se nenhum dos dois
 2. QUEBRAS DE LINHA: Sem linhas em branco desnecessárias
 3. SEQUÊNCIA: 💰 → 💳 (se houver) → ✅ → 💺 (se houver) → 🏷️ (se houver) → 🔗
-4. Se não há parcelamento, pular direto para bagagem
-5. Se não há assento, ir direto de bagagem para reembolso
 
 DADOS:
 ${conteudoPrincipal}
@@ -586,7 +661,7 @@ Criar orçamento sequencial para ${destinoDetectado}.`;
                         max_tokens: 2048,
                         temperature: 0.1,
                         messages,
-                        system: 'Você é um formatador sequencial da CVC v2.83'
+                        system: 'Você é um formatador com parcelamento HTML da CVC v2.84'
                     })
                 });
 
@@ -604,7 +679,7 @@ Criar orçamento sequencial para ${destinoDetectado}.`;
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
                         messages: [
-                            { role: 'system', content: 'Você é um formatador sequencial da CVC v2.83' },
+                            { role: 'system', content: 'Você é um formatador com parcelamento HTML da CVC v2.84' },
                             { role: 'user', content: prompt }
                         ],
                         temperature: 0.1,
@@ -623,29 +698,30 @@ Criar orçamento sequencial para ${destinoDetectado}.`;
         if (resultado) {
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
             
-            if (!resultado.includes('(v2.83)')) {
-                resultado = resultado.replace(/(v[\d.]+)/g, 'v2.83');
+            if (!resultado.includes('(v2.84)')) {
+                resultado = resultado.replace(/(v[\d.]+)/g, 'v2.84');
             }
         }
         
-        console.log(`[${getTimestamp()}] ✅ v2.83: Processamento sequencial finalizado`);
+        console.log(`[${getTimestamp()}] ✅ v2.84: Processamento com parcelamento HTML finalizado`);
         
         return res.status(200).json({
             success: true,
             result: resultado || 'Erro no processamento',
             metadata: {
-                version: '2.83',
+                version: '2.84',
                 timestamp: getTimestamp(),
                 destino: destinoDetectado,
-                metodo: resultado ? 'sequencial' : 'ia_fallback'
+                parcelamentoAplicado: parcelamento || 'nenhum',
+                metodo: resultado ? 'sequencial_html' : 'ia_fallback'
             }
         });
 
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.83: Erro:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.84: Erro:`, error);
         return res.status(500).json({
             success: false,
-            error: 'Erro interno do servidor v2.83',
+            error: 'Erro interno do servidor v2.84',
             details: error.message,
             timestamp: getTimestamp()
         });
@@ -653,18 +729,18 @@ Criar orçamento sequencial para ${destinoDetectado}.`;
 }
 
 // ================================================================================
-// LOGS DE INICIALIZAÇÃO v2.83
+// LOGS DE INICIALIZAÇÃO v2.84
 // ================================================================================
 console.log('╔══════════════════════════════════════╗');
-console.log('║       CVC ITAQUA v2.83 LOADED       ║');
+console.log('║       CVC ITAQUA v2.84 LOADED       ║');
 console.log('╠══════════════════════════════════════╣');
-console.log('║ ✅ Templates dinâmicos sequenciais   ║');
-console.log('║ ✅ Parcelamento: só se existir       ║');
-console.log('║ ✅ Quebras de linha: sem espaços     ║');
-console.log('║ ✅ Fluxo sequencial: sem lacunas     ║');
-console.log('║ ✅ Elementos opcionais inteligentes  ║');
-console.log('║ ✅ Validação de presença de dados    ║');
-console.log('║ ✅ Formatação limpa e contínua       ║');
-console.log('║ ✅ Sistema anti-linhas vazias        ║');
+console.log('║ ✅ Parcelamento HTML implementado    ║');
+console.log('║ ✅ Prioridades: texto > HTML > skip ║');
+console.log('║ ✅ Cálculos automáticos: 10/12/15x  ║');
+console.log('║ ✅ Aplicação universal em aéreos    ║');
+console.log('║ ✅ Formatação sequencial mantida    ║');
+console.log('║ ✅ Sistema de fallback robusto      ║');
+console.log('║ ✅ Logs detalhados de parcelamento  ║');
+console.log('║ ✅ Validação de entrada de dados    ║');
 console.log('╚══════════════════════════════════════╝');
-console.log(`[${getTimestamp()}] 🚀 v2.83 - Formatação Sequencial Ativa!`);
+console.log(`[${getTimestamp()}] 🚀 v2.84 - Parcelamento HTML Ativo!`);
