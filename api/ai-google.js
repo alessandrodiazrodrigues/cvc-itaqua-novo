@@ -1,24 +1,24 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.4 - COM PÓS-PROCESSAMENTO INTEGRADO
+// 🚀 CVC ITAQUA v2.4.1 - COM PÓS-PROCESSAMENTO E VERSÃO NO FINAL
 // ================================================================================
 // 
 // 📁 ÍNDICE DO ARQUIVO:
 //    SEÇÃO 1: CONFIGURAÇÕES GLOBAIS (Linha ~25)
 //    SEÇÃO 2: TEMPLATES DE ORÇAMENTO (Linha ~205)
 //    SEÇÃO 3: REGRAS DE FORMATAÇÃO (Linha ~810)
-//    SEÇÃO 4: PÓS-PROCESSAMENTO (Linha ~1010) ← NOVO!
+//    SEÇÃO 4: PÓS-PROCESSAMENTO (Linha ~1010)
 //    SEÇÃO 5: FUNÇÕES DE DETECÇÃO (Linha ~1210)
 //    SEÇÃO 6: GERAÇÃO DE PROMPTS (Linha ~1410)
 //    SEÇÃO 7: HANDLER PRINCIPAL (Linha ~1710)
 //
 // ================================================================================
-// VERSÃO: 2.4
+// VERSÃO: 2.4.1
 // DATA: 18/12/2024
-// MUDANÇAS v2.4:
+// MUDANÇAS v2.4.1:
+// ✅ Adicionado "(v2.4)" no final de cada template para rastreamento
+// ✅ Confirmados emojis: ✅ para bagagem, 💺 para assento
 // ✅ PÓS-PROCESSAMENTO: IA retorna com placeholders, sistema formata
 // ✅ FUNÇÕES DE FORMATAÇÃO: Agora são realmente utilizadas
-// ✅ MAIOR CONTROLE: Menos dependência da IA para formatação
-// ✅ CONSISTÊNCIA: Regras aplicadas uniformemente
 // ================================================================================
 
 // ================================================================================
@@ -224,7 +224,7 @@ const TEMPLATES = {
 {{ASSENTO}}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.4)`,
 
     // TEMPLATE 2: Aéreo com Conexão Detalhada
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -242,7 +242,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🏷️ {reembolso}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.4)`,
 
     // TEMPLATE 3: Aéreo Somente Ida
     aereo_somente_ida: `*{companhia}*
@@ -256,7 +256,7 @@ Inclui taxas de embarque
 
 ⚠️ Passagem somente de ida - sem retorno incluído
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.4)`,
 
     // TEMPLATE 6: Múltiplas Companhias (CORRIGIDO v2.4 com placeholders)
     multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
@@ -293,7 +293,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🔗 {link3}
 
 🏷️ {reembolso}
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.4)`,
 
     // Demais templates continuam com a mesma estrutura...
     // Por brevidade, vou incluir apenas os principais com os novos placeholders
@@ -692,11 +692,11 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.4-POS-PROCESSAMENTO',
+            version: '2.4.1-POS-PROCESSAMENTO',
             timestamp: new Date().toISOString(),
-            message: 'CVC Itaqua API v2.4 - Com pós-processamento integrado',
+            message: 'CVC Itaqua API v2.4.1 - Com pós-processamento integrado e versão no final',
             funcionalidades: [
-                '✅ PÓS-PROCESSAMENTO ATIVO',
+                '✅ Versão (v2.4) adicionada no final dos templates',
                 '✅ Funções de formatação em uso',
                 '✅ IA retorna com placeholders',
                 '✅ Sistema formata depois',
@@ -831,7 +831,7 @@ export default async function handler(req, res) {
             success: true,
             result: resultado,
             metadata: {
-                version: '2.4-POS-PROCESSAMENTO',
+                version: '2.4.1-POS-PROCESSAMENTO',
                 tipo: tipoOrcamento,
                 pos_processamento: true
             }
@@ -850,8 +850,9 @@ export default async function handler(req, res) {
 // ================================================================================
 // LOGS DE INICIALIZAÇÃO
 // ================================================================================
-console.log('✅ CVC Itaqua v2.4-PÓS-PROCESSAMENTO carregado!');
-console.log('🔧 PÓS-PROCESSAMENTO ATIVO');
+console.log('✅ CVC Itaqua v2.4.1-PÓS-PROCESSAMENTO carregado!');
+console.log('🔧 Versão (v2.4) no final de cada orçamento');
+console.log('✅ Emojis confirmados: ✅ bagagem, 💺 assento');
 console.log('📋 Funções de formatação integradas e funcionais');
 console.log('🎯 IA usa placeholders, sistema formata depois');
 console.log('📅 Atualização: 18/12/2024');
