@@ -1027,7 +1027,7 @@ export default async function handler(req, res) {
 💰 R$ 28.981,23 para 04 adultos + 01 criança
 💳 Parcelado em até 5 vezes, sendo a primeira parcela de R$ 8.704,35 + 4x de R$ 5.069,22 s/ juros no cartão
 ✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-🪑 Inclui pré reserva de assento
+💺 Inclui pré reserva de assento
 🔗 https://www.cvc.com.br/carrinho-dinamico/68a0c421139902c103c20dab
 
 *OPÇÃO 2 - TAP Portugal - São Paulo ✈ ${destinoDetectado}*
@@ -1203,6 +1203,7 @@ Valores sujeitos a confirmação e disponibilidade`;
     }
 }
 
+// Logs de inicialização do sistema v2.1
 console.log('✅ CVC Itaqua v2.1-CORRIGIDA-ESTAVEL - Sistema carregado com sucesso!');
 console.log('🔧 Principais melhorias v2.1:');
 console.log('  - ✅ CORREÇÃO CRÍTICA: Dupla declaração de variável removida');
@@ -1216,36 +1217,3 @@ console.log('  - ✅ AEROPORTOS EXPANDIDOS: América do Sul completa + Europa + 
 console.log('  - ✅ DESTINOS CONHECIDOS: Base ampliada e otimizada');
 console.log('  - ✅ FALLBACKS ESPECÍFICOS: Resposta adequada para cada tipo em caso de erro');
 console.log('  - ✅ LOGGING DETALHADO: Debug completo para facilitar manutenção');
-                    throw new Error(`Claude erro ${response.status}: ${errorText}`);
-                }
-
-                const data = await response.json();
-                resultado = data.content[0].text;
-                
-            } else {
-                console.log('⚡ v2.1: Usando GPT-4o-mini...');
-                iaUsada = 'gpt-4o-mini';
-                
-                if (!process.env.OPENAI_API_KEY) {
-                    throw new Error('OPENAI_API_KEY não configurada');
-                }
-
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: 0.1,
-                        max_tokens: 2048
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
