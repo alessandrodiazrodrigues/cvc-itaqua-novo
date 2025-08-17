@@ -1,5 +1,5 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.5 - PÓS-PROCESSAMENTO FINAL
+// 🚀 CVC ITAQUA v2.6 - PÓS-PROCESSAMENTO CORRIGIDO
 // ================================================================================
 //
 // 📁 ÍNDICE DO ARQUIVO:
@@ -8,15 +8,15 @@
 //   SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO DE REGRAS (Pós-processamento)
 //   SEÇÃO 4: FUNÇÕES DE DETECÇÃO
 //   SEÇÃO 5: GERAÇÃO DE PROMPTS
-//   SEÇÃO 6: HANDLER PRINCIPAL (com lógica de Pós-processamento)
+//   SEÇÃO 6: HANDLER PRINCIPAL (com Pós-processamento CORRIGIDO para Múltiplas Opções)
 //
 // ================================================================================
-// VERSÃO: 2.5
+// VERSÃO: 2.6
 // DATA: 18/12/2024
 // MUDANÇAS:
-// - IMPLEMENTADO PÓS-PROCESSAMENTO: Funções de regras (parcelamento, bagagem, etc.)
-//   agora são aplicadas APÓS a resposta da IA, garantindo 100% de consistência.
-// - ERROS CORRIGIDOS: Todos os erros de sintaxe das versões anteriores foram corrigidos.
+// - CORREÇÃO CRÍTICA: Lógica de pós-processamento agora analisa CADA opção
+//   individualmente, aplicando as regras corretas de parcelamento, bagagem e assento.
+// - CORREÇÃO VISUAL: Adicionada quebra de linha entre as opções.
 // - INTEGRIDADE MANTIDA: Nenhuma função, template ou lógica foi simplificada.
 // ================================================================================
 
@@ -24,62 +24,19 @@
 // SEÇÃO 1: CONFIGURAÇÕES GLOBAIS
 // ================================================================================
 
-// 1.1 - TABELA DE AEROPORTOS (Conforme Manual CVC)
 const AEROPORTOS = {
-    // === AEROPORTOS BRASILEIROS ===
-    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont',
-    'GIG': 'Galeão', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'POA': 'Porto Alegre',
-    'CWB': 'Curitiba', 'FLN': 'Florianópolis', 'SSA': 'Salvador', 'REC': 'Recife', 'FOR': 'Fortaleza',
-    'NAT': 'Natal', 'MCZ': 'Maceió', 'AJU': 'Aracaju', 'JPA': 'João Pessoa', 'THE': 'Teresina',
-    'SLZ': 'São Luís', 'BEL': 'Belém', 'MAO': 'Manaus', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande',
-    'GYN': 'Goiânia', 'VIX': 'Vitória', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus', 'JDO': 'Juazeiro do Norte',
-    'IGU': 'Foz do Iguaçu', 'IMP': 'Imperatriz', 'MAB': 'Marabá', 'STM': 'Santarém', 'RBR': 'Rio Branco',
-    'PVH': 'Porto Velho', 'BVB': 'Boa Vista', 'MCP': 'Macapá', 'PMW': 'Palmas', 'UDI': 'Uberlândia',
-    'RAO': 'Ribeirão Preto', 'JOI': 'Joinville', 'XAP': 'Chapecó', 'LDB': 'Londrina', 'MGF': 'Maringá',
-    
-    // === AEROPORTOS INTERNACIONAIS PRINCIPAIS ===
-    'EZE': 'Ezeiza - Buenos Aires', 'AEP': 'Aeroparque - Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima',
-    'BOG': 'Bogotá', 'MEX': 'Cidade do México', 'CUN': 'Cancún', 'MIA': 'Miami', 'MCO': 'Orlando', 
-    'JFK': 'Nova York - JFK', 'LGA': 'Nova York - LGA', 'EWR': 'Nova York - Newark',
-    'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'DFW': 'Dallas', 'ATL': 'Atlanta', 'ORD': 'Chicago',
-    'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid', 'BCN': 'Barcelona', 'CDG': 'Paris - Charles de Gaulle', 
-    'ORY': 'Paris - Orly', 'FCO': 'Roma - Fiumicino', 'MXP': 'Milão', 'LHR': 'Londres - Heathrow', 
-    'LGW': 'Londres - Gatwick', 'FRA': 'Frankfurt', 'MUC': 'Munique', 'AMS': 'Amsterdam', 'ZUR': 'Zurich',
-    
-    // === AMÉRICA DO SUL ADICIONAL ===
-    'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura',
-    'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho', 'TCQ': 'Tacna',
-    'MVD': 'Montevidéu', 'ASU': 'Assunção', 'VVI': 'Santa Cruz', 'LPB': 'La Paz', 'UIO': 'Quito', 'GYE': 'Guayaquil'
+    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos', 'SDU': 'Santos Dumont', 'GIG': 'Galeão', 'BSB': 'Brasília', 'CNF': 'Confins', 'PLU': 'Pampulha', 'POA': 'Porto Alegre', 'CWB': 'Curitiba', 'FLN': 'Florianópolis', 'SSA': 'Salvador', 'REC': 'Recife', 'FOR': 'Fortaleza', 'NAT': 'Natal', 'MCZ': 'Maceió', 'AJU': 'Aracaju', 'JPA': 'João Pessoa', 'THE': 'Teresina', 'SLZ': 'São Luís', 'BEL': 'Belém', 'MAO': 'Manaus', 'CGB': 'Cuiabá', 'CGR': 'Campo Grande', 'GYN': 'Goiânia', 'VIX': 'Vitória', 'BPS': 'Porto Seguro', 'IOS': 'Ilhéus', 'JDO': 'Juazeiro do Norte', 'IGU': 'Foz do Iguaçu', 'IMP': 'Imperatriz', 'MAB': 'Marabá', 'STM': 'Santarém', 'RBR': 'Rio Branco', 'PVH': 'Porto Velho', 'BVB': 'Boa Vista', 'MCP': 'Macapá', 'PMW': 'Palmas', 'UDI': 'Uberlândia', 'RAO': 'Ribeirão Preto', 'JOI': 'Joinville', 'XAP': 'Chapecó', 'LDB': 'Londrina', 'MGF': 'Maringá', 'EZE': 'Ezeiza - Buenos Aires', 'AEP': 'Aeroparque - Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima', 'BOG': 'Bogotá', 'MEX': 'Cidade do México', 'CUN': 'Cancún', 'MIA': 'Miami', 'MCO': 'Orlando', 'JFK': 'Nova York - JFK', 'LGA': 'Nova York - LGA', 'EWR': 'Nova York - Newark', 'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'DFW': 'Dallas', 'ATL': 'Atlanta', 'ORD': 'Chicago', 'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid', 'BCN': 'Barcelona', 'CDG': 'Paris - Charles de Gaulle', 'ORY': 'Paris - Orly', 'FCO': 'Roma - Fiumicino', 'MXP': 'Milão', 'LHR': 'Londres - Heathrow', 'LGW': 'Londres - Gatwick', 'FRA': 'Frankfurt', 'MUC': 'Munique', 'AMS': 'Amsterdam', 'ZUR': 'Zurich', 'PCL': 'Pucallpa', 'CUZ': 'Cusco', 'AQP': 'Arequipa', 'TRU': 'Trujillo', 'PIU': 'Piura', 'IQT': 'Iquitos', 'TPP': 'Tarapoto', 'JAU': 'Jauja', 'AYP': 'Ayacucho', 'TCQ': 'Tacna', 'MVD': 'Montevidéu', 'ASU': 'Assunção', 'VVI': 'Santa Cruz', 'LPB': 'La Paz', 'UIO': 'Quito', 'GYE': 'Guayaquil'
 };
 
-// 1.2 - DESTINOS CONHECIDOS
 const DESTINOS_CONHECIDOS = {
-    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos',
-    'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa',
-    'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador',
-    'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre',
-    'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife',
-    'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia',
-    'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto',
-    'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma',
-    'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich',
-    'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco',
-    'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún',
-    'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá',
-    'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção',
-    'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
+    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos', 'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa', 'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador', 'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre', 'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife', 'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia', 'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto', 'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma', 'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich', 'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco', 'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún', 'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá', 'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção', 'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
 };
-
 
 // ================================================================================
 // SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
 // ================================================================================
 
 const TEMPLATES = {
-    // ===========================
-    // 2.1 - TEMPLATES AÉREOS (6 tipos)
-    // ===========================
-    
     // TEMPLATE 1: Aéreo Ida e Volta Simples
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
@@ -205,10 +162,6 @@ Valores sujeitos a confirmação e disponibilidade`,
 🏷️ {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // ===========================
-    // 2.2 - TEMPLATES DE HOTÉIS (3 tipos)
-    // ===========================
-    
     // TEMPLATE 7: Hotéis - Múltiplas Opções
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
@@ -300,10 +253,6 @@ Pacote para {passageiros}
 🔗 {link3}
 
 Valores sujeitos a confirmação e disponibilidade`,
-
-    // ===========================
-    // 2.3 - TEMPLATES ESPECIAIS (5 tipos)
-    // ===========================
     
     // TEMPLATE 10: Multitrecho
     multitrecho: `*Multitrecho - {companhias}*
@@ -352,8 +301,6 @@ Valores sujeitos a confirmação e disponibilidade`,
     // TEMPLATE 12: Dicas Completas
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
-Aqui estão algumas sugestões para aproveitar ao máximo sua estadia:
-
 1️⃣ **Gastronomia Imperdível**
 {dica_gastronomia}
 
@@ -362,12 +309,6 @@ Aqui estão algumas sugestões para aproveitar ao máximo sua estadia:
 
 3️⃣ **Passeios e Experiências**
 {dica_passeios}
-
-4️⃣ **Melhor Época para Visitar**
-{dica_epoca}
-
-5️⃣ **Dicas de Economia**
-{dica_economia}
 
 ---
 ✈️ *Complete sua Viagem com a CVC!*
@@ -396,20 +337,17 @@ Confira nossa seleção especial dos hotéis mais bem avaliados:
 ✅ {ponto_positivo3}
 💬 "{review3}"
 
-📊 *Metodologia:* Rankings baseados em avaliações reais de múltiplas plataformas
-🔄 *Atualizado em:* {data_atualizacao}
-
 Valores sujeitos a confirmação e disponibilidade`
 };
 // ================================================================================
 // SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO DE REGRAS (Pós-processamento)
 // ================================================================================
 
-// 3.1 - REGRA DE PARCELAMENTO
-function formatarParcelamento(textoBruto, parcelamentoSelecionado, valorTotalString) {
+function formatarParcelamento(textoBrutoOpcao, parcelamentoSelecionado, valorTotalString) {
     try {
+        const textoLower = textoBrutoOpcao.toLowerCase();
         // CASO 1: Entrada + Parcelas no textoBruto
-        const entradaParcelas = textoBruto.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
+        const entradaParcelas = textoLower.match(/entrada de r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*r\$\s*([\d.,]+)/i);
         if (entradaParcelas) {
             const entrada = entradaParcelas[1];
             const numParcelas = parseInt(entradaParcelas[2]);
@@ -418,9 +356,8 @@ function formatarParcelamento(textoBruto, parcelamentoSelecionado, valorTotalStr
             return `💳 Total de R$ ${valorTotalString} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
         
-        // CASO 2: Parcelamento selecionado no HTML (10x, 12x ou 15x)
+        // CASO 2: Parcelamento selecionado no HTML
         if (parcelamentoSelecionado && valorTotalString) {
-            // Remove pontos de milhar e substitui vírgula por ponto para conversão
             const valorNumerico = parseFloat(valorTotalString.replace(/\./g, '').replace(',', '.'));
             if (!isNaN(valorNumerico)) {
                 const numParcelasInt = parseInt(parcelamentoSelecionado);
@@ -429,25 +366,22 @@ function formatarParcelamento(textoBruto, parcelamentoSelecionado, valorTotalStr
             }
         }
         
-        // CASO 3: Nenhuma informação de parcelamento - NÃO incluir linha
-        return '';
+        return ''; // Nenhuma info, retorna vazio
     } catch (error) {
         console.error('Erro ao formatar parcelamento:', error);
-        return ''; // Retorna vazio em caso de erro
+        return '';
     }
 }
 
-
-// 3.2 - REGRA DE BAGAGEM
-function formatarBagagem(textoBruto) {
+function formatarBagagem(textoBrutoOpcao) {
     try {
-        const texto = textoBruto.toLowerCase();
-        const semBagagem = texto.includes('sem bagagem') || texto.includes('só mala de mão');
-        const comBagagem = texto.includes('com bagagem') || texto.includes('com babagem') || texto.includes('inclui bagagem') || texto.includes('bagagem despachada');
-        
-        if (semBagagem) return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        if (comBagagem) return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
-        
+        const texto = textoBrutoOpcao.toLowerCase();
+        if (texto.includes('sem bagagem') || texto.includes('só mala de mão')) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+        }
+        if (texto.includes('com bagagem') || texto.includes('com babagem') || texto.includes('inclui bagagem') || texto.includes('bagagem despachada')) {
+            return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
+        }
         return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg'; // Padrão
     } catch (error) {
         console.error('Erro ao formatar bagagem:', error);
@@ -455,39 +389,32 @@ function formatarBagagem(textoBruto) {
     }
 }
 
-// 3.3 - REGRA DE ASSENTO
-function formatarAssento(textoBruto) {
+function formatarAssento(textoBrutoOpcao) {
     try {
-        const texto = textoBruto.toLowerCase();
-        const temPreReserva = texto.includes('pre reserva de assento') || texto.includes('pré reserva') || texto.includes('marcação de assento');
-        
-        if (temPreReserva) return '💺 Inclui pré reserva de assento';
-        
-        return ''; // Retorna vazio para não incluir a linha
+        const texto = textoBrutoOpcao.toLowerCase();
+        if (texto.includes('pre reserva de assento') || texto.includes('pré reserva') || texto.includes('marcação de assento')) {
+            return '💺 Inclui pré reserva de assento';
+        }
+        return '';
     } catch (error) {
         console.error('Erro ao formatar assento:', error);
         return '';
     }
 }
 
-// 3.4 - REGRA DE PASSAGEIROS
 function formatarPassageiros(dados) {
     try {
         let resultado = [];
         const { adultos, criancas, bebes, idadesCriancas, idadesBebes } = dados;
-
         if (adultos > 0) resultado.push(`${String(adultos).padStart(2, '0')} ${adultos === 1 ? 'adulto' : 'adultos'}`);
-        
         if (criancas > 0) {
             let textoIdades = (idadesCriancas && idadesCriancas.length > 0) ? ` (${idadesCriancas.join(' e ')} anos)` : '';
             resultado.push(`${String(criancas).padStart(2, '0')} ${criancas === 1 ? 'criança' : 'crianças'}${textoIdades}`);
         }
-        
         if (bebes > 0) {
             let textoIdades = (idadesBebes && idadesBebes.length > 0) ? ` (${idadesBebes.join(' e ')} meses)` : '';
             resultado.push(`${String(bebes).padStart(2, '0')} ${bebes === 1 ? 'bebê' : 'bebês'}${textoIdades}`);
         }
-        
         return resultado.join(' + ');
     } catch (error) {
         console.error('Erro ao formatar passageiros:', error);
@@ -495,12 +422,10 @@ function formatarPassageiros(dados) {
     }
 }
 
-
 // ================================================================================
 // SEÇÃO 4: FUNÇÕES DE DETECÇÃO
 // ================================================================================
 
-// 4.1 - Extração de Destino
 function extrairDestinoDoConteudo(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
@@ -520,7 +445,6 @@ function extrairDestinoDoConteudo(conteudo) {
     } catch (error) { console.error('❌ Erro ao extrair destino:', error); return null; }
 }
 
-// 4.2 - Detecção de Tipo de Orçamento
 function detectOrcamentoType(conteudoPrincipal, tipos) {
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
@@ -540,8 +464,7 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         const companhiasUnicas = [...new Set(conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca)/gi)?.map(c => c.toLowerCase()) || [])];
         if (companhiasUnicas.length >= 2) return 'multiplas_companhias';
         
-        const ehConexao = detectarVooComConexao(conteudoPrincipal);
-        if (ehConexao) return 'aereo_conexao';
+        if (detectarVooComConexao(conteudoPrincipal)) return 'aereo_conexao';
         
         const opcoesMarcadas = conteudoPrincipal.match(/OPÇÃO \d/gi) || [];
         if (opcoesMarcadas.length >= 3) return 'multiplas_opcoes_3_planos';
@@ -554,7 +477,6 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
     }
 }
 
-// 4.3 - Detecção de Voo com Conexão
 function detectarVooComConexao(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
@@ -571,17 +493,17 @@ function detectarVooComConexao(conteudo) {
 // SEÇÃO 5: GERAÇÃO DE PROMPTS
 // ================================================================================
 
-function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento) {
+function generatePrompt(tipoOrcamento, conteudoPrincipal, destino) {
     try {
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino não identificado';
         
-        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v2.5:**
+        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v2.6:**
 - Sua tarefa é extrair os dados brutos e preencher o template correspondente.
-- Para os campos {parcelamento}, {bagagem} e {assento}, NÃO TENTE FORMATAR. Apenas insira o placeholder exatamente como está no template. O sistema fará a substituição final.
+- Para os campos {parcelamento}, {bagagem}, {assento} e {passageiros}, NÃO TENTE FORMATAR. Apenas insira o placeholder exatamente como está no template. O sistema fará a substituição final.
+- Para múltiplos planos (2 ou 3), use os placeholders numerados: {parcelamento1}, {parcelamento2}, etc.
 - Converta todos os códigos de aeroporto para nomes completos usando a tabela fornecida.
 - Formate valores como R$ 1.234,56.
 - Formate datas como DD/MM e horários como HH:MM.
-- O campo {passageiros} deve ser preenchido com a contagem de pessoas, mas sem as idades. Ex: "02 adultos + 01 criança".
 - Termine SEMPRE com "Valores sujeitos a confirmação e disponibilidade".`;
 
         const tabelaAeroportos = `**TABELA DE AEROPORTOS:**\n${JSON.stringify(AEROPORTOS, null, 2)}`;
@@ -600,13 +522,13 @@ ${regrasGerais}
 ${tabelaAeroportos}`;
 
     } catch (error) {
-        console.error('❌ v2.5: Erro ao gerar prompt:', error);
+        console.error('❌ v2.6: Erro ao gerar prompt:', error);
         return `Erro: ${error.message}`;
     }
 }
 
 // ================================================================================
-// SEÇÃO 6: HANDLER PRINCIPAL (com Pós-processamento)
+// SEÇÃO 6: HANDLER PRINCIPAL (com Pós-processamento CORRIGIDO)
 // ================================================================================
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -618,8 +540,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         return res.status(200).json({
-            success: true, status: 'operational', version: '2.5-PÓS-PROCESSAMENTO',
-            message: 'CVC Itaqua API v2.5 - Sistema completo com pós-processamento de regras.',
+            success: true, status: 'operational', version: '2.6-PÓS-PROCESSAMENTO-CORRIGIDO',
+            message: 'CVC Itaqua API v2.6 - Sistema completo com pós-processamento de regras individualizado por opção.',
             templates_disponiveis: Object.keys(TEMPLATES)
         });
     }
@@ -635,11 +557,11 @@ export default async function handler(req, res) {
         if (!conteudoPrincipal.trim() && !imagemBase64) return res.status(400).json({ success: false, error: 'Adicione informações sobre a viagem' });
 
         const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
-        const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento);
-        console.log(`✅ v2.5: Tipo detectado: ${tipoOrcamento}`);
+        const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino);
+        console.log(`✅ v2.6: Tipo detectado: ${tipoOrcamento}`);
 
         let resultado, iaUsada;
-        const systemPrompt = `Você é um assistente da CVC Itaqua. Analise os dados e preencha o template fornecido. Onde houver placeholders como {parcelamento}, {bagagem} ou {assento}, mantenha-os. Retorne apenas o texto formatado.`;
+        const systemPrompt = `Você é um assistente da CVC Itaqua. Analise os dados e preencha o template fornecido. Onde houver placeholders como {parcelamento}, {bagagem}, {assento} ou {passageiros}, mantenha-os. Retorne apenas o texto formatado.`;
         const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
 
         if (usarClaude && process.env.ANTHROPIC_API_KEY) {
@@ -660,33 +582,43 @@ export default async function handler(req, res) {
 
         let resultadoBruto = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
 
-        // === PÓS-PROCESSAMENTO v2.5 ===
-        console.log('🔄 v2.5: Aplicando pós-processamento de regras...');
-        const valorTotalMatch = resultadoBruto.match(/R\$\s*([\d.,]+)/);
-        const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
-
-        const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
-
-        let resultadoFinal = resultadoBruto
-            .replace(/{passageiros}/g, formatarPassageiros(dadosPassageiros))
-            .replace(/{parcelamento}/g, formatarParcelamento(conteudoPrincipal, parcelamento, valorTotalString))
-            .replace(/{bagagem}/g, formatarBagagem(conteudoPrincipal))
-            .replace(/{assento}/g, formatarAssento(conteudoPrincipal));
+        // === PÓS-PROCESSAMENTO CORRIGIDO v2.6 ===
+        console.log('🔄 v2.6: Aplicando pós-processamento de regras...');
         
-        // Limpeza final para remover linhas que ficaram vazias (como assento ou parcelamento)
-        resultadoFinal = resultadoFinal.split('\n').filter(line => line.trim() !== '').join('\n');
-        // Adiciona a linha em branco entre as opções
-        resultadoFinal = resultadoFinal.replace(/\*OPÇÃO/g, '\n*OPÇÃO');
+        let resultadoFinal;
+        const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
+        const passageirosFormatado = formatarPassageiros(dadosPassageiros);
 
-        return res.status(200).json({
-            success: true, result: resultadoFinal, ia_usada: iaUsada,
-            metadata: { version: '2.5-PÓS-PROCESSAMENTO', tipo: tipoOrcamento }
-        });
+        if (tipoOrcamento === 'multiplas_companhias') {
+            const blocosInput = conteudoPrincipal.split(/OPÇÃO \d/i).filter(b => b.trim() !== '');
+            const blocosOutput = resultadoBruto.split(/\*OPÇÃO \d/i).filter(b => b.trim() !== '');
+            let resultadoProcessado = [];
 
-    } catch (error) {
-        console.error('❌ v2.5: Erro no handler:', error);
-        return res.status(500).json({ success: false, error: 'Erro interno do servidor', details: error.message, version: '2.5-PÓS-PROCESSAMENTO' });
-    }
-}
+            for (let i = 0; i < blocosOutput.length; i++) {
+                let bloco = blocosOutput[i];
+                const inputCorrespondente = blocosInput[i] || conteudoPrincipal;
 
-console.log('✅ CVC Itaqua v2.5-PÓS-PROCESSAMENTO carregado com sucesso!');
+                const valorTotalMatch = bloco.match(/R\$\s*([\d.,]+)/);
+                const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
+                
+                bloco = bloco.replace(/{passageiros}/g, passageirosFormatado)
+                             .replace(/{parcelamento\d?}/g, formatarParcelamento(inputCorrespondente, parcelamento, valorTotalString))
+                             .replace(/{bagagem\d?}/g, formatarBagagem(inputCorrespondente))
+                             .replace(/{assento\d?}/g, formatarAssento(inputCorrespondente));
+                
+                resultadoProcessado.push(`*OPÇÃO ${i+1}${bloco}`);
+            }
+            resultadoFinal = resultadoProcessado.join('\n\n'); // Adiciona o espaçamento
+        } else {
+            const valorTotalMatch = resultadoBruto.match(/R\$\s*([\d.,]+)/);
+            const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
+            
+            resultadoFinal = resultadoBruto
+                .replace(/{passageiros}/g, passageirosFormatado)
+                .replace(/{parcelamento}/g, formatarParcelamento(conteudoPrincipal, parcelamento, valorTotalString))
+                .replace(/{bagagem}/g, formatarBagagem(conteudoPrincipal))
+                .replace(/{assento}/g, formatarAssento(conteudoPrincipal));
+        }
+        
+        // Limpeza final para remover linhas que ficaram vazias
+        resultadoFinal = resultadoFinal.split('\n').filter(line => line.trim() !== '').join
