@@ -694,55 +694,10 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino';
         const numeroOpcoes = detectarNumeroOpcoes(conteudoPrincipal);
         
-        // Detectar se tem crianças
-        const temCrianca = conteudoPrincipal.toLowerCase().includes('criança');
-        
         console.log(`[${getTimestamp()}] 📝 v2.8: Gerando prompt para ${tipoOrcamento} com ${numeroOpcoes} opção(ões)`);
         
         let instrucoes = '';
         let templateEscolhido = '';
-        let dicasDestino = '';
-        
-        // Adicionar dicas do destino se for Lisboa
-        if (destinoFinal.toLowerCase().includes('lisboa')) {
-            dicasDestino = `
-
-━━━━━━━━━━━━━━━━━━
-💡 *DICAS PARA LISBOA${temCrianca ? ' COM CRIANÇAS' : ''}*
-━━━━━━━━━━━━━━━━━━
-
-🌡️ *CLIMA EM JULHO:*
-• Temperatura: 18°C a 28°C
-• Ensolarado e seco
-• Leve: roupas leves e protetor solar
-
-🎯 *TOP ATRAÇÕES:*
-1. Torre de Belém - símbolo de Lisboa
-2. Mosteiro dos Jerónimos - patrimônio UNESCO
-3. Bairro de Alfama - o mais antigo da cidade
-
-${temCrianca ? `👶 *COM CRIANÇAS:*
-• Oceanário de Lisboa (2º maior da Europa!)
-• Pavilhão do Conhecimento (museu interativo)
-• Telecabine do Parque das Nações
-• Pastéis de Belém são imperdíveis!
-
-` : ''}🍽️ *GASTRONOMIA:*
-• Pratos típicos: Bacalhau, Pastéis de Nata
-• Preço médio refeição: €15-25 por pessoa
-• Dica: Mercado da Ribeira para variedade
-
-💰 *CUSTOS MÉDIOS:*
-• Transporte público: €1,50 por viagem
-• Táxi do aeroporto: €15-20
-• Entrada museus: €5-15
-
-📱 *DICAS PRÁTICAS:*
-• Moeda: Euro (€)
-• Idioma: Português de Portugal
-• Lisboa Card vale a pena para turismo intenso
-• Use sapatos confortáveis (cidade com ladeiras!)`;
-        }
         
         if (numeroOpcoes === 1) {
             // Instruções para orçamento simples
@@ -757,8 +712,8 @@ ${temCrianca ? `👶 *COM CRIANÇAS:*
 6. Links diretos sem markdown: 🔗 https://...
 7. Adicionar (+1) para chegadas no dia seguinte
 8. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
-${dicasDestino ? '9. Adicionar dicas do destino após o orçamento' : ''}
 
+**NÃO ADICIONAR DICAS DO DESTINO NO ORÇAMENTO**
 **NÃO INVENTAR OPÇÕES EXTRAS! Há apenas 1 opção nos dados.**`;
             
             templateEscolhido = TEMPLATES.orcamento_simples;
@@ -779,8 +734,8 @@ ${dicasDestino ? '9. Adicionar dicas do destino após o orçamento' : ''}
 6. Links diretos sem markdown
 7. Adicionar (+1) para chegadas no dia seguinte
 8. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
-${dicasDestino ? '9. Adicionar dicas do destino após as opções' : ''}
 
+**NÃO ADICIONAR DICAS DO DESTINO NO ORÇAMENTO**
 **IMPORTANTE: Processar apenas ${numeroOpcoes} opções conforme os dados fornecidos.**`;
             
             templateEscolhido = TEMPLATES.multiplas_companhias;
@@ -796,10 +751,10 @@ ${instrucoes}
 
 TEMPLATE BASE:
 ${templateEscolhido}
-${dicasDestino}
 
 **REGRAS CRÍTICAS:**
 - NÃO inventar opções extras
+- NÃO adicionar dicas do destino no orçamento
 - Usar APENAS os dados fornecidos
 - Manter placeholders exatamente como mostrado
 - Formatar datas como DD/MM
@@ -812,6 +767,92 @@ ${dicasDestino}
         console.error(`[${getTimestamp()}] ❌ v2.8: Erro ao gerar prompt:`, error);
         return `Erro: ${error.message}`;
     }
+}
+
+// ================================================================================
+// SEÇÃO 6.5: GERAÇÃO DE DICAS PARA VENDAS - v2.8
+// ================================================================================
+
+function generateDicasPrompt(destino, temCrianca = false) {
+    const mes = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+    
+    return `
+Gere dicas de vendas para ${destino} no formato abaixo.
+${temCrianca ? 'IMPORTANTE: Tem crianças na viagem, inclua dicas específicas para famílias.' : ''}
+
+**FORMATO DAS DICAS PARA AGÊNCIA CVC:**
+
+━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA ${destino.toUpperCase()}${temCrianca ? ' COM CRIANÇAS' : ''}*
+━━━━━━━━━━━━━━━━━━
+
+🌡️ *CLIMA EM ${mes.toUpperCase()}:*
+• [Temperatura e condições]
+• [O que levar na mala]
+• [Melhor época para cada atividade]
+
+🎯 *TOP ATRAÇÕES QUE VENDEMOS:*
+1. [Atração principal] - Temos ingressos com desconto!
+2. [Atração 2] - Pacote combo disponível
+3. [Atração 3] - Tour guiado em português
+
+${temCrianca ? `👶 *ESPECIAL PARA FAMÍLIAS:*
+• [Atração infantil] - Vendemos o ingresso família
+• [Atividade kids] - Pacote com desconto criança
+• [Local family-friendly] - Tour privativo disponível
+• Dica: Temos babysitter credenciada!
+
+` : ''}🎪 *PASSEIOS EXCLUSIVOS CVC:*
+• City Tour: R$ [valor] por pessoa
+• [Passeio específico]: R$ [valor] 
+• Tour gastronômico: R$ [valor]
+• Traslado aeroporto/hotel: R$ [valor]
+
+🏨 *HOTÉIS PARCEIROS:*
+• Temos tarifas especiais em mais de 50 hotéis
+• Upgrades exclusivos para clientes CVC
+• Café da manhã cortesia em hotéis selecionados
+
+🍽️ *EXPERIÊNCIAS GASTRONÔMICAS:*
+• Reservamos restaurantes sem taxa de serviço
+• Jantar com show: R$ [valor] por pessoa
+• Tours gastronômicos com guia
+
+💰 *VANTAGENS EXCLUSIVAS CVC:*
+• Parcelamento em até 15x sem juros
+• Seguro viagem com desconto especial
+• Assistência 24h em português
+• Chip internacional com 20% de desconto
+
+📱 *SERVIÇOS QUE OFERECEMOS:*
+• Chip internacional pré-configurado
+• Seguro viagem completo com COVID
+• Transfers privativos
+• Ingressos para todas as atrações
+• Reserva de restaurantes
+
+🎁 *COMBOS ESPECIAIS:*
+• Pacote Família: [descrição e economia]
+• Combo Romântico: [descrição]
+• Pacote Aventura: [descrição]
+
+🚨 *DOCUMENTAÇÃO:*
+• [Documentos necessários]
+• Fazemos o visto com urgência se necessário
+• Auxílio completo com documentação
+
+💡 *POR QUE COMPRAR NA CVC:*
+✅ Melhor preço garantido
+✅ Atendimento em português 24h
+✅ Parcelamento facilitado
+✅ Pacotes personalizados
+✅ Assistência total na viagem
+
+📞 *FALE CONOSCO:*
+WhatsApp: [número]
+Temos consultores especializados em ${destino}!
+
+*Valores sujeitos a confirmação e disponibilidade (v2.8)*`;
 }
 
 // ================================================================================
@@ -849,7 +890,8 @@ export default async function handler(req, res) {
                 '✅ APRIMORADO: Formatação de datas (DD/MM)',
                 '✅ CORRIGIDO: Nomes de aeroportos em português',
                 '✅ AJUSTADO: Parcelamento específico por opção',
-                '✅ INTELIGENTE: Análise automática do conteúdo'
+                '✅ SEPARADO: Dicas apenas quando solicitado',
+                '✅ VENDAS: Dicas focadas em produtos CVC'
             ]
         });
     }
@@ -874,9 +916,59 @@ export default async function handler(req, res) {
             tipos = [],
             parcelamento = '',
             imagemBase64 = null,
-            pdfContent = null
+            pdfContent = null,
+            gerarDicas = false  // Nova flag para indicar se é geração de dicas
         } = req.body;
 
+        // Se for solicitação de dicas
+        if (gerarDicas && destino) {
+            console.log(`[${getTimestamp()}] 💡 Gerando dicas para ${destino}...`);
+            
+            const temCrianca = criancas > 0 || observacoes.toLowerCase().includes('criança');
+            const promptDicas = generateDicasPrompt(destino, temCrianca);
+            
+            let resultado;
+            
+            // Usar GPT para dicas (mais econômico)
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { 
+                            role: 'system', 
+                            content: 'Você é um consultor de vendas da CVC. Crie dicas focadas em vender produtos e serviços da agência.'
+                        },
+                        { role: 'user', content: promptDicas }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 2048
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`OpenAI erro ${response.status}`);
+            }
+
+            const data = await response.json();
+            resultado = data.choices[0].message.content;
+            
+            return res.status(200).json({
+                success: true,
+                result: resultado,
+                metadata: {
+                    version: '2.8',
+                    tipo: 'dicas',
+                    destino: destino
+                }
+            });
+        }
+
+        // Processamento normal de orçamento
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
         
         if (!conteudoPrincipal.trim() && !imagemBase64) {
@@ -904,12 +996,14 @@ export default async function handler(req, res) {
 REGRAS CRÍTICAS:
 1. DETECTAR número real de opções nos dados (1, 2 ou 3)
 2. NUNCA inventar opções extras
-3. Usar template apropriado (simples para 1 opção, múltiplo para 2+)
-4. Formatar datas como DD/MM
-5. Usar nomes de aeroportos em português
-6. Manter placeholders como instruído
-7. Adicionar (+1) para chegadas no dia seguinte
-8. Terminar com (v2.8)
+3. NÃO adicionar dicas do destino no orçamento
+4. Usar template apropriado (simples para 1 opção, múltiplo para 2+)
+5. Formatar datas como DD/MM
+6. Usar nomes de aeroportos em português
+7. Formatar passageiros: 04 adultos + 01 criança
+8. Manter placeholders como instruído
+9. Adicionar (+1) para chegadas no dia seguinte
+10. Terminar com (v2.8)
 
 Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
 
