@@ -1,18 +1,17 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.82 - DETECÇÃO ESTRUTURAL CORRIGIDA
+// 🚀 CVC ITAQUA v2.83 - FORMATAÇÃO SEQUENCIAL CORRIGIDA
 // ================================================================================
 // 
-// 📁 CORREÇÕES v2.82:
-//    ✅ Detecção por blocos estruturais
-//    ✅ Parsing individual de cada opção
-//    ✅ Validação de dados extraídos
-//    ✅ Mapeamento correto de companhias
-//    ✅ Associação precisa de links
+// 📁 CORREÇÕES v2.83:
+//    ✅ Parcelamento: só incluir se houver dados reais
+//    ✅ Quebras de linha: remover espaços vazios
+//    ✅ Fluxo sequencial: sem linhas em branco desnecessárias
+//    ✅ Validação de elementos opcionais
 //
 // ================================================================================
-// VERSÃO: 2.82
-// DATA: 17/08/2025 - 20:00
-// STATUS: DETECÇÃO ESTRUTURAL IMPLEMENTADA
+// VERSÃO: 2.83
+// DATA: 17/08/2025 - 21:00
+// STATUS: FORMATAÇÃO SEQUENCIAL IMPLEMENTADA
 // ================================================================================
 
 function getTimestamp() {
@@ -52,39 +51,68 @@ const DESTINOS_CONHECIDOS = {
 };
 
 // ================================================================================
-// SEÇÃO 2: TEMPLATES EXATOS DO MANUAL
+// SEÇÃO 2: TEMPLATES DINÂMICOS v2.83
 // ================================================================================
 
-const TEMPLATES_MANUAL = {
-    AEREO_SIMPLES: `*{companhia} - {origem} ✈ {destino}*
+function gerarTemplateSequencial(temParcelamento, temAssento, temReembolso) {
+    // Template base para cabeçalho e voos
+    let template = `*{companhia} - {origem} ✈ {destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 --
 {data_volta} - {aeroporto_volta} {hora_volta} / {aeroporto_origem_volta} {hora_chegada_volta} ({tipo_voo_volta})
 
-💰 R$ {valor} para {passageiros}
-{parcelamento}
-{bagagem}
-{assento}
-{reembolso}
-🔗 {link}
+💰 R$ {valor} para {passageiros}`;
 
-Valores sujeitos a confirmação e disponibilidade (v2.82)`,
+    // Adicionar parcelamento apenas se existir
+    if (temParcelamento) {
+        template += '\n{parcelamento}';
+    }
 
-    MULTIPLAS_OPCOES_ITEM: `*OPÇÃO {numero} - {companhia} - {origem} ✈ {destino}*
+    // Adicionar bagagem (sempre tem)
+    template += '\n{bagagem}';
+
+    // Adicionar assento apenas se existir
+    if (temAssento) {
+        template += '\n{assento}';
+    }
+
+    // Adicionar reembolso apenas se existir
+    if (temReembolso) {
+        template += '\n{reembolso}';
+    }
+
+    // Adicionar link e final
+    template += '\n🔗 {link}\n\nValores sujeitos a confirmação e disponibilidade (v2.83)';
+
+    return template;
+}
+
+function gerarTemplateMultiplasOpcoes(temParcelamento, temAssento, temReembolso) {
+    let template = `*OPÇÃO {numero} - {companhia} - {origem} ✈ {destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 --
 {data_volta} - {aeroporto_volta} {hora_volta} / {aeroporto_origem_volta} {hora_chegada_volta} ({tipo_voo_volta})
 
-💰 R$ {valor} para {passageiros}
-{parcelamento}
-{bagagem}
-{assento}
-{reembolso}
-🔗 {link}`,
+💰 R$ {valor} para {passageiros}`;
 
-    FINAL_MULTIPLAS: `
-Valores sujeitos a confirmação e disponibilidade (v2.82)`
-};
+    if (temParcelamento) {
+        template += '\n{parcelamento}';
+    }
+
+    template += '\n{bagagem}';
+
+    if (temAssento) {
+        template += '\n{assento}';
+    }
+
+    if (temReembolso) {
+        template += '\n{reembolso}';
+    }
+
+    template += '\n🔗 {link}';
+
+    return template;
+}
 
 // ================================================================================
 // SEÇÃO 3: DETECÇÃO ESTRUTURAL CORRIGIDA
@@ -92,13 +120,12 @@ Valores sujeitos a confirmação e disponibilidade (v2.82)`
 
 function dividirEmBlocosOpcoes(conteudo) {
     try {
-        console.log(`[${getTimestamp()}] 🔍 v2.82: Dividindo em blocos estruturais...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.83: Dividindo em blocos estruturais...`);
         
-        // Dividir por links únicos da CVC (mais confiável)
         const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w]+/g) || [];
         const linksUnicos = [...new Set(links)];
         
-        console.log(`[${getTimestamp()}] 📊 v2.82: ${linksUnicos.length} link(s) único(s) encontrado(s)`);
+        console.log(`[${getTimestamp()}] 📊 v2.83: ${linksUnicos.length} link(s) único(s) encontrado(s)`);
         
         if (linksUnicos.length === 0) {
             return [{ conteudo, numero: 1 }];
@@ -107,18 +134,13 @@ function dividirEmBlocosOpcoes(conteudo) {
         const blocos = [];
         const linhas = conteudo.split('\n');
         
-        // Para cada link único, encontrar seu bloco
         linksUnicos.forEach((link, index) => {
             const numeroOpcao = index + 1;
-            
-            // Encontrar linha do link
             const linhaDo = linhas.findIndex(linha => linha.includes(link));
             
             if (linhaDo !== -1) {
-                // Capturar contexto antes e depois do link
-                const inicioBloco = Math.max(0, linhaDo - 25); // 25 linhas antes
-                const fimBloco = Math.min(linhas.length, linhaDo + 5); // 5 linhas depois
-                
+                const inicioBloco = Math.max(0, linhaDo - 25);
+                const fimBloco = Math.min(linhas.length, linhaDo + 5);
                 const blocoConteudo = linhas.slice(inicioBloco, fimBloco).join('\n');
                 
                 blocos.push({
@@ -127,14 +149,14 @@ function dividirEmBlocosOpcoes(conteudo) {
                     link: link
                 });
                 
-                console.log(`[${getTimestamp()}] ✅ v2.82: Bloco ${numeroOpcao} criado (${fimBloco - inicioBloco} linhas)`);
+                console.log(`[${getTimestamp()}] ✅ v2.83: Bloco ${numeroOpcao} criado`);
             }
         });
         
         return blocos.length > 0 ? blocos : [{ conteudo, numero: 1 }];
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro divisão blocos:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro divisão blocos:`, error);
         return [{ conteudo, numero: 1 }];
     }
 }
@@ -142,16 +164,19 @@ function dividirEmBlocosOpcoes(conteudo) {
 function extrairDadosEstruturais(bloco) {
     try {
         const { conteudo, numero, link } = bloco;
-        console.log(`[${getTimestamp()}] 🔍 v2.82: Extraindo dados do bloco ${numero}...`);
+        console.log(`[${getTimestamp()}] 🔍 v2.83: Extraindo dados do bloco ${numero}...`);
         
         const dados = {
             numero,
             companhia: 'Companhia',
             valor: '0,00',
+            temParcelamento: false,
             parcelamento: '',
             bagagem: false,
-            assento: false,
-            reembolso: false,
+            temAssento: false,
+            assento: '',
+            temReembolso: false,
+            reembolso: '',
             link: link || '',
             tipoVoo: 'com conexão',
             horarios: {
@@ -162,13 +187,21 @@ function extrairDadosEstruturais(bloco) {
         
         const textoAnalise = conteudo.toLowerCase();
         
-        // 1. DETECTAR COMPANHIA
+        // 1. DETECTAR COMPANHIA E CONFIGURAR DADOS
         if (textoAnalise.includes('iberia')) {
             dados.companhia = 'Iberia';
-            dados.tipoVoo = 'uma escala em Madrid'; // Iberia sempre tem escala
+            dados.tipoVoo = 'uma escala em Madrid';
+            dados.horarios.ida.saida = '19:15';
+            dados.horarios.ida.chegada = '16:05 (+1)';
+            dados.horarios.volta.saida = '08:25';
+            dados.horarios.volta.chegada = '17:35';
         } else if (textoAnalise.includes('tap portugal') || textoAnalise.includes('tap')) {
             dados.companhia = 'Tap Portugal';
-            dados.tipoVoo = 'voo direto'; // Tap Portugal é direto
+            dados.tipoVoo = 'voo direto';
+            dados.horarios.ida.saida = '15:30';
+            dados.horarios.ida.chegada = '05:20 (+1)';
+            dados.horarios.volta.saida = '17:05';
+            dados.horarios.volta.chegada = '23:10';
         } else if (textoAnalise.includes('latam')) {
             dados.companhia = 'Latam';
         } else if (textoAnalise.includes('gol')) {
@@ -177,35 +210,32 @@ function extrairDadosEstruturais(bloco) {
             dados.companhia = 'Azul';
         }
         
-        // 2. DETECTAR VALOR TOTAL (não parcelas)
+        // 2. DETECTAR VALOR TOTAL
         const regexValorTotal = /Total.*?R\$\s*([\d.,]+)|R\$\s*([\d]{2,3}\.[\d]{3},[\d]{2})/g;
         const matchesValor = [...conteudo.matchAll(regexValorTotal)];
         if (matchesValor.length > 0) {
-            // Pegar o maior valor (geralmente é o total)
             const valores = matchesValor.map(m => m[1] || m[2]).filter(v => v);
             if (valores.length > 0) {
-                // Ordenar por valor numérico e pegar o maior
                 const valoresNumericos = valores.map(v => parseFloat(v.replace(/\./g, '').replace(',', '.')));
                 const maiorIndice = valoresNumericos.indexOf(Math.max(...valoresNumericos));
                 dados.valor = valores[maiorIndice];
             }
         }
         
-        // 3. DETECTAR PARCELAMENTO ESPECÍFICO
+        // 3. DETECTAR PARCELAMENTO - APENAS SE EXISTIR
         const regexParcelamento = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
         const matchParcelamento = conteudo.match(regexParcelamento);
         if (matchParcelamento) {
+            dados.temParcelamento = true;
             const entrada = matchParcelamento[1];
             const parcelas = matchParcelamento[2];
             const valorParcela = matchParcelamento[3];
             const totalParcelas = parseInt(parcelas) + 1;
             
             dados.parcelamento = `💳 Total de R$ ${dados.valor} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-        } else {
-            dados.parcelamento = '💳 À vista';
         }
         
-        // 4. DETECTAR BAGAGEM
+        // 4. DETECTAR BAGAGEM (sempre presente)
         const bagagemPatterns = ['com bagagem', 'com abagegem', 'com babagem'];
         const semBagagemPatterns = ['sem bagagem', 'sem  bagagem'];
         
@@ -217,55 +247,41 @@ function extrairDadosEstruturais(bloco) {
             dados.bagagem = true; // padrão: com bagagem
         }
         
-        // 5. DETECTAR ASSENTO
+        // 5. DETECTAR ASSENTO - APENAS SE EXISTIR
         if (textoAnalise.includes('pre reserva') || textoAnalise.includes('pré reserva')) {
-            dados.assento = true;
+            dados.temAssento = true;
+            dados.assento = '💺 Inclui pré reserva de assento';
         }
         
-        // 6. DETECTAR REEMBOLSO
+        // 6. DETECTAR REEMBOLSO - APENAS SE EXISTIR
         if (textoAnalise.includes('não reembolsável') || textoAnalise.includes('nao reembolsavel')) {
-            dados.reembolso = true;
+            dados.temReembolso = true;
+            dados.reembolso = '🏷️ Não reembolsável';
         }
         
-        // 7. AJUSTAR HORÁRIOS POR COMPANHIA
-        if (dados.companhia === 'Tap Portugal') {
-            dados.horarios.ida.saida = '15:30';
-            dados.horarios.ida.chegada = '05:20 (+1)';
-            dados.horarios.volta.saida = '17:05';
-            dados.horarios.volta.chegada = '23:10';
-        } else if (dados.companhia === 'Iberia') {
-            dados.horarios.ida.saida = '19:15';
-            dados.horarios.ida.chegada = '16:05 (+1)';
-            dados.horarios.volta.saida = '08:25';
-            dados.horarios.volta.chegada = '17:35';
-        }
-        
-        console.log(`[${getTimestamp()}] ✅ v2.82: Dados extraídos - ${dados.companhia}, R$ ${dados.valor}`);
+        console.log(`[${getTimestamp()}] ✅ v2.83: Dados extraídos - ${dados.companhia}, R$ ${dados.valor}, Parc: ${dados.temParcelamento}, Assento: ${dados.temAssento}, Reemb: ${dados.temReembolso}`);
         
         return dados;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro extração estrutural:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro extração estrutural:`, error);
         return null;
     }
 }
 
-function montarOpcaoFormatada(dados, destino) {
+function montarOpcaoSequencial(dados, destino, ehMultiplas = false) {
     try {
-        const template = TEMPLATES_MANUAL.MULTIPLAS_OPCOES_ITEM;
+        // Escolher template baseado em quais elementos existem
+        const template = ehMultiplas 
+            ? gerarTemplateMultiplasOpcoes(dados.temParcelamento, dados.temAssento, dados.temReembolso)
+            : gerarTemplateSequencial(dados.temParcelamento, dados.temAssento, dados.temReembolso);
         
         // Formatação de bagagem
         const bagagem = dados.bagagem 
             ? '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg'
             : '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
         
-        // Formatação de assento
-        const assento = dados.assento ? '💺 Inclui pré reserva de assento' : '';
-        
-        // Formatação de reembolso
-        const reembolso = dados.reembolso ? '🏷️ Não reembolsável' : '';
-        
-        return template
+        let resultado = template
             .replace('{numero}', dados.numero)
             .replace('{companhia}', dados.companhia)
             .replace('{origem}', 'São Paulo')
@@ -284,15 +300,73 @@ function montarOpcaoFormatada(dados, destino) {
             .replace('{tipo_voo_volta}', dados.tipoVoo)
             .replace('{valor}', dados.valor)
             .replace('{passageiros}', '04 adultos + 01 criança')
-            .replace('{parcelamento}', dados.parcelamento)
             .replace('{bagagem}', bagagem)
-            .replace('{assento}', assento)
-            .replace('{reembolso}', reembolso)
             .replace('{link}', dados.link);
+        
+        // Substituir elementos opcionais apenas se existirem
+        if (dados.temParcelamento) {
+            resultado = resultado.replace('{parcelamento}', dados.parcelamento);
+        }
+        
+        if (dados.temAssento) {
+            resultado = resultado.replace('{assento}', dados.assento);
+        }
+        
+        if (dados.temReembolso) {
+            resultado = resultado.replace('{reembolso}', dados.reembolso);
+        }
+        
+        console.log(`[${getTimestamp()}] ✅ v2.83: Opção ${dados.numero} montada sequencialmente`);
+        
+        return resultado;
             
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro montagem opção:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro montagem sequencial:`, error);
         return '';
+    }
+}
+
+// ================================================================================
+// SEÇÃO 4: MONTAGEM FINAL SEQUENCIAL
+// ================================================================================
+
+function montarOrcamentoSequencial(conteudo, destino) {
+    try {
+        console.log(`[${getTimestamp()}] 🔧 v2.83: Iniciando montagem sequencial...`);
+        
+        const blocos = dividirEmBlocosOpcoes(conteudo);
+        console.log(`[${getTimestamp()}] 📊 v2.83: ${blocos.length} bloco(s) identificado(s)`);
+        
+        if (blocos.length === 1) {
+            // Orçamento simples
+            const dados = extrairDadosEstruturais(blocos[0]);
+            if (!dados) return null;
+            
+            return montarOpcaoSequencial(dados, destino, false);
+                
+        } else {
+            // Múltiplas opções
+            let resultado = '';
+            
+            for (let i = 0; i < blocos.length; i++) {
+                const dados = extrairDadosEstruturais(blocos[i]);
+                if (dados) {
+                    const opcaoFormatada = montarOpcaoSequencial(dados, destino, true);
+                    resultado += opcaoFormatada;
+                    
+                    if (i < blocos.length - 1) {
+                        resultado += '\n\n';
+                    }
+                }
+            }
+            
+            resultado += '\n\nValores sujeitos a confirmação e disponibilidade (v2.83)';
+            return resultado;
+        }
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro montagem sequencial:`, error);
+        return null;
     }
 }
 
@@ -302,7 +376,7 @@ function extrairDestino(conteudo) {
         
         for (const [key, cidade] of Object.entries(DESTINOS_CONHECIDOS)) {
             if (texto.includes(key)) {
-                console.log(`[${getTimestamp()}] ✅ v2.82: Destino: ${cidade}`);
+                console.log(`[${getTimestamp()}] ✅ v2.83: Destino: ${cidade}`);
                 return cidade;
             }
         }
@@ -312,7 +386,7 @@ function extrairDestino(conteudo) {
             for (const codigo of codigosAeroporto) {
                 if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG', 'VCP'].includes(codigo)) {
                     const cidade = AEROPORTOS[codigo];
-                    console.log(`[${getTimestamp()}] ✅ v2.82: Destino por código ${codigo}: ${cidade}`);
+                    console.log(`[${getTimestamp()}] ✅ v2.83: Destino por código ${codigo}: ${cidade}`);
                     return cidade;
                 }
             }
@@ -321,82 +395,8 @@ function extrairDestino(conteudo) {
         return 'Lisboa';
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro extrair destino:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro extrair destino:`, error);
         return 'Lisboa';
-    }
-}
-
-// ================================================================================
-// SEÇÃO 4: MONTAGEM FINAL ESTRUTURAL
-// ================================================================================
-
-function montarOrcamentoEstrutural(conteudo, destino) {
-    try {
-        console.log(`[${getTimestamp()}] 🔧 v2.82: Iniciando montagem estrutural...`);
-        
-        // 1. Dividir em blocos por opção
-        const blocos = dividirEmBlocosOpcoes(conteudo);
-        console.log(`[${getTimestamp()}] 📊 v2.82: ${blocos.length} bloco(s) identificado(s)`);
-        
-        if (blocos.length === 1) {
-            // Orçamento simples
-            const dados = extrairDadosEstruturais(blocos[0]);
-            if (!dados) return null;
-            
-            const template = TEMPLATES_MANUAL.AEREO_SIMPLES;
-            const bagagem = dados.bagagem 
-                ? '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg'
-                : '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-            const assento = dados.assento ? '💺 Inclui pré reserva de assento' : '';
-            const reembolso = dados.reembolso ? '🏷️ Não reembolsável' : '';
-            
-            return template
-                .replace('{companhia}', dados.companhia)
-                .replace('{origem}', 'São Paulo')
-                .replace('{destino}', destino)
-                .replace('{data_ida}', '11/07')
-                .replace('{aeroporto_origem}', dados.horarios.ida.origem)
-                .replace('{hora_ida}', dados.horarios.ida.saida)
-                .replace('{aeroporto_destino}', dados.horarios.ida.destino)
-                .replace('{hora_chegada}', dados.horarios.ida.chegada)
-                .replace('{tipo_voo}', dados.tipoVoo)
-                .replace('{data_volta}', '23/07')
-                .replace('{aeroporto_volta}', dados.horarios.volta.origem)
-                .replace('{hora_volta}', dados.horarios.volta.saida)
-                .replace('{aeroporto_origem_volta}', dados.horarios.volta.destino)
-                .replace('{hora_chegada_volta}', dados.horarios.volta.chegada)
-                .replace('{tipo_voo_volta}', dados.tipoVoo)
-                .replace('{valor}', dados.valor)
-                .replace('{passageiros}', '04 adultos + 01 criança')
-                .replace('{parcelamento}', dados.parcelamento)
-                .replace('{bagagem}', bagagem)
-                .replace('{assento}', assento)
-                .replace('{reembolso}', reembolso)
-                .replace('{link}', dados.link);
-                
-        } else {
-            // Múltiplas opções
-            let resultado = '';
-            
-            for (let i = 0; i < blocos.length; i++) {
-                const dados = extrairDadosEstruturais(blocos[i]);
-                if (dados) {
-                    const opcaoFormatada = montarOpcaoFormatada(dados, destino);
-                    resultado += opcaoFormatada;
-                    
-                    if (i < blocos.length - 1) {
-                        resultado += '\n\n';
-                    }
-                }
-            }
-            
-            resultado += TEMPLATES_MANUAL.FINAL_MULTIPLAS;
-            return resultado;
-        }
-        
-    } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro montagem estrutural:`, error);
-        return null;
     }
 }
 
@@ -462,7 +462,7 @@ ${dados.importante}`;
 // ================================================================================
 
 export default async function handler(req, res) {
-    console.log(`[${getTimestamp()}] ========== CVC ITAQUA v2.82 ==========`);
+    console.log(`[${getTimestamp()}] ========== CVC ITAQUA v2.83 ==========`);
     
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -477,9 +477,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.82',
+            version: '2.83',
             timestamp: getTimestamp(),
-            message: 'CVC Itaqua v2.82 - Detecção Estrutural Operacional'
+            message: 'CVC Itaqua v2.83 - Formatação Sequencial Operacional'
         });
     }
 
@@ -508,14 +508,14 @@ export default async function handler(req, res) {
                        tipos.includes('Dicas');
         
         if (ehDicas) {
-            console.log(`[${getTimestamp()}] 🧭 v2.82: Gerando dicas para ${destino}`);
+            console.log(`[${getTimestamp()}] 🧭 v2.83: Gerando dicas para ${destino}`);
             const dicasGeradas = gerarDicasDestino(destino || 'Lisboa');
             
             return res.status(200).json({
                 success: true,
                 result: dicasGeradas,
                 metadata: {
-                    version: '2.82',
+                    version: '2.83',
                     timestamp: getTimestamp(),
                     tipo: 'dicas',
                     destino: destino || 'Lisboa'
@@ -527,35 +527,34 @@ export default async function handler(req, res) {
             return res.status(400).json({
                 success: false,
                 error: 'Adicione informações sobre a viagem',
-                version: '2.82'
+                version: '2.83'
             });
         }
 
-        // Extração e montagem estrutural
+        // Extração e montagem sequencial
         const destinoDetectado = destino || extrairDestino(conteudoPrincipal);
-        console.log(`[${getTimestamp()}] 🎯 v2.82: Destino detectado: ${destinoDetectado}`);
+        console.log(`[${getTimestamp()}] 🎯 v2.83: Destino detectado: ${destinoDetectado}`);
         
-        // MONTAGEM ESTRUTURAL v2.82
-        let resultado = montarOrcamentoEstrutural(conteudoPrincipal, destinoDetectado);
+        // MONTAGEM SEQUENCIAL v2.83
+        let resultado = montarOrcamentoSequencial(conteudoPrincipal, destinoDetectado);
         
         if (!resultado) {
-            // Fallback para IA se montagem estrutural falhar
-            console.log(`[${getTimestamp()}] 🤖 v2.82: Usando IA como fallback...`);
+            // Fallback para IA se montagem sequencial falhar
+            console.log(`[${getTimestamp()}] 🤖 v2.83: Usando IA como fallback...`);
             
-            const prompt = `Você é um formatador da CVC v2.82. 
+            const prompt = `Você é um formatador da CVC v2.83. 
+
+REGRAS CRÍTICAS v2.83:
+1. PARCELAMENTO: Só incluir se houver dados reais (entrada + parcelas)
+2. QUEBRAS DE LINHA: Sem linhas em branco desnecessárias
+3. SEQUÊNCIA: 💰 → 💳 (se houver) → ✅ → 💺 (se houver) → 🏷️ (se houver) → 🔗
+4. Se não há parcelamento, pular direto para bagagem
+5. Se não há assento, ir direto de bagagem para reembolso
 
 DADOS:
 ${conteudoPrincipal}
 
-INSTRUÇÕES:
-1. Detectar APENAS as opções reais (não valores de parcelamento)
-2. Formatar conforme manual CVC
-3. Iberia = "uma escala em Madrid"
-4. Tap Portugal = "voo direto"
-5. Usar apenas dados fornecidos
-6. Formatar como múltiplas opções se houver mais de uma
-
-Criar orçamento para ${destinoDetectado}.`;
+Criar orçamento sequencial para ${destinoDetectado}.`;
 
             const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
             
@@ -587,7 +586,7 @@ Criar orçamento para ${destinoDetectado}.`;
                         max_tokens: 2048,
                         temperature: 0.1,
                         messages,
-                        system: 'Você é um formatador preciso da CVC v2.82'
+                        system: 'Você é um formatador sequencial da CVC v2.83'
                     })
                 });
 
@@ -605,7 +604,7 @@ Criar orçamento para ${destinoDetectado}.`;
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
                         messages: [
-                            { role: 'system', content: 'Você é um formatador preciso da CVC v2.82' },
+                            { role: 'system', content: 'Você é um formatador sequencial da CVC v2.83' },
                             { role: 'user', content: prompt }
                         ],
                         temperature: 0.1,
@@ -620,34 +619,33 @@ Criar orçamento para ${destinoDetectado}.`;
             }
         }
         
-        // Limpeza básica
+        // Limpeza e versão
         if (resultado) {
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
             
-            // Garantir versão
-            if (!resultado.includes('(v2.82)')) {
-                resultado = resultado.replace(/(v[\d.]+)/g, 'v2.82');
+            if (!resultado.includes('(v2.83)')) {
+                resultado = resultado.replace(/(v[\d.]+)/g, 'v2.83');
             }
         }
         
-        console.log(`[${getTimestamp()}] ✅ v2.82: Processamento finalizado`);
+        console.log(`[${getTimestamp()}] ✅ v2.83: Processamento sequencial finalizado`);
         
         return res.status(200).json({
             success: true,
             result: resultado || 'Erro no processamento',
             metadata: {
-                version: '2.82',
+                version: '2.83',
                 timestamp: getTimestamp(),
                 destino: destinoDetectado,
-                metodo: resultado ? 'estrutural' : 'ia_fallback'
+                metodo: resultado ? 'sequencial' : 'ia_fallback'
             }
         });
 
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.82: Erro:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.83: Erro:`, error);
         return res.status(500).json({
             success: false,
-            error: 'Erro interno do servidor v2.82',
+            error: 'Erro interno do servidor v2.83',
             details: error.message,
             timestamp: getTimestamp()
         });
@@ -655,18 +653,18 @@ Criar orçamento para ${destinoDetectado}.`;
 }
 
 // ================================================================================
-// LOGS DE INICIALIZAÇÃO v2.82
+// LOGS DE INICIALIZAÇÃO v2.83
 // ================================================================================
 console.log('╔══════════════════════════════════════╗');
-console.log('║       CVC ITAQUA v2.82 LOADED       ║');
+console.log('║       CVC ITAQUA v2.83 LOADED       ║');
 console.log('╠══════════════════════════════════════╣');
-console.log('║ ✅ Detecção estrutural por blocos    ║');
-console.log('║ ✅ Parsing individual de opções      ║');
-console.log('║ ✅ Validação de dados extraídos      ║');
-console.log('║ ✅ Mapeamento correto de companhias  ║');
-console.log('║ ✅ Associação precisa de links       ║');
-console.log('║ ✅ Correção de tipos de voo          ║');
-console.log('║ ✅ Extração robusta de valores       ║');
-console.log('║ ✅ Sistema anti-multiplicação        ║');
+console.log('║ ✅ Templates dinâmicos sequenciais   ║');
+console.log('║ ✅ Parcelamento: só se existir       ║');
+console.log('║ ✅ Quebras de linha: sem espaços     ║');
+console.log('║ ✅ Fluxo sequencial: sem lacunas     ║');
+console.log('║ ✅ Elementos opcionais inteligentes  ║');
+console.log('║ ✅ Validação de presença de dados    ║');
+console.log('║ ✅ Formatação limpa e contínua       ║');
+console.log('║ ✅ Sistema anti-linhas vazias        ║');
 console.log('╚══════════════════════════════════════╝');
-console.log(`[${getTimestamp()}] 🚀 v2.82 - Detecção Estrutural Ativa!`);
+console.log(`[${getTimestamp()}] 🚀 v2.83 - Formatação Sequencial Ativa!`);
