@@ -1,5 +1,5 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.4 - PÓS-PROCESSAMENTO IMPLEMENTADO
+// 🚀 CVC ITAQUA v2.5 - PÓS-PROCESSAMENTO FINAL
 // ================================================================================
 //
 // 📁 ÍNDICE DO ARQUIVO:
@@ -11,7 +11,7 @@
 //   SEÇÃO 6: HANDLER PRINCIPAL (com lógica de Pós-processamento)
 //
 // ================================================================================
-// VERSÃO: 2.4
+// VERSÃO: 2.5
 // DATA: 18/12/2024
 // MUDANÇAS:
 // - IMPLEMENTADO PÓS-PROCESSAMENTO: Funções de regras (parcelamento, bagagem, etc.)
@@ -69,6 +69,7 @@ const DESTINOS_CONHECIDOS = {
     'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção',
     'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
 };
+
 
 // ================================================================================
 // SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
@@ -419,10 +420,11 @@ function formatarParcelamento(textoBruto, parcelamentoSelecionado, valorTotalStr
         
         // CASO 2: Parcelamento selecionado no HTML (10x, 12x ou 15x)
         if (parcelamentoSelecionado && valorTotalString) {
-            const valor = parseFloat(valorTotalString.replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(valor)) {
+            // Remove pontos de milhar e substitui vírgula por ponto para conversão
+            const valorNumerico = parseFloat(valorTotalString.replace(/\./g, '').replace(',', '.'));
+            if (!isNaN(valorNumerico)) {
                 const numParcelasInt = parseInt(parcelamentoSelecionado);
-                const valorParcela = (valor / numParcelasInt).toFixed(2).replace('.', ',');
+                const valorParcela = (valorNumerico / numParcelasInt).toFixed(2).replace('.', ',');
                 return `💳 ${numParcelasInt}x de R$ ${valorParcela} s/ juros no cartão`;
             }
         }
@@ -538,7 +540,8 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         const companhiasUnicas = [...new Set(conteudoPrincipal.match(/(iberia|tap portugal|latam|gol|azul|avianca)/gi)?.map(c => c.toLowerCase()) || [])];
         if (companhiasUnicas.length >= 2) return 'multiplas_companhias';
         
-        if (detectarVooComConexao(conteudoPrincipal)) return 'aereo_conexao';
+        const ehConexao = detectarVooComConexao(conteudoPrincipal);
+        if (ehConexao) return 'aereo_conexao';
         
         const opcoesMarcadas = conteudoPrincipal.match(/OPÇÃO \d/gi) || [];
         if (opcoesMarcadas.length >= 3) return 'multiplas_opcoes_3_planos';
@@ -550,6 +553,20 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         return 'aereo_simples';
     }
 }
+
+// 4.3 - Detecção de Voo com Conexão
+function detectarVooComConexao(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        const indicadores = ['voo com paradas', 'conexão', 'espera de', 'parada em', 'escala', 'uma escala', 'layover'];
+        const temIndicadores = indicadores.some(ind => texto.includes(ind));
+        const temMultiplosTrechos = (conteudo.match(/\d{2}:\d{2}\s+[A-Z]{3}/g) || []).length > 2;
+        return temIndicadores || temMultiplosTrechos;
+    } catch (error) {
+        console.error('❌ Erro ao detectar conexão:', error);
+        return false;
+    }
+}
 // ================================================================================
 // SEÇÃO 5: GERAÇÃO DE PROMPTS
 // ================================================================================
@@ -558,7 +575,7 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
     try {
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino não identificado';
         
-        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v2.4:**
+        const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v2.5:**
 - Sua tarefa é extrair os dados brutos e preencher o template correspondente.
 - Para os campos {parcelamento}, {bagagem} e {assento}, NÃO TENTE FORMATAR. Apenas insira o placeholder exatamente como está no template. O sistema fará a substituição final.
 - Converta todos os códigos de aeroporto para nomes completos usando a tabela fornecida.
@@ -569,7 +586,6 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
 
         const tabelaAeroportos = `**TABELA DE AEROPORTOS:**\n${JSON.stringify(AEROPORTOS, null, 2)}`;
         
-        // Pega o template correspondente ao tipo detectado
         const templateSelecionado = TEMPLATES[tipoOrcamento] || TEMPLATES.aereo_simples;
 
         return `Converta os dados brutos no orçamento formatado.
@@ -584,7 +600,7 @@ ${regrasGerais}
 ${tabelaAeroportos}`;
 
     } catch (error) {
-        console.error('❌ v2.4: Erro ao gerar prompt:', error);
+        console.error('❌ v2.5: Erro ao gerar prompt:', error);
         return `Erro: ${error.message}`;
     }
 }
@@ -602,8 +618,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         return res.status(200).json({
-            success: true, status: 'operational', version: '2.4-PÓS-PROCESSAMENTO',
-            message: 'CVC Itaqua API v2.4 - Sistema completo com pós-processamento de regras.',
+            success: true, status: 'operational', version: '2.5-PÓS-PROCESSAMENTO',
+            message: 'CVC Itaqua API v2.5 - Sistema completo com pós-processamento de regras.',
             templates_disponiveis: Object.keys(TEMPLATES)
         });
     }
@@ -620,7 +636,7 @@ export default async function handler(req, res) {
 
         const tipoOrcamento = detectOrcamentoType(conteudoPrincipal, tipos);
         const prompt = generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento);
-        console.log(`✅ v2.4: Tipo detectado: ${tipoOrcamento}`);
+        console.log(`✅ v2.5: Tipo detectado: ${tipoOrcamento}`);
 
         let resultado, iaUsada;
         const systemPrompt = `Você é um assistente da CVC Itaqua. Analise os dados e preencha o template fornecido. Onde houver placeholders como {parcelamento}, {bagagem} ou {assento}, mantenha-os. Retorne apenas o texto formatado.`;
@@ -644,31 +660,33 @@ export default async function handler(req, res) {
 
         let resultadoBruto = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
 
-        // === PÓS-PROCESSAMENTO v2.4 ===
-        console.log('🔄 v2.4: Aplicando pós-processamento de regras...');
+        // === PÓS-PROCESSAMENTO v2.5 ===
+        console.log('🔄 v2.5: Aplicando pós-processamento de regras...');
         const valorTotalMatch = resultadoBruto.match(/R\$\s*([\d.,]+)/);
         const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
 
-        const dadosFormatacao = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
+        const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
 
         let resultadoFinal = resultadoBruto
-            .replace(/{passageiros}/g, formatarPassageiros(dadosFormatacao))
+            .replace(/{passageiros}/g, formatarPassageiros(dadosPassageiros))
             .replace(/{parcelamento}/g, formatarParcelamento(conteudoPrincipal, parcelamento, valorTotalString))
             .replace(/{bagagem}/g, formatarBagagem(conteudoPrincipal))
             .replace(/{assento}/g, formatarAssento(conteudoPrincipal));
         
-        // Limpeza final para remover linhas que ficaram vazias (como assento)
+        // Limpeza final para remover linhas que ficaram vazias (como assento ou parcelamento)
         resultadoFinal = resultadoFinal.split('\n').filter(line => line.trim() !== '').join('\n');
+        // Adiciona a linha em branco entre as opções
+        resultadoFinal = resultadoFinal.replace(/\*OPÇÃO/g, '\n*OPÇÃO');
 
         return res.status(200).json({
             success: true, result: resultadoFinal, ia_usada: iaUsada,
-            metadata: { version: '2.4-PÓS-PROCESSAMENTO', tipo: tipoOrcamento }
+            metadata: { version: '2.5-PÓS-PROCESSAMENTO', tipo: tipoOrcamento }
         });
 
     } catch (error) {
-        console.error('❌ v2.4: Erro no handler:', error);
-        return res.status(500).json({ success: false, error: 'Erro interno do servidor', details: error.message, version: '2.4-PÓS-PROCESSAMENTO' });
+        console.error('❌ v2.5: Erro no handler:', error);
+        return res.status(500).json({ success: false, error: 'Erro interno do servidor', details: error.message, version: '2.5-PÓS-PROCESSAMENTO' });
     }
 }
 
-console.log('✅ CVC Itaqua v2.4-PÓS-PROCESSAMENTO carregado com sucesso!');
+console.log('✅ CVC Itaqua v2.5-PÓS-PROCESSAMENTO carregado com sucesso!');
