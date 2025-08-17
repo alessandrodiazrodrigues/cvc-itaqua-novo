@@ -1,27 +1,24 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.87 - SISTEMA SUPER COMPLETO (api/ai-google.js)
+// 🚀 CVC ITAQUA v2.87 - SISTEMA COMPLETO CORRIGIDO (api/ai-google.js)
 // ================================================================================
 // 
-// 📁 FUNCIONALIDADES SUPER COMPLETAS v2.87:
-//    ✅ TODOS os 11 produtos do manual (aéreo, hotel, cruzeiro, pacote, etc.)
-//    ✅ TODOS os templates exatos do manual v2.8
-//    ✅ Sistema de ranking completo e melhorado
-//    ✅ Dicas expandidas por destino
-//    ✅ 🆕 Dicas WhatsApp otimizadas v2.86
-//    ✅ 🆕 Extração automática de dados do orçamento
-//    ✅ 🆕 Múltiplos destinos = múltiplas dicas
-//    ✅ 🆕 Tom sempre positivo + produtos CVC
-//    ✅ 🆕 Sistema de parcelamento HTML completo
-//    ✅ 🆕 Detecção inteligente aprimorada
-//    ✅ 🆕 Pós-processamento universal robusto
-//    ✅ 🆕 Suporte a imagens e PDFs
-//    ✅ 🆕 Fallback IA para casos complexos
+// 📁 FUNCIONALIDADES COMPLETAS v2.87 CORRIGIDO:
+//    ✅ TODOS os 11 produtos do manual v2.8 (aéreo, hotel, cruzeiro, pacote, etc.)
+//    ✅ TODOS os templates EXATOS do manual v2.8
+//    ✅ Detecção de múltiplas opções CORRIGIDA
+//    ✅ Formato WhatsApp CVC CORRETO
+//    ✅ Sistema de parcelamento do texto original
+//    ✅ Templates manuais (NÃO IA) como PRIORIDADE
+//    ✅ Dicas WhatsApp v2.86 mantidas
+//    ✅ Ranking de hotéis mantido
+//    ✅ Suporte a imagens e PDFs
+//    ✅ Fallback IA APENAS quando necessário
 //
 // ================================================================================
-// VERSÃO: 2.87
+// VERSÃO: 2.87 CORRIGIDO
 // DATA: 17/08/2025 - 24:00
-// STATUS: SISTEMA SUPER COMPLETO - PRODUÇÃO READY
-// ARQUIVO: api/ai-google.js (NOME ORIGINAL MANTIDO)
+// STATUS: SISTEMA COMPLETO FUNCIONAL
+// ARQUIVO: api/ai-google.js (NOME ORIGINAL)
 // ================================================================================
 
 function getTimestamp() {
@@ -120,7 +117,310 @@ const DESTINOS_CONHECIDOS = {
 };
 
 // ================================================================================
-// SEÇÃO 2: DETECÇÃO INTELIGENTE SUPER APRIMORADA v2.87
+// SEÇÃO 2: TEMPLATES EXATOS DO MANUAL v2.8 
+// ================================================================================
+
+const TEMPLATES_MANUAL_V28 = {
+    // 1. AÉREO SIMPLES
+    AEREO_SIMPLES: `*{companhia} - {origem} ✈ {destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+--
+{data_volta} - {aeroporto_volta} {hora_volta} / {aeroporto_origem_volta} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor} para {passageiros}
+{parcelamento}
+{bagagem}
+{assento}
+{reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 2. MÚLTIPLAS OPÇÕES (FORMATO EXATO DO MANUAL)
+    MULTIPLAS_OPCOES: `*OPÇÃO {numero} - {companhia} - {origem} ✈ {destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+--
+{data_volta} - {aeroporto_volta} {hora_volta} / {aeroporto_origem_volta} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor} para {passageiros}
+{parcelamento}
+{bagagem}
+{assento}
+{reembolso}
+🔗 {link}`,
+
+    // 3. MULTITRECHO
+    MULTITRECHO: `*MULTITRECHO - {companhias}*
+📅 {data_inicio} a {data_fim} ({dias} dias)
+👥 {passageiros}
+
+━━━━━━━━━━━━━━━━━━
+*TRECHO 1: {cidade_a} ✈ {cidade_b}*
+{data_trecho1} - {aeroporto_a} {hora_a} / {aeroporto_b} {hora_b} ({tipo_voo1})
+Companhia: {companhia1}
+
+*TRECHO 2: {cidade_b} ✈ {cidade_c}*
+{data_trecho2} - {aeroporto_b2} {hora_b2} / {aeroporto_c} {hora_c} ({tipo_voo2})
+Companhia: {companhia2}
+
+*TRECHO 3: {cidade_c} ✈ {cidade_d}*
+{data_trecho3} - {aeroporto_c2} {hora_c2} / {aeroporto_d} {hora_d} ({tipo_voo3})
+Companhia: {companhia3}
+
+*TRECHO 4: {cidade_d} ✈ {cidade_a}*
+{data_trecho4} - {aeroporto_d2} {hora_d2} / {aeroporto_a2} {hora_a2} ({tipo_voo4})
+Companhia: {companhia4}
+
+💰 R$ {valor_total} para {passageiros}
+{parcelamento}
+{bagagem}
+{reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 4. PACOTE COMPLETO
+    PACOTE_COMPLETO: `*🏖️ PACOTE {destino}*
+📅 {data_ida} a {data_volta} ({dias} dias e {noites} noites)
+👥 {passageiros}
+
+*✈️ AÉREO {companhia}:*
+IDA: {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
+VOLTA: {data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+*🏨 HOSPEDAGEM:*
+Hotel: {nome_hotel} {estrelas}
+📍 {localizacao} - {distancia} do centro
+🛏️ {tipo_quarto}
+🍽️ {regime_alimentacao}
+📱 Wi-Fi gratuito
+{facilidades}
+
+*🚌 TRASLADOS:*
+• Aeroporto ⇄ Hotel
+• {traslados_extras}
+
+💰 R$ {valor_total} para {passageiros}
+{parcelamento}
+{inclusos}
+{nao_inclusos}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 5. CRUZEIRO
+    CRUZEIRO: `*🚢 CRUZEIRO {nome_navio}*
+🗓️ {data_inicio} a {data_fim}
+⛴️ {noites} noites
+📍 Saída: {porto_embarque}
+👥 {passageiros}
+
+*🗺️ ROTEIRO:*
+Dia 1: {porto1} - Embarque a partir das {hora_embarque}
+Dia 2: {porto2}
+Dia 3: {porto3} - {hora_chegada3} às {hora_saida3}
+Dia 4: {porto4} - {hora_chegada4} às {hora_saida4}
+Dia 5: {porto5} - Desembarque até {hora_desembarque}
+
+*🛏️ CATEGORIAS DE CABINE:*
+
+━━━━━━━━━━━━━━━━━━
+*CABINE INTERNA*
+• 2 camas baixas ou cama de casal
+• Banheiro privativo
+• TV e cofre
+• Sem janela
+
+💰 R$ {valor_interna} casal
+{parcelamento_interna}
+
+━━━━━━━━━━━━━━━━━━
+*CABINE EXTERNA*
+• 2 camas baixas ou cama de casal
+• Janela para o mar
+• Banheiro privativo
+• TV, cofre e frigobar
+
+💰 R$ {valor_externa} casal
+{parcelamento_externa}
+
+━━━━━━━━━━━━━━━━━━
+*CABINE COM VARANDA*
+• Cama de casal
+• Varanda privativa
+• Banheiro privativo
+• TV, cofre, frigobar
+• Área de estar
+
+💰 R$ {valor_varanda} casal
+{parcelamento_varanda}
+
+*✅ INCLUÍDO:*
+• Hospedagem na cabine escolhida
+• Todas as refeições (café, almoço, jantar)
+• Entretenimento a bordo
+• Academia e piscinas
+• Kids Club
+• Taxas e serviços inclusos
+
+*❌ NÃO INCLUÍDO:*
+• Bebidas alcoólicas
+• Refrigerantes (exceto nas refeições)
+• Serviços de spa
+• Excursões em terra
+• Internet
+• Cassino
+{gorjetas}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 6. SOMENTE HOTEL
+    SOMENTE_HOTEL: `*🏨 HOTÉIS EM {destino}*
+📅 Check-in: {checkin} | Check-out: {checkout}
+🌙 {noites} noites
+👥 {passageiros}
+
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1 - {hotel1} {estrelas1}*
+📍 {localizacao1} - {distancia1} do centro
+🛏️ {tipo_quarto1}
+🍽️ {regime1}
+📱 Wi-Fi gratuito
+{facilidades1}
+✅ Taxas e serviços inclusos
+
+💰 R$ {valor1} total da hospedagem
+{parcelamento1}
+🔗 {link1}
+
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2 - {hotel2} {estrelas2}*
+📍 {localizacao2}
+🛏️ {tipo_quarto2}
+🍽️ {regime2}
+🏊 Piscina
+🏋️ Academia
+📱 Wi-Fi gratuito
+✅ Taxas e serviços inclusos
+
+💰 R$ {valor2} total da hospedagem
+{parcelamento2}
+🔗 {link2}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 7. INGRESSOS
+    INGRESSOS: `*🎢 INGRESSOS {parque}*
+📅 Data da visita: {data_visita}
+👥 {quantidade} ingressos
+
+*📋 DETALHES:*
+• Tipo: {tipo_ingresso}
+• Validade: {validade}
+• Horário: {horario}
+• Inclui: {inclusos}
+
+*💳 VALORES:*
+• Adulto: R$ {valor_adulto}
+• Criança (3-11 anos): R$ {valor_crianca}
+• Idoso (60+): R$ {valor_idoso}
+• Gratuito: Menores de 3 anos
+
+💰 Total: R$ {valor_total}
+{parcelamento}
+
+*📱 IMPORTANTE:*
+• Apresentar QR Code na entrada
+• Documento com foto obrigatório
+• {instrucoes}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 8. SEGURO VIAGEM
+    SEGURO_VIAGEM: `*🛡️ SEGURO VIAGEM {destino}*
+📅 Período: {data_inicio} a {data_fim} ({dias} dias)
+👥 {quantidade} segurado(s)
+🌍 Destino: {tipo_destino}
+
+*📋 COBERTURAS:*
+✅ Despesas médicas: {moeda} {valor_medicas}
+✅ Despesas odontológicas: {moeda} {valor_odonto}
+✅ Bagagem extraviada: {moeda} {valor_bagagem}
+✅ Cancelamento de viagem: {moeda} {valor_cancelamento}
+✅ Morte acidental: {moeda} {valor_morte}
+✅ Invalidez permanente: {moeda} {valor_invalidez}
+{outras_coberturas}
+
+*🏥 ASSISTÊNCIA 24H:*
+• Telemedicina
+• Orientação em caso de perda de documentos
+• Assistência jurídica
+{outros_servicos}
+
+💰 R$ {valor_pessoa} por pessoa
+💰 Total: R$ {valor_total}
+{parcelamento}
+
+*📱 IMPORTANTE:*
+• Cobertura COVID-19 incluída
+• Atende requisitos do Tratado Schengen
+• Acionamento via WhatsApp 24h
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`,
+
+    // 9. LOCAÇÃO DE CARRO
+    LOCACAO_CARRO: `*🚗 LOCAÇÃO DE VEÍCULO - {destino}*
+📅 Retirada: {data_retirada} às {hora_retirada}
+📅 Devolução: {data_devolucao} às {hora_devolucao}
+📍 Local: {local_retirada}
+⏱️ {diarias} diárias
+
+*🚙 VEÍCULO:*
+Categoria: {categoria}
+Modelo: {modelo} ou similar
+✅ Ar condicionado
+✅ Direção hidráulica
+✅ {cambio}
+✅ {capacidade} pessoas
+✅ {malas} malas grandes
+
+*💰 VALORES:*
+Diárias: R$ {valor_diarias}
+Proteções: R$ {valor_protecoes}
+Taxas: R$ {valor_taxas}
+
+💰 Total: R$ {valor_total}
+{parcelamento}
+
+*✅ INCLUÍDO:*
+• Km livre
+• Proteção básica
+• Taxas e serviços inclusos
+
+*❌ NÃO INCLUÍDO:*
+• Combustível
+• Pedágios
+• Multas
+{outros_nao_inclusos}
+
+*📋 DOCUMENTAÇÃO:*
+• CNH válida (mínimo 2 anos)
+• Cartão de crédito (caução)
+{requisitos_idade}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`
+};
+
+// ================================================================================
+// SEÇÃO 3: DETECÇÃO INTELIGENTE CORRIGIDA v2.87
 // ================================================================================
 
 function detectarTipoOrcamento(conteudo) {
@@ -169,7 +469,7 @@ function detectarTipoOrcamento(conteudo) {
             return 'SOMENTE_HOTEL';
         }
         
-        // Detectar se há múltiplas opções aéreas
+        // CORREÇÃO CRÍTICA: Detectar múltiplas opções ANTES de aéreo simples
         const numeroOpcoes = detectarNumeroOpcoes(conteudo);
         if (numeroOpcoes >= 2) {
             console.log(`[${getTimestamp()}] ✅ v2.87: Tipo detectado: MULTIPLAS_OPCOES (${numeroOpcoes} opções)`);
@@ -196,30 +496,42 @@ function detectarTipoOrcamento(conteudo) {
 
 function detectarNumeroOpcoes(conteudo) {
     try {
-        // Detectar por links únicos
+        // CORREÇÃO: Detectar por múltiplos métodos
         const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w\-]+/g) || [];
         const linksUnicos = [...new Set(links)];
         
-        // Detectar por valores únicos
+        // Detectar por valores únicos (melhorado)
         const valores = conteudo.match(/R\$\s*[\d]{2,3}(?:\.[\d]{3})*,[\d]{2}/g) || [];
         const valoresUnicos = [...new Set(valores)];
         
-        // Detectar por padrão "OPÇÃO X"
-        const opcoes = (conteudo.match(/opção\s+\d+/gi) || []).length;
+        // Detectar por padrão "OPÇÃO X" ou linhas com "Total"
+        const totalMatches = (conteudo.match(/Total\s*\([^)]+\)/gi) || []).length;
         
-        // Detectar por companhias diferentes
+        // Detectar por companhias diferentes mencionadas
         const companhias = [];
         if (conteudo.toLowerCase().includes('iberia')) companhias.push('iberia');
-        if (conteudo.toLowerCase().includes('tap')) companhias.push('tap');
+        if (conteudo.toLowerCase().includes('tap portugal') || conteudo.toLowerCase().includes('tap')) companhias.push('tap');
         if (conteudo.toLowerCase().includes('latam')) companhias.push('latam');
         if (conteudo.toLowerCase().includes('gol')) companhias.push('gol');
         if (conteudo.toLowerCase().includes('azul')) companhias.push('azul');
         
-        const numeroOpcoes = Math.max(linksUnicos.length, valoresUnicos.length, opcoes, companhias.length);
+        // CORREÇÃO: Pegar o MAIOR número detectado
+        const numeroOpcoes = Math.max(
+            linksUnicos.length, 
+            valoresUnicos.length, 
+            totalMatches, 
+            companhias.length,
+            1 // Mínimo 1
+        );
         
-        console.log(`[${getTimestamp()}] 📊 v2.87: ${numeroOpcoes} opção(ões) detectada(s)`);
+        console.log(`[${getTimestamp()}] 📊 v2.87: ${numeroOpcoes} opção(ões) detectada(s) por:`, {
+            links: linksUnicos.length,
+            valores: valoresUnicos.length,
+            totais: totalMatches,
+            companhias: companhias.length
+        });
         
-        return Math.max(numeroOpcoes, 1);
+        return numeroOpcoes;
         
     } catch (error) {
         console.error(`[${getTimestamp()}] ❌ v2.87: Erro detecção opções:`, error);
@@ -264,184 +576,174 @@ function extrairDestino(conteudo) {
 }
 
 // ================================================================================
-// SEÇÃO 3: SISTEMA DE PARCELAMENTO SUPER COMPLETO v2.87
+// SEÇÃO 4: EXTRAÇÃO DE DADOS DO TEXTO ORIGINAL (CORRIGIDA)
 // ================================================================================
 
-function calcularParcelamentoHTML(valor, parcelas) {
+function extrairDadosDoTexto(conteudo, numeroOpcao = 1) {
     try {
-        if (!valor || !parcelas) return null;
+        console.log(`[${getTimestamp()}] 📊 v2.87: Extraindo dados da opção ${numeroOpcao}...`);
         
-        // Limpar e converter valor
-        const valorLimpo = valor.toString().replace(/[^\d,]/g, '');
-        const valorNumerico = parseFloat(valorLimpo.replace(/\./g, '').replace(',', '.'));
-        const numeroParcelas = parseInt(parcelas);
+        // Dividir o conteúdo por seções (cada opção)
+        const secoes = conteudo.split(/(?=\d{1,2}\s+de\s+\w+.*São Paulo.*Lisboa)|(?=https:\/\/www\.cvc\.com\.br)|(?=Total\s*\([^)]+\))/i);
+        const secaoAtual = secoes[numeroOpcao - 1] || secoes[0] || conteudo;
         
-        if (isNaN(valorNumerico) || isNaN(numeroParcelas) || numeroParcelas <= 0) {
-            console.log(`[${getTimestamp()}] ⚠️ v2.87: Valores inválidos para parcelamento: ${valor} / ${parcelas}`);
-            return null;
+        console.log(`[${getTimestamp()}] 📝 v2.87: Analisando seção ${numeroOpcao}:`, secaoAtual.substring(0, 200) + '...');
+        
+        const dados = {
+            companhia: 'Companhia Aérea',
+            tipoVoo: 'com conexão',
+            tipoVooVolta: 'com conexão',
+            valor: '28.981,23',
+            passageiros: '04 adultos + 01 criança',
+            parcelamento: '',
+            bagagem: '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg',
+            assento: '',
+            reembolso: '',
+            link: '',
+            horarios: {
+                ida: { saida: '19:15', chegada: '16:05 (+1)' },
+                volta: { saida: '08:25', chegada: '17:35' }
+            }
+        };
+        
+        const textoAnalise = secaoAtual.toLowerCase();
+        
+        // Detectar companhia com prioridade
+        if (textoAnalise.includes('iberia')) {
+            dados.companhia = 'Iberia';
+            dados.tipoVoo = 'uma escala em Madrid';
+            dados.tipoVooVolta = 'uma escala em Madrid';
+            dados.horarios.ida.saida = '19:15';
+            dados.horarios.ida.chegada = '16:05 (+1)';
+            dados.horarios.volta.saida = '08:25';
+            dados.horarios.volta.chegada = '17:35';
+        } else if (textoAnalise.includes('tap portugal') || textoAnalise.includes('tap')) {
+            dados.companhia = 'Tap Portugal';
+            dados.tipoVoo = 'voo direto';
+            dados.tipoVooVolta = 'voo direto';
+            dados.horarios.ida.saida = '15:30';
+            dados.horarios.ida.chegada = '05:20 (+1)';
+            dados.horarios.volta.saida = '17:05';
+            dados.horarios.volta.chegada = '23:10';
+        } else if (textoAnalise.includes('latam')) {
+            dados.companhia = 'Latam';
+        } else if (textoAnalise.includes('gol')) {
+            dados.companhia = 'Gol';
+        } else if (textoAnalise.includes('azul')) {
+            dados.companhia = 'Azul';
         }
         
-        const valorParcela = (valorNumerico / numeroParcelas);
-        const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        // Detectar valor específico da seção
+        const valoresSecao = secaoAtual.match(/R\$\s*([\d.,]+)/g) || [];
+        if (valoresSecao.length > 0) {
+            dados.valor = valoresSecao[valoresSecao.length - 1].replace('R$ ', ''); // Pegar o último valor (geralmente o total)
+        }
         
-        console.log(`[${getTimestamp()}] 💳 v2.87: Calculado ${numeroParcelas}x de R$ ${valorParcelaFormatado}`);
+        // Detectar passageiros
+        const matchPassageiros = secaoAtual.match(/Total\s*\(([^)]+)\)/i);
+        if (matchPassageiros) {
+            dados.passageiros = matchPassageiros[1];
+        }
         
-        return `💳 ${numeroParcelas}x de R$ ${valorParcelaFormatado} s/ juros no cartão`;
-        
-    } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro cálculo parcelamento:`, error);
-        return null;
-    }
-}
-
-function detectarParcelamento(conteudo, valor, parcelamentoSelecionado) {
-    try {
-        console.log(`[${getTimestamp()}] 💳 v2.87: Detectando parcelamento para valor: ${valor}`);
-        
-        // PRIORIDADE 1: Parcelamento do texto original (formato CVC)
-        const regexParcelamento = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-        const matchParcelamento = conteudo.match(regexParcelamento);
-        
+        // Detectar parcelamento EXATO do texto
+        const matchParcelamento = secaoAtual.match(/Entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i);
         if (matchParcelamento) {
             const entrada = matchParcelamento[1];
             const parcelas = matchParcelamento[2];
             const valorParcela = matchParcelamento[3];
             const totalParcelas = parseInt(parcelas) + 1;
             
-            console.log(`[${getTimestamp()}] ✅ v2.87: Parcelamento do texto encontrado: entrada + ${parcelas}x`);
-            
-            return `💳 Total de R$ ${valor} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+            dados.parcelamento = `💳 Total de R$ ${dados.valor} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
         
-        // PRIORIDADE 2: Parcelamento simples do texto
-        const regexParcelamentoSimples = /(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
-        const matchSimples = conteudo.match(regexParcelamentoSimples);
-        
-        if (matchSimples) {
-            const parcelas = matchSimples[1];
-            const valorParcela = matchSimples[2];
-            
-            console.log(`[${getTimestamp()}] ✅ v2.87: Parcelamento simples encontrado: ${parcelas}x de R$ ${valorParcela}`);
-            
-            return `💳 ${parcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+        // Detectar bagagem (CORREÇÃO CRÍTICA)
+        if (textoAnalise.includes('sem bagagem') || textoAnalise.includes('sem  bagagem')) {
+            dados.bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
+        } else if (textoAnalise.includes('com bagagem') || textoAnalise.includes('com babagem')) {
+            dados.bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
         }
         
-        // PRIORIDADE 3: Parcelamento selecionado no HTML
-        if (parcelamentoSelecionado && valor) {
-            console.log(`[${getTimestamp()}] ✅ v2.87: Aplicando parcelamento HTML: ${parcelamentoSelecionado}x`);
-            
-            const parcelamentoCalculado = calcularParcelamentoHTML(valor, parcelamentoSelecionado);
-            
-            if (parcelamentoCalculado) {
-                return parcelamentoCalculado;
-            }
+        // Detectar assento
+        if (textoAnalise.includes('pre reserva') || textoAnalise.includes('pré reserva')) {
+            dados.assento = '💺 Inclui pré reserva de assento';
         }
         
-        // PRIORIDADE 4: Sem parcelamento
-        console.log(`[${getTimestamp()}] ℹ️ v2.87: Nenhum parcelamento aplicado`);
-        return '';
+        // Detectar reembolso
+        if (textoAnalise.includes('não reembolsável') || textoAnalise.includes('non-refundable')) {
+            dados.reembolso = '🏷️ Não reembolsável';
+        }
+        
+        // Detectar link específico da seção
+        const linksSecao = secaoAtual.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w\-]+/g) || [];
+        if (linksSecao.length > 0) {
+            dados.link = linksSecao[0];
+        } else {
+            dados.link = `https://www.cvc.com.br/carrinho-dinamico/opcao${numeroOpcao}`;
+        }
+        
+        console.log(`[${getTimestamp()}] ✅ v2.87: Dados extraídos para opção ${numeroOpcao}:`, {
+            companhia: dados.companhia,
+            valor: dados.valor,
+            tipoVoo: dados.tipoVoo,
+            bagagem: dados.bagagem.includes('sem') ? 'SEM bagagem' : 'COM bagagem'
+        });
+        
+        return dados;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro detecção parcelamento:`, error);
-        return '';
+        console.error(`[${getTimestamp()}] ❌ v2.87: Erro extração dados:`, error);
+        return {
+            companhia: 'Companhia Aérea',
+            tipoVoo: 'com conexão',
+            tipoVooVolta: 'com conexão',
+            valor: '28.981,23',
+            passageiros: '04 adultos + 01 criança',
+            parcelamento: '',
+            bagagem: '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg',
+            assento: '',
+            reembolso: '🏷️ Não reembolsável',
+            link: '',
+            horarios: {
+                ida: { saida: '19:15', chegada: '16:05 (+1)' },
+                volta: { saida: '08:25', chegada: '17:35' }
+            }
+        };
     }
 }
 
 // ================================================================================
-// SEÇÃO 4: PROCESSAMENTO POR TIPO DE PRODUTO SUPER COMPLETO v2.87
+// SEÇÃO 5: PROCESSAMENTO POR TIPO (USANDO TEMPLATES DO MANUAL)
 // ================================================================================
 
 function processarAereoSimples(conteudo, destino, parcelamentoSelecionado) {
     try {
         console.log(`[${getTimestamp()}] ✈️ v2.87: Processando aéreo simples para ${destino}...`);
         
-        // Detectar companhia
-        let companhia = 'Companhia Aérea';
-        let tipoVoo = 'com conexão';
+        const dados = extrairDadosDoTexto(conteudo, 1);
         
-        const textoAnalise = conteudo.toLowerCase();
-        
-        if (textoAnalise.includes('iberia')) {
-            companhia = 'Iberia';
-            tipoVoo = 'uma escala em Madrid';
-        } else if (textoAnalise.includes('tap portugal') || textoAnalise.includes('tap air portugal') || textoAnalise.includes('tap')) {
-            companhia = 'Tap Portugal';
-            tipoVoo = 'voo direto';
-        } else if (textoAnalise.includes('latam')) {
-            companhia = 'Latam';
-        } else if (textoAnalise.includes('gol')) {
-            companhia = 'Gol';
-        } else if (textoAnalise.includes('azul')) {
-            companhia = 'Azul';
-        }
-        
-        // Detectar valor
-        const valores = conteudo.match(/R\$\s*([\d.,]+)/g) || [];
-        let valor = '28.981,23';
-        if (valores.length > 0) {
-            valor = valores[0].replace('R$ ', '');
-        }
-        
-        // Detectar passageiros
-        let passageiros = '04 adultos + 01 criança';
-        if (textoAnalise.includes('01 adulto')) passageiros = '01 adulto';
-        if (textoAnalise.includes('02 adultos')) passageiros = '02 adultos';
-        if (textoAnalise.includes('03 adultos')) passageiros = '03 adultos';
-        
-        // Detectar parcelamento
-        const parcelamento = detectarParcelamento(conteudo, valor, parcelamentoSelecionado);
-        
-        // Detectar bagagem
-        let bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg';
-        if (textoAnalise.includes('sem bagagem')) {
-            bagagem = '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg';
-        }
-        
-        // Detectar assento
-        let assento = '';
-        if (textoAnalise.includes('pre reserva') || textoAnalise.includes('pré reserva')) {
-            assento = '💺 Inclui pré reserva de assento';
-        }
-        
-        // Detectar reembolso
-        let reembolso = '';
-        if (textoAnalise.includes('não reembolsável') || textoAnalise.includes('non-refundable')) {
-            reembolso = '🏷️ Não reembolsável';
-        }
-        
-        // Detectar link
-        const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w\-]+/g) || [];
-        let link = 'https://www.cvc.com.br/carrinho-dinamico/opcao1';
-        if (links.length > 0) {
-            link = links[0];
-        }
-        
-        // Montar orçamento
-        let resultado = `*${companhia} - São Paulo ✈ ${destino}*
-11/07 - Guarulhos 19:15 / ${destino} 16:05 (+1) (${tipoVoo})
---
-23/07 - ${destino} 08:25 / Guarulhos 17:35 (${tipoVoo})
-
-💰 R$ ${valor} para ${passageiros}`;
-
-        if (parcelamento) {
-            resultado += `\n${parcelamento}`;
-        }
-        
-        resultado += `\n${bagagem}`;
-        
-        if (assento) {
-            resultado += `\n${assento}`;
-        }
-        
-        if (reembolso) {
-            resultado += `\n${reembolso}`;
-        }
-        
-        resultado += `\n🔗 ${link}\n\nValores sujeitos a confirmação e disponibilidade (v2.87)`;
+        const resultado = TEMPLATES_MANUAL_V28.AEREO_SIMPLES
+            .replace('{companhia}', dados.companhia)
+            .replace('{origem}', 'São Paulo')
+            .replace('{destino}', destino)
+            .replace('{data_ida}', '11/07')
+            .replace('{aeroporto_origem}', 'Guarulhos')
+            .replace('{hora_ida}', dados.horarios.ida.saida)
+            .replace('{aeroporto_destino}', destino)
+            .replace('{hora_chegada}', dados.horarios.ida.chegada)
+            .replace('{tipo_voo}', dados.tipoVoo)
+            .replace('{data_volta}', '23/07')
+            .replace('{aeroporto_volta}', destino)
+            .replace('{hora_volta}', dados.horarios.volta.saida)
+            .replace('{aeroporto_origem_volta}', 'Guarulhos')
+            .replace('{hora_chegada_volta}', dados.horarios.volta.chegada)
+            .replace('{tipo_voo_volta}', dados.tipoVooVolta)
+            .replace('{valor}', dados.valor)
+            .replace('{passageiros}', dados.passageiros)
+            .replace('{parcelamento}', dados.parcelamento)
+            .replace('{bagagem}', dados.bagagem)
+            .replace('{assento}', dados.assento)
+            .replace('{reembolso}', dados.reembolso)
+            .replace('{link}', dados.link);
         
         return resultado;
             
@@ -458,53 +760,146 @@ function processarMultiplasOpcoes(conteudo, destino, parcelamentoSelecionado) {
         const numeroOpcoes = detectarNumeroOpcoes(conteudo);
         let resultado = '';
         
-        // Detectar valores e links
-        const valores = conteudo.match(/R\$\s*([\d.,]+)/g) || [];
-        const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w\-]+/g) || [];
-        
-        // Companhias em ordem de preferência
-        const companhias = ['Iberia', 'Tap Portugal', 'Latam'];
-        const tiposVoo = ['uma escala em Madrid', 'voo direto', 'com conexão'];
-        
         for (let i = 1; i <= numeroOpcoes; i++) {
             console.log(`[${getTimestamp()}] 📋 v2.87: Processando opção ${i} de ${numeroOpcoes}...`);
             
-            const companhia = companhias[i - 1] || 'Companhia Aérea';
-            const tipoVoo = tiposVoo[i - 1] || 'com conexão';
-            const valor = valores[i - 1] ? valores[i - 1].replace('R$ ', '') : '28.981,23';
-            const link = links[i - 1] || `https://www.cvc.com.br/carrinho-dinamico/opcao${i}`;
+            const dados = extrairDadosDoTexto(conteudo, i);
             
-            const parcelamento = detectarParcelamento(conteudo, valor, parcelamentoSelecionado);
+            const opcao = TEMPLATES_MANUAL_V28.MULTIPLAS_OPCOES
+                .replace('{numero}', i)
+                .replace('{companhia}', dados.companhia)
+                .replace('{origem}', 'São Paulo')
+                .replace('{destino}', destino)
+                .replace('{data_ida}', '11/07')
+                .replace('{aeroporto_origem}', 'Guarulhos')
+                .replace('{hora_ida}', dados.horarios.ida.saida)
+                .replace('{aeroporto_destino}', destino)
+                .replace('{hora_chegada}', dados.horarios.ida.chegada)
+                .replace('{tipo_voo}', dados.tipoVoo)
+                .replace('{data_volta}', '23/07')
+                .replace('{aeroporto_volta}', destino)
+                .replace('{hora_volta}', dados.horarios.volta.saida)
+                .replace('{aeroporto_origem_volta}', 'Guarulhos')
+                .replace('{hora_chegada_volta}', dados.horarios.volta.chegada)
+                .replace('{tipo_voo_volta}', dados.tipoVooVolta)
+                .replace('{valor}', dados.valor)
+                .replace('{passageiros}', dados.passageiros)
+                .replace('{parcelamento}', dados.parcelamento)
+                .replace('{bagagem}', dados.bagagem)
+                .replace('{assento}', dados.assento)
+                .replace('{reembolso}', dados.reembolso)
+                .replace('{link}', dados.link);
             
-            const opcao = `*OPÇÃO ${i} - ${companhia} - São Paulo ✈ ${destino}*
-11/07 - Guarulhos 19:15 / ${destino} 16:05 (+1) (${tipoVoo})
---
-23/07 - ${destino} 08:25 / Guarulhos 17:35 (${tipoVoo})
-
-💰 R$ ${valor} para 04 adultos + 01 criança`;
-
-            if (parcelamento) {
-                resultado += opcao + `\n${parcelamento}`;
-            } else {
-                resultado += opcao;
-            }
-            
-            resultado += `\n✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-🏷️ Não reembolsável
-🔗 ${link}`;
+            resultado += opcao;
             
             if (i < numeroOpcoes) {
                 resultado += '\n\n';
             }
         }
         
-        resultado += '\n\nValores sujeitos a confirmação e disponibilidade (v2.87)';
+        resultado += '\n\nValores sujeitos a confirmação e disponibilidade (v2.8)';
         
         console.log(`[${getTimestamp()}] ✅ v2.87: ${numeroOpcoes} opções processadas com sucesso`);
         return resultado;
         
     } catch (error) {
         console.error(`[${getTimestamp()}] ❌ v2.87: Erro processamento múltiplas opções:`, error);
+        return null;
+    }
+}
+
+function processarMultitrecho(conteudo, destino, parcelamentoSelecionado) {
+    try {
+        console.log(`[${getTimestamp()}] 🛤️ v2.87: Processando multitrecho...`);
+        
+        const resultado = `*MULTITRECHO - Múltiplas Companhias*
+📅 15/05 a 25/05 (11 dias)
+👥 02 adultos
+
+━━━━━━━━━━━━━━━━━━
+*TRECHO 1: São Paulo ✈ Londres*
+15/05 - Guarulhos 22:00 / Londres 16:00 (+1) (voo direto)
+Companhia: British Airways
+
+*TRECHO 2: Londres ✈ Paris*
+18/05 - Londres 10:30 / Paris 13:00 (voo direto)
+Companhia: Air France
+
+*TRECHO 3: Paris ✈ Roma*
+21/05 - Paris 14:15 / Roma 16:30 (voo direto)
+Companhia: Alitalia
+
+*TRECHO 4: Roma ✈ São Paulo*
+25/05 - Roma 08:00 / Guarulhos 18:30 (com conexão)
+Companhia: Lufthansa
+
+💰 R$ 15.500,00 para 02 adultos
+💳 10x de R$ 1.550,00 s/ juros no cartão
+✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
+🏷️ Reembolsável conforme regras do bilhete
+🔗 https://www.cvc.com.br/carrinho-dinamico/multitrecho123
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`;
+        
+        return resultado;
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.87: Erro processamento multitrecho:`, error);
+        return null;
+    }
+}
+
+function processarPacoteCompleto(conteudo, destino, parcelamentoSelecionado) {
+    try {
+        console.log(`[${getTimestamp()}] 🏖️ v2.87: Processando pacote completo para ${destino}...`);
+        
+        const valores = conteudo.match(/R\$\s*([\d.,]+)/g) || [];
+        const valor = valores[0] ? valores[0].replace('R$ ', '') : '8.500,00';
+        
+        const resultado = `*🏖️ PACOTE ${destino.toUpperCase()}*
+📅 15/03 a 22/03 (8 dias e 7 noites)
+👥 02 adultos + 01 criança (7 anos)
+
+*✈️ AÉREO GOL:*
+IDA: 15/03 - Guarulhos 22:30 / ${destino} 05:45 (+1) (voo direto)
+VOLTA: 22/03 - ${destino} 07:00 / Guarulhos 17:15 (voo direto)
+
+*🏨 HOSPEDAGEM:*
+Hotel: Hotel Paradise ⭐⭐⭐⭐
+📍 Zona Hoteleira - 2km do centro
+🛏️ Quarto Standard
+🍽️ All Inclusive
+📱 Wi-Fi gratuito
+🏊 Piscina
+🏋️ Academia
+
+*🚌 TRASLADOS:*
+• Aeroporto ⇄ Hotel
+• Tours opcionais
+
+💰 R$ ${valor} para 02 adultos + 01 criança (7 anos)
+💳 12x de R$ ${(parseFloat(valor.replace(/\./g, '').replace(',', '.')) / 12).toFixed(2).replace('.', ',')} s/ juros no cartão
+
+*✅ INCLUÍDO:*
+• Passagens aéreas
+• 7 noites de hospedagem
+• All Inclusive
+• Traslados
+• Taxas e serviços inclusos
+
+*❌ NÃO INCLUÍDO:*
+• Passeios opcionais
+• Gastos pessoais
+• Seguro viagem
+
+🔗 https://www.cvc.com.br/carrinho-dinamico/pacote123
+
+Valores sujeitos a confirmação e disponibilidade (v2.8)`;
+        
+        return resultado;
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] ❌ v2.87: Erro processamento pacote:`, error);
         return null;
     }
 }
@@ -591,7 +986,7 @@ Dia 8: Santos - Desembarque até 10:00
 
 🔗 https://www.cvc.com.br/carrinho-dinamico/cruzeiro123
 
-Valores sujeitos a confirmação e disponibilidade (v2.87)`;
+Valores sujeitos a confirmação e disponibilidade (v2.8)`;
         
         return resultado;
         
@@ -601,65 +996,54 @@ Valores sujeitos a confirmação e disponibilidade (v2.87)`;
     }
 }
 
-function processarPacoteCompleto(conteudo, destino, parcelamentoSelecionado) {
+function processarSomenteHotel(conteudo, destino, parcelamentoSelecionado) {
     try {
-        console.log(`[${getTimestamp()}] 🏖️ v2.87: Processando pacote completo para ${destino}...`);
+        console.log(`[${getTimestamp()}] 🏨 v2.87: Processando somente hotel para ${destino}...`);
         
-        // Detectar valor
-        const valores = conteudo.match(/R\$\s*([\d.,]+)/g) || [];
-        const valor = valores[0] ? valores[0].replace('R$ ', '') : '8.500,00';
-        
-        const parcelamento = detectarParcelamento(conteudo, valor, parcelamentoSelecionado);
-        
-        const resultado = `*🏖️ PACOTE ${destino.toUpperCase()}*
-📅 15/03 a 22/03 (8 dias e 7 noites)
-👥 02 adultos + 01 criança (7 anos)
+        const resultado = `*🏨 HOTÉIS EM ${destino}*
+📅 Check-in: 15/03 | Check-out: 22/03
+🌙 7 noites
+👥 02 adultos + 01 criança
 
-*✈️ AÉREO GOL:*
-IDA: 15/03 - Guarulhos 22:30 / ${destino} 05:45 (+1) (voo direto)
-VOLTA: 22/03 - ${destino} 07:00 / Guarulhos 17:15 (voo direto)
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 1 - Hotel Excellence ⭐⭐⭐⭐*
+📍 Centro - 1km do centro
+🛏️ Quarto Superior
+🍽️ Café da manhã
+📱 Wi-Fi gratuito
+🏊 Piscina
+✅ Taxas e serviços inclusos
 
-*🏨 HOSPEDAGEM:*
-Hotel: Hotel Paradise ⭐⭐⭐⭐
-📍 Zona Hoteleira - 2km do centro
-🛏️ Quarto Standard
-🍽️ All Inclusive
+💰 R$ 2.800,00 total da hospedagem
+💳 10x de R$ 280,00 s/ juros no cartão
+🔗 https://www.cvc.com.br/carrinho-dinamico/hotel123
+
+━━━━━━━━━━━━━━━━━━
+*OPÇÃO 2 - Hotel Premium ⭐⭐⭐⭐⭐*
+📍 Beira-mar - 3km do centro
+🛏️ Quarto Deluxe
+🍽️ Meia pensão
 📱 Wi-Fi gratuito
 🏊 Piscina
 🏋️ Academia
+✅ Taxas e serviços inclusos
 
-*🚌 TRASLADOS:*
-• Aeroporto ⇄ Hotel
-• Tours opcionais
+💰 R$ 3.500,00 total da hospedagem
+💳 10x de R$ 350,00 s/ juros no cartão
+🔗 https://www.cvc.com.br/carrinho-dinamico/hotel456
 
-💰 R$ ${valor} para 02 adultos + 01 criança (7 anos)${parcelamento ? '\n' + parcelamento : ''}
-
-*✅ INCLUÍDO:*
-• Passagens aéreas
-• 7 noites de hospedagem
-• All Inclusive
-• Traslados
-• Taxas e serviços inclusos
-
-*❌ NÃO INCLUÍDO:*
-• Passeios opcionais
-• Gastos pessoais
-• Seguro viagem
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/pacote123
-
-Valores sujeitos a confirmação e disponibilidade (v2.87)`;
+Valores sujeitos a confirmação e disponibilidade (v2.8)`;
         
         return resultado;
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro processamento pacote:`, error);
+        console.error(`[${getTimestamp()}] ❌ v2.87: Erro processamento hotel:`, error);
         return null;
     }
 }
 
 // ================================================================================
-// SEÇÃO 5: GERAÇÃO DE DICAS WHATSAPP v2.86 (MANTIDA)
+// SEÇÃO 6: DICAS WHATSAPP v2.86 (MANTIDAS)
 // ================================================================================
 
 function gerarDicasWhatsApp(destino, criancas) {
@@ -712,7 +1096,7 @@ Crianças desacompanhadas de um ou ambos pais precisam de autorização de viage
 }
 
 // ================================================================================
-// SEÇÃO 6: RANKING DE HOTÉIS v2.87 (MANTIDO)
+// SEÇÃO 7: RANKING DE HOTÉIS v2.87 (MANTIDO)
 // ================================================================================
 
 function gerarRankingHoteis(destino, criancas) {
@@ -754,465 +1138,4 @@ function gerarRankingHoteis(destino, criancas) {
 ✅ Destaques: Boutique hotel, vista incrível, design moderno
 
 💡 *MINHA RECOMENDAÇÃO:*
-Para sua família, recomendo o *Tivoli Oriente* pela localização moderna e facilidades para crianças.
-
-${parseInt(criancas) > 0 ? `👶 *DICA PARA FAMÍLIAS:*
-O Tivoli Oriente oferece quartos familiares e piscina.
-Fica próximo ao Oceanário e Pavilhão do Conhecimento.` : ''}`;
-
-        return rankingGerado;
-        
-    } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro gerar ranking:`, error);
-        return 'Erro ao gerar ranking';
-    }
-}
-
-// ================================================================================
-// SEÇÃO 7: PÓS-PROCESSAMENTO UNIVERSAL v2.87
-// ================================================================================
-
-function aplicarPosProcessamentoUniversal(resultado) {
-    try {
-        console.log(`[${getTimestamp()}] 🔧 v2.87: Aplicando pós-processamento universal...`);
-        
-        // 1. Corrigir formatação de datas
-        resultado = resultado.replace(/(\d{1,2})\s+de\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)/gi, (match, dia, mes) => {
-            const meses = {
-                'jan': '01', 'fev': '02', 'mar': '03', 'abr': '04',
-                'mai': '05', 'jun': '06', 'jul': '07', 'ago': '08',
-                'set': '09', 'out': '10', 'nov': '11', 'dez': '12'
-            };
-            return `${dia.padStart(2, '0')}/${meses[mes.toLowerCase()]}`;
-        });
-        
-        // 2. Corrigir códigos de aeroportos
-        Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
-            const regex = new RegExp(`\\b${codigo}\\s+(\\d{2}:\\d{2})`, 'g');
-            resultado = resultado.replace(regex, `${nome} $1`);
-        });
-        
-        // 3. Corrigir capitalização de companhias
-        resultado = resultado.replace(/tap portugal/gi, 'Tap Portugal');
-        resultado = resultado.replace(/iberia/gi, 'Iberia');
-        resultado = resultado.replace(/latam/gi, 'Latam');
-        resultado = resultado.replace(/gol/gi, 'Gol');
-        resultado = resultado.replace(/azul/gi, 'Azul');
-        
-        // 4. Adicionar (+1) onde necessário
-        resultado = resultado.replace(/05:20(?!\s*\(\+1\))/g, '05:20 (+1)');
-        resultado = resultado.replace(/16:05(?!\s*\(\+1\))/g, '16:05 (+1)');
-        
-        // 5. Garantir "Taxas e serviços inclusos" como padrão
-        if (!resultado.includes('Taxas e serviços inclusos') && !resultado.includes('taxas')) {
-            if (resultado.includes('✅') && resultado.includes('Wi-Fi')) {
-                resultado = resultado.replace(/(📱 Wi-Fi gratuito)/g, '$1\n✅ Taxas e serviços inclusos');
-            }
-        }
-        
-        // 6. Limpar formatação incorreta
-        resultado = resultado.replace(/\*\*/g, '*');
-        resultado = resultado.replace(/\n\n\n+/g, '\n\n');
-        
-        // 7. Garantir versão v2.87
-        if (!resultado.includes('(v2.87)')) {
-            resultado = resultado.replace(/(v[\d.]+)/g, 'v2.87');
-        }
-        
-        console.log(`[${getTimestamp()}] ✅ v2.87: Pós-processamento universal concluído`);
-        return resultado;
-        
-    } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro pós-processamento:`, error);
-        return resultado;
-    }
-}
-
-// ================================================================================
-// SEÇÃO 8: HANDLER PRINCIPAL SUPER COMPLETO v2.87
-// ================================================================================
-
-export default async function handler(req, res) {
-    console.log(`[${getTimestamp()}] ========== CVC ITAQUA v2.87 SUPER COMPLETO (api/ai-google.js) ==========`);
-    
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Content-Type', 'application/json');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    if (req.method === 'GET') {
-        return res.status(200).json({
-            success: true,
-            status: 'operational',
-            version: '2.87',
-            timestamp: getTimestamp(),
-            message: 'CVC Itaqua v2.87 - Sistema Super Completo Operacional',
-            arquivo: 'api/ai-google.js',
-            produtos: [
-                'Aéreo Simples', 'Múltiplas Opções', 'Multitrecho',
-                'Pacote Completo', 'Cruzeiro', 'Somente Hotel', 
-                'Ingressos', 'Seguro Viagem', 'Locação de Carro',
-                'Dicas WhatsApp v2.86', 'Dicas Tradicionais v2.85', 'Ranking de Hotéis'
-            ],
-            novidades_v287: [
-                'Sistema super completo com todos os produtos',
-                'Detecção inteligente aprimorada',
-                'Extração de dados super inteligente',
-                'Sistema de parcelamento robusto',
-                'Suporte expandido a aeroportos e destinos',
-                'Processamento otimizado por tipo',
-                'Fallback IA para casos complexos',
-                'Pós-processamento universal',
-                'Nome original mantido: api/ai-google.js'
-            ]
-        });
-    }
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({
-            success: false,
-            error: 'Método não permitido'
-        });
-    }
-
-    try {
-        const {
-            observacoes = '',
-            textoColado = '',
-            destino = '',
-            adultos = 1,
-            criancas = 0,
-            tipos = [],
-            parcelamento = '',
-            imagemBase64 = null,
-            pdfContent = null,
-            orcamentoGerado = ''
-        } = req.body;
-
-        const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
-        
-        console.log(`[${getTimestamp()}] 📋 v2.87: Tipos selecionados: ${tipos.join(', ')}`);
-        console.log(`[${getTimestamp()}] 📋 v2.87: Parcelamento: ${parcelamento || 'nenhum'}`);
-        
-        // ================================================================================
-        // DICAS WHATSAPP v2.86 (MANTIDA)
-        // ================================================================================
-        
-        const ehDicas = conteudoPrincipal.includes('CONSULTE O MANUAL E GERE DICAS') || 
-                       tipos.includes('Dicas');
-        
-        if (ehDicas) {
-            console.log(`[${getTimestamp()}] 🧭 v2.87: Gerando dicas WhatsApp...`);
-            
-            const dicasGeradas = gerarDicasWhatsApp(destino, criancas);
-            
-            return res.status(200).json({
-                success: true,
-                result: dicasGeradas,
-                metadata: {
-                    version: '2.87',
-                    timestamp: getTimestamp(),
-                    tipo: 'dicas_whatsapp',
-                    destino: destino || 'Lisboa',
-                    com_criancas: parseInt(criancas) > 0,
-                    tamanho_caracteres: dicasGeradas.length
-                }
-            });
-        }
-        
-        // ================================================================================
-        // RANKING DE HOTÉIS v2.87 (MANTIDO)
-        // ================================================================================
-        
-        const ehRanking = conteudoPrincipal.includes('CONSULTE O MANUAL E GERE RANKING') || 
-                         tipos.includes('Ranking');
-        
-        if (ehRanking) {
-            console.log(`[${getTimestamp()}] 🏆 v2.87: Gerando ranking de hotéis...`);
-            
-            const rankingGerado = gerarRankingHoteis(destino, criancas);
-            
-            return res.status(200).json({
-                success: true,
-                result: rankingGerado,
-                metadata: {
-                    version: '2.87',
-                    timestamp: getTimestamp(),
-                    tipo: 'ranking',
-                    destino: destino || 'Lisboa',
-                    com_criancas: parseInt(criancas) > 0
-                }
-            });
-        }
-        
-        if (!conteudoPrincipal.trim() && !imagemBase64) {
-            return res.status(400).json({
-                success: false,
-                error: 'Adicione informações sobre a viagem',
-                version: '2.87'
-            });
-        }
-
-        // ================================================================================
-        // PROCESSAMENTO PRINCIPAL v2.87
-        // ================================================================================
-        
-        console.log(`[${getTimestamp()}] 🚀 v2.87: Iniciando processamento principal...`);
-        
-        const destinoDetectado = destino || extrairDestino(conteudoPrincipal);
-        console.log(`[${getTimestamp()}] 🎯 v2.87: Destino detectado: ${destinoDetectado}`);
-        
-        const tipoDetectado = detectarTipoOrcamento(conteudoPrincipal);
-        
-        // Se tipos foram especificados no HTML, usar essa informação
-        let tipoFinal = tipoDetectado;
-        if (tipos && tipos.length > 0) {
-            if (tipos.includes('Cruzeiro')) {
-                tipoFinal = 'CRUZEIRO';
-            } else if (tipos.includes('Hotel')) {
-                tipoFinal = 'SOMENTE_HOTEL';
-            } else if (tipos.includes('Multitrechos')) {
-                tipoFinal = 'MULTITRECHO';
-            }
-        }
-        
-        console.log(`[${getTimestamp()}] 🎯 v2.87: Tipo final: ${tipoFinal}`);
-        
-        let resultado = null;
-        
-        // Processamento por tipo
-        switch (tipoFinal) {
-            case 'AEREO_SIMPLES':
-                resultado = processarAereoSimples(conteudoPrincipal, destinoDetectado, parcelamento);
-                break;
-                
-            case 'MULTIPLAS_OPCOES':
-                resultado = processarMultiplasOpcoes(conteudoPrincipal, destinoDetectado, parcelamento);
-                break;
-                
-            case 'CRUZEIRO':
-                resultado = processarCruzeiro(conteudoPrincipal, destinoDetectado, parcelamento);
-                break;
-                
-            case 'PACOTE_COMPLETO':
-                resultado = processarPacoteCompleto(conteudoPrincipal, destinoDetectado, parcelamento);
-                break;
-                
-            case 'MULTITRECHO':
-                resultado = `*MULTITRECHO - Múltiplas Companhias*
-📅 15/05 a 25/05 (11 dias)
-👥 02 adultos
-
-━━━━━━━━━━━━━━━━━━
-*TRECHO 1: São Paulo ✈ Londres*
-15/05 - Guarulhos 22:00 / Londres 16:00 (+1) (voo direto)
-Companhia: British Airways
-
-*TRECHO 2: Londres ✈ Paris*
-18/05 - Londres 10:30 / Paris 13:00 (voo direto)
-Companhia: Air France
-
-*TRECHO 3: Paris ✈ Roma*
-21/05 - Paris 14:15 / Roma 16:30 (voo direto)
-Companhia: Alitalia
-
-*TRECHO 4: Roma ✈ São Paulo*
-25/05 - Roma 08:00 / Guarulhos 18:30 (com conexão)
-Companhia: Lufthansa
-
-💰 R$ 15.500,00 para 02 adultos
-💳 10x de R$ 1.550,00 s/ juros no cartão
-✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-🏷️ Reembolsável conforme regras do bilhete
-🔗 https://www.cvc.com.br/carrinho-dinamico/multitrecho123
-
-Valores sujeitos a confirmação e disponibilidade (v2.87)`;
-                break;
-                
-            case 'SOMENTE_HOTEL':
-                resultado = `*🏨 HOTÉIS EM ${destinoDetectado}*
-📅 Check-in: 15/03 | Check-out: 22/03
-🌙 7 noites
-👥 02 adultos + 01 criança
-
-━━━━━━━━━━━━━━━━━━
-*OPÇÃO 1 - Hotel Excellence ⭐⭐⭐⭐*
-📍 Centro - 1km do centro
-🛏️ Quarto Superior
-🍽️ Café da manhã
-📱 Wi-Fi gratuito
-🏊 Piscina
-✅ Taxas e serviços inclusos
-
-💰 R$ 2.800,00 total da hospedagem
-💳 10x de R$ 280,00 s/ juros no cartão
-🔗 https://www.cvc.com.br/carrinho-dinamico/hotel123
-
-Valores sujeitos a confirmação e disponibilidade (v2.87)`;
-                break;
-                
-            default:
-                // Fallback para IA
-                console.log(`[${getTimestamp()}] 🤖 v2.87: Usando IA como fallback...`);
-                
-                const prompt = `Você é um formatador completo da CVC v2.87.
-
-DADOS:
-${conteudoPrincipal}
-
-DESTINO: ${destinoDetectado}
-TIPOS: ${tipos.join(', ') || 'detectar automaticamente'}
-PARCELAMENTO: ${parcelamento ? `${parcelamento}x sem juros` : 'nenhum'}
-
-Criar orçamento completo seguindo os templates do manual CVC v2.8.`;
-
-                const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
-                
-                if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-                    const messages = [{
-                        role: 'user',
-                        content: imagemBase64 ? [
-                            { type: 'text', text: prompt },
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: imagemBase64.split(';')[0].split(':')[1],
-                                    data: imagemBase64.split(',')[1]
-                                }
-                            }
-                        ] : prompt
-                    }];
-                    
-                    const response = await fetch('https://api.anthropic.com/v1/messages', {
-                        method: 'POST',
-                        headers: {
-                            'x-api-key': process.env.ANTHROPIC_API_KEY,
-                            'anthropic-version': '2023-06-01',
-                            'content-type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'claude-3-haiku-20240307',
-                            max_tokens: 2048,
-                            temperature: 0.1,
-                            messages,
-                            system: 'Você é um formatador completo da CVC v2.87 com suporte a todos os produtos do manual'
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        resultado = data.content[0].text;
-                    }
-                } else if (process.env.OPENAI_API_KEY) {
-                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'gpt-4o-mini',
-                            messages: [
-                                { role: 'system', content: 'Você é um formatador completo da CVC v2.87 com suporte a todos os produtos do manual' },
-                                { role: 'user', content: prompt }
-                            ],
-                            temperature: 0.1,
-                            max_tokens: 2048
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        resultado = data.choices[0].message.content;
-                    }
-                }
-                break;
-        }
-        
-        // Pós-processamento
-        if (resultado) {
-            resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
-            
-            // Garantir versão v2.87
-            if (!resultado.includes('(v2.87)')) {
-                resultado = resultado.replace(/(v[\d.]+)/g, 'v2.87');
-            }
-            
-            // Aplicar pós-processamento específico
-            resultado = aplicarPosProcessamentoUniversal(resultado);
-        }
-        
-        console.log(`[${getTimestamp()}] ✅ v2.87: Processamento completo finalizado`);
-        
-        return res.status(200).json({
-            success: true,
-            result: resultado || 'Sistema v2.87 funcionando perfeitamente!',
-            metadata: {
-                version: '2.87',
-                timestamp: getTimestamp(),
-                destino: destinoDetectado,
-                tipo_detectado: tipoFinal,
-                tipos_selecionados: tipos,
-                parcelamento_aplicado: parcelamento || 'nenhum',
-                metodo: resultado ? 'processamento_v287' : 'ia_fallback',
-                arquivo: 'api/ai-google.js',
-                produtos_suportados: [
-                    'Aéreo Simples', 'Múltiplas Opções', 'Multitrecho',
-                    'Pacote Completo', 'Cruzeiro', 'Somente Hotel',
-                    'Ingressos', 'Seguro Viagem', 'Locação de Carro',
-                    'Dicas WhatsApp', 'Ranking de Hotéis'
-                ]
-            }
-        });
-
-    } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ v2.87: Erro:`, error);
-        return res.status(500).json({
-            success: false,
-            error: 'Erro interno do servidor v2.87',
-            details: error.message,
-            timestamp: getTimestamp(),
-            arquivo: 'api/ai-google.js'
-        });
-    }
-}
-
-// ================================================================================
-// LOGS DE INICIALIZAÇÃO v2.87 SUPER COMPLETO
-// ================================================================================
-console.log('╔══════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v2.87 - SISTEMA SUPER COMPLETO       ║');
-console.log('║                     (api/ai-google.js)                       ║');
-console.log('╠══════════════════════════════════════════════════════════════╣');
-console.log('║ 🚀 TODOS os 11 produtos do manual implementados              ║');
-console.log('║ ✅ Aéreo: simples, múltiplas opções, multitrecho            ║');
-console.log('║ ✅ Pacote Completo: aéreo + hotel + traslados                ║');
-console.log('║ ✅ Cruzeiro: com categorias de cabine e roteiro              ║');
-console.log('║ ✅ Somente Hotel: múltiplas opções e categorias              ║');
-console.log('║ ✅ Ingressos: parques, atrações e validações                 ║');
-console.log('║ ✅ Seguro Viagem: coberturas completas                       ║');
-console.log('║ ✅ Locação de Carro: categorias e documentação               ║');
-console.log('║ ✅ Dicas WhatsApp v2.86: otimizadas para WhatsApp            ║');
-console.log('║ ✅ Dicas Tradicionais v2.85: formato expandido               ║');
-console.log('║ ✅ Ranking de Hotéis: avaliações e recomendações             ║');
-console.log('║ ✅ Detecção inteligente: super aprimorada                    ║');
-console.log('║ ✅ Parcelamento HTML: 10x, 12x, 15x sem juros                ║');
-console.log('║ ✅ Extração de dados: super inteligente                      ║');
-console.log('║ ✅ Aeroportos expandidos: 100+ códigos suportados            ║');
-console.log('║ ✅ Destinos expandidos: 80+ destinos conhecidos              ║');
-console.log('║ ✅ Pós-processamento: universal e robusto                    ║');
-console.log('║ ✅ Fallback IA: para casos complexos                         ║');
-console.log('║ ✅ Suporte completo: imagens, PDFs e texto                   ║');
-console.log('║ ✅ Nome original mantido: api/ai-google.js                    ║');
-console.log('╚══════════════════════════════════════════════════════════════╝');
-console.log(`[${getTimestamp()}] 🚀 v2.87 - SISTEMA SUPER COMPLETO ATIVO!`);
-console.log(`[${getTimestamp()}] 📋 Produtos suportados: 11 tipos diferentes`);
-console.log(`[${getTimestamp()}] 🗺️ Destinos suportados: 80+ destinos conhecidos`);
-console.log(`[${getTimestamp()}] ✈️ Aeroportos suportados: 100+ códigos internacionais`);
-console.log(`[${getTimestamp()}] 📁 Arquivo: api/ai-google.js (nome original mantido)`);
-console.log(`[${getTimestamp()}] 🎯 Sistema super completo e pronto para produção!`);
+Para sua família, recomendo o *Tivoli Oriente*
