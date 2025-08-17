@@ -1,22 +1,23 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.6 - PÓS-PROCESSAMENTO CORRIGIDO PARA MÚLTIPLAS OPÇÕES
+// 🚀 CVC ITAQUA v2.6 - PÓS-PROCESSAMENTO AVANÇADO
 // ================================================================================
 //
 // 📁 ÍNDICE DO ARQUIVO:
 //   SEÇÃO 1: CONFIGURAÇÕES GLOBAIS
-//   SEÇÃO 2: TEMPLATES DE ORÇAMENTO
-//   SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO DE REGRAS (Pós-processamento)
+//   SEÇÃO 2: TEMPLATES DE ORÇAMENTO (COM VERSÃO)
+//   SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO DE REGRAS
 //   SEÇÃO 4: FUNÇÕES DE DETECÇÃO
 //   SEÇÃO 5: GERAÇÃO DE PROMPTS
-//   SEÇÃO 6: HANDLER PRINCIPAL (com lógica de Pós-processamento CORRIGIDA)
+//   SEÇÃO 6: HANDLER PRINCIPAL (com Pós-processamento por Regex)
 //
 // ================================================================================
 // VERSÃO: 2.6
 // DATA: 18/12/2024
 // MUDANÇAS:
-// - CORREÇÃO CRÍTICA: Lógica de pós-processamento agora analisa CADA opção
-//   individualmente, aplicando as regras corretas de parcelamento, bagagem e assento.
-// - CORREÇÃO VISUAL: Adicionada quebra de linha entre as opções.
+// - PÓS-PROCESSAMENTO AVANÇADO: Lógica reescrita para encontrar e substituir
+//   texto bruto (ex: "Com bagagem...") por linhas formatadas, em vez de
+//   depender de placeholders. Muito mais robusto.
+// - VERSÃO NO TEMPLATE: Adicionado (v2.6) na linha de finalização.
 // - INTEGRIDADE MANTIDA: Nenhuma função, template ou lógica foi simplificada.
 // ================================================================================
 
@@ -31,7 +32,7 @@ const DESTINOS_CONHECIDOS = {
 };
 
 // ================================================================================
-// SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
+// SEÇÃO 2: TEMPLATES DE ORÇAMENTO (COM VERSÃO)
 // ================================================================================
 const TEMPLATES = {
     aereo_simples: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -46,7 +47,7 @@ const TEMPLATES = {
 {assento}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     aereo_conexao: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
@@ -62,7 +63,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🏷️ {reembolso}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     aereo_somente_ida: `*{companhia}*
 {data} - {aeroporto_origem} {hora_saida} / {aeroporto_destino} {hora_chegada} ({tipo_voo})
 
@@ -74,7 +75,7 @@ Inclui taxas de embarque
 
 ⚠️ Passagem somente de ida - sem retorno incluído
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     multiplas_opcoes_2_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -92,7 +93,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 {parcelamento2}
 🔗 {link2}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     multiplas_opcoes_3_planos: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
 --
@@ -111,7 +112,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 ✅ Reembolsável conforme regras do bilhete
 ✅ Marcação de assento
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     multiplas_companhias: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
@@ -146,7 +147,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🔗 {link3}
 
 🏷️ {reembolso}
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     hoteis_multiplas_opcoes: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
 {passageiros}
@@ -173,7 +174,7 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 🔗 {link3}
 
 {parcelamento}
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     roteiro_hoteis: `*Roteiro {destino}*
 {passageiros}
 
@@ -195,7 +196,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 💰 **VALOR TOTAL DO ROTEIRO:** R$ {valor_total}
 {parcelamento}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     pacote_completo: `*Pacote {destino}*
 Embarque: {data_embarque}
 Pacote para {passageiros}
@@ -232,7 +233,7 @@ Pacote para {passageiros}
 💰 R$ {valor3} para {passageiros}
 🔗 {link3}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     multitrecho: `*Multitrecho - {companhias}*
 {data_inicio} a {data_fim} ({dias} dias e {noites} noites)
 
@@ -251,7 +252,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🏷️ {reembolso}
 🔗 {link}
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     cruzeiro: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
 📅 Embarque: {data_embarque} ({dia_semana})
@@ -272,7 +273,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️
 
-Valores sujeitos a confirmação e disponibilidade`,
+Valores sujeitos a confirmação e disponibilidade (v2.6)`,
     dicas_completas: `🌍 *Dicas Essenciais para sua Viagem a {destino}!* 🌍
 
 1️⃣ **Gastronomia Imperdível**
@@ -286,7 +287,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 ---
 ✈️ *Complete sua Viagem com a CVC!*
-Fale comigo para adicionar outros serviços ao seu pacote!`,
+Fale comigo para adicionar outros serviços ao seu pacote! (v2.6)`,
     ranking: `🏆 *Ranking dos Melhores Hotéis em {destino}* 🏆
 
 Confira nossa seleção especial dos hotéis mais bem avaliados:
@@ -309,7 +310,7 @@ Confira nossa seleção especial dos hotéis mais bem avaliados:
 ✅ {ponto_positivo3}
 💬 "{review3}"
 
-Valores sujeitos a confirmação e disponibilidade`
+Valores sujeitos a confirmação e disponibilidade (v2.6)`
 };
 // ================================================================================
 // SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO DE REGRAS (Pós-processamento)
@@ -469,13 +470,14 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino) {
     try {
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino não identificado';
         
+        // As regras agora são para a IA preencher com texto bruto, que será pós-processado
         const regrasGerais = `**REGRAS CRÍTICAS DE GERAÇÃO v2.6:**
 - Sua tarefa é extrair os dados brutos e preencher o template correspondente.
-- Para os campos {parcelamento}, {bagagem}, {assento} e {passageiros}, NÃO TENTE FORMATAR. Apenas insira o placeholder exatamente como está no template. O sistema fará a substituição final.
-- Para múltiplos planos (2 ou 3), use os placeholders numerados: {parcelamento1}, {parcelamento2}, etc.
+- Preencha os campos de parcelamento, bagagem e assento com o texto EXATO que encontrar na fonte de dados. O sistema fará a formatação final.
 - Converta todos os códigos de aeroporto para nomes completos usando a tabela fornecida.
 - Formate valores como R$ 1.234,56.
 - Formate datas como DD/MM e horários como HH:MM.
+- O campo {passageiros} deve ser preenchido com a contagem de pessoas. Ex: "04 adultos + 01 criança".
 - Termine SEMPRE com "Valores sujeitos a confirmação e disponibilidade".`;
 
         const tabelaAeroportos = `**TABELA DE AEROPORTOS:**\n${JSON.stringify(AEROPORTOS, null, 2)}`;
@@ -492,7 +494,6 @@ ${templateSelecionado}
 
 ${regrasGerais}
 ${tabelaAeroportos}`;
-
     } catch (error) {
         console.error('❌ v2.6: Erro ao gerar prompt:', error);
         return `Erro: ${error.message}`;
@@ -533,7 +534,7 @@ export default async function handler(req, res) {
         console.log(`✅ v2.6: Tipo detectado: ${tipoOrcamento}`);
 
         let resultado, iaUsada;
-        const systemPrompt = `Você é um assistente da CVC Itaqua. Analise os dados e preencha o template fornecido. Onde houver placeholders como {parcelamento}, {bagagem}, {assento} ou {passageiros}, mantenha-os. Retorne apenas o texto formatado.`;
+        const systemPrompt = `Você é um assistente da CVC Itaqua. Analise os dados e preencha o template fornecido. Preencha os campos de parcelamento, bagagem e assento com o texto exato que encontrar. Retorne apenas o texto formatado.`;
         const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
 
         if (usarClaude && process.env.ANTHROPIC_API_KEY) {
@@ -556,43 +557,32 @@ export default async function handler(req, res) {
 
         // === PÓS-PROCESSAMENTO CORRIGIDO v2.6 ===
         console.log('🔄 v2.6: Aplicando pós-processamento de regras...');
-        
-        let resultadoFinal;
+
         const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
         const passageirosFormatado = formatarPassageiros(dadosPassageiros);
 
-        if (tipoOrcamento === 'multiplas_companhias' || tipoOrcamento === 'multiplas_opcoes_2_planos' || tipoOrcamento === 'multiplas_opcoes_3_planos') {
-            const blocosInput = conteudoPrincipal.split(/OPÇÃO \d/i).filter(b => b.trim() !== '');
-            const blocosOutput = resultadoBruto.split(/\*OPÇÃO \d/i).filter(b => b.trim() !== '');
-            let resultadoProcessado = [];
+        // Substitui {passageiros} primeiro, pois é global
+        resultadoBruto = resultadoBruto.replace(/{passageiros}/g, passageirosFormatado);
 
-            for (let i = 0; i < blocosOutput.length; i++) {
-                let bloco = blocosOutput[i];
-                const inputCorrespondente = blocosInput[i] || conteudoPrincipal;
-
-                const valorTotalMatch = bloco.match(/R\$\s*([\d.,]+)/);
-                const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
-                
-                bloco = bloco.replace(/{passageiros}/g, passageirosFormatado)
-                             .replace(/{parcelamento\d?}/g, formatarParcelamento(inputCorrespondente, parcelamento, valorTotalString))
-                             .replace(/{bagagem\d?}/g, formatarBagagem(inputCorrespondente))
-                             .replace(/{assento\d?}/g, formatarAssento(inputCorrespondente));
-                
-                resultadoProcessado.push(`*OPÇÃO ${i+1}${bloco}`);
-            }
-            resultadoFinal = resultadoProcessado.join('\n\n');
-        } else {
-            const valorTotalMatch = resultadoBruto.match(/R\$\s*([\d.,]+)/);
-            const valorTotalString = valorTotalMatch ? valorTotalMatch[1] : null;
-            
-            resultadoFinal = resultadoBruto
-                .replace(/{passageiros}/g, passageirosFormatado)
-                .replace(/{parcelamento}/g, formatarParcelamento(conteudoPrincipal, parcelamento, valorTotalString))
-                .replace(/{bagagem}/g, formatarBagagem(conteudoPrincipal))
-                .replace(/{assento}/g, formatarAssento(conteudoPrincipal));
-        }
+        // Regex para encontrar as linhas de parcelamento e bagagem/assento
+        const parcelamentoRegex = /^(Entrada de R\$.*)$/gm;
+        const bagagemAssentoRegex = /^(Com bagagem|SEM bagagem|Bagagem incluída|Só mala de mão).*$/gm;
         
-        resultadoFinal = resultadoFinal.split('\n').filter(line => line.trim() !== '').join('\n');
+        let resultadoFinal = resultadoBruto.replace(parcelamentoRegex, (match) => {
+            const valorTotalMatch = match.match(/R\$\s*([\d.,]+)/); // Tenta pegar o valor total da linha anterior, se existir
+            const valorTotalAnteriorMatch = resultadoBruto.substring(0, resultadoBruto.indexOf(match)).match(/💰 R\$\s*([\d.,]+)/);
+            const valorTotalString = valorTotalAnteriorMatch ? valorTotalAnteriorMatch[1] : null;
+            return formatarParcelamento(match, parcelamento, valorTotalString);
+        });
+
+        resultadoFinal = resultadoFinal.replace(bagagemAssentoRegex, (match) => {
+            const bagagem = formatarBagagem(match);
+            const assento = formatarAssento(match);
+            return [bagagem, assento].filter(Boolean).join('\n'); // Junta com quebra de linha se ambos existirem
+        });
+        
+        // Adiciona a linha em branco entre as opções
+        resultadoFinal = resultadoFinal.replace(/\n\*OPÇÃO/g, '\n\n*OPÇÃO');
         
         return res.status(200).json({
             success: true, result: resultadoFinal, ia_usada: iaUsada,
