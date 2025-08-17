@@ -1,5 +1,5 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.8 - DETECÇÃO INTELIGENTE DE OPÇÕES
+// 🚀 CVC ITAQUA v2.8 - DETECÇÃO INTELIGENTE DE OPÇÕES - CORRIGIDO
 // ================================================================================
 // 
 // 📁 ÍNDICE DO ARQUIVO:
@@ -12,8 +12,8 @@
 //    SEÇÃO 7: HANDLER PRINCIPAL (Linha ~1400)
 //
 // ================================================================================
-// VERSÃO: 2.8
-// DATA: 17/08/2025 - 17:00
+// VERSÃO: 2.8 CORRIGIDA
+// DATA: 17/08/2025 - 18:00
 // AUTOR: Sistema CVC Itaqua
 // ================================================================================
 
@@ -157,7 +157,7 @@ function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal, num
     try {
         console.log(`[${getTimestamp()}] Formatando parcelamento para opção ${numeroOpcao || 'única'}`);
         
-        // Buscar padrão de entrada + parcelas
+        // Buscar padrão de entrada + parcelas no texto
         const padraoEntrada = /entrada\s+de\s+R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+R\$\s*([\d.,]+)/i;
         const matchEntrada = conteudo.match(padraoEntrada);
         
@@ -345,27 +345,52 @@ function aplicarPosProcessamento(resultado, conteudoOriginal, parcelamentoSeleci
         if (temMultiplasOpcoes) {
             console.log(`[${getTimestamp()}] Processando múltiplas opções...`);
             
-            // Processar cada opção
+            // Dividir o texto por opções
+            const opcoes = resultado.split(/\*OPÇÃO \d+/).filter(opcao => opcao.trim());
+            
+            // Processar cada opção individualmente
             for (let i = 1; i <= 3; i++) {
                 const numeroOpcao = i.toString();
+                const regexOpcao = new RegExp(`\\*OPÇÃO ${numeroOpcao}[\\s\\S]*?(?=\\*OPÇÃO ${i+1}|Valores sujeitos|$)`, 'i');
+                const matchOpcao = resultado.match(regexOpcao);
                 
-                // Extrair valor da opção
-                const regexValor = new RegExp(`OPÇÃO ${numeroOpcao}[\\s\\S]*?R\\$\\s*([\\d.,]+)`, 'i');
-                const matchValor = resultado.match(regexValor);
-                const valorTotal = matchValor ? matchValor[1] : '';
-                
-                if (valorTotal) {
-                    // Formatar elementos
-                    const parcelamento = formatarParcelamento(conteudoOriginal, parcelamentoSelecionado, valorTotal, numeroOpcao);
-                    const bagagem = formatarBagagem(conteudoOriginal, numeroOpcao);
-                    const assento = formatarAssento(conteudoOriginal, numeroOpcao);
-                    const reembolso = formatarReembolso(conteudoOriginal, numeroOpcao);
+                if (matchOpcao) {
+                    const textoOpcao = matchOpcao[0];
                     
-                    // Substituir placeholders
-                    resultado = resultado.replace(new RegExp(`\\[PARCELAMENTO_${numeroOpcao}\\]`, 'g'), parcelamento || '');
-                    resultado = resultado.replace(new RegExp(`\\[BAGAGEM_${numeroOpcao}\\]`, 'g'), bagagem || '');
-                    resultado = resultado.replace(new RegExp(`\\[ASSENTO_${numeroOpcao}\\]`, 'g'), assento || '');
-                    resultado = resultado.replace(new RegExp(`\\[REEMBOLSO_${numeroOpcao}\\]`, 'g'), reembolso || '');
+                    // Extrair valor da opção
+                    const regexValor = /R\$\s*([\d.,]+)/;
+                    const matchValor = textoOpcao.match(regexValor);
+                    const valorTotal = matchValor ? matchValor[1] : '';
+                    
+                    if (valorTotal) {
+                        // Buscar dados específicos desta opção no conteúdo original
+                        const linhasOriginal = conteudoOriginal.split('\n');
+                        let dadosOpcao = '';
+                        
+                        // Procurar pelo valor específico no texto original
+                        const regexValorOriginal = new RegExp(`R\\$\\s*${valorTotal.replace('.', '\\.')}`);
+                        for (let j = 0; j < linhasOriginal.length; j++) {
+                            if (regexValorOriginal.test(linhasOriginal[j])) {
+                                // Capturar contexto desta opção (linhas antes e depois)
+                                const inicio = Math.max(0, j - 15);
+                                const fim = Math.min(linhasOriginal.length, j + 5);
+                                dadosOpcao = linhasOriginal.slice(inicio, fim).join('\n');
+                                break;
+                            }
+                        }
+                        
+                        // Formatar elementos específicos desta opção
+                        const parcelamento = formatarParcelamento(dadosOpcao || conteudoOriginal, parcelamentoSelecionado, valorTotal, numeroOpcao);
+                        const bagagem = formatarBagagem(dadosOpcao || conteudoOriginal, numeroOpcao);
+                        const assento = formatarAssento(dadosOpcao || conteudoOriginal, numeroOpcao);
+                        const reembolso = formatarReembolso(dadosOpcao || conteudoOriginal, numeroOpcao);
+                        
+                        // Substituir placeholders
+                        resultado = resultado.replace(new RegExp(`\\[PARCELAMENTO_${numeroOpcao}\\]`, 'g'), parcelamento || '');
+                        resultado = resultado.replace(new RegExp(`\\[BAGAGEM_${numeroOpcao}\\]`, 'g'), bagagem || '');
+                        resultado = resultado.replace(new RegExp(`\\[ASSENTO_${numeroOpcao}\\]`, 'g'), assento || '');
+                        resultado = resultado.replace(new RegExp(`\\[REEMBOLSO_${numeroOpcao}\\]`, 'g'), reembolso || '');
+                    }
                 }
             }
         } else {
@@ -594,12 +619,57 @@ ${templateEscolhido}
     }
 }
 
+// PROMPT ESPECÍFICO PARA DICAS
+function generateDicasPrompt(destino) {
+    return `Você é um especialista em viagens da CVC Itaqua.
+
+GERE DICAS DE VIAGEM para ${destino} seguindo EXATAMENTE este formato do manual:
+
+━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA ${destino.toUpperCase()}*
+━━━━━━━━━━━━━━━━━━
+
+🌡️ *CLIMA EM [MÊS]:*
+• Temperatura: [min]°C a [max]°C
+• [Descrição do clima]
+• Leve: [roupas recomendadas]
+
+🎯 *TOP ATRAÇÕES:*
+1. [Atração 1] - [breve descrição]
+2. [Atração 2] - [breve descrição]
+3. [Atração 3] - [breve descrição]
+
+🍽️ *GASTRONOMIA:*
+• Pratos típicos: [pratos]
+• Preço médio refeição: R$ [valor]
+• Dica: [restaurante ou região]
+
+💰 *CUSTOS MÉDIOS:*
+• Transporte público: R$ [valor]
+• Táxi do aeroporto: R$ [valor]
+• Entrada museus: R$ [valor]
+
+📱 *DICAS PRÁTICAS:*
+• [Moeda e câmbio]
+• [Idioma e comunicação]
+• [Segurança]
+
+🚨 *IMPORTANTE:*
+[Avisos específicos do destino]
+
+IMPORTANTE: 
+- Use dados REAIS sobre ${destino}
+- NÃO use placeholders genéricos
+- Informe temperatura, custos e dicas específicas
+- Mantenha EXATAMENTE a formatação mostrada`;
+}
+
 // ================================================================================
 // SEÇÃO 7: HANDLER PRINCIPAL
 // ================================================================================
 
 export default async function handler(req, res) {
-    console.log(`[${getTimestamp()}] ====== NOVA REQUISIÇÃO v2.8 ======`);
+    console.log(`[${getTimestamp()}] ====== NOVA REQUISIÇÃO v2.8 CORRIGIDA ======`);
     
     // Headers CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -617,9 +687,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             status: 'operational',
-            version: '2.8',
+            version: '2.8-corrigida',
             timestamp: getTimestamp(),
-            message: 'CVC Itaqua API v2.8 - Funcionando'
+            message: 'CVC Itaqua API v2.8 Corrigida - Funcionando'
         });
     }
 
@@ -648,6 +718,52 @@ export default async function handler(req, res) {
 
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
         
+        // Verificar se é solicitação de dicas
+        const ehSolicitacaoDicas = conteudoPrincipal.includes('CONSULTE O MANUAL E GERE DICAS') || 
+                                  tipos.includes('Dicas');
+        
+        if (ehSolicitacaoDicas) {
+            console.log(`[${getTimestamp()}] 🧭 Gerando dicas para ${destino}`);
+            
+            const promptDicas = generateDicasPrompt(destino || 'Lisboa');
+            
+            // Usar GPT para dicas (mais rápido)
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: 'Você é um especialista em viagens da CVC que gera dicas específicas e detalhadas.' },
+                        { role: 'user', content: promptDicas }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 1500
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`OpenAI erro ${response.status}`);
+            }
+
+            const data = await response.json();
+            const resultado = data.choices[0].message.content;
+            
+            return res.status(200).json({
+                success: true,
+                result: resultado,
+                metadata: {
+                    version: '2.8-corrigida',
+                    timestamp: getTimestamp(),
+                    tipo: 'dicas',
+                    destino: destino || 'Lisboa'
+                }
+            });
+        }
+        
         if (!conteudoPrincipal.trim() && !imagemBase64) {
             console.log(`[${getTimestamp()}] ⚠️ Requisição sem conteúdo`);
             return res.status(400).json({
@@ -668,7 +784,7 @@ export default async function handler(req, res) {
         let resultado;
         const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
         
-        const systemPrompt = `Você é um assistente da CVC Itaqua. VERSÃO 2.8.
+        const systemPrompt = `Você é um assistente da CVC Itaqua. VERSÃO 2.8 CORRIGIDA.
 
 REGRAS CRÍTICAS:
 1. DETECTAR número real de opções nos dados (1, 2 ou 3)
@@ -755,7 +871,7 @@ Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
         // Limpar resultado básico
         resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
         
-        // APLICAR PÓS-PROCESSAMENTO v2.8
+        // APLICAR PÓS-PROCESSAMENTO v2.8 CORRIGIDO
         resultado = aplicarPosProcessamento(resultado, conteudoPrincipal, parcelamento);
         
         console.log(`[${getTimestamp()}] ✅ v2.8: Processamento completo`);
@@ -764,7 +880,7 @@ Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
             success: true,
             result: resultado,
             metadata: {
-                version: '2.8',
+                version: '2.8-corrigida',
                 timestamp: getTimestamp(),
                 tipo: tipoOrcamento,
                 numeroOpcoes: numeroOpcoes
@@ -777,7 +893,7 @@ Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
             success: false,
             error: 'Erro interno do servidor',
             details: error.message,
-            version: '2.8',
+            version: '2.8-corrigida',
             timestamp: getTimestamp()
         });
     }
@@ -787,13 +903,12 @@ Há ${numeroOpcoes} opção(ões) nos dados fornecidos.`;
 // LOGS DE INICIALIZAÇÃO
 // ================================================================================
 console.log('========================================');
-console.log(`[${getTimestamp()}] ✅ CVC Itaqua v2.8 INICIALIZADA`);
+console.log(`[${getTimestamp()}] ✅ CVC Itaqua v2.8 CORRIGIDA`);
 console.log('========================================');
-console.log('📋 FUNCIONALIDADES:');
-console.log('  ✅ Detecção inteligente de opções');
-console.log('  ✅ Não inventa opções extras');
-console.log('  ✅ Templates apropriados por tipo');
-console.log('  ✅ Formatação correta de datas');
-console.log('  ✅ Nomes de aeroportos em português');
-console.log('  ✅ Parcelamento específico por opção');
+console.log('📋 CORREÇÕES APLICADAS:');
+console.log('  ✅ Parcelamento no formato correto');
+console.log('  ✅ Quebras de linha de bagagem/assento');
+console.log('  ✅ Processamento específico por opção');
+console.log('  ✅ Dicas funcionais (não mais templates)');
+console.log('  ✅ Detecção melhorada de "abagegem"');
 console.log('========================================');
