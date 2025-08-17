@@ -1,32 +1,22 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v2.89 - SISTEMA COMPLETO E FUNCIONAL
+// 🚀 CVC ITAQUA v2.89 - SISTEMA DE TEMPLATES/MODELOS
 // ================================================================================
 // ARQUIVO: api/ai-google.js
+// 
+// IMPORTANTE: Este arquivo contém apenas MODELOS/TEMPLATES!
+// A IA é responsável por preencher com dados reais baseados no conteúdo fornecido.
 // ================================================================================
 
-// Função auxiliar para timestamp
-function getTimestamp() {
-    const now = new Date();
-    return now.toLocaleString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit'
-    });
-}
-
 // ================================================================================
-// CONFIGURAÇÕES E CONSTANTES
+// CONFIGURAÇÕES
 // ================================================================================
 
 const CONFIG = {
     VERSION: '2.89',
-    DEFAULT_DESTINATION: 'Lisboa'
+    DEFAULT_DESTINATION: 'Destino'
 };
 
+// Tabela de conversão de aeroportos (para a IA usar como referência)
 const AEROPORTOS = {
     'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos',
     'GIG': 'Galeão', 'SDU': 'Santos Dumont', 'BSB': 'Brasília',
@@ -37,35 +27,343 @@ const AEROPORTOS = {
     'BCN': 'Barcelona', 'CDG': 'Paris Charles de Gaulle', 'FCO': 'Roma',
     'LHR': 'Londres', 'AMS': 'Amsterdam', 'FRA': 'Frankfurt',
     'JFK': 'Nova York', 'MIA': 'Miami', 'MCO': 'Orlando',
-    'LAX': 'Los Angeles', 'SFO': 'São Francisco', 'YYZ': 'Toronto',
-    'MEX': 'Cidade do México', 'CUN': 'Cancún', 'EZE': 'Buenos Aires',
-    'SCL': 'Santiago', 'LIM': 'Lima', 'BOG': 'Bogotá'
+    'CUN': 'Cancún', 'EZE': 'Buenos Aires', 'SCL': 'Santiago'
 };
 
 // ================================================================================
-// FUNÇÕES DE DETECÇÃO
+// SEÇÃO 1: TEMPLATES/MODELOS DE ORÇAMENTO
+// ================================================================================
+
+const TEMPLATES = {
+    
+    // TEMPLATE 1: AÉREO SIMPLES
+    AEREO_SIMPLES: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor_total} para {passageiros}
+💳 {parcelamento}
+✅ {bagagem}
+💺 {assento}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 2: MÚLTIPLAS OPÇÕES
+    MULTIPLAS_OPCOES: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
+{dados_opcao1}
+
+💰 R$ {valor1} para {passageiros}
+💳 {parcelamento1}
+✅ {bagagem1}
+💺 {assento1}
+🏷️ {reembolso1}
+🔗 {link1}
+
+*OPÇÃO 2 - {companhia2} - {cidade_origem} ✈ {cidade_destino}*
+{dados_opcao2}
+
+💰 R$ {valor2} para {passageiros}
+💳 {parcelamento2}
+✅ {bagagem2}
+💺 {assento2}
+🏷️ {reembolso2}
+🔗 {link2}
+
+*OPÇÃO 3 - {companhia3} - {cidade_origem} ✈ {cidade_destino}*
+{dados_opcao3}
+
+💰 R$ {valor3} para {passageiros}
+💳 {parcelamento3}
+✅ {bagagem3}
+💺 {assento3}
+🏷️ {reembolso3}
+🔗 {link3}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 3: MULTITRECHO
+    MULTITRECHO: `*MULTITRECHO - {companhias}*
+📅 {data_inicio} a {data_fim} ({total_dias} dias)
+👥 {passageiros}
+
+━━━━━━━━━━━━━━━━━━
+{trechos_detalhados}
+
+💰 R$ {valor_total} para {passageiros}
+💳 {parcelamento}
+✅ {bagagem}
+🏷️ {reembolso}
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 4: PACOTE COMPLETO
+    PACOTE_COMPLETO: `*🏖️ PACOTE {destino_upper}*
+📅 {data_inicio} a {data_fim} ({dias} dias e {noites} noites)
+👥 {passageiros}
+
+*✈️ AÉREO {companhia}:*
+{detalhes_voo}
+
+*🏨 HOSPEDAGEM:*
+{detalhes_hotel}
+
+*🚌 TRASLADOS:*
+{detalhes_traslados}
+
+💰 R$ {valor_total} para {passageiros}
+💳 {parcelamento}
+
+*✅ INCLUÍDO:*
+{itens_incluidos}
+
+*❌ NÃO INCLUÍDO:*
+{itens_nao_incluidos}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 5: CRUZEIRO
+    CRUZEIRO: `*🚢 CRUZEIRO {nome_navio}*
+🗓️ {data_inicio} a {data_fim}
+⛴️ {noites} noites
+📍 Saída: {porto_saida}
+👥 {passageiros}
+
+*🗺️ ROTEIRO:*
+{roteiro_detalhado}
+
+*🛏️ CATEGORIAS DE CABINE:*
+{categorias_cabines}
+
+*✅ INCLUÍDO:*
+{itens_incluidos}
+
+*❌ NÃO INCLUÍDO:*
+{itens_nao_incluidos}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 6: SOMENTE HOTEL
+    SOMENTE_HOTEL: `*🏨 HOTÉIS EM {destino_upper}*
+📅 Check-in: {checkin} | Check-out: {checkout}
+🌙 {noites} noites
+👥 {passageiros}
+
+{opcoes_hoteis}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 7: INGRESSOS
+    INGRESSOS: `*🎢 INGRESSOS {nome_atracao}*
+📅 Data da visita: {data_visita}
+👥 {quantidade} ingressos
+
+*📋 DETALHES:*
+{detalhes_ingresso}
+
+*💳 VALORES:*
+{tabela_valores}
+
+💰 Total: R$ {valor_total}
+💳 {parcelamento}
+
+*📱 IMPORTANTE:*
+{informacoes_importantes}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 8: SEGURO VIAGEM
+    SEGURO_VIAGEM: `*🛡️ SEGURO VIAGEM {destino}*
+📅 Período: {data_inicio} a {data_fim} ({dias} dias)
+👥 {quantidade} segurado(s)
+🌍 Destino: {tipo_destino}
+
+*📋 COBERTURAS:*
+{lista_coberturas}
+
+*🏥 ASSISTÊNCIA 24H:*
+{lista_assistencia}
+
+💰 R$ {valor_por_pessoa} por pessoa
+💰 Total: R$ {valor_total}
+💳 {parcelamento}
+
+*📱 IMPORTANTE:*
+{informacoes_importantes}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 9: LOCAÇÃO DE CARRO
+    LOCACAO_CARRO: `*🚗 LOCAÇÃO DE VEÍCULO - {destino_upper}*
+📅 Retirada: {data_retirada} às {hora_retirada}
+📅 Devolução: {data_devolucao} às {hora_devolucao}
+📍 Local: {local_retirada}
+⏱️ {total_diarias} diárias
+
+*🚙 VEÍCULO:*
+{detalhes_veiculo}
+
+*💰 VALORES:*
+{detalhamento_valores}
+
+💰 Total: R$ {valor_total}
+💳 {parcelamento}
+
+*✅ INCLUÍDO:*
+{itens_incluidos}
+
+*❌ NÃO INCLUÍDO:*
+{itens_nao_incluidos}
+
+*📋 DOCUMENTAÇÃO:*
+{documentacao_necessaria}
+
+🔗 {link}
+
+Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`,
+
+    // TEMPLATE 10: DICAS WHATSAPP
+    DICAS_WHATSAPP: `━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA {destino_upper}*
+━━━━━━━━━━━━━━━━━━
+
+🌟 *Sobre {destino}*
+{descricao_destino}
+
+🎯 *PRINCIPAIS PASSEIOS:*
+{lista_passeios}
+
+🌡️ *CLIMA {periodo}:*
+{informacoes_clima}
+
+{secao_criancas}
+
+🍽️ *GASTRONOMIA:*
+{informacoes_gastronomia}
+
+💰 *INFORMAÇÕES ÚTEIS:*
+{informacoes_uteis}
+
+💳 *CUSTOS MÉDIOS:*
+{tabela_custos}
+
+🛡️ *SEGURO VIAGEM:*
+{informacoes_seguro}
+
+📱 *DICAS PRÁTICAS:*
+{dicas_praticas}
+
+🎁 *PRODUTOS CVC RECOMENDADOS:*
+{produtos_recomendados}
+
+🚨 *IMPORTANTE:*
+{avisos_importantes}
+
+{documentacao_menores}
+
+💡 *DICA DE OURO:*
+{dica_especial}`,
+
+    // TEMPLATE 11: RANKING DE HOTÉIS
+    RANKING_HOTEIS: `━━━━━━━━━━━━━━━━━━
+🏆 *RANKING DOS HOTÉIS EM {destino_upper}*
+━━━━━━━━━━━━━━━━━━
+
+{ranking_detalhado}
+
+💡 *MINHA RECOMENDAÇÃO:*
+{recomendacao_personalizada}
+
+{dicas_familias}
+
+📌 *OBSERVAÇÕES:*
+{observacoes_finais}`
+};
+
+// ================================================================================
+// SEÇÃO 2: INSTRUÇÕES PARA A IA
+// ================================================================================
+
+const INSTRUCOES_IA = {
+    GERAL: `
+Você deve preencher o template fornecido com as informações extraídas do conteúdo.
+Use EXATAMENTE o formato do template, substituindo apenas os placeholders {}.
+
+REGRAS DE FORMATAÇÃO:
+- Datas: DD/MM
+- Horários: HH:MM
+- Valores: R$ X.XXX,XX
+- Passageiros: XX adultos + XX crianças
+- Converter códigos de aeroporto usando a tabela fornecida
+- Adicionar (+1) quando chegada é no dia seguinte
+- Para tipo de voo: "voo direto", "com conexão", "uma escala em {cidade}"
+
+IMPORTANTE:
+- Extraia TODAS as informações do conteúdo fornecido
+- Se alguma informação não estiver disponível, use valores padrão razoáveis
+- Mantenha a formatação WhatsApp com emojis
+- Termine sempre com: Valores sujeitos a confirmação e disponibilidade (v2.89)`,
+
+    DICAS: `
+Para gerar DICAS, você deve:
+1. Pesquisar/criar informações REAIS e ATUALIZADAS sobre o destino
+2. Incluir clima específico do período mencionado
+3. Listar atrações turísticas principais
+4. Informar custos médios locais
+5. Adicionar dicas práticas e úteis
+6. Se houver crianças, incluir seção específica com atrações infantis
+7. Todas as informações devem ser VERÍDICAS e ÚTEIS`,
+
+    RANKING: `
+Para gerar RANKING de hotéis, você deve:
+1. Criar 3 opções de hotéis com características diferentes
+2. Incluir localização e distâncias de pontos turísticos
+3. Adicionar avaliações realistas (Booking, Google, TripAdvisor)
+4. Destacar pontos fortes e fracos
+5. Se houver crianças, mencionar estrutura familiar
+6. Fazer recomendação baseada no perfil dos passageiros`
+};
+
+// ================================================================================
+// SEÇÃO 3: FUNÇÕES DE DETECÇÃO
 // ================================================================================
 
 function detectarTipoOrcamento(conteudo, tipos = []) {
     const texto = conteudo.toLowerCase();
     
-    // Prioridade para tipos selecionados
+    // Prioridade para tipos selecionados no formulário
     if (tipos && tipos.length > 0) {
+        if (tipos.includes('Dicas')) return 'DICAS';
+        if (tipos.includes('Ranking')) return 'RANKING';
         if (tipos.includes('Cruzeiro')) return 'CRUZEIRO';
         if (tipos.includes('Multitrechos')) return 'MULTITRECHO';
         if (tipos.includes('Hotel') && tipos.includes('Aéreo')) return 'PACOTE_COMPLETO';
         if (tipos.includes('Hotel')) return 'SOMENTE_HOTEL';
     }
     
-    // Detecção por conteúdo
-    if (texto.includes('multitrecho') || texto.includes('multi-trecho')) return 'MULTITRECHO';
-    if (texto.includes('cruzeiro') || texto.includes('navio')) return 'CRUZEIRO';
+    // Detecção automática pelo conteúdo
+    if (texto.includes('gere dicas') || texto.includes('dicas')) return 'DICAS';
+    if (texto.includes('gere ranking') || texto.includes('ranking')) return 'RANKING';
+    if (texto.includes('multitrecho')) return 'MULTITRECHO';
+    if (texto.includes('cruzeiro')) return 'CRUZEIRO';
     if (texto.includes('seguro viagem')) return 'SEGURO_VIAGEM';
-    if (texto.includes('ingresso') || texto.includes('parque')) return 'INGRESSOS';
-    if (texto.includes('locação') || texto.includes('aluguel de carro')) return 'LOCACAO_CARRO';
+    if (texto.includes('ingresso')) return 'INGRESSOS';
+    if (texto.includes('locação') || texto.includes('carro')) return 'LOCACAO_CARRO';
     if (texto.includes('hotel') && texto.includes('aéreo')) return 'PACOTE_COMPLETO';
-    if (texto.includes('hotel') && !texto.includes('aéreo')) return 'SOMENTE_HOTEL';
+    if (texto.includes('hotel')) return 'SOMENTE_HOTEL';
     
+    // Verificar múltiplas opções
     const numeroOpcoes = detectarNumeroOpcoes(conteudo);
     if (numeroOpcoes >= 2) return 'MULTIPLAS_OPCOES';
     
@@ -73,676 +371,277 @@ function detectarTipoOrcamento(conteudo, tipos = []) {
 }
 
 function detectarNumeroOpcoes(conteudo) {
-    const links = conteudo.match(/https:\/\/www\.cvc\.com\.br\/carrinho-dinamico\/[\w\-]+/g) || [];
-    const linksUnicos = [...new Set(links)];
+    const valores = (conteudo.match(/R\$\s*[\d.,]+/g) || []).length;
+    const links = (conteudo.match(/https:\/\/www\.cvc\.com\.br/g) || []).length;
+    const opcoes = (conteudo.match(/opção \d/gi) || []).length;
     
-    const valores = conteudo.match(/R\$\s*[\d.,]+/g) || [];
-    const valoresUnicos = [...new Set(valores)];
-    
-    return Math.max(linksUnicos.length, Math.min(valoresUnicos.length, 3), 1);
+    return Math.max(valores, links, opcoes, 1);
 }
 
 function extrairDestino(conteudo, destinoForm = '') {
-    if (destinoForm) return destinoForm;
+    if (destinoForm && destinoForm.trim()) return destinoForm;
     
-    const texto = conteudo.toLowerCase();
-    const destinos = {
-        'lisboa': 'Lisboa', 'porto': 'Porto', 'madrid': 'Madrid',
-        'paris': 'Paris', 'roma': 'Roma', 'londres': 'Londres',
-        'orlando': 'Orlando', 'miami': 'Miami', 'cancun': 'Cancún',
-        'cancún': 'Cancún', 'buenos aires': 'Buenos Aires',
-        'salvador': 'Salvador', 'fortaleza': 'Fortaleza', 'recife': 'Recife'
-    };
-    
-    for (const [key, cidade] of Object.entries(destinos)) {
-        if (texto.includes(key)) return cidade;
+    // Tentar extrair do conteúdo
+    const codigosAeroporto = conteudo.match(/\b([A-Z]{3})\b/g);
+    if (codigosAeroporto) {
+        for (const codigo of codigosAeroporto) {
+            if (AEROPORTOS[codigo] && !['GRU', 'CGH', 'SDU', 'GIG'].includes(codigo)) {
+                return AEROPORTOS[codigo].split(' ')[0];
+            }
+        }
     }
     
     return CONFIG.DEFAULT_DESTINATION;
 }
 
 // ================================================================================
-// FUNÇÕES DE EXTRAÇÃO
+// SEÇÃO 4: GERAÇÃO DE PROMPTS PARA A IA
 // ================================================================================
 
-function extrairDados(conteudo, opcao = 1) {
-    const dados = {
-        companhia: 'Companhia Aérea',
-        tipoVoo: 'com conexão',
-        valor: '5.000,00',
-        passageiros: '02 adultos',
-        datas: { ida: '15/03', volta: '22/03' },
-        horarios: {
-            ida: { saida: '08:00', chegada: '12:00 (+1)' },
-            volta: { saida: '14:00', chegada: '18:00' }
-        }
-    };
+function gerarPromptParaIA(tipo, conteudo, destino, passageiros) {
+    const template = TEMPLATES[tipo];
+    const instrucoes = INSTRUCOES_IA.GERAL;
     
-    // Extrair valor
-    const valores = conteudo.match(/R\$\s*([\d.,]+)/g) || [];
-    if (valores[opcao - 1]) {
-        dados.valor = valores[opcao - 1].replace('R$ ', '');
+    let promptEspecifico = '';
+    
+    switch (tipo) {
+        case 'DICAS':
+            promptEspecifico = `
+${INSTRUCOES_IA.DICAS}
+
+Gere dicas REAIS e ATUALIZADAS para ${destino}.
+Use o template abaixo e preencha com informações verdadeiras:
+
+${TEMPLATES.DICAS_WHATSAPP}`;
+            break;
+            
+        case 'RANKING':
+            promptEspecifico = `
+${INSTRUCOES_IA.RANKING}
+
+Crie um ranking de 3 hotéis para ${destino}.
+Use o template abaixo:
+
+${TEMPLATES.RANKING_HOTEIS}`;
+            break;
+            
+        default:
+            promptEspecifico = `
+Extraia as informações do conteúdo abaixo e preencha o template:
+
+CONTEÚDO:
+${conteudo}
+
+DESTINO: ${destino}
+PASSAGEIROS: ${passageiros}
+
+TEMPLATE A PREENCHER:
+${template}`;
     }
     
-    // Extrair companhia
-    const texto = conteudo.toLowerCase();
-    if (texto.includes('tap')) dados.companhia = 'Tap Portugal';
-    else if (texto.includes('iberia')) dados.companhia = 'Iberia';
-    else if (texto.includes('latam')) dados.companhia = 'Latam';
-    else if (texto.includes('gol')) dados.companhia = 'Gol';
-    else if (texto.includes('azul')) dados.companhia = 'Azul';
-    
-    // Detectar tipo de voo
-    if (texto.includes('voo direto')) dados.tipoVoo = 'voo direto';
-    else if (texto.includes('escala em madrid')) dados.tipoVoo = 'uma escala em Madrid';
-    
-    return dados;
+    return `
+${instrucoes}
+
+TABELA DE AEROPORTOS:
+${JSON.stringify(AEROPORTOS, null, 2)}
+
+${promptEspecifico}
+
+IMPORTANTE: 
+- Preencha TODOS os placeholders {} com informações extraídas ou geradas
+- Mantenha o formato exato do template
+- Use dados REAIS quando for gerar informações (dicas, ranking)
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
 }
 
 // ================================================================================
-// PROCESSADORES DE PRODUTOS
-// ================================================================================
-
-// 1. AÉREO SIMPLES
-function processarAereoSimples(conteudo, destino, passageiros) {
-    const dados = extrairDados(conteudo);
-    
-    return `*${dados.companhia} - São Paulo ✈ ${destino}*
-${dados.datas.ida} - Guarulhos ${dados.horarios.ida.saida} / ${destino} ${dados.horarios.ida.chegada} (${dados.tipoVoo})
---
-${dados.datas.volta} - ${destino} ${dados.horarios.volta.saida} / Guarulhos ${dados.horarios.volta.chegada} (${dados.tipoVoo})
-
-💰 R$ ${dados.valor} para ${passageiros || dados.passageiros}
-💳 10x de R$ ${(parseFloat(dados.valor.replace('.', '').replace(',', '.')) / 10).toFixed(2).replace('.', ',')} s/ juros no cartão
-✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-💺 Inclui pré reserva de assento
-🏷️ Não reembolsável
-🔗 https://www.cvc.com.br/carrinho-dinamico/opcao1
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 2. MÚLTIPLAS OPÇÕES
-function processarMultiplasOpcoes(conteudo, destino, passageiros) {
-    const numOpcoes = Math.min(detectarNumeroOpcoes(conteudo), 3);
-    let resultado = '';
-    
-    const opcoes = [
-        { companhia: 'Iberia', tipoVoo: 'uma escala em Madrid', valor: '28.981,23' },
-        { companhia: 'Tap Portugal', tipoVoo: 'voo direto', valor: '34.179,29' },
-        { companhia: 'Latam', tipoVoo: 'com conexão', valor: '32.500,00' }
-    ];
-    
-    for (let i = 0; i < numOpcoes; i++) {
-        const opt = opcoes[i];
-        resultado += `*OPÇÃO ${i + 1} - ${opt.companhia} - São Paulo ✈ ${destino}*
-11/07 - Guarulhos 08:00 / ${destino} 12:00 (+1) (${opt.tipoVoo})
---
-23/07 - ${destino} 14:00 / Guarulhos 18:00 (${opt.tipoVoo})
-
-💰 R$ ${opt.valor} para ${passageiros || '02 adultos'}
-💳 10x de R$ ${(parseFloat(opt.valor.replace('.', '').replace(',', '.')) / 10).toFixed(2).replace('.', ',')} s/ juros no cartão
-✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-💺 Inclui pré reserva de assento
-🏷️ Não reembolsável
-🔗 https://www.cvc.com.br/carrinho-dinamico/opcao${i + 1}`;
-        
-        if (i < numOpcoes - 1) resultado += '\n\n';
-    }
-    
-    resultado += `\n\nValores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-    return resultado;
-}
-
-// 3. MULTITRECHO
-function processarMultitrecho(conteudo, destino, passageiros) {
-    return `*MULTITRECHO - Múltiplas Companhias*
-📅 15/05 a 25/05 (11 dias)
-👥 ${passageiros || '02 adultos'}
-
-━━━━━━━━━━━━━━━━━━
-*TRECHO 1: São Paulo ✈ Londres*
-15/05 - Guarulhos 22:00 / Londres 16:00 (+1) (voo direto)
-Companhia: British Airways
-
-*TRECHO 2: Londres ✈ Paris*
-18/05 - Londres 10:30 / Paris 13:00 (voo direto)
-Companhia: Air France
-
-*TRECHO 3: Paris ✈ Roma*
-21/05 - Paris 14:15 / Roma 16:30 (voo direto)
-Companhia: Alitalia
-
-*TRECHO 4: Roma ✈ São Paulo*
-25/05 - Roma 08:00 / Guarulhos 18:30 (com conexão)
-Companhia: Lufthansa
-
-💰 R$ 15.500,00 para ${passageiros || '02 adultos'}
-💳 10x de R$ 1.550,00 s/ juros no cartão
-✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg
-🏷️ Reembolsável conforme regras do bilhete
-🔗 https://www.cvc.com.br/carrinho-dinamico/multitrecho
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 4. PACOTE COMPLETO
-function processarPacoteCompleto(conteudo, destino, passageiros) {
-    return `*🏖️ PACOTE ${destino.toUpperCase()}*
-📅 15/03 a 22/03 (8 dias e 7 noites)
-👥 ${passageiros || '02 adultos + 01 criança (7 anos)'}
-
-*✈️ AÉREO GOL:*
-IDA: 15/03 - Guarulhos 22:30 / ${destino} 05:45 (+1) (voo direto)
-VOLTA: 22/03 - ${destino} 07:00 / Guarulhos 17:15 (voo direto)
-
-*🏨 HOSPEDAGEM:*
-Hotel: Hotel Paradise ⭐⭐⭐⭐
-📍 Zona Hoteleira - 2km do centro
-🛏️ Quarto Standard
-🍽️ All Inclusive
-📱 Wi-Fi gratuito
-🏊 Piscina
-🏋️ Academia
-
-*🚌 TRASLADOS:*
-• Aeroporto ⇄ Hotel
-• Tours opcionais
-
-💰 R$ 8.500,00 para ${passageiros || '02 adultos + 01 criança'}
-💳 12x de R$ 708,33 s/ juros no cartão
-
-*✅ INCLUÍDO:*
-• Passagens aéreas
-• 7 noites de hospedagem
-• All Inclusive
-• Traslados
-• Taxas e serviços inclusos
-
-*❌ NÃO INCLUÍDO:*
-• Passeios opcionais
-• Gastos pessoais
-• Seguro viagem
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/pacote
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 5. CRUZEIRO
-function processarCruzeiro(conteudo, destino, passageiros) {
-    return `*🚢 CRUZEIRO MSC SEAVIEW*
-🗓️ 15/03 a 22/03
-⛴️ 7 noites
-📍 Saída: Santos
-👥 ${passageiros || '02 adultos'}
-
-*🗺️ ROTEIRO:*
-Dia 1: Santos - Embarque a partir das 16:00
-Dia 2: Navegação
-Dia 3: Montevidéu - 08:00 às 18:00
-Dia 4: Buenos Aires - 08:00 às 23:00
-Dia 5: Punta del Este - 08:00 às 18:00
-Dia 6: Navegação
-Dia 7: Ilhabela - 08:00 às 18:00
-Dia 8: Santos - Desembarque até 10:00
-
-*🛏️ CATEGORIAS DE CABINE:*
-
-━━━━━━━━━━━━━━━━━━
-*CABINE INTERNA*
-• 2 camas baixas ou cama de casal
-• Banheiro privativo
-• TV e cofre
-• Sem janela
-
-💰 R$ 2.200,00 casal
-💳 10x de R$ 220,00 s/ juros no cartão
-
-━━━━━━━━━━━━━━━━━━
-*CABINE EXTERNA*
-• 2 camas baixas ou cama de casal
-• Janela para o mar
-• Banheiro privativo
-• TV, cofre e frigobar
-
-💰 R$ 2.800,00 casal
-💳 10x de R$ 280,00 s/ juros no cartão
-
-━━━━━━━━━━━━━━━━━━
-*CABINE COM VARANDA*
-• Cama de casal
-• Varanda privativa
-• Banheiro privativo
-• TV, cofre, frigobar
-• Área de estar
-
-💰 R$ 3.500,00 casal
-💳 10x de R$ 350,00 s/ juros no cartão
-
-*✅ INCLUÍDO:*
-• Hospedagem na cabine escolhida
-• Todas as refeições (café, almoço, jantar)
-• Entretenimento a bordo
-• Academia e piscinas
-• Kids Club
-• Taxas e serviços inclusos
-
-*❌ NÃO INCLUÍDO:*
-• Bebidas alcoólicas
-• Refrigerantes (exceto nas refeições)
-• Serviços de spa
-• Excursões em terra
-• Internet
-• Cassino
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/cruzeiro
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 6. SOMENTE HOTEL
-function processarSomenteHotel(conteudo, destino, passageiros) {
-    return `*🏨 HOTÉIS EM ${destino.toUpperCase()}*
-📅 Check-in: 15/03 | Check-out: 22/03
-🌙 7 noites
-👥 ${passageiros || '02 adultos'}
-
-━━━━━━━━━━━━━━━━━━
-*OPÇÃO 1 - Hotel Excellence ⭐⭐⭐⭐*
-📍 Centro - 1km do centro
-🛏️ Quarto Superior
-🍽️ Café da manhã
-📱 Wi-Fi gratuito
-🏊 Piscina
-✅ Taxas e serviços inclusos
-
-💰 R$ 2.800,00 total da hospedagem
-💳 10x de R$ 280,00 s/ juros no cartão
-🔗 https://www.cvc.com.br/carrinho-dinamico/hotel1
-
-━━━━━━━━━━━━━━━━━━
-*OPÇÃO 2 - Hotel Premium ⭐⭐⭐⭐⭐*
-📍 Beira-mar - 3km do centro
-🛏️ Quarto Deluxe
-🍽️ Meia pensão
-📱 Wi-Fi gratuito
-🏊 Piscina
-🏋️ Academia
-✅ Taxas e serviços inclusos
-
-💰 R$ 3.500,00 total da hospedagem
-💳 10x de R$ 350,00 s/ juros no cartão
-🔗 https://www.cvc.com.br/carrinho-dinamico/hotel2
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 7. INGRESSOS
-function processarIngressos(conteudo, destino) {
-    return `*🎢 INGRESSOS DISNEY WORLD*
-📅 Data da visita: 15/03/2025
-👥 04 ingressos
-
-*📋 DETALHES:*
-• Tipo: Park Hopper
-• Validade: 1 dia
-• Horário: 09:00 às 23:00
-• Inclui: Acesso a todos os parques
-
-*💳 VALORES:*
-• Adulto: R$ 450,00
-• Criança (3-11 anos): R$ 380,00
-• Idoso (60+): R$ 380,00
-• Gratuito: Menores de 3 anos
-
-💰 Total: R$ 1.660,00
-💳 10x de R$ 166,00 s/ juros no cartão
-
-*📱 IMPORTANTE:*
-• Apresentar QR Code na entrada
-• Documento com foto obrigatório
-• Chegue com 30min de antecedência
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/ingresso
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 8. SEGURO VIAGEM
-function processarSeguroViagem(conteudo, destino) {
-    return `*🛡️ SEGURO VIAGEM EUROPA*
-📅 Período: 11/07 a 23/07 (13 dias)
-👥 05 segurado(s)
-🌍 Destino: Internacional
-
-*📋 COBERTURAS:*
-✅ Despesas médicas: EUR 60.000
-✅ Despesas odontológicas: EUR 800
-✅ Bagagem extraviada: EUR 1.200
-✅ Cancelamento de viagem: EUR 1.500
-✅ Morte acidental: EUR 20.000
-✅ Invalidez permanente: EUR 20.000
-
-*🏥 ASSISTÊNCIA 24H:*
-• Telemedicina
-• Orientação em caso de perda de documentos
-• Assistência jurídica
-• Localização de bagagem
-
-💰 R$ 45,00 por pessoa
-💰 Total: R$ 225,00
-💳 3x de R$ 75,00 s/ juros no cartão
-
-*📱 IMPORTANTE:*
-• Cobertura COVID-19 incluída
-• Atende requisitos do Tratado Schengen
-• Acionamento via WhatsApp 24h
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/seguro
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 9. LOCAÇÃO DE CARRO
-function processarLocacaoCarro(conteudo, destino) {
-    return `*🚗 LOCAÇÃO DE VEÍCULO - ${destino.toUpperCase()}*
-📅 Retirada: 11/07 às 10:00
-📅 Devolução: 23/07 às 10:00
-📍 Local: Aeroporto
-⏱️ 12 diárias
-
-*🚙 VEÍCULO:*
-Categoria: Econômico
-Modelo: Volkswagen Gol ou similar
-✅ Ar condicionado
-✅ Direção hidráulica
-✅ Câmbio manual
-✅ 5 pessoas
-✅ 2 malas grandes
-
-*💰 VALORES:*
-Diárias: R$ 1.200,00
-Proteções: R$ 180,00
-Taxas: R$ 120,00
-
-💰 Total: R$ 1.500,00
-💳 10x de R$ 150,00 s/ juros no cartão
-
-*✅ INCLUÍDO:*
-• Km livre
-• Proteção básica
-• Taxas e serviços inclusos
-
-*❌ NÃO INCLUÍDO:*
-• Combustível
-• Pedágios
-• Multas
-
-*📋 DOCUMENTAÇÃO:*
-• CNH válida (mínimo 2 anos)
-• Cartão de crédito (caução)
-• Idade mínima: 21 anos
-
-🔗 https://www.cvc.com.br/carrinho-dinamico/carro
-
-Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-}
-
-// 10. DICAS WHATSAPP
-function gerarDicasWhatsApp(destino, criancas) {
-    const temCrianca = parseInt(criancas) > 0;
-    
-    return `💡 *DICAS PARA ${destino.toUpperCase()}*
-
-🌟 *Sobre ${destino}*
-Uma cidade encantadora que combina história milenar com modernidade vibrante. Com seus bondes históricos, miradouros deslumbrantes e gastronomia excepcional!
-
-🎯 *PRINCIPAIS PASSEIOS:*
-1. *Mosteiro dos Jerónimos* - Patrimônio UNESCO
-2. *Torre de Belém* - Símbolo de Lisboa
-3. *Bairro de Alfama* - Coração tradicional com fado
-4. *Tram 28* - Passeio pelos bairros históricos
-5. *Sintra* - Palácio da Pena (bate-volta)
-
-🌡️ *CLIMA EM JULHO:*
-Perfeito! Entre 18°C e 28°C, muito sol
-Leve: roupas leves, protetor solar, casaco leve para noite
-
-${temCrianca ? `👶 *COM CRIANÇA:*
-• Oceanário de Lisboa (2º maior da Europa!)
-• Pavilhão do Conhecimento (museu interativo)
-• Telecabine do Parque das Nações
-• Pastéis de Belém são imperdíveis!
-
-` : ''}💰 *INFORMAÇÕES ÚTEIS:*
-• Moeda: Euro (€) - cartão aceito em todo lugar
-• Idioma: Português - comunicação fácil!
-• Documento: RG ou Passaporte
-• Seguro: Obrigatório (Tratado Schengen)
-
-🛡️ *SEGURO VIAGEM:*
-Altamente recomendado! Garante tranquilidade total para emergências médicas, bagagem extraviada e cancelamentos.
-
-🎁 *PRODUTOS CVC RECOMENDADOS:*
-✅ Seguro viagem completo
-✅ Chip internacional
-✅ Passeios guiados em português
-✅ Traslados privativos
-✅ Ingressos antecipados (evite filas!)
-
-💡 *DICA DE OURO:*
-Reserve tudo com antecedência para garantir disponibilidade e melhores preços. Nossa equipe está pronta para personalizar sua viagem!
-
-${temCrianca ? `📋 *DOCUMENTAÇÃO PARA MENORES:*
-Crianças desacompanhadas de um ou ambos os pais precisam de autorização judicial. Consulte nossos especialistas para orientação completa.` : ''}`;
-}
-
-// 11. RANKING DE HOTÉIS
-function gerarRankingHoteis(destino, criancas) {
-    const temCrianca = parseInt(criancas) > 0;
-    
-    return `━━━━━━━━━━━━━━━━━━
-🏆 *RANKING DOS HOTÉIS EM ${destino.toUpperCase()}*
-━━━━━━━━━━━━━━━━━━
-
-🥇 *1º LUGAR: Tivoli Oriente Lisboa*
-🛏️ Quarto Superior: Vista para o rio Tejo
-📍 Parque das Nações, 8km do centro histórico (15 min de metrô)
-   📏 0.5km a pé do Oceanário
-   📏 1.2km a pé do Telecabine
-⭐ Avaliações:
-   • Booking: 8.4/10
-   • Google: 4.2/5
-   • TripAdvisor: 4.0/5
-✅ Destaques: Moderno, vista rio, próximo ao Oceanário, piscina
-
-🥈 *2º LUGAR: Hotel Real Palácio*
-🛏️ Quarto Standard: Estilo clássico português
-📍 Centro Histórico, próximo à Praça do Comércio
-   📏 200m do Tram 28
-   📏 500m do Castelo São Jorge
-⭐ Avaliações:
-   • Booking: 7.8/10
-   • Google: 4.0/5
-   • TripAdvisor: 3.5/5
-✅ Destaques: Centro histórico, próximo a tudo a pé
-⚠️ *HOTEL SIMPLES - CATEGORIA ECONÔMICA*
-
-🥉 *3º LUGAR: Memmo Alfama Hotel*
-🛏️ Quarto com Varanda: Vista panorâmica da cidade
-📍 Alfama, 2km do centro histórico
-   📏 100m da Sé Catedral
-   📏 300m do Miradouro
-⭐ Avaliações:
-   • Booking: 9.1/10
-   • Google: 4.5/5
-   • TripAdvisor: 4.5/5
-✅ Destaques: Boutique hotel, terraço com piscina, vista incrível
-
-💡 *MINHA RECOMENDAÇÃO:*
-Para sua viagem, recomendo o *Tivoli Oriente* pela excelente localização e estrutura completa.
-
-${temCrianca ? `👶 *DICA PARA FAMÍLIAS:*
-O Tivoli Oriente oferece quartos familiares espaçosos e kids club.
-Fica próximo ao Oceanário e Pavilhão do Conhecimento.` : ''}
-
-📌 *OBSERVAÇÕES:*
-• Preços variam conforme temporada
-• Reserve com antecedência para garantir disponibilidade
-• Consulte condições de cancelamento
-• Avaliações coletadas em 08/2025`;
-}
-
-// ================================================================================
-// HANDLER PRINCIPAL
+// SEÇÃO 5: HANDLER PRINCIPAL
 // ================================================================================
 
 module.exports = async function handler(req, res) {
-    console.log(`[${getTimestamp()}] === CVC v${CONFIG.VERSION} INICIANDO ===`);
-    
     // Headers CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
-    // OPTIONS request
+    // OPTIONS
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+        return res.status(200).end();
     }
     
-    // GET request - Status
+    // GET - Status
     if (req.method === 'GET') {
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             status: 'operational',
             version: CONFIG.VERSION,
-            message: 'CVC Itaqua v2.89 - Sistema Funcionando!'
+            message: 'CVC Itaqua API v2.89 - Sistema de Templates',
+            info: 'Este sistema fornece templates/modelos para a IA preencher com dados reais'
         });
-        return;
     }
     
-    // Validar método POST
+    // Validar POST
     if (req.method !== 'POST') {
-        res.status(405).json({
+        return res.status(405).json({
             success: false,
             error: 'Método não permitido'
         });
-        return;
     }
     
     try {
-        // Extrair dados
+        // Extrair dados do request
         const {
             observacoes = '',
             textoColado = '',
             destino = '',
-            adultos = '',
-            criancas = 0,
+            adultos = '2',
+            criancas = '0',
             tipos = [],
             parcelamento = '',
             imagemBase64 = null,
             pdfContent = null
-        } = req.body;
+        } = req.body || {};
         
+        // Combinar conteúdo
         const conteudo = observacoes || textoColado || pdfContent || '';
-        console.log(`[${getTimestamp()}] Processando: ${conteudo.length} caracteres`);
         
-        // Detectar destino e passageiros
+        // Validar conteúdo
+        if (!conteudo.trim() && !imagemBase64) {
+            return res.status(400).json({
+                success: false,
+                error: 'Por favor, adicione informações sobre a viagem'
+            });
+        }
+        
+        // Detectar informações
         const destinoFinal = extrairDestino(conteudo, destino);
-        const passageiros = adultos ? 
-            `${String(adultos).padStart(2, '0')} adultos${criancas > 0 ? ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}` : ''}` : 
-            '02 adultos';
+        const tipoOrcamento = detectarTipoOrcamento(conteudo, tipos);
         
-        // DICAS
-        if (conteudo.includes('GERE DICAS') || tipos.includes('Dicas')) {
-            const resultado = gerarDicasWhatsApp(destinoFinal, criancas);
-            res.status(200).json({
-                success: true,
-                result: resultado,
-                metadata: { tipo: 'dicas', version: CONFIG.VERSION }
-            });
-            return;
+        // Formatar passageiros
+        const numAdultos = parseInt(adultos) || 2;
+        const numCriancas = parseInt(criancas) || 0;
+        let passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
+        if (numCriancas > 0) {
+            passageiros += ` + ${String(numCriancas).padStart(2, '0')} criança${numCriancas > 1 ? 's' : ''}`;
         }
         
-        // RANKING
-        if (conteudo.includes('GERE RANKING') || tipos.includes('Ranking')) {
-            const resultado = gerarRankingHoteis(destinoFinal, criancas);
-            res.status(200).json({
-                success: true,
-                result: resultado,
-                metadata: { tipo: 'ranking', version: CONFIG.VERSION }
-            });
-            return;
-        }
+        // Gerar prompt para a IA
+        const prompt = gerarPromptParaIA(tipoOrcamento, conteudo, destinoFinal, passageiros);
         
-        // ORÇAMENTOS
-        const tipo = detectarTipoOrcamento(conteudo, tipos);
-        console.log(`[${getTimestamp()}] Tipo detectado: ${tipo}`);
+        // Configurar qual IA usar
+        const usarClaude = imagemBase64 || conteudo.length > 3000 || tipoOrcamento === 'MULTITRECHO';
         
         let resultado;
         
-        switch (tipo) {
-            case 'AEREO_SIMPLES':
-                resultado = processarAereoSimples(conteudo, destinoFinal, passageiros);
-                break;
-            case 'MULTIPLAS_OPCOES':
-                resultado = processarMultiplasOpcoes(conteudo, destinoFinal, passageiros);
-                break;
-            case 'MULTITRECHO':
-                resultado = processarMultitrecho(conteudo, destinoFinal, passageiros);
-                break;
-            case 'PACOTE_COMPLETO':
-                resultado = processarPacoteCompleto(conteudo, destinoFinal, passageiros);
-                break;
-            case 'CRUZEIRO':
-                resultado = processarCruzeiro(conteudo, destinoFinal, passageiros);
-                break;
-            case 'SOMENTE_HOTEL':
-                resultado = processarSomenteHotel(conteudo, destinoFinal, passageiros);
-                break;
-            case 'INGRESSOS':
-                resultado = processarIngressos(conteudo, destinoFinal);
-                break;
-            case 'SEGURO_VIAGEM':
-                resultado = processarSeguroViagem(conteudo, destinoFinal);
-                break;
-            case 'LOCACAO_CARRO':
-                resultado = processarLocacaoCarro(conteudo, destinoFinal);
-                break;
-            default:
-                resultado = processarAereoSimples(conteudo, destinoFinal, passageiros);
+        if (usarClaude && process.env.ANTHROPIC_API_KEY) {
+            // Usar Claude para casos complexos
+            const messages = [{
+                role: 'user',
+                content: imagemBase64 ? [
+                    { type: 'text', text: prompt },
+                    {
+                        type: 'image',
+                        source: {
+                            type: 'base64',
+                            media_type: imagemBase64.split(';')[0].split(':')[1],
+                            data: imagemBase64.split(',')[1]
+                        }
+                    }
+                ] : prompt
+            }];
+            
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'x-api-key': process.env.ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-haiku-20240307',
+                    max_tokens: 2048,
+                    temperature: 0.3,
+                    messages,
+                    system: 'Você é um assistente da CVC Itaqua especializado em formatar orçamentos de viagem.'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Claude API erro: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            resultado = data.content[0].text;
+            
+        } else if (process.env.OPENAI_API_KEY) {
+            // Usar GPT-4 para casos normais
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'Você é um assistente da CVC Itaqua especializado em formatar orçamentos de viagem. Siga EXATAMENTE o template fornecido.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 2048
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`OpenAI API erro: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            resultado = data.choices[0].message.content;
+            
+        } else {
+            throw new Error('Nenhuma API key configurada');
         }
         
-        console.log(`[${getTimestamp()}] ✅ Processamento concluído`);
+        // Limpar formatação de código se houver
+        resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
         
-        res.status(200).json({
+        // Retornar resultado
+        return res.status(200).json({
             success: true,
             result: resultado,
             metadata: {
-                tipo: tipo,
+                tipo: tipoOrcamento,
                 destino: destinoFinal,
+                passageiros: passageiros,
                 version: CONFIG.VERSION
             }
         });
         
     } catch (error) {
-        console.error(`[${getTimestamp()}] ❌ Erro:`, error);
-        res.status(500).json({
+        console.error('Erro:', error);
+        return res.status(200).json({
             success: false,
-            error: error.message || 'Erro interno do servidor',
-            version: CONFIG.VERSION
+            error: error.message || 'Erro ao processar orçamento',
+            result: 'Erro ao processar. Por favor, tente novamente.'
         });
     }
 };
 
-// Log de inicialização
+// ================================================================================
+// LOG DE INICIALIZAÇÃO
+// ================================================================================
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║         CVC ITAQUA v2.89 - SISTEMA COMPLETO                    ║');
+console.log('║       CVC ITAQUA v2.89 - SISTEMA DE TEMPLATES                  ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Todos os 11 produtos funcionando                            ║');
-console.log('║ ✅ Templates completos mantidos                                ║');
-console.log('║ ✅ Dicas e Rankings completos                                  ║');
-console.log('║ ✅ Arquivo: api/ai-google.js                                   ║');
+console.log('║ ✅ Sistema fornece apenas MODELOS/TEMPLATES                    ║');
+console.log('║ ✅ IA preenche com dados REAIS baseados no conteúdo           ║');
+console.log('║ ✅ Suporta todos os 11 tipos de orçamento                     ║');
+console.log('║ ✅ Dicas e Rankings gerados com dados reais pela IA           ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
