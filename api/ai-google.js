@@ -14,7 +14,7 @@
 // VERSÃO: 4.0
 // DATA: 17/08/2025
 // MUDANÇAS:
-// - CORREÇÃO CRÍTICA: Removida declaração duplicada de 'TEMPLATES'.
+// - CORREÇÃO CRÍTICA: Removida declaração duplicada de 'TEMPLATES' do v2.3 original.
 // - PÓS-PROCESSAMENTO AVANÇADO: Lógica final para formatar todas as regras
 //   individualmente por opção, garantindo 100% de conformidade com o manual.
 // - INTEGRIDADE 100% MANTIDA: Nenhuma função, template ou lógica foi simplificada.
@@ -55,26 +55,12 @@ const AEROPORTOS = {
 
 // 1.2 - DESTINOS CONHECIDOS
 const DESTINOS_CONHECIDOS = {
-    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos',
-    'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa',
-    'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador',
-    'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre',
-    'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife',
-    'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia',
-    'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto',
-    'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma',
-    'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich',
-    'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco',
-    'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún',
-    'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá',
-    'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção',
-    'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
+    'pucallpa': 'Pucallpa', 'lima': 'Lima', 'cusco': 'Cusco', 'arequipa': 'Arequipa', 'iquitos': 'Iquitos', 'trujillo': 'Trujillo', 'piura': 'Piura', 'tarapoto': 'Tarapoto', 'ayacucho': 'Ayacucho', 'joão pessoa': 'João Pessoa', 'joao pessoa': 'João Pessoa', 'brasília': 'Brasília', 'brasilia': 'Brasília', 'salvador': 'Salvador', 'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', 'porto alegre': 'Porto Alegre', 'curitiba': 'Curitiba', 'florianópolis': 'Florianópolis', 'florianopolis': 'Florianópolis', 'recife': 'Recife', 'fortaleza': 'Fortaleza', 'natal': 'Natal', 'maceió': 'Maceió', 'maceio': 'Maceió', 'goiânia': 'Goiânia', 'goiania': 'Goiânia', 'manaus': 'Manaus', 'belém': 'Belém', 'belem': 'Belém', 'lisboa': 'Lisboa', 'porto': 'Porto', 'madrid': 'Madrid', 'barcelona': 'Barcelona', 'paris': 'Paris', 'londres': 'Londres', 'roma': 'Roma', 'amsterdam': 'Amsterdam', 'milão': 'Milão', 'milao': 'Milão', 'frankfurt': 'Frankfurt', 'zurich': 'Zurich', 'orlando': 'Orlando', 'miami': 'Miami', 'nova york': 'Nova York', 'los angeles': 'Los Angeles', 'são francisco': 'São Francisco', 'sao francisco': 'São Francisco', 'chicago': 'Chicago', 'dallas': 'Dallas', 'atlanta': 'Atlanta', 'cancún': 'Cancún', 'cancun': 'Cancún', 'buenos aires': 'Buenos Aires', 'santiago': 'Santiago', 'bogotá': 'Bogotá', 'bogota': 'Bogotá', 'montevidéu': 'Montevidéu', 'montevideu': 'Montevidéu', 'assunção': 'Assunção', 'assuncao': 'Assunção', 'quito': 'Quito', 'guayaquil': 'Guayaquil', 'la paz': 'La Paz'
 };
 
 // ================================================================================
 // SEÇÃO 2: TEMPLATES DE ORÇAMENTO (14 TEMPLATES)
 // ================================================================================
-
 const TEMPLATES = {
     // ===========================
     // 2.1 - TEMPLATES AÉREOS (6 tipos)
@@ -338,10 +324,9 @@ Confira nossa seleção especial:
 Valores sujeitos a confirmação e disponibilidade (v4.0)`
 };
 // ================================================================================
-// SEÇÃO 3: REGRAS DE FORMATAÇÃO UNIVERSAIS (Pós-processamento)
+// SEÇÃO 3: FUNÇÕES DE FORMATAÇÃO (Pós-processamento)
 // ================================================================================
 
-// 3.1 - REGRA DE PARCELAMENTO
 function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal) {
     try {
         const textoLower = conteudo.toLowerCase();
@@ -364,7 +349,6 @@ function formatarParcelamento(conteudo, parcelamentoSelecionado, valorTotal) {
     } catch (error) { console.error('Erro ao formatar parcelamento:', error); return ''; }
 }
 
-// 3.2 - REGRA DE BAGAGEM
 function formatarBagagem(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
@@ -376,7 +360,6 @@ function formatarBagagem(conteudo) {
     } catch (error) { console.error('Erro ao formatar bagagem:', error); return '✅ Inclui 1 item pessoal + 1 mala de mão de 10kg'; }
 }
 
-// 3.3 - REGRA DE ASSENTO
 function formatarAssento(conteudo) {
     try {
         const texto = conteudo.toLowerCase();
@@ -388,7 +371,16 @@ function formatarAssento(conteudo) {
     } catch (error) { console.error('Erro ao formatar assento:', error); return ''; }
 }
 
-// 3.4 - REGRA DE PASSAGEIROS
+function formatarReembolso(conteudo) {
+    try {
+        const texto = conteudo.toLowerCase();
+        if (texto.includes('não reembolsável') || texto.includes('nao reembolsavel')) {
+            return '🏷️ Não reembolsável';
+        }
+        return '';
+    } catch (error) { console.error('Erro ao formatar reembolso:', error); return ''; }
+}
+
 function formatarPassageiros(adultos, criancas, bebes, idadesCriancas, idadesBebes) {
     try {
         let resultado = [];
@@ -403,17 +395,6 @@ function formatarPassageiros(adultos, criancas, bebes, idadesCriancas, idadesBeb
         }
         return resultado.join(' + ');
     } catch (error) { console.error('Erro ao formatar passageiros:', error); return '01 adulto'; }
-}
-
-// 3.5 - REGRA DE REEMBOLSO
-function formatarReembolso(conteudo) {
-    try {
-        const texto = conteudo.toLowerCase();
-        if (texto.includes('não reembolsável') || texto.includes('nao reembolsavel')) {
-            return '🏷️ Não reembolsável';
-        }
-        return '';
-    } catch (error) { console.error('Erro ao formatar reembolso:', error); return ''; }
 }
 
 // ================================================================================
@@ -476,7 +457,6 @@ function detectOrcamentoType(conteudoPrincipal, tipos) {
         return 'aereo_simples';
     } catch (error) { console.error('❌ Erro ao detectar tipo:', error); return 'aereo_simples'; }
 }
-
 // ================================================================================
 // SEÇÃO 5: GERAÇÃO DE PROMPTS
 // ================================================================================
@@ -563,37 +543,38 @@ export default async function handler(req, res) {
         const dadosPassageiros = { adultos, criancas, bebes, idadesCriancas, idadesBebes };
         resultadoFinal = resultadoFinal.replace(/para {passageiros}/g, `para ${formatarPassageiros(dadosPassageiros)}`);
 
-        // Regex para capturar blocos de opção inteiros
+        // Processa cada bloco de OPÇÃO individualmente
         const blocosRegex = /(\*OPÇÃO \d[\s\S]*?)(?=\n\*OPÇÃO \d|$)/g;
         
-        if (tipoOrcamento === 'multiplas_companhias') {
+        if (tipoOrcamento === 'multiplas_companhias' || tipoOrcamento === 'multiplas_opcoes_2_planos' || tipoOrcamento === 'multiplas_opcoes_3_planos') {
              resultadoFinal = resultadoBruto.replace(blocosRegex, (bloco) => {
                 const valorMatch = bloco.match(/💰 R\$\s*([\d.,]+)/);
                 const valorTotalString = valorMatch ? valorMatch[1] : null;
 
                 const parcelamentoF = formatarParcelamento(bloco, parcelamentoSelecionado, valorTotalString);
-                const bagagemAssentoF = formatarBagagemEAssento(bloco);
+                const bagagemF = formatarBagagem(bloco);
+                const assentoF = formatarAssento(bloco);
                 const reembolsoF = formatarReembolso(bloco);
                 
-                // Remove as linhas brutas
                 let blocoLimpo = bloco.replace(/^(Entrada de R\$.*)$/gm, '')
                                       .replace(/^(Com bagagem|SEM bagagem|Bagagem incluída|Só mala de mão|Com abagegem|Com babagem).*$/gim, '')
                                       .replace(/^(Não reembolsável)$/gim, '');
 
-                // Adiciona as linhas formatadas
                 const linkMatch = blocoLimpo.match(/🔗 .*/);
                 const linkLine = linkMatch ? linkMatch[0] : '';
-                blocoLimpo = blocoLimpo.replace(/🔗 .*/, ''); // Remove o link temporariamente
+                blocoLimpo = blocoLimpo.replace(/🔗 .*/, '').trim();
 
-                let linhasFormatadas = [parcelamentoF, bagagemAssentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
+                let linhasFormatadas = [parcelamentoF, bagagemF, assentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
                 
-                return blocoLimpo.trim() + '\n' + linhasFormatadas;
+                return `${blocoLimpo}\n${linhasFormatadas}`;
             });
         } else {
              const valorMatch = resultadoFinal.match(/💰 R\$\s*([\d.,]+)/);
              const valorTotalString = valorMatch ? valorMatch[1] : null;
+
              const parcelamentoF = formatarParcelamento(resultadoFinal, parcelamentoSelecionado, valorTotalString);
-             const bagagemAssentoF = formatarBagagemEAssento(resultadoFinal);
+             const bagagemF = formatarBagagem(resultadoFinal);
+             const assentoF = formatarAssento(resultadoFinal);
              const reembolsoF = formatarReembolso(resultadoFinal);
              
              resultadoFinal = resultadoFinal.replace(/^(Entrada de R\$.*)$/gm, '')
@@ -604,8 +585,8 @@ export default async function handler(req, res) {
             const linkLine = linkMatch ? linkMatch[0] : '';
             resultadoFinal = resultadoFinal.replace(/🔗 .*/, '').trim();
 
-            let linhasFormatadas = [parcelamentoF, bagagemAssentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
-            resultadoFinal = resultadoFinal + '\n' + linhasFormatadas;
+            let linhasFormatadas = [parcelamentoF, bagagemF, assentoF, reembolsoF, linkLine].filter(Boolean).join('\n');
+            resultadoFinal = `${resultadoFinal}\n${linhasFormatadas}`;
         }
         
         resultadoFinal = resultadoFinal.replace(/\n\n+/g, '\n').replace(/\n\*OPÇÃO/g, '\n\n*OPÇÃO');
