@@ -339,6 +339,51 @@ function formatarBagagem(conteudo, numeroOpcao = '') {
     }
 }
 
+// 3.5 - FORMATAÇÃO DE PASSAGEIROS
+function formatarPassageiros(conteudo) {
+    try {
+        console.log(`[${getTimestamp()}] Formatando passageiros...`);
+        
+        // Buscar padrões de passageiros
+        const regexPassageiros = /(\d+)\s*(adulto|criança|bebê)/gi;
+        const matches = [...conteudo.matchAll(regexPassageiros)];
+        
+        let adultos = 0;
+        let criancas = 0;
+        let bebes = 0;
+        
+        matches.forEach(match => {
+            const quantidade = parseInt(match[1]);
+            const tipo = match[2].toLowerCase();
+            
+            if (tipo.includes('adulto')) adultos = quantidade;
+            if (tipo.includes('criança')) criancas = quantidade;
+            if (tipo.includes('bebê') || tipo.includes('bebe')) bebes = quantidade;
+        });
+        
+        // Formatar saída
+        let resultado = [];
+        
+        if (adultos > 0) {
+            resultado.push(`${adultos.toString().padStart(2, '0')} ${adultos === 1 ? 'adulto' : 'adultos'}`);
+        }
+        
+        if (criancas > 0) {
+            resultado.push(`${criancas.toString().padStart(2, '0')} ${criancas === 1 ? 'criança' : 'crianças'}`);
+        }
+        
+        if (bebes > 0) {
+            resultado.push(`${bebes.toString().padStart(2, '0')} ${bebes === 1 ? 'bebê' : 'bebês'}`);
+        }
+        
+        return resultado.join(' + ') || '01 adulto';
+        
+    } catch (error) {
+        console.error(`[${getTimestamp()}] Erro ao formatar passageiros:`, error);
+        return '01 adulto';
+    }
+}
+
 // 3.3 - REGRA DE ASSENTO
 function formatarAssento(conteudo, numeroOpcao = '') {
     try {
@@ -423,6 +468,25 @@ function aplicarPosProcessamento(resultado, conteudoOriginal, parcelamentoSeleci
             const regex = new RegExp(`\\b${codigo}\\s+(\\d{2}:\\d{2})`, 'g');
             resultado = resultado.replace(regex, `${nome} $1`);
         });
+        
+        // Corrigir formatação de passageiros
+        resultado = resultado.replace(/(\d+)\s*(Adulto|Criança|Bebê)/gi, (match, num, tipo) => {
+            const numero = parseInt(num);
+            const numeroPadded = numero.toString().padStart(2, '0');
+            const tipoLower = tipo.toLowerCase();
+            
+            if (tipoLower.includes('adulto')) {
+                return `${numeroPadded} ${numero === 1 ? 'adulto' : 'adultos'}`;
+            } else if (tipoLower.includes('criança')) {
+                return `${numeroPadded} ${numero === 1 ? 'criança' : 'crianças'}`;
+            } else if (tipoLower.includes('bebê') || tipoLower.includes('bebe')) {
+                return `${numeroPadded} ${numero === 1 ? 'bebê' : 'bebês'}`;
+            }
+            return match;
+        });
+        
+        // Corrigir formato de passageiros com "e" para "+"
+        resultado = resultado.replace(/(\d{2}\s+\w+)\s+e\s+(\d{2}\s+\w+)/g, '$1 + $2');
         
         // Corrigir capitalização de companhias
         resultado = resultado.replace(/tap portugal/gi, 'Tap Portugal');
@@ -630,10 +694,55 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
         let destinoFinal = destino || extrairDestinoDoConteudo(conteudoPrincipal) || 'Destino';
         const numeroOpcoes = detectarNumeroOpcoes(conteudoPrincipal);
         
+        // Detectar se tem crianças
+        const temCrianca = conteudoPrincipal.toLowerCase().includes('criança');
+        
         console.log(`[${getTimestamp()}] 📝 v2.8: Gerando prompt para ${tipoOrcamento} com ${numeroOpcoes} opção(ões)`);
         
         let instrucoes = '';
         let templateEscolhido = '';
+        let dicasDestino = '';
+        
+        // Adicionar dicas do destino se for Lisboa
+        if (destinoFinal.toLowerCase().includes('lisboa')) {
+            dicasDestino = `
+
+━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA LISBOA${temCrianca ? ' COM CRIANÇAS' : ''}*
+━━━━━━━━━━━━━━━━━━
+
+🌡️ *CLIMA EM JULHO:*
+• Temperatura: 18°C a 28°C
+• Ensolarado e seco
+• Leve: roupas leves e protetor solar
+
+🎯 *TOP ATRAÇÕES:*
+1. Torre de Belém - símbolo de Lisboa
+2. Mosteiro dos Jerónimos - patrimônio UNESCO
+3. Bairro de Alfama - o mais antigo da cidade
+
+${temCrianca ? `👶 *COM CRIANÇAS:*
+• Oceanário de Lisboa (2º maior da Europa!)
+• Pavilhão do Conhecimento (museu interativo)
+• Telecabine do Parque das Nações
+• Pastéis de Belém são imperdíveis!
+
+` : ''}🍽️ *GASTRONOMIA:*
+• Pratos típicos: Bacalhau, Pastéis de Nata
+• Preço médio refeição: €15-25 por pessoa
+• Dica: Mercado da Ribeira para variedade
+
+💰 *CUSTOS MÉDIOS:*
+• Transporte público: €1,50 por viagem
+• Táxi do aeroporto: €15-20
+• Entrada museus: €5-15
+
+📱 *DICAS PRÁTICAS:*
+• Moeda: Euro (€)
+• Idioma: Português de Portugal
+• Lisboa Card vale a pena para turismo intenso
+• Use sapatos confortáveis (cidade com ladeiras!)`;
+        }
         
         if (numeroOpcoes === 1) {
             // Instruções para orçamento simples
@@ -644,9 +753,11 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
 2. Use placeholders SIMPLES: [PARCELAMENTO], [BAGAGEM], [ASSENTO], [REEMBOLSO]
 3. Formatar datas como DD/MM (exemplo: 11/07)
 4. Usar nomes de aeroportos, não códigos (Guarulhos, não GRU)
-5. Links diretos sem markdown: 🔗 https://...
-6. Adicionar (+1) para chegadas no dia seguinte
-7. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
+5. Formatar passageiros: 04 adultos + 01 criança (com zero à esquerda)
+6. Links diretos sem markdown: 🔗 https://...
+7. Adicionar (+1) para chegadas no dia seguinte
+8. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
+${dicasDestino ? '9. Adicionar dicas do destino após o orçamento' : ''}
 
 **NÃO INVENTAR OPÇÕES EXTRAS! Há apenas 1 opção nos dados.**`;
             
@@ -664,9 +775,11 @@ function generatePrompt(tipoOrcamento, conteudoPrincipal, destino, parcelamento)
    ${numeroOpcoes === 3 ? '- Opção 3: [PARCELAMENTO_3], [BAGAGEM_3], [ASSENTO_3], [REEMBOLSO_3]' : ''}
 3. Formatar datas como DD/MM (exemplo: 11/07)
 4. Usar nomes de aeroportos, não códigos (Guarulhos, não GRU)
-5. Links diretos sem markdown
-6. Adicionar (+1) para chegadas no dia seguinte
-7. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
+5. Formatar passageiros: 04 adultos + 01 criança (com zero à esquerda)
+6. Links diretos sem markdown
+7. Adicionar (+1) para chegadas no dia seguinte
+8. Terminar com: Valores sujeitos a confirmação e disponibilidade (v2.8)
+${dicasDestino ? '9. Adicionar dicas do destino após as opções' : ''}
 
 **IMPORTANTE: Processar apenas ${numeroOpcoes} opções conforme os dados fornecidos.**`;
             
@@ -683,12 +796,14 @@ ${instrucoes}
 
 TEMPLATE BASE:
 ${templateEscolhido}
+${dicasDestino}
 
 **REGRAS CRÍTICAS:**
 - NÃO inventar opções extras
 - Usar APENAS os dados fornecidos
 - Manter placeholders exatamente como mostrado
 - Formatar datas como DD/MM
+- Formatar passageiros com zero à esquerda (04 adultos + 01 criança)
 - Usar nomes de aeroportos em português`;
 
         return prompt;
