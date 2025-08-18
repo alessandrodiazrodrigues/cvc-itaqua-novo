@@ -191,13 +191,15 @@ function corrigirLinks(texto) {
     let resultado = texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
     
     // Se ainda houver formato markdown, remover
-    resultado = resultado.replace(/🔗 \[.+\]/g, '🔗 https://www.cvc.com.br');
+    resultado = resultado.replace(/🔗 \[.+\]/g, '');
     
-    // Se não tiver link, adicionar placeholder
-    if (!resultado.includes('🔗')) {
-        // Adicionar antes de "Valores sujeitos"
-        resultado = resultado.replace(/\n\nValores sujeitos/, '\n🔗 https://www.cvc.com.br\n\nValores sujeitos');
-    }
+    // Remover link genérico se for apenas www.cvc.com.br
+    resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
+    resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
+    
+    // Manter apenas links específicos (com path)
+    // Se o link tem apenas o domínio, remover
+    resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
     
     return resultado;
 }
@@ -244,27 +246,52 @@ function corrigirBagagem(texto, conteudoOriginal) {
     let resultado = texto;
     const conteudoLower = conteudoOriginal.toLowerCase();
     
-    // Primeiro, remover linhas incorretas de bagagem
+    // Primeiro, remover linhas incorretas
     resultado = resultado.replace(/✅ Não reembolsável/g, '');
+    resultado = resultado.replace(/✅ Com bagagem e pré-reserva de assento/g, '');
     
-    // Detectar e aplicar tipo correto de bagagem
-    if (conteudoLower.includes('sem bagagem') || conteudoLower.includes('sem  bagagem')) {
-        // Sem bagagem despachada
-        resultado = resultado.replace(/✅[^\\n]+/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-    } else if (conteudoLower.includes('com bagagem') || conteudoLower.includes('com abagegem')) {
-        // Com bagagem despachada
-        resultado = resultado.replace(/✅[^\\n]+/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
-    } else {
-        // Se não especificado, usar padrão sem despachada
-        if (!resultado.includes('✅')) {
-            // Adicionar linha de bagagem após o valor
-            resultado = resultado.replace(/(💰 R\$ [^\n]+)/g, '$1\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+    // Detectar bagagem e assento separadamente
+    let temBagagem = false;
+    let temAssento = false;
+    
+    if (conteudoLower.includes('com bagagem') || conteudoLower.includes('com babagem')) {
+        temBagagem = true;
+    }
+    
+    if (conteudoLower.includes('pre reserva') || conteudoLower.includes('pré reserva') || 
+        conteudoLower.includes('pré-reserva')) {
+        temAssento = true;
+    }
+    
+    // Aplicar formato correto de bagagem
+    if (temBagagem) {
+        // Substituir ou adicionar linha de bagagem
+        if (resultado.includes('✅')) {
+            resultado = resultado.replace(/✅[^\n]+/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
         } else {
-            // Corrigir formatos incorretos
-            resultado = resultado.replace(/✅ 1 bagagem de até \d+kg/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
-            resultado = resultado.replace(/✅ 1 bagagem de mão/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-            resultado = resultado.replace(/✅ Bolsa ou mochila pequena/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+            // Adicionar após o valor/parcelamento
+            resultado = resultado.replace(/(💳[^\n]+|💰[^\n]+)(\n|$)/, (match, linha) => {
+                if (linha.includes('💳')) {
+                    return linha + '\n✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG;
+                } else {
+                    return linha + '\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA;
+                }
+            });
         }
+    } else {
+        // Sem bagagem despachada
+        if (resultado.includes('✅')) {
+            resultado = resultado.replace(/✅[^\n]+/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+        } else {
+            resultado = resultado.replace(/(💳[^\n]+|💰[^\n]+)(\n|$)/, (match, linha) => {
+                return linha + '\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA;
+            });
+        }
+    }
+    
+    // Adicionar assento se necessário
+    if (temAssento && !resultado.includes('💺')) {
+        resultado = resultado.replace(/(✅[^\n]+)(\n|$)/, '$1\n💺 Inclui pré reserva de assento');
     }
     
     return resultado;
@@ -349,11 +376,21 @@ function corrigirReembolso(texto) {
 function limparFormatacao(texto) {
     let resultado = texto;
     
-    // Remover múltiplas quebras
+    // Remover múltiplas quebras de linha
     resultado = resultado.replace(/\n{3,}/g, '\n\n');
     
-    // Remover espaços extras
+    // Remover quebra de linha extra antes de 🏷️ quando não tem 💺
+    resultado = resultado.replace(/\n\n🏷️/g, '\n🏷️');
+    
+    // Garantir apenas uma quebra entre elementos
+    resultado = resultado.replace(/(✅[^\n]+)\n\n(🏷️)/g, '$1\n$2');
+    resultado = resultado.replace(/(💺[^\n]+)\n\n(🏷️)/g, '$1\n$2');
+    
+    // Remover espaços extras no final das linhas
     resultado = resultado.split('\n').map(linha => linha.trimEnd()).join('\n');
+    
+    // Garantir separador correto entre ida e volta
+    resultado = resultado.replace(/\n--\n/g, '\n--\n');
     
     return resultado.trim();
 }
