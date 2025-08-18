@@ -1,4 +1,40 @@
-// api/corrections.js - CVC ITAQUA v3.0
+function corrigirAssento(texto, dadosReais) {
+    let resultado = texto;
+    
+    // Verificar se tem pré-reserva no conteúdo original
+    if (dadosReais.opcoes && dadosReais.opcoes.length > 0) {
+        dadosReais.opcoes.forEach((opcao, index) => {
+            if (opcao.assento) {
+                // Se tem assento, garantir que está correto
+                const padrao = new RegExp(
+                    `(OPÇÃO ${index + 1}[^]*?)(💺[^\\n]*)?`,
+                    'gi'
+                );
+                
+                resultado = resultado.replace(padrao, (match, antes, assentoAntigo) => {
+                    if (assentoAntigo) {
+                        return match.replace(assentoAntigo, `💺 ${opcao.assento}`);
+                    } else {
+                        // Adicionar após bagagem
+                        return match.replace(/✅[^\\n]+/, `\n💺 ${opcao.assento}`);
+                    }
+                });
+            } else {
+                // Se não tem assento, remover linha de assento
+                const padrao = new RegExp(
+                    `(OPÇÃO ${index + 1}[^]*?)💺[^\\n]*\\n`,
+                    'gi'
+                );
+                resultado = resultado.replace(padrao, '$1');
+            }
+        });
+    } else {
+        // Se não detectou assento no conteúdo, remover linha de assento
+        resultado = resultado.replace(/💺[^\\n]*\\n/g, '');
+    }
+    
+    return resultado;
+}// api/corrections.js - CVC ITAQUA v3.0
 // ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES (editar aqui sem medo)
 // ================================================================================
 
@@ -8,9 +44,10 @@ import { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } from './templates.js';
 // FUNÇÃO PRINCIPAL DE PÓS-PROCESSAMENTO
 // ================================================================================
 
-export function posProcessar(texto, conteudoOriginal) {
+export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
         console.log('🔧 Iniciando pós-processamento v3.0...');
+        console.log('Parcelamento selecionado:', parcelamentoSelecionado);
         
         let resultado = texto;
         
@@ -23,8 +60,9 @@ export function posProcessar(texto, conteudoOriginal) {
         resultado = corrigirPassageiros(resultado, dadosReais);
         resultado = corrigirFormatoVoo(resultado, conteudoOriginal);
         resultado = corrigirLinks(resultado);
-        resultado = corrigirValoresEParcelamentos(resultado, dadosReais);
+        resultado = corrigirValoresEParcelamentos(resultado, dadosReais, parcelamentoSelecionado);
         resultado = corrigirBagagem(resultado, dadosReais);
+        resultado = corrigirAssento(resultado, dadosReais);
         resultado = adicionarDiaSeguinte(resultado);
         resultado = adicionarNumeracaoOpcoes(resultado);
         resultado = garantirVersao(resultado);
@@ -51,10 +89,21 @@ export function extrairDadosCompletos(conteudoPrincipal) {
     };
     
     try {
-        // Extrair passageiros
-        const matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\s*(?:e\s*)?(\d*)\s*Crianças?\)/i);
+        // Extrair passageiros - MELHORADO para detectar diferentes formatos
+        let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\s*(?:e\s*)?(\d*)\s*Crianças?\)/i);
+        
+        // Tentar outro formato se não encontrou
+        if (!matchPassageiros) {
+            matchPassageiros = conteudoPrincipal.match(/(\d+)\s*adultos?\s*(?:\+|e)?\s*(\d*)\s*crianças?/i);
+        }
+        
+        // Tentar formato "para X adultos"
+        if (!matchPassageiros) {
+            matchPassageiros = conteudoPrincipal.match(/para\s*(\d+)\s*adultos?\s*(?:\+\s*(\d+)\s*crianças?)?/i);
+        }
+        
         if (matchPassageiros) {
-            const adultos = parseInt(matchPassageiros[1]);
+            const adultos = parseInt(matchPassageiros[1]) || 2;
             const criancas = parseInt(matchPassageiros[2]) || 0;
             
             dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
@@ -247,7 +296,28 @@ function corrigirLinks(texto) {
     return texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
 }
 
-function corrigirValoresEParcelamentos(texto, dadosReais) {
+function corrigirValoresEParcelamentos(texto, dadosReais, parcelamentoSelecionado) {
+    let resultado = texto;
+    
+    // Se tem parcelamento selecionado pelo usuário, aplicar em todas as opções
+    if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
+        console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
+        
+        // Encontrar todos os valores no texto
+        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
+        
+        if (valoresEncontrados) {
+            valoresEncontrados.forEach(valorMatch => {
+                const valor = valorMatch.match(/[\d.,]+/)[0];
+                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+                const numParcelas = parseInt(parcelamentoSelecionado);
+                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
+                
+                // Criar linha de parcelamento
+                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+                
+                // Substituir ou adicionar parcelamento após o valor
+                const padrao = new RegExp(`(${valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirValoresEParcelamentos(texto, dadosReais) {
     if (!dadosReais.opcoes || dadosReais.opcoes.length === 0) return texto;
     
     let resultado = texto;
@@ -268,6 +338,33 @@ function corrigirValoresEParcelamentos(texto, dadosReais) {
     });
     
     return resultado;
+}')}[^💳]*)(💳[^\\n]*)?`, 'g');
+                resultado = resultado.replace(padrao, (match, valor, parcelamentoAntigo) => {
+                    return `${valor}\n${linhaParcelamento}`;
+                });
+            });
+        }
+    } else if (dadosReais.opcoes && dadosReais.opcoes.length > 0) {
+        // Usar parcelamento do conteúdo original se houver
+        dadosReais.opcoes.forEach((opcao, index) => {
+            if (!opcao.valor) return;
+            
+            const padrao = new RegExp(
+                `(OPÇÃO ${index + 1}[^]*?)💰 R\\$ [\\d.,]+([^]*?)💳[^\\n]+`,
+                'gi'
+            );
+            
+            resultado = resultado.replace(padrao, (match, antes, depois) => {
+                return `${antes}💰 R$ ${opcao.valor}${depois}💳 ${opcao.parcelamento}`;
+            });
+        });
+    } else {
+        // Se não tem parcelamento selecionado e não tem no conteúdo, remover linha de parcelamento
+        console.log('Removendo parcelamento (não selecionado)');
+        resultado = resultado.replace(/💳[^\\n]+\\n/g, '');
+    }
+    
+    return resultado;
 }
 
 function corrigirBagagem(texto, dadosReais) {
@@ -276,7 +373,10 @@ function corrigirBagagem(texto, dadosReais) {
     // Aplicar correções específicas de cada opção
     if (dadosReais.opcoes && dadosReais.opcoes.length > 0) {
         dadosReais.opcoes.forEach((opcao, index) => {
-            if (!opcao.bagagem) return;
+            if (!opcao.bagagem) {
+                // Se não detectou bagagem, usar padrão mínimo
+                opcao.bagagem = REGRAS_BAGAGEM.SEM_DESPACHADA;
+            }
             
             const padrao = new RegExp(
                 `(OPÇÃO ${index + 1}[^]*?)✅[^\\n]+`,
@@ -289,10 +389,22 @@ function corrigirBagagem(texto, dadosReais) {
         });
     }
     
-    // Correções gerais
+    // Correções gerais - MELHORADAS
     resultado = resultado.replace(/✅ Não inclui bagagem/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
     resultado = resultado.replace(/✅ Sem bagagem/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
     resultado = resultado.replace(/✅ Com bagagem/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
+    resultado = resultado.replace(/✅ 1 bagagem de mão/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+    resultado = resultado.replace(/✅ Bolsa ou mochila pequena/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+    
+    // Se não tem formato correto, aplicar padrão
+    if (!resultado.includes('Inclui 1 item pessoal')) {
+        resultado = resultado.replace(/✅[^\\n]+/g, match => {
+            if (!match.includes('Inclui 1 item pessoal')) {
+                return '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA;
+            }
+            return match;
+        });
+    }
     
     return resultado;
 }
