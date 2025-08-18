@@ -12,12 +12,13 @@ export function extrairDadosCompletos(conteudoPrincipal) {
     const dados = {
         opcoes: [],
         passageiros: null,
-        destino: null
+        destino: null,
+        parcelamento: null
     };
     
     try {
-        // Extrair passageiros - PRIORIZAR o formato "Total (X Adultos)"
-        let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\s*(?:e\s*)?(\d*)\s*Crianças?\)/i);
+        // Extrair passageiros - PRIORIZAR formato "Total (X Adultos)"
+        let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\)(?:\s*(?:e|\+)\s*(\d+)\s*Crianças?)?/i);
         
         if (matchPassageiros) {
             const adultos = parseInt(matchPassageiros[1]) || 1;
@@ -27,19 +28,21 @@ export function extrairDadosCompletos(conteudoPrincipal) {
             if (criancas > 0) {
                 dados.passageiros += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
             }
-        } else {
-            // Tentar outros formatos apenas se não encontrou o formato principal
-            matchPassageiros = conteudoPrincipal.match(/(\d+)\s*adultos?\s*(?:\+|e)?\s*(\d*)\s*crianças?/i);
+        }
+        
+        // Extrair parcelamento com entrada
+        const matchParcelamento = conteudoPrincipal.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
+        if (matchParcelamento) {
+            const entrada = matchParcelamento[1];
+            const numParcelas = matchParcelamento[2];
+            const valorParcela = matchParcelamento[3];
+            const totalParcelas = parseInt(numParcelas) + 1;
             
-            if (matchPassageiros) {
-                const adultos = parseInt(matchPassageiros[1]) || 1;
-                const criancas = parseInt(matchPassageiros[2]) || 0;
-                
-                dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-                if (criancas > 0) {
-                    dados.passageiros += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
-                }
-            }
+            // Extrair valor total
+            const matchValor = conteudoPrincipal.match(/R\$\s*([\d.,]+)(?:\s*Entrada|\s*Total|\s*\n)/);
+            const valorTotal = matchValor ? matchValor[1] : '0';
+            
+            dados.parcelamento = `Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
         
         // Extrair destino
@@ -82,7 +85,7 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         resultado = corrigirPassageiros(resultado, dados);
         resultado = corrigirFormatoVoo(resultado, conteudoOriginal);
         resultado = corrigirLinks(resultado);
-        resultado = corrigirParcelamento(resultado, parcelamentoSelecionado);
+        resultado = corrigirParcelamento(resultado, parcelamentoSelecionado, conteudoOriginal);
         resultado = corrigirBagagem(resultado, conteudoOriginal);
         resultado = corrigirAssento(resultado, conteudoOriginal);
         resultado = corrigirReembolso(resultado);
@@ -204,7 +207,37 @@ function corrigirLinks(texto) {
     return resultado;
 }
 
-function corrigirParcelamento(texto, parcelamentoSelecionado) {
+function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) {
+    let resultado = texto;
+    
+    // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
+    const dados = extrairDadosCompletos(conteudoOriginal);
+    
+    if (dados.parcelamento) {
+        // Usar parcelamento extraído do conteúdo
+        console.log('Usando parcelamento extraído:', dados.parcelamento);
+        
+        // Garantir que há quebra de linha antes do parcelamento
+        if (resultado.includes('💰')) {
+            resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
+        }
+    } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
+        // Usar parcelamento selecionado pelo usuário
+        console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
+        
+        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
+        
+        if (valoresEncontrados) {
+            valoresEncontrados.forEach(valorMatch => {
+                const valor = valorMatch.match(/[\d.,]+/)[0];
+                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+                const numParcelas = parseInt(parcelamentoSelecionado);
+                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
+                
+                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+                
+                // Adicionar ou substituir parcelamento com quebra de linha
+                const regex = new RegExp(`(${valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirParcelamento(texto, parcelamentoSelecionado) {
     let resultado = texto;
     
     if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
@@ -238,6 +271,23 @@ function corrigirParcelamento(texto, parcelamentoSelecionado) {
         resultado = resultado.replace(/\n💳[^\n]+/g, '');
         resultado = resultado.replace(/💳[^\n]+\n/g, '');
     }
+    
+    return resultado;
+}')}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
+                resultado = resultado.replace(regex, (match, antes, parcelamentoAntigo) => {
+                    return `${antes}\n${linhaParcelamento}`;
+                });
+            });
+        }
+    } else {
+        // Remover linha de parcelamento se não foi selecionado e não tem no conteúdo
+        console.log('Removendo parcelamento (não selecionado)');
+        resultado = resultado.replace(/\n💳[^\n]+/g, '');
+        resultado = resultado.replace(/💳[^\n]+\n/g, '');
+    }
+    
+    // Garantir quebra de linha após parcelamento e antes da bagagem
+    resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
     
     return resultado;
 }
