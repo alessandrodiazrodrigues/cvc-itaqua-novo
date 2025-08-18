@@ -46,7 +46,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
 // GERAÇÃO DE PROMPT
 // ================================================================================
 
-function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino) {
+function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehImagem = false) {
     // Se for dicas, usar prompt específico
     if (tipoOrcamento === 'DICAS') {
         return `
@@ -59,39 +59,34 @@ Formato das dicas:
 💡 *DICAS PARA ${(destino || 'DESTINO').toUpperCase()}*
 ━━━━━━━━━━━━━━━━━━
 
-🌟 *Sobre o destino*
-[Descrição breve]
+[conteúdo das dicas]`;
+    }
+    
+    // Se for imagem, prompt específico para OCR
+    if (ehImagem) {
+        return `
+Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 
-🎯 *PRINCIPAIS PASSEIOS:*
-1. [Passeio 1]
-2. [Passeio 2]
-3. [Passeio 3]
-4. [Passeio 4]
-5. [Passeio 5]
+FORMATO ESPERADO:
+*{Companhia} - {Origem} ✈ {Destino}*
+{Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
+--
+{Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
-🌡️ *CLIMA:*
-• Temperatura: XX°C a XX°C
-• [Condição do clima]
-• Leve: [roupas recomendadas]
+💰 R$ {valor} para {passageiros}
+💳 {parcelamento se houver}
+✅ {bagagem no formato: Inclui 1 item pessoal + 1 mala de mão de 10kg}
+💺 {assento se houver}
+🏷️ {reembolso}
+🔗 {link específico se houver}
 
-🍽️ *GASTRONOMIA:*
-• Pratos típicos: [pratos]
-• Preço médio refeição: R$ XX
-• Dica: [restaurante ou região]
-
-💰 *CUSTOS MÉDIOS:*
-• Transporte público: R$ XX
-• Táxi do aeroporto: R$ XX
-• Entrada museus: R$ XX
-
-📱 *DICAS PRÁTICAS:*
-• [Moeda e câmbio]
-• [Idioma]
-• [Gorjetas]
-• [Segurança]
-
-🚨 *IMPORTANTE:*
-[Avisos específicos]`;
+REGRAS:
+- Datas: DD/MM
+- Horários: HH:MM
+- Adicione (+1) se chegar no dia seguinte
+- Use "com conexão em {cidade}" não "escala"
+- Se tem 4 trechos (ida com conexão + volta com conexão), mostre todos
+- Passageiros: formato "XX adultos" ou "XX adultos + XX crianças"`;
     }
     
     // Para orçamentos normais
@@ -199,7 +194,13 @@ export default async function handler(req, res) {
         console.log(`📄 Tipo: ${tipoOrcamento}`);
         
         // Gerar prompt
-        const prompt = gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, dadosExtraidos.destino || destino);
+        const prompt = gerarPrompt(
+            conteudoPrincipal, 
+            passageiros, 
+            tipoOrcamento, 
+            dadosExtraidos.destino || destino,
+            !!imagemBase64
+        );
         
         // Processar com IA
         let resultado = '';
