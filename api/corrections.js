@@ -16,24 +16,29 @@ export function extrairDadosCompletos(conteudoPrincipal) {
     };
     
     try {
-        // Extrair passageiros - múltiplos formatos
+        // Extrair passageiros - PRIORIZAR o formato "Total (X Adultos)"
         let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\s*(?:e\s*)?(\d*)\s*Crianças?\)/i);
         
-        if (!matchPassageiros) {
-            matchPassageiros = conteudoPrincipal.match(/(\d+)\s*adultos?\s*(?:\+|e)?\s*(\d*)\s*crianças?/i);
-        }
-        
-        if (!matchPassageiros) {
-            matchPassageiros = conteudoPrincipal.match(/para\s*(\d+)\s*adultos?\s*(?:\+\s*(\d+)\s*crianças?)?/i);
-        }
-        
         if (matchPassageiros) {
-            const adultos = parseInt(matchPassageiros[1]) || 2;
+            const adultos = parseInt(matchPassageiros[1]) || 1;
             const criancas = parseInt(matchPassageiros[2]) || 0;
             
             dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
             if (criancas > 0) {
                 dados.passageiros += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
+            }
+        } else {
+            // Tentar outros formatos apenas se não encontrou o formato principal
+            matchPassageiros = conteudoPrincipal.match(/(\d+)\s*adultos?\s*(?:\+|e)?\s*(\d*)\s*crianças?/i);
+            
+            if (matchPassageiros) {
+                const adultos = parseInt(matchPassageiros[1]) || 1;
+                const criancas = parseInt(matchPassageiros[2]) || 0;
+                
+                dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
+                if (criancas > 0) {
+                    dados.passageiros += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
+                }
             }
         }
         
@@ -160,10 +165,16 @@ function corrigirFormatoVoo(texto, conteudoOriginal) {
     resultado = resultado.replace(/(\d{2}:\d{2})\s+(Voo direto|Direto)/gi, '$1 (voo direto)');
     resultado = resultado.replace(/(\d{2}:\d{2})\s+(Uma escala|Com conexão)/gi, '$1 (com conexão)');
     
-    // Adicionar cidade da escala se detectada
+    // IMPORTANTE: Sempre usar "conexão" e nunca "escala"
+    resultado = resultado.replace(/uma escala em/gi, 'com conexão em');
+    resultado = resultado.replace(/\(uma escala/gi, '(com conexão');
+    resultado = resultado.replace(/Uma escala/gi, '(com conexão)');
+    resultado = resultado.replace(/com escala/gi, 'com conexão');
+    
+    // Adicionar cidade da conexão se for Iberia
     if (conteudoOriginal.toLowerCase().includes('iberia')) {
-        resultado = resultado.replace(/\(com conexão\)/g, '(uma escala em Madrid)');
-        resultado = resultado.replace(/Uma escala/g, '(uma escala em Madrid)');
+        resultado = resultado.replace(/\(com conexão\)/g, '(com conexão em Madrid)');
+        resultado = resultado.replace(/com conexão em Madrid em Madrid/g, 'com conexão em Madrid');
     }
     
     // Corrigir nomes longos de aeroportos
@@ -176,7 +187,19 @@ function corrigirFormatoVoo(texto, conteudoOriginal) {
 }
 
 function corrigirLinks(texto) {
-    return texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
+    // Converter markdown links para links diretos
+    let resultado = texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
+    
+    // Se ainda houver formato markdown, remover
+    resultado = resultado.replace(/🔗 \[.+\]/g, '🔗 https://www.cvc.com.br');
+    
+    // Se não tiver link, adicionar placeholder
+    if (!resultado.includes('🔗')) {
+        // Adicionar antes de "Valores sujeitos"
+        resultado = resultado.replace(/\n\nValores sujeitos/, '\n🔗 https://www.cvc.com.br\n\nValores sujeitos');
+    }
+    
+    return resultado;
 }
 
 function corrigirParcelamento(texto, parcelamentoSelecionado) {
@@ -273,10 +296,14 @@ function adicionarDiaSeguinte(texto) {
                 const horaSaida = parseInt(horaMatch[1]);
                 const horaChegada = parseInt(horaMatch[3]);
                 
-                if ((horaSaida >= 15 && horaChegada <= 10) || 
-                    linha.includes('9h') || linha.includes('10h') || 
-                    linha.includes('11h') || linha.includes('12h')) {
-                    linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))?$/, '$1 (+1)$2');
+                // Para voos internacionais longos ou que saem tarde e chegam cedo
+                const temConexao = linha.includes('conexão');
+                const ehInternacional = linha.includes('Lisboa') || linha.includes('Madrid') || 
+                                       linha.includes('Paris') || linha.includes('Londres');
+                
+                if (ehInternacional && (horaSaida >= 15 || horaChegada <= 10 || temConexao)) {
+                    // Adicionar (+1) antes do tipo de voo
+                    linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))/, '$1 (+1)$2');
                 }
             }
         }
