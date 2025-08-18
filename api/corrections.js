@@ -65,10 +65,13 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         
         let resultado = texto;
         
+        // Remover conteúdo de dicas se aparecer misturado
+        resultado = resultado.replace(/Dicas de Viagem para[^]*$/m, '');
+        
         // Extrair dados primeiro
         const dados = extrairDadosCompletos(conteudoOriginal);
         
-        // Aplicar correções
+        // Aplicar correções em ordem
         resultado = corrigirDatas(resultado);
         resultado = converterCodigosAeroporto(resultado);
         resultado = corrigirPassageiros(resultado, dados);
@@ -77,6 +80,7 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         resultado = corrigirParcelamento(resultado, parcelamentoSelecionado);
         resultado = corrigirBagagem(resultado, conteudoOriginal);
         resultado = corrigirAssento(resultado, conteudoOriginal);
+        resultado = corrigirReembolso(resultado);
         resultado = adicionarDiaSeguinte(resultado);
         resultado = garantirVersao(resultado);
         resultado = limparFormatacao(resultado);
@@ -152,10 +156,21 @@ function corrigirFormatoVoo(texto, conteudoOriginal) {
     resultado = resultado.replace(/\(\(voo direto\)\)/g, '(voo direto)');
     resultado = resultado.replace(/\(\(com conexão\)\)/g, '(com conexão)');
     
+    // Corrigir formato de voo - adicionar parênteses
+    resultado = resultado.replace(/(\d{2}:\d{2})\s+(Voo direto|Direto)/gi, '$1 (voo direto)');
+    resultado = resultado.replace(/(\d{2}:\d{2})\s+(Uma escala|Com conexão)/gi, '$1 (com conexão)');
+    
     // Adicionar cidade da escala se detectada
     if (conteudoOriginal.toLowerCase().includes('iberia')) {
         resultado = resultado.replace(/\(com conexão\)/g, '(uma escala em Madrid)');
+        resultado = resultado.replace(/Uma escala/g, '(uma escala em Madrid)');
     }
+    
+    // Corrigir nomes longos de aeroportos
+    resultado = resultado.replace(/Aeroporto Internacional de São Paulo\/Guarulhos/g, 'Guarulhos');
+    resultado = resultado.replace(/Aeroporto Internacional do Galeão/g, 'Galeão');
+    resultado = resultado.replace(/Aeroporto de Lisboa/g, 'Lisboa');
+    resultado = resultado.replace(/Aeroporto Internacional de Guarulhos/g, 'Guarulhos');
     
     return resultado;
 }
@@ -206,17 +221,28 @@ function corrigirBagagem(texto, conteudoOriginal) {
     let resultado = texto;
     const conteudoLower = conteudoOriginal.toLowerCase();
     
-    // Detectar tipo de bagagem
+    // Primeiro, remover linhas incorretas de bagagem
+    resultado = resultado.replace(/✅ Não reembolsável/g, '');
+    
+    // Detectar e aplicar tipo correto de bagagem
     if (conteudoLower.includes('sem bagagem') || conteudoLower.includes('sem  bagagem')) {
+        // Sem bagagem despachada
         resultado = resultado.replace(/✅[^\\n]+/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
     } else if (conteudoLower.includes('com bagagem') || conteudoLower.includes('com abagegem')) {
+        // Com bagagem despachada
         resultado = resultado.replace(/✅[^\\n]+/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
+    } else {
+        // Se não especificado, usar padrão sem despachada
+        if (!resultado.includes('✅')) {
+            // Adicionar linha de bagagem após o valor
+            resultado = resultado.replace(/(💰 R\$ [^\n]+)/g, '$1\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+        } else {
+            // Corrigir formatos incorretos
+            resultado = resultado.replace(/✅ 1 bagagem de até \d+kg/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
+            resultado = resultado.replace(/✅ 1 bagagem de mão/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+            resultado = resultado.replace(/✅ Bolsa ou mochila pequena/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
+        }
     }
-    
-    // Correções específicas
-    resultado = resultado.replace(/✅ Bolsa ou mochila pequena/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-    resultado = resultado.replace(/✅ 1 bagagem de mão/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-    resultado = resultado.replace(/✅ Não inclui bagagem/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
     
     return resultado;
 }
@@ -271,6 +297,26 @@ function garantirVersao(texto) {
     }
     
     return texto;
+}
+
+function corrigirReembolso(texto) {
+    let resultado = texto;
+    
+    // Remover duplicações de reembolso
+    const linhasReembolso = resultado.match(/🏷️[^\n]+/g);
+    if (linhasReembolso && linhasReembolso.length > 1) {
+        // Manter apenas a primeira ocorrência
+        let primeiraOcorrencia = true;
+        resultado = resultado.replace(/🏷️[^\n]+/g, match => {
+            if (primeiraOcorrencia) {
+                primeiraOcorrencia = false;
+                return match;
+            }
+            return '';
+        });
+    }
+    
+    return resultado;
 }
 
 function limparFormatacao(texto) {
