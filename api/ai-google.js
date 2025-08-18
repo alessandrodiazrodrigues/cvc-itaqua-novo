@@ -178,7 +178,8 @@ export default async function handler(req, res) {
         let passageiros = dadosExtraidos.passageiros;
         
         if (!passageiros) {
-            const numAdultos = parseInt(adultos) || 2;
+            // Só usar valores do formulário se não encontrou no conteúdo
+            const numAdultos = parseInt(adultos) || 1;  // Mudança: padrão 1 ao invés de 2
             const numCriancas = parseInt(criancas) || 0;
             passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
             if (numCriancas > 0) {
