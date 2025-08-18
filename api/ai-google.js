@@ -403,7 +403,7 @@ export default async function handler(req, res) {
         
         // APLICAR PÓS-PROCESSAMENTO
         console.log('🔧 Aplicando pós-processamento...');
-        resultado = posProcessar(resultado, conteudoPrincipal);
+        resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
         
         console.log('✅ v3.0: Processamento completo');
         
