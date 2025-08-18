@@ -13,6 +13,17 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
         
+        // Verificar se é dicas
+        if (tipos && tipos.includes('Dicas')) {
+            return 'DICAS';
+        }
+        
+        if (conteudoLower.includes('gere dicas') || 
+            conteudoLower.includes('dicas para') ||
+            conteudoLower.includes('consulte o manual e gere dicas')) {
+            return 'DICAS';
+        }
+        
         // Verificar se tem conexão detalhada
         const temConexaoDetalhada = 
             conteudoLower.includes('tempo de conexão') ||
@@ -35,7 +46,55 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
 // GERAÇÃO DE PROMPT
 // ================================================================================
 
-function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento) {
+function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino) {
+    // Se for dicas, usar prompt específico
+    if (tipoOrcamento === 'DICAS') {
+        return `
+Gere APENAS dicas de viagem para ${destino || 'o destino'}.
+
+NÃO INCLUA ORÇAMENTO DE PASSAGEM. APENAS DICAS.
+
+Formato das dicas:
+━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA ${(destino || 'DESTINO').toUpperCase()}*
+━━━━━━━━━━━━━━━━━━
+
+🌟 *Sobre o destino*
+[Descrição breve]
+
+🎯 *PRINCIPAIS PASSEIOS:*
+1. [Passeio 1]
+2. [Passeio 2]
+3. [Passeio 3]
+4. [Passeio 4]
+5. [Passeio 5]
+
+🌡️ *CLIMA:*
+• Temperatura: XX°C a XX°C
+• [Condição do clima]
+• Leve: [roupas recomendadas]
+
+🍽️ *GASTRONOMIA:*
+• Pratos típicos: [pratos]
+• Preço médio refeição: R$ XX
+• Dica: [restaurante ou região]
+
+💰 *CUSTOS MÉDIOS:*
+• Transporte público: R$ XX
+• Táxi do aeroporto: R$ XX
+• Entrada museus: R$ XX
+
+📱 *DICAS PRÁTICAS:*
+• [Moeda e câmbio]
+• [Idioma]
+• [Gorjetas]
+• [Segurança]
+
+🚨 *IMPORTANTE:*
+[Avisos específicos]`;
+    }
+    
+    // Para orçamentos normais
     const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     return `
@@ -140,7 +199,7 @@ export default async function handler(req, res) {
         console.log(`📄 Tipo: ${tipoOrcamento}`);
         
         // Gerar prompt
-        const prompt = gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento);
+        const prompt = gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, dadosExtraidos.destino || destino);
         
         // Processar com IA
         let resultado = '';
