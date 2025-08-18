@@ -1,141 +1,60 @@
-// api/ai-google.js - CVC ITAQUA v3.0 - ARQUIVO ÚNICO PARA DEBUG
+// api/ai-google.js - CVC ITAQUA v3.1
+// ARQUIVO 3: HANDLER PRINCIPAL
 // ================================================================================
 
-const CONFIG = {
-    VERSION: '3.0'
-};
-
-const AEROPORTOS = {
-    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos',
-    'GIG': 'Galeão', 'SDU': 'Santos Dumont', 'BSB': 'Brasília',
-    'CNF': 'Confins', 'SSA': 'Salvador', 'REC': 'Recife',
-    'FOR': 'Fortaleza', 'POA': 'Porto Alegre', 'FLN': 'Florianópolis',
-    'CWB': 'Curitiba', 'MAO': 'Manaus', 'BEL': 'Belém',
-    'LIS': 'Lisboa', 'MAD': 'Madrid', 'BCN': 'Barcelona',
-    'CDG': 'Paris', 'FCO': 'Roma', 'LHR': 'Londres',
-    'MIA': 'Miami', 'MCO': 'Orlando', 'CUN': 'Cancún',
-    'EZE': 'Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima'
-};
-
-const REGRAS_BAGAGEM = {
-    SEM_DESPACHADA: 'Inclui 1 item pessoal + 1 mala de mão de 10kg',
-    COM_DESPACHADA_23KG: 'Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg'
-};
+import { CONFIG, TEMPLATES, AEROPORTOS } from './templates.js';
+import { posProcessar, extrairDadosCompletos } from './corrections.js';
 
 // ================================================================================
-// FUNÇÕES DE PÓS-PROCESSAMENTO
+// DETECÇÃO DE TIPO
 // ================================================================================
 
-function extrairDadosCompletos(conteudoPrincipal) {
-    const dados = {
-        opcoes: [],
-        passageiros: null,
-        destino: null
-    };
-    
+function detectarTipoOrcamento(conteudoPrincipal, tipos) {
     try {
-        // Extrair passageiros
-        let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\s*(?:e\s*)?(\d*)\s*Crianças?\)/i);
+        const conteudoLower = conteudoPrincipal.toLowerCase();
         
-        if (!matchPassageiros) {
-            matchPassageiros = conteudoPrincipal.match(/(\d+)\s*adultos?\s*(?:\+|e)?\s*(\d*)\s*crianças?/i);
+        // Verificar se tem conexão detalhada
+        const temConexaoDetalhada = 
+            conteudoLower.includes('tempo de conexão') ||
+            conteudoLower.includes('escala em') ||
+            /\d+h\d+min/.test(conteudoLower);
+        
+        if (temConexaoDetalhada) {
+            return 'AEREO_CONEXAO_DETALHADA';
         }
         
-        if (matchPassageiros) {
-            const adultos = parseInt(matchPassageiros[1]) || 2;
-            const criancas = parseInt(matchPassageiros[2]) || 0;
-            
-            dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-            if (criancas > 0) {
-                dados.passageiros += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
-            }
-        }
+        return 'AEREO_SIMPLES';
         
     } catch (error) {
-        console.error('Erro ao extrair dados:', error);
+        console.error('Erro ao detectar tipo:', error);
+        return 'AEREO_SIMPLES';
     }
-    
-    return dados;
 }
 
-function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
-    try {
-        console.log('🔧 Pós-processamento v3.0...');
-        
-        let resultado = texto;
-        
-        // 1. Corrigir datas
-        const meses = {
-            'janeiro': '01', 'jan': '01', 'fevereiro': '02', 'fev': '02',
-            'março': '03', 'mar': '03', 'abril': '04', 'abr': '04',
-            'maio': '05', 'mai': '05', 'junho': '06', 'jun': '06',
-            'julho': '07', 'jul': '07', 'agosto': '08', 'ago': '08',
-            'setembro': '09', 'set': '09', 'outubro': '10', 'out': '10',
-            'novembro': '11', 'nov': '11', 'dezembro': '12', 'dez': '12'
-        };
-        
-        resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),?\s*(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
-            const mesNum = meses[mes.toLowerCase()] || mes;
-            return `${dia.padStart(2, '0')}/${mesNum}`;
-        });
-        
-        // 2. Converter aeroportos
-        Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
-            const regex = new RegExp(`\\b${codigo}\\b`, 'g');
-            resultado = resultado.replace(regex, nome);
-        });
-        
-        // 3. Corrigir passageiros
-        const dados = extrairDadosCompletos(conteudoOriginal);
-        if (dados.passageiros) {
-            resultado = resultado.replace(/\d{2} adultos?(?:\s*\+\s*\d{2} crianças?)?/gi, dados.passageiros);
-        }
-        
-        // 4. Corrigir parcelamento
-        if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-            const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
-            
-            if (valoresEncontrados) {
-                valoresEncontrados.forEach(valorMatch => {
-                    const valor = valorMatch.match(/[\d.,]+/)[0];
-                    const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
-                    const numParcelas = parseInt(parcelamentoSelecionado);
-                    const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-                    
-                    const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-                    
-                    // Substituir parcelamento existente ou adicionar
-                    const regex = new RegExp(`(${valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*?)(?:💳[^\\n]*)?`, 'gs');
-                    resultado = resultado.replace(regex, `$1\n${linhaParcelamento}`);
-                });
-            }
-        } else {
-            // Se não tem parcelamento selecionado, remover linha de parcelamento
-            resultado = resultado.replace(/\n💳[^\n]+/g, '');
-        }
-        
-        // 5. Corrigir bagagem
-        resultado = resultado.replace(/✅ Bolsa ou mochila pequena/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-        resultado = resultado.replace(/✅ 1 bagagem de mão/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-        resultado = resultado.replace(/✅ Sem bagagem/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-        
-        // 6. Remover linha de assento se não tiver
-        if (!conteudoOriginal.toLowerCase().includes('pré reserva') && 
-            !conteudoOriginal.toLowerCase().includes('pre reserva')) {
-            resultado = resultado.replace(/💺[^\n]*\n/g, '');
-        }
-        
-        // 7. Garantir versão
-        if (!resultado.includes(`(v${CONFIG.VERSION})`)) {
-            resultado = resultado.trim() + `\n\nValores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-        }
-        
-        return resultado;
-        
-    } catch (error) {
-        console.error('Erro no pós-processamento:', error);
-        return texto;
-    }
+// ================================================================================
+// GERAÇÃO DE PROMPT
+// ================================================================================
+
+function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento) {
+    const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
+    
+    return `
+Formate este orçamento de viagem para WhatsApp.
+
+TEMPLATE A SEGUIR:
+${template}
+
+DADOS:
+${conteudoPrincipal}
+
+REGRAS IMPORTANTES:
+1. Datas: formato DD/MM (não "11 de julho")
+2. Aeroportos: nomes completos (Guarulhos, não GRU)
+3. Passageiros: ${passageiros}
+4. Se tiver múltiplas opções, numere: OPÇÃO 1, OPÇÃO 2, OPÇÃO 3
+5. Use os emojis: 💰 ✈️ 💳 ✅ 🏷️ 🔗 💺
+6. Links: formato direto, não use markdown
+7. Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
 }
 
 // ================================================================================
@@ -147,6 +66,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json');
     
     try {
         // OPTIONS
@@ -154,26 +74,28 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true });
         }
         
-        // GET
+        // GET - Status
         if (req.method === 'GET') {
             return res.status(200).json({
                 success: true,
                 status: 'operational',
                 version: CONFIG.VERSION,
-                message: 'CVC Itaqua API v3.0 - Debug Mode'
+                timestamp: new Date().toISOString(),
+                message: 'CVC Itaqua API v3.1 - Sistema Modular'
             });
         }
         
-        // POST
+        // Validar POST
         if (req.method !== 'POST') {
             return res.status(405).json({
                 success: false,
-                error: 'Método não permitido'
+                error: 'Método não permitido - use POST'
             });
         }
         
-        console.log('🚀 v3.0: Processando...');
+        console.log('🚀 v3.1: Processando requisição...');
         
+        // Extrair dados
         const {
             observacoes = '',
             textoColado = '',
@@ -186,8 +108,10 @@ export default async function handler(req, res) {
             pdfContent = null
         } = req.body;
         
+        // Combinar conteúdo
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
         
+        // Validar entrada
         if (!conteudoPrincipal.trim() && !imagemBase64) {
             return res.status(400).json({
                 success: false,
@@ -195,7 +119,7 @@ export default async function handler(req, res) {
             });
         }
         
-        // Formatar passageiros
+        // Extrair dados e formatar passageiros
         const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal);
         let passageiros = dadosExtraidos.passageiros;
         
@@ -208,25 +132,23 @@ export default async function handler(req, res) {
             }
         }
         
-        // Criar prompt simples
-        const prompt = `
-Formate este orçamento de viagem para WhatsApp:
-
-${conteudoPrincipal}
-
-REGRAS:
-- Datas: DD/MM
-- Passageiros: ${passageiros}
-- Se tiver múltiplas opções, numere: OPÇÃO 1, OPÇÃO 2, etc.
-- Use emojis: 💰 ✈️ 💳 ✅ 🏷️ 🔗
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.0)`;
+        console.log(`📋 Passageiros: ${passageiros}`);
+        console.log(`💳 Parcelamento: ${parcelamento || 'não selecionado'}`);
         
-        let resultado = '';
+        // Detectar tipo
+        const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos);
+        console.log(`📄 Tipo: ${tipoOrcamento}`);
+        
+        // Gerar prompt
+        const prompt = gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento);
         
         // Processar com IA
+        let resultado = '';
+        
         try {
             if (imagemBase64 && process.env.ANTHROPIC_API_KEY) {
-                // Claude para imagens
+                console.log('🔮 Usando Claude para imagem...');
+                
                 const response = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
                     headers: {
@@ -237,6 +159,7 @@ REGRAS:
                     body: JSON.stringify({
                         model: 'claude-3-haiku-20240307',
                         max_tokens: 3000,
+                        temperature: 0.1,
                         messages: [{
                             role: 'user',
                             content: [
@@ -254,11 +177,16 @@ REGRAS:
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Claude erro ${response.status}`);
+                }
+                
                 const data = await response.json();
                 resultado = data.content[0].text;
                 
             } else if (process.env.OPENAI_API_KEY) {
-                // GPT para texto
+                console.log('⚡ Usando GPT-4...');
+                
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -268,50 +196,78 @@ REGRAS:
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
                         messages: [
-                            { role: 'system', content: 'Formate orçamentos de viagem para WhatsApp.' },
+                            { 
+                                role: 'system', 
+                                content: 'Você é um assistente da CVC. Formate orçamentos de viagem para WhatsApp seguindo EXATAMENTE o template fornecido.' 
+                            },
                             { role: 'user', content: prompt }
                         ],
-                        temperature: 0.3,
+                        temperature: 0.1,
                         max_tokens: 3000
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`OpenAI erro ${response.status}`);
+                }
                 
                 const data = await response.json();
                 resultado = data.choices[0].message.content;
                 
             } else {
-                throw new Error('Nenhuma API configurada');
+                throw new Error('Nenhuma API de IA configurada');
             }
             
         } catch (iaError) {
-            console.error('Erro IA:', iaError);
-            resultado = 'Erro ao processar com IA';
+            console.error('❌ Erro IA:', iaError);
+            throw iaError;
         }
         
-        // Pós-processar
+        // Limpar resultado
+        resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
+        
+        // APLICAR PÓS-PROCESSAMENTO
+        console.log('🔧 Aplicando pós-processamento...');
         resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
         
-        console.log('✅ Processamento completo');
+        console.log('✅ v3.1: Processamento completo');
         
+        // Retornar resposta
         return res.status(200).json({
             success: true,
             result: resultado,
             metadata: {
                 version: CONFIG.VERSION,
-                passageiros: passageiros
+                tipo: tipoOrcamento,
+                passageiros: passageiros,
+                parcelamento: parcelamento || 'não selecionado',
+                ia_usada: imagemBase64 ? 'claude' : 'gpt'
             }
         });
         
     } catch (error) {
-        console.error('❌ Erro geral:', error);
+        console.error('❌ v3.1: Erro geral:', error);
         
         // SEMPRE retornar JSON válido
         return res.status(200).json({
             success: false,
             error: error.message || 'Erro ao processar',
-            result: 'Erro ao processar. Tente novamente.'
+            result: 'Erro ao processar. Por favor, tente novamente.'
         });
     }
 }
 
-console.log('🚀 CVC Itaqua v3.0 - Debug Mode carregado!');
+// ================================================================================
+// LOGS
+// ================================================================================
+
+console.log('╔════════════════════════════════════════════════════════════════╗');
+console.log('║              CVC ITAQUA v3.1 - SISTEMA MODULAR                 ║');
+console.log('╠════════════════════════════════════════════════════════════════╣');
+console.log('║ ✅ 3 arquivos separados para fácil manutenção                  ║');
+console.log('║ ✅ Parcelamento respeitando seleção do usuário                 ║');
+console.log('║ ✅ Bagagem e assento corrigidos                                ║');
+console.log('║ ✅ Passageiros detectados corretamente                         ║');
+console.log('║ ✅ Pós-processamento robusto                                   ║');
+console.log('╚════════════════════════════════════════════════════════════════╝');
+console.log('🚀 Sistema v3.1 pronto!');
