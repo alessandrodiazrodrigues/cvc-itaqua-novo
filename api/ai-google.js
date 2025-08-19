@@ -117,7 +117,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
 }
 
 // ================================================================================
-// GERAÇÃO DE PROMPT
+// GERAÇÃO DE PROMPT CORRIGIDO
 // ================================================================================
 
 function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehImagem = false) {
@@ -229,6 +229,14 @@ Use exatamente este formato:
         return `
 Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 
+⚠️ REGRAS CRÍTICAS - NÃO INVENTE INFORMAÇÕES:
+1. Use APENAS as informações visíveis na imagem
+2. Se não houver detalhes de conexão, use apenas "(com conexão)" ou "(voo direto)"
+3. NÃO adicione horários de conexão se não estiverem na imagem
+4. NÃO adicione links se não estiverem visíveis
+5. NÃO invente cidades de conexão
+6. Use exatamente os horários mostrados
+
 FORMATO ESPERADO:
 *{Companhia} - {Origem} ✈ {Destino}*
 {Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
@@ -238,45 +246,53 @@ FORMATO ESPERADO:
 💰 R$ {valor} para {passageiros}
 💳 {parcelamento se houver}
 ✅ {bagagem}
-💺 {assento se houver}
 🏷️ {reembolso}
-🔗 {link específico se houver}
 
 REGRAS:
 - Datas: DD/MM
 - Horários: HH:MM (24h)
-- Adicione (+1) se chegar no dia seguinte
-- Use "com conexão em {cidade}" não "escala"
-- Passageiros: formato "XX adultos" ou "XX adultos + XX crianças"
 - Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
     }
     
-    // Para orçamentos normais
+    // Para orçamentos normais - PROMPT RESTRITIVO
     const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     return `
-Formate este orçamento de viagem para WhatsApp.
+⚠️ INSTRUÇÕES CRÍTICAS - SIGA EXATAMENTE:
 
-TEMPLATE A SEGUIR EXATAMENTE:
-${template}
+1. Use SOMENTE as informações do texto fornecido
+2. NÃO INVENTE conexões, horários ou cidades
+3. NÃO ADICIONE links se não estiverem no texto
+4. Se mencionar "Uma escala" mas não especificar cidade, use apenas "(com conexão)"
+5. NÃO calcule horários de conexão - use apenas os horários fornecidos
+6. NÃO adicione tempos de espera se não estiverem especificados
+7. Se o texto não tem link específico, NÃO inclua linha de link
 
-DADOS DO ORÇAMENTO:
+TEXTO ORIGINAL A FORMATAR:
 ${conteudoPrincipal}
 
 PASSAGEIROS: ${passageiros}
 
-REGRAS IMPORTANTES:
-1. Datas: formato DD/MM (nunca "11 de julho")
+TEMPLATE A SEGUIR:
+${template}
+
+EXEMPLO DO SEU TEXTO:
+- Se diz "Uma escala" → use "(com conexão)"
+- Se não tem link → NÃO inclua linha 🔗
+- Se não especifica cidade de conexão → NÃO invente
+
+REGRAS DE FORMATAÇÃO:
+1. Datas: formato DD/MM (27/01, não "27 de janeiro")
 2. Aeroportos: nomes completos (Guarulhos, não GRU)
-3. Se tiver múltiplas opções, numere: OPÇÃO 1, OPÇÃO 2, OPÇÃO 3
-4. Use sempre "conexão" e nunca "escala"
-5. Use os emojis exatos: 💰 ✈️ 💳 ✅ 🏷️ 🔗 💺
-6. Links: formato direto https://..., não use markdown [texto](link)
-7. Termine sempre com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
+3. Horários: exatamente como fornecidos
+4. Emojis: 💰 ✈️ 💳 ✅ 🏷️ (somente 🔗 se tiver link real)
+5. Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)
+
+⚠️ LEMBRE-SE: NÃO INVENTE NADA QUE NÃO ESTEJA NO TEXTO!`;
 }
 
 // ================================================================================
-// HANDLER PRINCIPAL
+// HANDLER PRINCIPAL (MANTIDO IGUAL)
 // ================================================================================
 
 export default async function handler(req, res) {
@@ -299,7 +315,7 @@ export default async function handler(req, res) {
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.1 - Sistema Modular Corrigido'
+                message: 'CVC Itaqua API v3.1 - Prompt Corrigido'
             });
         }
         
@@ -361,7 +377,7 @@ export default async function handler(req, res) {
         const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos);
         console.log(`📄 Tipo: ${tipoOrcamento}`);
         
-        // Gerar prompt
+        // Gerar prompt CORRIGIDO
         const prompt = gerarPrompt(
             conteudoPrincipal, 
             passageiros, 
@@ -438,7 +454,7 @@ export default async function handler(req, res) {
                         messages: [
                             { 
                                 role: 'system', 
-                                content: 'Você é um assistente da CVC. Formate orçamentos de viagem para WhatsApp seguindo EXATAMENTE o template fornecido.' 
+                                content: 'Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido.' 
                             },
                             { role: 'user', content: prompt }
                         ],
@@ -514,14 +530,12 @@ export default async function handler(req, res) {
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.1 - SISTEMA CORRIGIDO              ║');
+console.log('║              CVC ITAQUA v3.1 - PROMPT CORRIGIDO               ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Padrão: 1 adulto se não especificado                       ║');
+console.log('║ ✅ Prompt restritivo - NÃO inventa informações                ║');
+console.log('║ ✅ Instruções críticas para IA                               ║');
+console.log('║ ✅ Validação rigorosa de dados de entrada                     ║');
 console.log('║ ✅ Fallback robusto para APIs                                 ║');
-console.log('║ ✅ JSON sempre válido (sem erros 500)                         ║');
-console.log('║ ✅ Validação completa do body                                 ║');
-console.log('║ ✅ Estrutura modular de 3 arquivos                           ║');
-console.log('║ ✅ Todos os templates do manual integrados                    ║');
-console.log('║ ✅ Pós-processamento com 15+ correções                        ║');
+console.log('║ ✅ JSON sempre válido                                         ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.1 corrigido e operacional!');
+console.log('🚀 Sistema v3.1 com prompt corrigido!');
