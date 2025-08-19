@@ -47,7 +47,8 @@ export function extrairDadosCompletos(conteudoPrincipal) {
         
         // Extrair destino
         const destinos = ['Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
-                         'Londres', 'Orlando', 'Miami', 'Cancún', 'Buenos Aires'];
+                         'Londres', 'Orlando', 'Miami', 'Cancún', 'Buenos Aires', 
+                         'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal'];
         for (const destino of destinos) {
             if (conteudoPrincipal.includes(destino)) {
                 dados.destino = destino;
@@ -173,6 +174,7 @@ function corrigirFormatoVoo(texto, conteudoOriginal) {
     resultado = resultado.replace(/\(uma escala/gi, '(com conexão');
     resultado = resultado.replace(/Uma escala/gi, '(com conexão)');
     resultado = resultado.replace(/com escala/gi, 'com conexão');
+    resultado = resultado.replace(/escala em/gi, 'conexão em');
     
     // Adicionar cidade da conexão se for Iberia
     if (conteudoOriginal.toLowerCase().includes('iberia')) {
@@ -237,44 +239,9 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
                 const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                 
                 // Adicionar ou substituir parcelamento com quebra de linha
-                const regex = new RegExp(`(${valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirParcelamento(texto, parcelamentoSelecionado) {
-    let resultado = texto;
-    
-    if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-        console.log('Aplicando parcelamento:', parcelamentoSelecionado);
-        
-        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
-        
-        if (valoresEncontrados) {
-            valoresEncontrados.forEach(valorMatch => {
-                const valor = valorMatch.match(/[\d.,]+/)[0];
-                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
-                const numParcelas = parseInt(parcelamentoSelecionado);
-                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-                
-                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-                
-                // Procurar e substituir parcelamento após o valor
-                const regex = new RegExp(`(${valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^💳]*)(💳[^\\n]*)?`, 'gs');
-                resultado = resultado.replace(regex, (match, antes, parcelamentoAntigo) => {
-                    if (parcelamentoAntigo) {
-                        return `${antes}${linhaParcelamento}`;
-                    } else {
-                        return `${antes}\n${linhaParcelamento}`;
-                    }
-                });
-            });
-        }
-    } else {
-        // Remover linha de parcelamento se não foi selecionado
-        console.log('Removendo parcelamento (não selecionado)');
-        resultado = resultado.replace(/\n💳[^\n]+/g, '');
-        resultado = resultado.replace(/💳[^\n]+\n/g, '');
-    }
-    
-    return resultado;
-}')}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
-                resultado = resultado.replace(regex, (match, antes, parcelamentoAntigo) => {
+                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
+                resultado = resultado.replace(regex, (match, antes) => {
                     return `${antes}\n${linhaParcelamento}`;
                 });
             });
@@ -304,12 +271,16 @@ function corrigirBagagem(texto, conteudoOriginal) {
     let temBagagem = false;
     let temAssento = false;
     
-    if (conteudoLower.includes('com bagagem') || conteudoLower.includes('com babagem')) {
+    if (conteudoLower.includes('com bagagem') || 
+        conteudoLower.includes('com babagem') ||
+        conteudoLower.includes('bagagem despachada')) {
         temBagagem = true;
     }
     
-    if (conteudoLower.includes('pre reserva') || conteudoLower.includes('pré reserva') || 
-        conteudoLower.includes('pré-reserva')) {
+    if (conteudoLower.includes('pre reserva') || 
+        conteudoLower.includes('pré reserva') || 
+        conteudoLower.includes('pré-reserva') ||
+        conteudoLower.includes('marcação de assento')) {
         temAssento = true;
     }
     
@@ -354,7 +325,8 @@ function corrigirAssento(texto, conteudoOriginal) {
     // Se não tem pré-reserva no conteúdo original, remover linha
     if (!conteudoLower.includes('pré reserva') && 
         !conteudoLower.includes('pre reserva') &&
-        !conteudoLower.includes('pré-reserva')) {
+        !conteudoLower.includes('pré-reserva') &&
+        !conteudoLower.includes('marcação de assento')) {
         resultado = resultado.replace(/💺[^\n]*\n/g, '');
         resultado = resultado.replace(/\n💺[^\n]+/g, '');
     }
@@ -376,7 +348,8 @@ function adicionarDiaSeguinte(texto) {
                 // Para voos internacionais longos ou que saem tarde e chegam cedo
                 const temConexao = linha.includes('conexão');
                 const ehInternacional = linha.includes('Lisboa') || linha.includes('Madrid') || 
-                                       linha.includes('Paris') || linha.includes('Londres');
+                                       linha.includes('Paris') || linha.includes('Londres') ||
+                                       linha.includes('Roma') || linha.includes('Barcelona');
                 
                 if (ehInternacional && (horaSaida >= 15 || horaChegada <= 10 || temConexao)) {
                     // Adicionar (+1) antes do tipo de voo
@@ -387,20 +360,6 @@ function adicionarDiaSeguinte(texto) {
     });
     
     return linhas.join('\n');
-}
-
-function garantirVersao(texto) {
-    const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-    
-    // Remover versão antiga
-    texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade \(v[\d.]+\)/g, '');
-    
-    // Adicionar versão correta
-    if (!texto.includes(versaoTexto)) {
-        texto = texto.trim() + '\n\n' + versaoTexto;
-    }
-    
-    return texto;
 }
 
 function corrigirReembolso(texto) {
@@ -420,7 +379,26 @@ function corrigirReembolso(texto) {
         });
     }
     
+    // Padronizar texto de reembolso
+    resultado = resultado.replace(/🏷️ Reembolsável[^\n]*/g, '🏷️ Reembolsável conforme regras do bilhete');
+    resultado = resultado.replace(/🏷️ Não-reembolsável/g, '🏷️ Não reembolsável');
+    
     return resultado;
+}
+
+function garantirVersao(texto) {
+    const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
+    
+    // Remover versão antiga
+    texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade \(v[\d.]+\)/g, '');
+    texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade/g, '');
+    
+    // Adicionar versão correta
+    if (!texto.includes(versaoTexto)) {
+        texto = texto.trim() + '\n\n' + versaoTexto;
+    }
+    
+    return texto;
 }
 
 function limparFormatacao(texto) {
