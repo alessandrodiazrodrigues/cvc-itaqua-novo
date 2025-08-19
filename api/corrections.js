@@ -1,14 +1,14 @@
 // api/corrections.js - CVC ITAQUA v3.1
-// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES (CommonJS)
+// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
 // ================================================================================
 
-const { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } = require('./templates.js');
+import { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } from './templates.js';
 
 // ================================================================================
 // EXTRAÇÃO DE DADOS
 // ================================================================================
 
-function extrairDadosCompletos(conteudoPrincipal) {
+export function extrairDadosCompletos(conteudoPrincipal) {
     const dados = {
         opcoes: [],
         passageiros: null,
@@ -68,7 +68,7 @@ function extrairDadosCompletos(conteudoPrincipal) {
 // PÓS-PROCESSAMENTO PRINCIPAL
 // ================================================================================
 
-function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
+export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
         console.log('🔧 Pós-processamento v3.1...');
         console.log('Parcelamento selecionado:', parcelamentoSelecionado);
@@ -203,18 +203,18 @@ function corrigirLinks(texto) {
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
-    // Remover links incompletos ou genéricos
+    // IMPORTANTE: Remover links incompletos ou genéricos
     resultado = resultado.replace(/🔗 https:\/\/\.\.\.\s*$/gm, '');
     resultado = resultado.replace(/🔗 https:\/\/\s*$/gm, '');
     resultado = resultado.replace(/🔗 \.\.\.\s*$/gm, '');
     resultado = resultado.replace(/🔗\s*$/gm, '');
     
-    // Manter apenas links específicos (com path)
-    // Se o link tem apenas o domínio, remover
-    resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
-    
     // Remover linha de link vazia
     resultado = resultado.replace(/\n🔗\s*\n/g, '\n');
+    resultado = resultado.replace(/\n🔗 https:\/\/\.\.\.\n/g, '\n');
+    
+    // Se o link tem apenas o domínio, remover
+    resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
     
     return resultado;
 }
@@ -224,6 +224,11 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
     
     // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
     const dados = extrairDadosCompletos(conteudoOriginal);
+    
+    // Remover "Tarifa facial" que não é parcelamento
+    resultado = resultado.replace(/💳 Tarifa facial\n/g, '');
+    resultado = resultado.replace(/\n💳 Tarifa facial/g, '');
+    resultado = resultado.replace(/Tarifa facial\n/g, '');
     
     if (dados.parcelamento) {
         // Usar parcelamento extraído do conteúdo
@@ -266,10 +271,6 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
     // IMPORTANTE: Garantir quebra de linha entre parcelamento e bagagem
     resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
     resultado = resultado.replace(/(💰[^\n]+)✅/g, '$1\n✅');
-    
-    // Remover "Tarifa facial" que não é parcelamento
-    resultado = resultado.replace(/💳 Tarifa facial\n/g, '');
-    resultado = resultado.replace(/\n💳 Tarifa facial/g, '');
     
     return resultado;
 }
@@ -439,10 +440,10 @@ function limparFormatacao(texto) {
 }
 
 // ================================================================================
-// EXPORTS COMMONJS
+// EXPORTS
 // ================================================================================
 
-module.exports = {
+export default {
     posProcessar,
     extrairDadosCompletos
 };
