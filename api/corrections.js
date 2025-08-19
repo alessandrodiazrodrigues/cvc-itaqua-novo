@@ -48,8 +48,7 @@ export function extrairDadosCompletos(conteudoPrincipal) {
         // Extrair destino
         const destinos = ['Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
                          'Londres', 'Orlando', 'Miami', 'Cancún', 'Buenos Aires', 
-                         'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal',
-                         'Porto Alegre', 'Curitiba', 'Florianópolis'];
+                         'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal'];
         for (const destino of destinos) {
             if (conteudoPrincipal.includes(destino)) {
                 dados.destino = destino;
@@ -203,16 +202,7 @@ function corrigirLinks(texto) {
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
-    // IMPORTANTE: Remover links incompletos ou genéricos
-    resultado = resultado.replace(/🔗 https:\/\/\.\.\.\s*$/gm, '');
-    resultado = resultado.replace(/🔗 https:\/\/\s*$/gm, '');
-    resultado = resultado.replace(/🔗 \.\.\.\s*$/gm, '');
-    resultado = resultado.replace(/🔗\s*$/gm, '');
-    
-    // Remover linha de link vazia
-    resultado = resultado.replace(/\n🔗\s*\n/g, '\n');
-    resultado = resultado.replace(/\n🔗 https:\/\/\.\.\.\n/g, '\n');
-    
+    // Manter apenas links específicos (com path)
     // Se o link tem apenas o domínio, remover
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
     
@@ -224,11 +214,6 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
     
     // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
     const dados = extrairDadosCompletos(conteudoOriginal);
-    
-    // Remover "Tarifa facial" que não é parcelamento
-    resultado = resultado.replace(/💳 Tarifa facial\n/g, '');
-    resultado = resultado.replace(/\n💳 Tarifa facial/g, '');
-    resultado = resultado.replace(/Tarifa facial\n/g, '');
     
     if (dados.parcelamento) {
         // Usar parcelamento extraído do conteúdo
@@ -268,9 +253,8 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
         resultado = resultado.replace(/💳[^\n]+\n/g, '');
     }
     
-    // IMPORTANTE: Garantir quebra de linha entre parcelamento e bagagem
+    // Garantir quebra de linha após parcelamento e antes da bagagem
     resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
-    resultado = resultado.replace(/(💰[^\n]+)✅/g, '$1\n✅');
     
     return resultado;
 }
