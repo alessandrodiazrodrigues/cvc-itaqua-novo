@@ -1,5 +1,13 @@
 // api/ai-google.js - CVC ITAQUA v3.1 CORRIGIDO
-// ARQUIVO 3: HANDLER PRINCIPAL
+// ARQUIVO PRINCIPAL COM EDGE RUNTIME
+// ================================================================================
+
+export const config = {
+    runtime: 'edge',
+};
+
+// ================================================================================
+// IMPORTS CORRIGIDOS PARA EDGE
 // ================================================================================
 
 import { CONFIG, TEMPLATES, AEROPORTOS } from './templates.js';
@@ -24,6 +32,16 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
             return 'DICAS';
         }
         
+        // Verificar se é ranking
+        if (tipos && tipos.includes('Ranking')) {
+            return 'RANKING';
+        }
+        
+        if (conteudoLower.includes('gere ranking') || 
+            conteudoLower.includes('ranking de')) {
+            return 'RANKING';
+        }
+        
         // Verificar se tem conexão detalhada
         const temConexaoDetalhada = 
             conteudoLower.includes('tempo de conexão') ||
@@ -32,6 +50,11 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
         
         if (temConexaoDetalhada) {
             return 'AEREO_CONEXAO_DETALHADA';
+        }
+        
+        // Verificar múltiplas opções
+        if (conteudoLower.includes('opção 1') || conteudoLower.includes('opção 2')) {
+            return 'MULTIPLAS_OPCOES';
         }
         
         return 'AEREO_SIMPLES';
@@ -94,6 +117,36 @@ Formato das dicas:
 [Avisos específicos]`;
     }
     
+    // Se for ranking
+    if (tipoOrcamento === 'RANKING') {
+        return `
+Gere um ranking de hotéis para ${destino || 'o destino'}.
+
+Formato:
+━━━━━━━━━━━━━━━━━━
+🏆 *RANKING DE HOTÉIS - ${(destino || 'DESTINO').toUpperCase()}*
+━━━━━━━━━━━━━━━━━━
+
+⭐ *CATEGORIA LUXO (5 estrelas)*
+
+🥇 *1. [Nome do Hotel]*
+📍 Localização: [Bairro/Região]
+💰 Diária média: R$ [valor]
+✨ Destaques: [principais amenidades]
+
+🥈 *2. [Nome do Hotel]*
+[mesma estrutura]
+
+🥉 *3. [Nome do Hotel]*
+[mesma estrutura]
+
+⭐ *CATEGORIA SUPERIOR (4 estrelas)*
+[3 hotéis com mesma estrutura]
+
+⭐ *CATEGORIA ECONÔMICA (3 estrelas)*
+[3 hotéis com mesma estrutura]`;
+    }
+    
     // Se for imagem, prompt específico para OCR
     if (ehImagem) {
         return `
@@ -144,50 +197,75 @@ REGRAS IMPORTANTES:
 }
 
 // ================================================================================
-// HANDLER PRINCIPAL
+// HANDLER PRINCIPAL COM EDGE RUNTIME
 // ================================================================================
 
-export default async function handler(req, res) {
-    // Headers CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Content-Type', 'application/json');
+export default async function handler(req) {
+    console.log('🚀 v3.1 EDGE: Iniciando processamento...');
     
     try {
-        // OPTIONS
+        // Processar diferentes métodos
         if (req.method === 'OPTIONS') {
-            return res.status(200).json({ success: true });
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
+            });
         }
         
-        // GET - Status
         if (req.method === 'GET') {
-            return res.status(200).json({
+            return new Response(JSON.stringify({
                 success: true,
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.1 - Sistema Modular Corrigido'
+                message: 'CVC Itaqua API v3.1 EDGE - Sistema Modular'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
             });
         }
         
-        // Validar POST
         if (req.method !== 'POST') {
-            return res.status(405).json({
+            return new Response(JSON.stringify({
                 success: false,
                 error: 'Método não permitido - use POST'
+            }), {
+                status: 405,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
             });
         }
         
-        console.log('🚀 v3.1: Processando requisição...');
+        // Processar body da requisição
+        let body = {};
+        try {
+            const text = await req.text();
+            if (text) {
+                body = JSON.parse(text);
+            }
+        } catch (e) {
+            console.error('Erro ao parsear body:', e);
+            body = {};
+        }
+        
+        console.log('📋 Body recebido:', body);
         
         // Extrair dados com validação robusta
-        const body = req.body || {};
         const {
             observacoes = '',
             textoColado = '',
             destino = '',
-            adultos = 1,  // ✅ CORRIGIDO: Padrão agora é 1 adulto
+            adultos = 1,
             criancas = 0,
             tipos = [],
             parcelamento = '',
@@ -200,9 +278,16 @@ export default async function handler(req, res) {
         
         // Validar entrada
         if (!conteudoPrincipal.trim() && !imagemBase64) {
-            return res.status(400).json({
+            return new Response(JSON.stringify({
                 success: false,
-                error: 'Adicione informações sobre a viagem'
+                error: 'Adicione informações sobre a viagem',
+                result: 'Por favor, adicione informações sobre a viagem'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
             });
         }
         
@@ -211,8 +296,7 @@ export default async function handler(req, res) {
         let passageiros = dadosExtraidos.passageiros;
         
         if (!passageiros) {
-            // ✅ CORRIGIDO: Só usar valores do formulário se não encontrou no conteúdo
-            const numAdultos = parseInt(adultos) || 1;  // Padrão 1 adulto
+            const numAdultos = parseInt(adultos) || 1;
             const numCriancas = parseInt(criancas) || 0;
             passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
             if (numCriancas > 0) {
@@ -314,37 +398,33 @@ export default async function handler(req, res) {
                 iaUsada = 'gpt';
                 
             } else {
-                // ✅ FALLBACK se não tem API configurada
                 console.warn('⚠️ Nenhuma API de IA configurada');
-                resultado = `Erro: Nenhuma API de IA configurada. Configure OPENAI_API_KEY ou ANTHROPIC_API_KEY.`;
+                resultado = `Configure as variáveis de ambiente OPENAI_API_KEY ou ANTHROPIC_API_KEY no Vercel.`;
                 iaUsada = 'none';
             }
             
         } catch (iaError) {
             console.error('❌ Erro IA:', iaError);
-            
-            // ✅ FALLBACK robusto se IA falhar
-            resultado = `Erro ao processar com IA: ${iaError.message}`;
+            resultado = `Erro ao processar com IA: ${iaError.message}. Verifique as configurações de API.`;
             iaUsada = 'error';
         }
         
-        // Limpar resultado se houver
+        // Limpar e aplicar pós-processamento
         if (resultado && typeof resultado === 'string') {
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
             
-            // APLICAR PÓS-PROCESSAMENTO apenas se resultado válido
-            if (resultado && !resultado.includes('Erro')) {
+            if (resultado && !resultado.includes('Erro') && !resultado.includes('Configure')) {
                 console.log('🔧 Aplicando pós-processamento...');
                 resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
             }
         }
         
-        console.log('✅ v3.1: Processamento completo');
+        console.log('✅ v3.1 EDGE: Processamento completo');
         
-        // ✅ SEMPRE retornar JSON válido
-        return res.status(200).json({
+        // Retornar resposta com Edge Runtime
+        return new Response(JSON.stringify({
             success: true,
-            result: resultado || 'Erro ao processar. Tente novamente.',
+            result: resultado || 'Erro ao processar. Verifique as configurações.',
             metadata: {
                 version: CONFIG.VERSION,
                 tipo: tipoOrcamento,
@@ -352,31 +432,45 @@ export default async function handler(req, res) {
                 parcelamento: parcelamento || 'não selecionado',
                 ia_usada: iaUsada
             }
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            }
         });
         
     } catch (error) {
-        console.error('❌ v3.1: Erro geral:', error);
+        console.error('❌ v3.1 EDGE: Erro geral:', error);
         
-        // ✅ SEMPRE retornar JSON válido mesmo em erro
-        return res.status(200).json({
+        // Sempre retornar JSON válido
+        return new Response(JSON.stringify({
             success: false,
             error: error.message || 'Erro interno do servidor',
-            result: 'Erro interno do servidor. Verifique as configurações de API.'
+            result: 'Erro interno. Verifique os logs do Vercel.'
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
         });
     }
 }
 
 // ================================================================================
-// LOGS
+// LOG INICIAL
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.1 - PASSAGEIROS CORRIGIDO          ║');
+console.log('║           CVC ITAQUA v3.1 - EDGE RUNTIME CONFIGURADO          ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Padrão alterado para 1 adulto                              ║');
-console.log('║ ✅ Fallback robusto para APIs                                  ║');
-console.log('║ ✅ JSON sempre válido                                          ║');
-console.log('║ ✅ Validação robusta do body                                   ║');
-console.log('║ ✅ Estrutura 3 arquivos mantida                               ║');
+console.log('║ ✅ Edge Runtime ativado para melhor performance               ║');
+console.log('║ ✅ Resposta sempre em JSON válido                             ║');
+console.log('║ ✅ CORS configurado corretamente                              ║');
+console.log('║ ✅ Suporte completo a imagens e textos                        ║');
+console.log('║ ✅ Estrutura modular de 3 arquivos mantida                    ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.1 corrigido e pronto!');
+console.log('🚀 Sistema v3.1 EDGE pronto!');
