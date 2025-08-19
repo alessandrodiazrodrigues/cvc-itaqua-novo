@@ -1,14 +1,14 @@
 // api/corrections.js - CVC ITAQUA v3.1
-// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
+// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES (CommonJS)
 // ================================================================================
 
-import { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } from './templates.js';
+const { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } = require('./templates.js');
 
 // ================================================================================
 // EXTRAÇÃO DE DADOS
 // ================================================================================
 
-export function extrairDadosCompletos(conteudoPrincipal) {
+function extrairDadosCompletos(conteudoPrincipal) {
     const dados = {
         opcoes: [],
         passageiros: null,
@@ -48,7 +48,8 @@ export function extrairDadosCompletos(conteudoPrincipal) {
         // Extrair destino
         const destinos = ['Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
                          'Londres', 'Orlando', 'Miami', 'Cancún', 'Buenos Aires', 
-                         'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal'];
+                         'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal',
+                         'Porto Alegre', 'Curitiba', 'Florianópolis'];
         for (const destino of destinos) {
             if (conteudoPrincipal.includes(destino)) {
                 dados.destino = destino;
@@ -67,7 +68,7 @@ export function extrairDadosCompletos(conteudoPrincipal) {
 // PÓS-PROCESSAMENTO PRINCIPAL
 // ================================================================================
 
-export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
+function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
         console.log('🔧 Pós-processamento v3.1...');
         console.log('Parcelamento selecionado:', parcelamentoSelecionado);
@@ -248,55 +249,7 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
                 const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                 
                 // Adicionar ou substituir parcelamento com quebra de linha
-                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) {
-    let resultado = texto;
-    
-    // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
-    const dados = extrairDadosCompletos(conteudoOriginal);
-    
-    if (dados.parcelamento) {
-        // Usar parcelamento extraído do conteúdo
-        console.log('Usando parcelamento extraído:', dados.parcelamento);
-        
-        // Garantir que há quebra de linha antes do parcelamento
-        if (resultado.includes('💰')) {
-            resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
-        }
-    } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-        // Usar parcelamento selecionado pelo usuário
-        console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
-        
-        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
-        
-        if (valoresEncontrados) {
-            valoresEncontrados.forEach(valorMatch => {
-                const valor = valorMatch.match(/[\d.,]+/)[0];
-                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
-                const numParcelas = parseInt(parcelamentoSelecionado);
-                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-                
-                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-                
-                // Adicionar ou substituir parcelamento com quebra de linha
                 const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
-                resultado = resultado.replace(regex, (match, antes) => {
-                    return `${antes}\n${linhaParcelamento}`;
-                });
-            });
-        }
-    } else {
-        // Remover linha de parcelamento se não foi selecionado e não tem no conteúdo
-        console.log('Removendo parcelamento (não selecionado)');
-        resultado = resultado.replace(/\n💳[^\n]+/g, '');
-        resultado = resultado.replace(/💳[^\n]+\n/g, '');
-    }
-    
-    // Garantir quebra de linha após parcelamento e antes da bagagem
-    resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
-    
-    return resultado;
-}');
                 const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
                 resultado = resultado.replace(regex, (match, antes) => {
                     return `${antes}\n${linhaParcelamento}`;
@@ -486,10 +439,10 @@ function limparFormatacao(texto) {
 }
 
 // ================================================================================
-// EXPORTS
+// EXPORTS COMMONJS
 // ================================================================================
 
-export default {
+module.exports = {
     posProcessar,
     extrairDadosCompletos
 };
