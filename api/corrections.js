@@ -202,14 +202,53 @@ function corrigirLinks(texto) {
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
+    // Remover links incompletos ou genéricos
+    resultado = resultado.replace(/🔗 https:\/\/\.\.\.\s*$/gm, '');
+    resultado = resultado.replace(/🔗 https:\/\/\s*$/gm, '');
+    resultado = resultado.replace(/🔗 \.\.\.\s*$/gm, '');
+    resultado = resultado.replace(/🔗\s*$/gm, '');
+    
     // Manter apenas links específicos (com path)
     // Se o link tem apenas o domínio, remover
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
+    
+    // Remover linha de link vazia
+    resultado = resultado.replace(/\n🔗\s*\n/g, '\n');
     
     return resultado;
 }
 
 function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) {
+    let resultado = texto;
+    
+    // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
+    const dados = extrairDadosCompletos(conteudoOriginal);
+    
+    if (dados.parcelamento) {
+        // Usar parcelamento extraído do conteúdo
+        console.log('Usando parcelamento extraído:', dados.parcelamento);
+        
+        // Garantir que há quebra de linha antes do parcelamento
+        if (resultado.includes('💰')) {
+            resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
+        }
+    } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
+        // Usar parcelamento selecionado pelo usuário
+        console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
+        
+        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
+        
+        if (valoresEncontrados) {
+            valoresEncontrados.forEach(valorMatch => {
+                const valor = valorMatch.match(/[\d.,]+/)[0];
+                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+                const numParcelas = parseInt(parcelamentoSelecionado);
+                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
+                
+                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+                
+                // Adicionar ou substituir parcelamento com quebra de linha
+                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) {
     let resultado = texto;
     
     // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
@@ -255,6 +294,29 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) 
     
     // Garantir quebra de linha após parcelamento e antes da bagagem
     resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
+    
+    return resultado;
+}');
+                const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
+                resultado = resultado.replace(regex, (match, antes) => {
+                    return `${antes}\n${linhaParcelamento}`;
+                });
+            });
+        }
+    } else {
+        // Remover linha de parcelamento se não foi selecionado e não tem no conteúdo
+        console.log('Removendo parcelamento (não selecionado)');
+        resultado = resultado.replace(/\n💳[^\n]+/g, '');
+        resultado = resultado.replace(/💳[^\n]+\n/g, '');
+    }
+    
+    // IMPORTANTE: Garantir quebra de linha entre parcelamento e bagagem
+    resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
+    resultado = resultado.replace(/(💰[^\n]+)✅/g, '$1\n✅');
+    
+    // Remover "Tarifa facial" que não é parcelamento
+    resultado = resultado.replace(/💳 Tarifa facial\n/g, '');
+    resultado = resultado.replace(/\n💳 Tarifa facial/g, '');
     
     return resultado;
 }
