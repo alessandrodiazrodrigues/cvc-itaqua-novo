@@ -1,8 +1,8 @@
 // api/templates.js - CVC ITAQUA v3.1
-// ARQUIVO 1: TEMPLATES E CONSTANTES
+// ARQUIVO 1: TEMPLATES E CONSTANTES (CommonJS)
 // ================================================================================
 
-export const CONFIG = {
+const CONFIG = {
     VERSION: '3.1',
     SISTEMA: 'CVC ITAQUA'
 };
@@ -11,7 +11,7 @@ export const CONFIG = {
 // TABELA DE AEROPORTOS
 // ================================================================================
 
-export const AEROPORTOS = {
+const AEROPORTOS = {
     // Brasil - Principais
     'GRU': 'Guarulhos', 
     'CGH': 'Congonhas', 
@@ -80,7 +80,7 @@ export const AEROPORTOS = {
 // REGRAS DE BAGAGEM
 // ================================================================================
 
-export const REGRAS_BAGAGEM = {
+const REGRAS_BAGAGEM = {
     SEM_DESPACHADA: 'Inclui 1 item pessoal + 1 mala de mão de 10kg',
     COM_DESPACHADA_23KG: 'Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg',
     COM_DESPACHADA_32KG: 'Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 32kg',
@@ -94,7 +94,7 @@ export const REGRAS_BAGAGEM = {
 // TEMPLATES DOS PRODUTOS (TODOS DO MANUAL)
 // ================================================================================
 
-export const TEMPLATES = {
+const TEMPLATES = {
     // 1. AÉREO SIMPLES
     AEREO_SIMPLES: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
@@ -422,10 +422,10 @@ Valores sujeitos a confirmação e disponibilidade`,
 };
 
 // ================================================================================
-// EXPORTS
+// EXPORTS COMMONJS
 // ================================================================================
 
-export default {
+module.exports = {
     CONFIG,
     AEROPORTOS,
     TEMPLATES,
