@@ -1,30 +1,139 @@
 // ================================================================================
-// 🚀 CVC ITAQUA v3.2 - CORREÇÃO DE CONEXÕES
+// 🚀 CVC ITAQUA v3.2 - SISTEMA COMPLETO FUNCIONANDO
 // ================================================================================
-// ARQUIVO: api/ai-google.js - BACKEND PRINCIPAL CORRIGIDO
+// ARQUIVO: api/ai-google.js - SEM IMPORTS, TUDO INTEGRADO
 // ================================================================================
 
-import { Anthropic } from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
+const { Anthropic } = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 
-// Importar templates e correções
-import { TEMPLATES, AEROPORTOS, CONFIG } from './templates.js';
-import { posProcessar } from './corrections.js';
+// ================================================================================
+// 🎯 CONFIGURAÇÕES E CONSTANTES (INTEGRADAS)
+// ================================================================================
 
-// Configurar APIs
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY
-});
+const CONFIG = {
+    VERSION: '3.2',
+    SISTEMA: 'CVC ITAQUA'
+};
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+const AEROPORTOS = {
+    // Brasil
+    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos',
+    'GIG': 'Galeão', 'SDU': 'Santos Dumont', 'BSB': 'Brasília',
+    'CNF': 'Confins', 'SSA': 'Salvador', 'REC': 'Recife',
+    'FOR': 'Fortaleza', 'POA': 'Porto Alegre', 'FLN': 'Florianópolis',
+    'CWB': 'Curitiba', 'MAO': 'Manaus', 'BEL': 'Belém',
+    
+    // Internacional
+    'LIS': 'Lisboa', 'OPO': 'Porto', 'MAD': 'Madrid',
+    'BCN': 'Barcelona', 'CDG': 'Paris', 'FCO': 'Roma',
+    'LHR': 'Londres', 'JFK': 'Nova York', 'MIA': 'Miami',
+    'EZE': 'Buenos Aires', 'SCL': 'Santiago', 'LIM': 'Lima'
+};
+
+// ================================================================================
+// 📝 TEMPLATES DO MANUAL (INTEGRADOS)
+// ================================================================================
+
+const TEMPLATES = {
+    AEREO_SIMPLES: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_destino} {hora_chegada_ida} ({tipo_voo_ida})
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor_total} para {passageiros}
+✅ {bagagem}
+🏷️ {reembolso}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    AEREO_CONEXAO_DETALHADA: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
+{data_ida} - {aeroporto_origem} {hora_ida} / {aeroporto_conexao} {hora_chegada_conexao} (voo direto)
+(conexão em {cidade_conexao} - {tempo_espera} de espera)
+{data_ida} - {aeroporto_conexao} {hora_saida_conexao} / {aeroporto_destino} {hora_chegada_ida} (voo direto)
+--
+{data_volta} - {aeroporto_destino} {hora_volta} / {aeroporto_origem} {hora_chegada_volta} ({tipo_voo_volta})
+
+💰 R$ {valor_total} para {passageiros}
+💳 {parcelamento}
+✅ {bagagem}
+🏷️ {reembolso}
+
+Valores sujeitos a confirmação e disponibilidade`,
+
+    MULTIPLAS_OPCOES: `Use este formato quando houver múltiplas opções de voo/hotel.
+Para cada opção, formate como:
+
+*OPÇÃO 1 - {companhia} - {origem} ✈ {destino}*
+[detalhes do voo]
+💰 R$ {valor}
+[outros detalhes]
+
+*OPÇÃO 2 - {companhia} - {origem} ✈ {destino}*
+[detalhes do voo]
+💰 R$ {valor}
+[outros detalhes]`
+};
+
+// ================================================================================
+// 🔧 FUNÇÕES DE PÓS-PROCESSAMENTO (INTEGRADAS)
+// ================================================================================
+
+function posProcessar(texto, conteudoOriginal, parcelamento) {
+    let resultado = texto;
+    
+    // 1. Converter códigos de aeroporto
+    for (const [codigo, nome] of Object.entries(AEROPORTOS)) {
+        const regex = new RegExp(`\\b${codigo}\\b`, 'g');
+        resultado = resultado.replace(regex, nome);
+    }
+    
+    // 2. Corrigir formatos de data
+    resultado = resultado.replace(/(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
+        const meses = {
+            'janeiro': '01', 'jan': '01', 'fevereiro': '02', 'fev': '02',
+            'março': '03', 'mar': '03', 'abril': '04', 'abr': '04',
+            'maio': '05', 'mai': '05', 'junho': '06', 'jun': '06',
+            'julho': '07', 'jul': '07', 'agosto': '08', 'ago': '08',
+            'setembro': '09', 'set': '09', 'outubro': '10', 'out': '10',
+            'novembro': '11', 'nov': '11', 'dezembro': '12', 'dez': '12'
+        };
+        const mesNum = meses[mes.toLowerCase()] || mes;
+        return `${dia.padStart(2, '0')}/${mesNum}`;
+    });
+    
+    // 3. Aplicar parcelamento se fornecido
+    if (parcelamento && !resultado.includes('💳')) {
+        const valorMatch = resultado.match(/R\$\s*([\d.,]+)/);
+        if (valorMatch) {
+            const valor = parseFloat(valorMatch[1].replace('.', '').replace(',', '.'));
+            const parcela = (valor / parseInt(parcelamento)).toFixed(2).replace('.', ',');
+            const linhaParcelamento = `💳 ${parcelamento}x de R$ ${parcela} s/ juros no cartão`;
+            
+            // Inserir após o valor
+            resultado = resultado.replace(/(💰[^\n]+)/, `$1\n${linhaParcelamento}`);
+        }
+    }
+    
+    // 4. Garantir versão no final
+    if (!resultado.includes('(v')) {
+        resultado = resultado.replace(
+            /Valores sujeitos a confirmação e disponibilidade/,
+            `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`
+        );
+    }
+    
+    // 5. Remover linhas vazias extras
+    resultado = resultado.replace(/\n{3,}/g, '\n\n');
+    
+    return resultado.trim();
+}
 
 // ================================================================================
 // 🎯 FUNÇÃO PRINCIPAL - HANDLER DA API
 // ================================================================================
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     console.log('[v3.2] 🚀 CVC ITAQUA API iniciada');
     
     // Configurar CORS
@@ -47,8 +156,7 @@ export default async function handler(req, res) {
             temPDF: !!dados.pdfContent,
             temTexto: !!dados.observacoes || !!dados.textoColado,
             destino: dados.destino,
-            tipos: dados.tipos,
-            parcelamento: dados.parcelamento
+            tipos: dados.tipos
         });
         
         // Processar orçamento
@@ -69,7 +177,7 @@ export default async function handler(req, res) {
             error: error.message || 'Erro ao processar orçamento'
         });
     }
-}
+};
 
 // ================================================================================
 // 🎯 PROCESSAMENTO PRINCIPAL DO ORÇAMENTO
@@ -86,7 +194,7 @@ async function processarOrcamento(dados) {
     console.log('[v3.2] 📊 Tipo detectado:', tipoOrcamento);
     
     // 3. Buscar template apropriado
-    const template = buscarTemplate(tipoOrcamento);
+    const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     // 4. Montar prompt específico para IA
     const prompt = montarPrompt(template, conteudoPrincipal, dados, tipoOrcamento);
@@ -94,15 +202,16 @@ async function processarOrcamento(dados) {
     // 5. Decidir qual IA usar
     const usarClaude = dados.imagemBase64 || 
                       conteudoPrincipal.length > 3000 ||
-                      tipoOrcamento.includes('PACOTE') ||
-                      tipoOrcamento.includes('MULTITRECHO');
+                      tipoOrcamento.includes('PACOTE');
     
     // 6. Chamar IA apropriada
     let respostaIA;
-    if (usarClaude) {
+    if (usarClaude && process.env.ANTHROPIC_API_KEY) {
         respostaIA = await chamarClaude(prompt, dados.imagemBase64);
-    } else {
+    } else if (process.env.OPENAI_API_KEY) {
         respostaIA = await chamarGPT(prompt);
+    } else {
+        throw new Error('Nenhuma API key configurada');
     }
     
     // 7. Aplicar pós-processamento
@@ -112,53 +221,21 @@ async function processarOrcamento(dados) {
 }
 
 // ================================================================================
-// 🔍 DETECÇÃO DE TIPO DE ORÇAMENTO
+// 🔍 DETECÇÃO DE TIPO DE ORÇAMENTO (CORRIGIDA)
 // ================================================================================
 
 function detectarTipoOrcamento(conteudo, tipos) {
     const conteudoLower = conteudo.toLowerCase();
     
-    // Se solicitado dicas específicas
-    if (tipos && tipos.includes('Dicas')) {
-        return 'DICAS';
-    }
+    // Verificar se tem DETALHES REAIS de conexão
+    const temDetalhesConexao = verificarDetalhesConexao(conteudo);
     
-    // Se solicitado ranking específico
-    if (tipos && tipos.includes('Ranking')) {
-        return 'RANKING_HOTEIS';
-    }
-    
-    // Cruzeiro
-    if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || 
-        conteudoLower.includes('cabine')) {
-        return 'CRUZEIRO';
-    }
-    
-    // Pacote completo
-    if (conteudoLower.includes('pacote') || 
-        (conteudoLower.includes('hotel') && conteudoLower.includes('aéreo'))) {
-        return 'PACOTE_COMPLETO';
-    }
-    
-    // Multitrecho
-    if (conteudoLower.includes('multitrecho') || conteudoLower.includes('trecho 1')) {
-        return 'MULTITRECHO';
-    }
-    
-    // Múltiplas opções
-    if (conteudoLower.includes('opção 1') || conteudoLower.includes('plano 1')) {
+    // Se tem múltiplas opções
+    if (conteudoLower.includes('opção 1') || conteudoLower.includes('opção 2')) {
         return 'MULTIPLAS_OPCOES';
     }
     
-    // Somente ida
-    if (conteudoLower.includes('somente ida') || conteudoLower.includes('apenas ida') ||
-        conteudoLower.includes('one way')) {
-        return 'AEREO_SOMENTE_IDA';
-    }
-    
-    // ⚠️ CORREÇÃO PRINCIPAL: Verificar se tem DETALHES reais de conexão
-    const temDetalhesConexao = verificarDetalhesConexao(conteudo);
-    
+    // Se tem detalhes de conexão REAIS
     if (temDetalhesConexao) {
         return 'AEREO_CONEXAO_DETALHADA';
     }
@@ -168,15 +245,11 @@ function detectarTipoOrcamento(conteudo, tipos) {
 }
 
 // ================================================================================
-// 🔍 NOVA FUNÇÃO: VERIFICAR SE TEM DETALHES REAIS DE CONEXÃO
+// 🔍 VERIFICAR SE TEM DETALHES REAIS DE CONEXÃO
 // ================================================================================
 
 function verificarDetalhesConexao(conteudo) {
-    // Procurar por padrões que indicam DETALHES REAIS de conexão:
-    // - Aeroporto de conexão mencionado (ex: "conexão em Madrid")
-    // - Horários específicos da conexão
-    // - Tempo de espera mencionado (ex: "2h de espera")
-    
+    // Procurar por padrões que indicam DETALHES REAIS de conexão
     const padroes = [
         /conexão em (\w+)/i,           // "conexão em Madrid"
         /escala em (\w+)/i,             // "escala em Lisboa"
@@ -185,12 +258,15 @@ function verificarDetalhesConexao(conteudo) {
         /via (\w+)/i                    // "via Londres"
     ];
     
+    // Verificar se NÃO é apenas tempo total de voo
+    const tempoTotal = /(\d+h\s*\d*min)\s*(uma escala|1 escala)/i;
+    if (tempoTotal.test(conteudo) && !conteudo.match(/de espera/i)) {
+        return false; // É tempo total, não tempo de espera
+    }
+    
     for (let padrao of padroes) {
         if (padrao.test(conteudo)) {
-            // Verificar se não é apenas "Uma escala" genérico
-            if (!conteudo.match(/uma escala\s*\d+h/i)) {
-                return true;
-            }
+            return true;
         }
     }
     
@@ -202,66 +278,38 @@ function verificarDetalhesConexao(conteudo) {
 // ================================================================================
 
 function montarPrompt(template, conteudo, dados, tipoOrcamento) {
-    // ⚠️ INSTRUÇÃO CRÍTICA ADICIONADA
     const instrucaoConexao = `
 REGRA CRÍTICA SOBRE CONEXÕES:
-- Se o texto diz "Uma escala" mas NÃO fornece detalhes (aeroporto, horários), use formato SIMPLES: (com conexão)
+- Se o texto diz "Uma escala" mas NÃO fornece detalhes do aeroporto de conexão, use formato SIMPLES: (com conexão)
 - NUNCA invente aeroportos de conexão que não foram mencionados
-- "16h 50min" é o tempo TOTAL do voo, NÃO é tempo de espera
-- Se não há detalhes específicos da conexão, NÃO use o template de conexão detalhada
-- Exemplo correto sem detalhes: "Guarulhos 19:15 / Lisboa 16:05 (+1) (com conexão)"
+- "16h 50min Uma escala" significa tempo TOTAL do voo com uma parada, NÃO é tempo de espera
+- Exemplo CORRETO sem detalhes: "Guarulhos 19:15 / Lisboa 16:05 (+1) (com conexão)"
 - Exemplo ERRADO: inventar "conexão em Madrid" quando não foi mencionado
 `;
     
-    let prompt = `
-Você é especialista em formatação de orçamentos de viagem para WhatsApp da CVC Itaquaquecetuba.
-SIGA O MANUAL v3.2 COM PRECISÃO ABSOLUTA.
+    let prompt = `Você é especialista em formatação de orçamentos CVC.
 
 ${instrucaoConexao}
 
-TEMPLATE A SEGUIR EXATAMENTE:
+TEMPLATE A SEGUIR:
 ${template}
 
 DADOS FORNECIDOS:
 ${conteudo}
 
-REGRAS OBRIGATÓRIAS:
+REGRAS:
 1. Use o template EXATAMENTE como fornecido
-2. Converta TODOS os códigos de aeroporto para nomes completos
+2. Converta códigos de aeroporto para nomes completos
 3. NUNCA invente informações não fornecidas
 4. Se há "Uma escala" sem detalhes, use apenas "(com conexão)"
 5. Mantenha formatação para WhatsApp
 6. Sempre termine com "Valores sujeitos a confirmação e disponibilidade"
-7. NÃO adicione versão no final (será adicionada automaticamente)
 
 PASSAGEIROS: ${montarTextoPassageiros(dados)}
-PARCELAMENTO: ${dados.parcelamento ? dados.parcelamento + 'x sem juros' : 'detectar do texto'}
 
-Retorne APENAS o orçamento formatado, sem explicações.`;
+Retorne APENAS o orçamento formatado.`;
 
     return prompt;
-}
-
-// ================================================================================
-// 🎯 BUSCAR TEMPLATE APROPRIADO
-// ================================================================================
-
-function buscarTemplate(tipo) {
-    const mapa = {
-        'AEREO_SIMPLES': TEMPLATES.AEREO_SIMPLES,
-        'AEREO_CONEXAO_DETALHADA': TEMPLATES.AEREO_CONEXAO_DETALHADA,
-        'AEREO_SOMENTE_IDA': TEMPLATES.AEREO_SOMENTE_IDA,
-        'MULTIPLAS_OPCOES': TEMPLATES.MULTIPLAS_OPCOES,
-        'MULTITRECHO': TEMPLATES.MULTITRECHO,
-        'CRUZEIRO': TEMPLATES.CRUZEIRO,
-        'PACOTE_COMPLETO': TEMPLATES.PACOTE_COMPLETO,
-        'HOTEIS': TEMPLATES.HOTEIS,
-        'ROTEIRO_HOTEIS': TEMPLATES.ROTEIRO_HOTEIS,
-        'DICAS': TEMPLATES.DICAS,
-        'RANKING_HOTEIS': TEMPLATES.RANKING_HOTEIS
-    };
-    
-    return mapa[tipo] || TEMPLATES.AEREO_SIMPLES;
 }
 
 // ================================================================================
@@ -270,6 +318,10 @@ function buscarTemplate(tipo) {
 
 async function chamarClaude(prompt, imagemBase64 = null) {
     console.log('[v3.2] 🤖 Chamando Claude...');
+    
+    const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY
+    });
     
     const messages = [{
         role: 'user',
@@ -297,12 +349,17 @@ async function chamarClaude(prompt, imagemBase64 = null) {
         return response.content[0].text;
     } catch (error) {
         console.error('[v3.2] ❌ Erro Claude:', error);
-        throw new Error('Erro ao processar com Claude: ' + error.message);
+        // Fallback para GPT se Claude falhar
+        return await chamarGPT(prompt);
     }
 }
 
 async function chamarGPT(prompt) {
     console.log('[v3.2] 🤖 Chamando GPT-4o-mini...');
+    
+    const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+    });
     
     try {
         const response = await openai.chat.completions.create({
@@ -310,7 +367,7 @@ async function chamarGPT(prompt) {
             messages: [
                 {
                     role: 'system',
-                    content: 'Você é especialista em formatação de orçamentos CVC. NUNCA invente informações.'
+                    content: 'Você é especialista em formatação de orçamentos CVC. NUNCA invente informações. Siga o template fornecido EXATAMENTE.'
                 },
                 { role: 'user', content: prompt }
             ],
@@ -353,13 +410,13 @@ function montarTextoPassageiros(dados) {
         partes.push(`${String(num).padStart(2, '0')} ${num === 1 ? 'criança' : 'crianças'}`);
     }
     
-    return partes.length > 0 ? partes.join(' + ') : 'detectar do texto';
+    return partes.length > 0 ? partes.join(' + ') : '01 adulto';
 }
 
 // ================================================================================
 // 🎯 LOG FINAL
 // ================================================================================
 
-console.log('[v3.2] ✅ CVC ITAQUA API carregada com sucesso!');
+console.log('[v3.2] ✅ CVC ITAQUA API carregada!');
+console.log('[v3.2] 🔧 Correção: Não inventa conexões');
 console.log('[v3.2] 📋 Versão:', CONFIG.VERSION);
-console.log('[v3.2] 🔧 Correção aplicada: Não inventa detalhes de conexão');
