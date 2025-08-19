@@ -242,12 +242,17 @@ FORMATO ESPERADO:
 🏷️ {reembolso}
 🔗 {link específico se houver}
 
-REGRAS:
+REGRAS IMPORTANTES:
 - Datas: DD/MM
 - Horários: HH:MM (24h)
 - Adicione (+1) se chegar no dia seguinte
-- Use "com conexão em {cidade}" não "escala"
+- Para voos com conexão/escala: use "com conexão" ou "com conexão em {cidade}"
+- NÃO confunda tempo total de voo com tempo de conexão
+- "Uma escala" = "com conexão"
+- Se tiver cidade de conexão (ex: Madrid), mencione: "com conexão em Madrid"
 - Passageiros: formato "XX adultos" ou "XX adultos + XX crianças"
+- NÃO inclua links genéricos ou incompletos (https://...)
+- Se não houver link específico, omita a linha do link
 - Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
     }
     
@@ -272,7 +277,15 @@ REGRAS IMPORTANTES:
 4. Use sempre "conexão" e nunca "escala"
 5. Use os emojis exatos: 💰 ✈️ 💳 ✅ 🏷️ 🔗 💺
 6. Links: formato direto https://..., não use markdown [texto](link)
-7. Termine sempre com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
+7. NÃO inclua links genéricos ou incompletos (https://... ou apenas 🔗)
+8. Se não houver link específico no conteúdo, omita completamente a linha do link
+9. IMPORTANTE para voos com conexão:
+   - "Uma escala" = voo "com conexão"
+   - O tempo mencionado (ex: 16h 50min) é o tempo TOTAL de viagem, não o tempo de espera
+   - Para Iberia, as conexões geralmente são em Madrid
+   - Formato: "{hora origem} / {hora destino} (com conexão em {cidade})"
+10. Garanta quebra de linha entre cada elemento (valor, parcelamento, bagagem, etc)
+11. Termine sempre com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
 }
 
 // ================================================================================
