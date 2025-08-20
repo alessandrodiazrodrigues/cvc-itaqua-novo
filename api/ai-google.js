@@ -251,44 +251,56 @@ FORMATO ESPERADO:
 REGRAS:
 - Datas: DD/MM
 - Horários: HH:MM (24h)
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)`;
+        - Termine com: Valores sujeitos a confirmação e disponibilidade (v3.11)`;
     }
     
-    // Para orçamentos normais - PROMPT RESTRITIVO
+    // Para orçamentos normais - PROMPT RESTRITIVO v3.11
     const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     return `
-⚠️ INSTRUÇÕES CRÍTICAS - SIGA EXATAMENTE:
+⚠️ INSTRUÇÕES CRÍTICAS v3.11 - SIGA EXATAMENTE:
 
 1. Use SOMENTE as informações do texto fornecido
 2. NÃO INVENTE conexões, horários ou cidades
 3. NÃO ADICIONE links se não estiverem no texto
-4. Se mencionar "Uma escala" mas não especificar cidade, use apenas "(com conexão)"
-5. NÃO calcule horários de conexão - use apenas os horários fornecidos
-6. NÃO adicione tempos de espera se não estiverem especificados
-7. Se o texto não tem link específico, NÃO inclua linha de link
+4. FORMATO OBRIGATÓRIO para voos:
+   Data - Aeroporto Origem Hora / Aeroporto Destino Hora (tipo)
+5. Se tem "Uma escala" → usar "(com conexão)"
+6. SEMPRE incluir aeroporto de destino na linha
+7. Separador "--" APENAS entre ida e volta
+8. SEMPRE incluir linha de reembolso 🏷️
 
 TEXTO ORIGINAL A FORMATAR:
 ${conteudoPrincipal}
 
 PASSAGEIROS: ${passageiros}
 
-TEMPLATE A SEGUIR:
-${template}
+FORMATO EXATO OBRIGATÓRIO:
+*{Companhia} - {Origem} ✈ {Destino}*
+{Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
+--
+{Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
-EXEMPLO DO SEU TEXTO:
-- Se diz "Uma escala" → use "(com conexão)"
-- Se não tem link → NÃO inclua linha 🔗
-- Se não especifica cidade de conexão → NÃO invente
+💰 R$ {valor} para {passageiros}
+✅ {bagagem}
+🏷️ {reembolso}
 
-REGRAS DE FORMATAÇÃO:
-1. Datas: formato DD/MM (27/01, não "27 de janeiro")
-2. Aeroportos: nomes completos (Guarulhos, não GRU)
-3. Horários: exatamente como fornecidos
-4. Emojis: 💰 ✈️ 💳 ✅ 🏷️ (somente 🔗 se tiver link real)
-5. Termine com: Valores sujeitos a confirmação e disponibilidade (v3.1)
+Valores sujeitos a confirmação e disponibilidade (v3.11)
 
-⚠️ LEMBRE-SE: NÃO INVENTE NADA QUE NÃO ESTEJA NO TEXTO!`;
+EXEMPLO CORRETO DO SEU TEXTO:
+- "11:10 GRU Uma escala 22:40 MCO" → "Guarulhos 11:10 / Orlando 22:40 (com conexão)"
+- "13:40 MCO Uma escala 03:50 GRU" → "Orlando 13:40 / Guarulhos 03:50 (com conexão)"
+- "Não reembolsável" → "🏷️ Não reembolsável"
+
+REGRAS CRÍTICAS:
+1. Datas: DD/MM (27/01)
+2. Aeroportos: nomes completos (Guarulhos, Orlando)
+3. SEMPRE ambos aeroportos na linha: origem / destino
+4. Separador "--" só entre ida e volta
+5. SEMPRE linha 🏷️ com reembolso
+6. Termine com: (v3.11)
+
+⚠️ NÃO INVENTE NADA - USE APENAS O TEXTO FORNECIDO!`;
 }
 
 // ================================================================================
@@ -315,7 +327,7 @@ export default async function handler(req, res) {
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.1 - Prompt Corrigido'
+                message: 'CVC Itaqua API v3.11 - Formato Corrigido'
             });
         }
         
@@ -530,12 +542,12 @@ export default async function handler(req, res) {
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.1 - PROMPT CORRIGIDO               ║');
+console.log('║              CVC ITAQUA v3.11 - FORMATO CORRIGIDO             ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Prompt restritivo - NÃO inventa informações                ║');
-console.log('║ ✅ Instruções críticas para IA                               ║');
-console.log('║ ✅ Validação rigorosa de dados de entrada                     ║');
-console.log('║ ✅ Fallback robusto para APIs                                 ║');
-console.log('║ ✅ JSON sempre válido                                         ║');
+console.log('║ ✅ Formato de voo corrigido (origem / destino)                ║');
+console.log('║ ✅ Separador "--" apenas entre ida e volta                    ║');
+console.log('║ ✅ Linha de reembolso obrigatória                             ║');
+console.log('║ ✅ Prompt ultra-específico para formato                       ║');
+console.log('║ ✅ Validação rigorosa de estrutura                           ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.1 com prompt corrigido!');
+console.log('🚀 Sistema v3.11 com formato perfeito!');
