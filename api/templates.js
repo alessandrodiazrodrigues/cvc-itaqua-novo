@@ -1,9 +1,9 @@
-// api/templates.js - CVC ITAQUA v3.11
+// api/templates.js - CVC ITAQUA v3.12
 // ARQUIVO 1: TEMPLATES E CONSTANTES
 // ================================================================================
 
 export const CONFIG = {
-    VERSION: '3.11',
+    VERSION: '3.12',
     SISTEMA: 'CVC ITAQUA'
 };
 
