@@ -1,4 +1,4 @@
-// api/corrections.js - CVC ITAQUA v3.1
+// api/corrections.js - CVC ITAQUA v3.11
 // ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
 // ================================================================================
 
@@ -64,12 +64,12 @@ export function extrairDadosCompletos(conteudoPrincipal) {
 }
 
 // ================================================================================
-// PÓS-PROCESSAMENTO PRINCIPAL
+// PÓS-PROCESSAMENTO PRINCIPAL v3.11
 // ================================================================================
 
 export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
-        console.log('🔧 Pós-processamento v3.1...');
+        console.log('🔧 Pós-processamento v3.11...');
         console.log('Parcelamento selecionado:', parcelamentoSelecionado);
         
         let resultado = texto;
@@ -84,17 +84,17 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         resultado = corrigirDatas(resultado);
         resultado = converterCodigosAeroporto(resultado);
         resultado = corrigirPassageiros(resultado, dados);
-        resultado = corrigirFormatoVoo(resultado, conteudoOriginal);
+        resultado = corrigirFormatoVooV311(resultado, conteudoOriginal); // NOVA v3.11
         resultado = corrigirLinks(resultado);
         resultado = corrigirParcelamento(resultado, parcelamentoSelecionado, conteudoOriginal);
         resultado = corrigirBagagem(resultado, conteudoOriginal);
         resultado = corrigirAssento(resultado, conteudoOriginal);
         resultado = corrigirReembolso(resultado);
         resultado = adicionarDiaSeguinte(resultado);
-        resultado = garantirVersao(resultado);
+        resultado = garantirVersaoV311(resultado); // NOVA v3.11
         resultado = limparFormatacao(resultado);
         
-        console.log('✅ Pós-processamento completo');
+        console.log('✅ Pós-processamento v3.11 completo');
         return resultado;
         
     } catch (error) {
@@ -104,7 +104,7 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
 }
 
 // ================================================================================
-// CORREÇÕES ESPECÍFICAS
+// CORREÇÕES ESPECÍFICAS v3.11
 // ================================================================================
 
 function corrigirDatas(texto) {
@@ -156,18 +156,59 @@ function corrigirPassageiros(texto, dados) {
     return texto.replace(/\d{2} adultos?(?:\s*\+\s*\d{2} crianças?)?/gi, dados.passageiros);
 }
 
-function corrigirFormatoVoo(texto, conteudoOriginal) {
+// NOVA FUNÇÃO v3.11 - Corrigir formato específico de voo
+function corrigirFormatoVooV311(texto, conteudoOriginal) {
     let resultado = texto;
     
-    // Remover duplicações
+    // Problema específico: "Guarulhos 11:10 / (com conexão) 22:40"
+    // Corrigir para: "Guarulhos 11:10 / Orlando 22:40 (com conexão)"
+    
+    // Detectar aeroporto de destino do conteúdo original
+    let destinoAeroporto = 'Orlando'; // padrão
+    if (conteudoOriginal.includes('MCO')) destinoAeroporto = 'Orlando';
+    if (conteudoOriginal.includes('LIS')) destinoAeroporto = 'Lisboa';
+    if (conteudoOriginal.includes('MAD')) destinoAeroporto = 'Madrid';
+    
+    // Corrigir formato "/ (com conexão) horário"
+    resultado = resultado.replace(/(\w+)\s+(\d{2}:\d{2})\s+\/\s+\(com conexão\)\s+(\d{2}:\d{2})/g, 
+        `$1 $2 / ${destinoAeroporto} $3 (com conexão)`);
+    
+    // Corrigir caso contrário também
+    resultado = resultado.replace(/(\w+)\s+(\d{2}:\d{2})\s+\/\s+(\d{2}:\d{2})\s+\(com conexão\)/g, 
+        `$1 $2 / ${destinoAeroporto} $3 (com conexão)`);
+    
+    // Garantir que separador "--" esteja na posição correta
+    // Remover "--" que estão na posição errada
+    const linhas = resultado.split('\n');
+    let novasLinhas = [];
+    let separadorAdicionado = false;
+    
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i];
+        
+        // Se a linha tem formato de voo de ida
+        if (linha.match(/^\d{2}\/\d{2} - \w+.*\/.*\(.*\)$/) && !separadorAdicionado) {
+            novasLinhas.push(linha);
+            // Verificar se próxima linha é voo de volta
+            if (i + 1 < linhas.length && linhas[i + 1].match(/^\d{2}\/\d{2} - \w+.*\/.*\(.*\)$/)) {
+                novasLinhas.push('--');
+                separadorAdicionado = true;
+            }
+        } else if (linha === '--' && separadorAdicionado) {
+            // Pular separador duplicado
+            continue;
+        } else {
+            novasLinhas.push(linha);
+        }
+    }
+    
+    resultado = novasLinhas.join('\n');
+    
+    // Remover duplicações de parênteses
     resultado = resultado.replace(/\(\(([^)]+)\)\)/g, '($1)');
     resultado = resultado.replace(/\(voo \(voo direto\)\)/g, '(voo direto)');
     resultado = resultado.replace(/\(\(voo direto\)\)/g, '(voo direto)');
     resultado = resultado.replace(/\(\(com conexão\)\)/g, '(com conexão)');
-    
-    // Corrigir formato de voo - adicionar parênteses
-    resultado = resultado.replace(/(\d{2}:\d{2})\s+(Voo direto|Direto)/gi, '$1 (voo direto)');
-    resultado = resultado.replace(/(\d{2}:\d{2})\s+(Uma escala|Com conexão)/gi, '$1 (com conexão)');
     
     // IMPORTANTE: Sempre usar "conexão" e nunca "escala"
     resultado = resultado.replace(/uma escala em/gi, 'com conexão em');
@@ -175,18 +216,6 @@ function corrigirFormatoVoo(texto, conteudoOriginal) {
     resultado = resultado.replace(/Uma escala/gi, '(com conexão)');
     resultado = resultado.replace(/com escala/gi, 'com conexão');
     resultado = resultado.replace(/escala em/gi, 'conexão em');
-    
-    // Adicionar cidade da conexão se for Iberia
-    if (conteudoOriginal.toLowerCase().includes('iberia')) {
-        resultado = resultado.replace(/\(com conexão\)/g, '(com conexão em Madrid)');
-        resultado = resultado.replace(/com conexão em Madrid em Madrid/g, 'com conexão em Madrid');
-    }
-    
-    // Corrigir nomes longos de aeroportos
-    resultado = resultado.replace(/Aeroporto Internacional de São Paulo\/Guarulhos/g, 'Guarulhos');
-    resultado = resultado.replace(/Aeroporto Internacional do Galeão/g, 'Galeão');
-    resultado = resultado.replace(/Aeroporto de Lisboa/g, 'Lisboa');
-    resultado = resultado.replace(/Aeroporto Internacional de Guarulhos/g, 'Guarulhos');
     
     return resultado;
 }
@@ -203,7 +232,6 @@ function corrigirLinks(texto) {
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
     // Manter apenas links específicos (com path)
-    // Se o link tem apenas o domínio, remover
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
     
     return resultado;
@@ -349,7 +377,8 @@ function adicionarDiaSeguinte(texto) {
                 const temConexao = linha.includes('conexão');
                 const ehInternacional = linha.includes('Lisboa') || linha.includes('Madrid') || 
                                        linha.includes('Paris') || linha.includes('Londres') ||
-                                       linha.includes('Roma') || linha.includes('Barcelona');
+                                       linha.includes('Roma') || linha.includes('Barcelona') ||
+                                       linha.includes('Orlando');
                 
                 if (ehInternacional && (horaSaida >= 15 || horaChegada <= 10 || temConexao)) {
                     // Adicionar (+1) antes do tipo de voo
@@ -364,6 +393,12 @@ function adicionarDiaSeguinte(texto) {
 
 function corrigirReembolso(texto) {
     let resultado = texto;
+    
+    // Garantir que sempre há linha de reembolso
+    if (!resultado.includes('🏷️')) {
+        // Adicionar linha de reembolso após bagagem
+        resultado = resultado.replace(/(✅[^\n]+)(\n|$)/, '$1\n🏷️ Não reembolsável\n');
+    }
     
     // Remover duplicações de reembolso
     const linhasReembolso = resultado.match(/🏷️[^\n]+/g);
@@ -386,7 +421,8 @@ function corrigirReembolso(texto) {
     return resultado;
 }
 
-function garantirVersao(texto) {
+// NOVA FUNÇÃO v3.11
+function garantirVersaoV311(texto) {
     const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
     
     // Remover versão antiga
