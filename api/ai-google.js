@@ -1,9 +1,9 @@
-// api/ai-google.js - CVC ITAQUA v3.15 BUSCA ONLINE + CORREÇÕES
+// api/ai-google.js - CVC ITAQUA v3.16 CORREÇÃO DEFINITIVA
 // ARQUIVO ÚNICO - TODAS FUNCIONALIDADES INLINE
 // ================================================================================
 
 // ⚠️ CONFIGURAÇÃO E CONSTANTES
-const CONFIG = { VERSION: '3.15', SISTEMA: 'CVC ITAQUA' };
+const CONFIG = { VERSION: '3.16', SISTEMA: 'CVC ITAQUA' };
 
 const AEROPORTOS = {
     'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos',
