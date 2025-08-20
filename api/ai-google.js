@@ -251,56 +251,74 @@ FORMATO ESPERADO:
 REGRAS:
 - Datas: DD/MM
 - Horários: HH:MM (24h)
-        - Termine com: Valores sujeitos a confirmação e disponibilidade (v3.11)`;
+        - Termine com: Valores sujeitos a confirmação e disponibilidade (v3.12)`;
     }
     
-    // Para orçamentos normais - PROMPT RESTRITIVO v3.11
+    // Para orçamentos normais - PROMPT RESTRITIVO v3.12
     const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     return `
-⚠️ INSTRUÇÕES CRÍTICAS v3.11 - SIGA EXATAMENTE:
+⚠️ INSTRUÇÕES CRÍTICAS v3.12 - MÚLTIPLAS OPÇÕES:
 
-1. Use SOMENTE as informações do texto fornecido
-2. NÃO INVENTE conexões, horários ou cidades
-3. NÃO ADICIONE links se não estiverem no texto
-4. FORMATO OBRIGATÓRIO para voos:
-   Data - Aeroporto Origem Hora / Aeroporto Destino Hora (tipo)
-5. Se tem "Uma escala" → usar "(com conexão)"
-6. SEMPRE incluir aeroporto de destino na linha
-7. Separador "--" APENAS entre ida e volta
-8. SEMPRE incluir linha de reembolso 🏷️
+REGRAS FUNDAMENTAIS:
+1. Se houver MÚLTIPLAS COMPANHIAS/OPÇÕES, trate cada uma SEPARADAMENTE
+2. Cada opção deve ter suas próprias informações (bagagem, parcelamento, reembolso)
+3. NÃO misture informações entre opções diferentes
+4. (+1) APENAS para voos internacionais noturnos que chegam no dia seguinte
+5. Links específicos devem ser mantidos se fornecidos
 
 TEXTO ORIGINAL A FORMATAR:
 ${conteudoPrincipal}
 
 PASSAGEIROS: ${passageiros}
 
-FORMATO EXATO OBRIGATÓRIO:
-*{Companhia} - {Origem} ✈ {Destino}*
+FORMATO PARA MÚLTIPLAS OPÇÕES:
+**{Companhia1} - {Origem} ✈ {Destino}**
 {Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
 --
 {Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
-💰 R$ {valor} para {passageiros}
-✅ {bagagem}
-🏷️ {reembolso}
+💰 R$ {valor1} para {passageiros}
+💳 {parcelamento1 - APENAS se tiver para esta opção}
+✅ {bagagem1}
+🏷️ {reembolso1}
+🔗 {link1 - APENAS se tiver específico para esta opção}
 
-Valores sujeitos a confirmação e disponibilidade (v3.11)
+**{Companhia2} - {Origem} ✈ {Destino}**
+{Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
+--
+{Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
-EXEMPLO CORRETO DO SEU TEXTO:
-- "11:10 GRU Uma escala 22:40 MCO" → "Guarulhos 11:10 / Orlando 22:40 (com conexão)"
-- "13:40 MCO Uma escala 03:50 GRU" → "Orlando 13:40 / Guarulhos 03:50 (com conexão)"
-- "Não reembolsável" → "🏷️ Não reembolsável"
+💰 R$ {valor2} para {passageiros}
+💳 {parcelamento2 - APENAS se tiver para esta opção}
+✅ {bagagem2}
+🏷️ {reembolso2}
+🔗 {link2 - APENAS se tiver específico para esta opção}
 
-REGRAS CRÍTICAS:
-1. Datas: DD/MM (27/01)
-2. Aeroportos: nomes completos (Guarulhos, Orlando)
-3. SEMPRE ambos aeroportos na linha: origem / destino
-4. Separador "--" só entre ida e volta
-5. SEMPRE linha 🏷️ com reembolso
-6. Termine com: (v3.11)
+Valores sujeitos a confirmação e disponibilidade (v3.12)
 
-⚠️ NÃO INVENTE NADA - USE APENAS O TEXTO FORNECIDO!`;
+REGRAS CRÍTICAS (+1):
+- (+1) APENAS se: voo internacional + saída após 20h + chegada antes 12h
+- Voos diretos domésticos: NUNCA usar (+1)
+- Orlando ida 11:10→22:40: NÃO usar (+1) (mesmo horário)
+- Orlando volta 13:40→03:50: USAR (+1) (chega madrugada)
+
+REGRAS DE PARCELAMENTO:
+- "Entrada de R$ X + Nx de R$ Y": aplicar APENAS na opção que tem
+- NÃO copiar parcelamento entre opções
+- Se só uma tem parcelamento, só ela recebe
+
+REGRAS DE BAGAGEM:
+- "com bagagem": adicionar linha ✅ bagagem despachada
+- "pré-reserva assento": adicionar linha 💺
+- Cada opção independente
+
+EXEMPLOS ESPECÍFICOS:
+- Copa "Uma escala" → "(com conexão)"
+- Latam "Voo direto" → "(voo direto)"
+- GRU → "Guarulhos", MCO → "Orlando"
+
+⚠️ CRÍTICO: NÃO MISTURE DADOS ENTRE OPÇÕES DIFERENTES!`;
 }
 
 // ================================================================================
@@ -327,7 +345,7 @@ export default async function handler(req, res) {
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.11 - Formato Corrigido'
+                message: 'CVC Itaqua API v3.12 - Múltiplas Opções Corrigidas'
             });
         }
         
@@ -542,12 +560,12 @@ export default async function handler(req, res) {
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.11 - FORMATO CORRIGIDO             ║');
+console.log('║              CVC ITAQUA v3.12 - MÚLTIPLAS OPÇÕES              ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Formato de voo corrigido (origem / destino)                ║');
-console.log('║ ✅ Separador "--" apenas entre ida e volta                    ║');
-console.log('║ ✅ Linha de reembolso obrigatória                             ║');
-console.log('║ ✅ Prompt ultra-específico para formato                       ║');
-console.log('║ ✅ Validação rigorosa de estrutura                           ║');
+console.log('║ ✅ Múltiplas opções tratadas separadamente                    ║');
+console.log('║ ✅ Lógica (+1) dia corrigida                                  ║');
+console.log('║ ✅ Parcelamento específico por opção                          ║');
+console.log('║ ✅ Bagagem e reembolso consistentes                           ║');
+console.log('║ ✅ Links específicos mantidos                                 ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.11 com formato perfeito!');
+console.log('🚀 Sistema v3.12 com múltiplas opções perfeitas!');
