@@ -1,9 +1,9 @@
-// api/templates.js - CVC ITAQUA v3.1
+// api/templates.js - CVC ITAQUA v3.11
 // ARQUIVO 1: TEMPLATES E CONSTANTES
 // ================================================================================
 
 export const CONFIG = {
-    VERSION: '3.1',
+    VERSION: '3.11',
     SISTEMA: 'CVC ITAQUA'
 };
 
@@ -40,7 +40,8 @@ export const AEROPORTOS = {
     'GYN': 'Goiânia',
     'VIX': 'Vitória',
     
-    // Internacional - Europa
+    // Internacional - Principais
+    'MCO': 'Orlando',
     'LIS': 'Lisboa', 
     'OPO': 'Porto', 
     'MAD': 'Madrid',
@@ -60,7 +61,6 @@ export const AEROPORTOS = {
     // Internacional - Américas
     'JFK': 'Nova York JFK', 
     'MIA': 'Miami', 
-    'MCO': 'Orlando',
     'LAX': 'Los Angeles', 
     'SFO': 'São Francisco', 
     'LAS': 'Las Vegas',
