@@ -1,4 +1,4 @@
-// api/processors/baggage-processor.js - PROCESSADOR DE BAGAGEM v4.0
+// api/processors/baggage-processor.js - PROCESSADOR DE BAGAGEM v4.0 CORRIGIDO
 // ================================================================================
 // 🎒 DETECTA E FORMATA REGRAS DE BAGAGEM CONSISTENTES
 // 🎯 Regra: "Com bagagem" = despachada incluída | Padrão CVC
@@ -79,7 +79,10 @@ function detectarTipoBagagem(texto, dadosExtraidos) {
         { termo: 'bagagem de 23kg', peso: 4, desc: 'peso padrão' },
         { termo: '23kg incluída', peso: 4, desc: 'peso incluído' },
         { termo: 'franquia de bagagem', peso: 3, desc: 'termo técnico' },
-        { termo: 'bagagem incluída', peso: 3, desc: 'inclusão geral' }
+        { termo: 'bagagem incluída', peso: 3, desc: 'inclusão geral' },
+        { termo: 'classe econômica', peso: 2, desc: 'classe internacional' }, // ADICIONADO
+        { termo: 'classe executiva', peso: 3, desc: 'classe premium' }, // ADICIONADO
+        { termo: 'classe premium', peso: 3, desc: 'classe premium' } // ADICIONADO
     ];
     
     // INDICADORES DE MÚLTIPLAS BAGAGENS
@@ -123,23 +126,35 @@ function detectarTipoBagagem(texto, dadosExtraidos) {
         }
     }
     
-    // DETECTAR VIAGEM INTERNACIONAL
-    const destinosInternacionais = ['orlando', 'miami', 'lisboa', 'madrid', 'barcelona', 'paris', 'roma', 'londres'];
+    // DETECTAR VIAGEM INTERNACIONAL - CORRIGIDO E EXPANDIDO
+    const destinosInternacionais = ['lisboa', 'orlando', 'miami', 'madrid', 'barcelona', 'paris', 'roma', 'londres', 'porto', 'buenos aires', 'santiago'];
+    const companhiasInternacionais = ['iberia', 'tap', 'lufthansa', 'air france', 'klm', 'american', 'delta', 'latam'];
+    const indicadoresInternacionais = ['classe econômica', 'classe executiva', 'classe premium', 'business class', 'economy class'];
+    
     deteccao.ehInternacional = destinosInternacionais.some(destino => 
         textoLower.includes(destino)
+    ) || companhiasInternacionais.some(companhia =>
+        textoLower.includes(companhia)
+    ) || indicadoresInternacionais.some(indicador =>
+        textoLower.includes(indicador)
     );
     
-    // DETERMINAR TIPO FINAL
+    // DETERMINAR TIPO FINAL - CORRIGIDO
     if (deteccao.confianca >= 0.8 && deteccao.tipo !== 'DUAS_DESPACHADAS') {
         deteccao.tipo = deteccao.ehInternacional ? 'COM_DESPACHADA_23KG' : 'COM_DESPACHADA_23KG';
-    } else if (deteccao.confianca >= 0.6) {
+    } else if (deteccao.confianca >= 0.4) { // REDUZIDO de 0.6 para detectar melhor
         deteccao.tipo = 'COM_DESPACHADA_23KG';
+    } else if (deteccao.ehInternacional) { // ADICIONADO: Internacional sempre tem bagagem
+        deteccao.tipo = 'COM_DESPACHADA_23KG';
+        deteccao.confianca = 0.8;
+        deteccao.indicadores.push('internacional: bagagem padrão');
     } else if (deteccao.confianca < 0.3) {
         deteccao.tipo = 'SEM_DESPACHADA';
     }
     
     console.log(`🔍 Indicadores encontrados: ${deteccao.indicadores.join(', ')}`);
     console.log(`🔍 Confiança: ${(deteccao.confianca * 100).toFixed(1)}%`);
+    console.log(`🔍 Internacional: ${deteccao.ehInternacional ? 'SIM' : 'NÃO'}`);
     
     return deteccao;
 }
@@ -156,13 +171,16 @@ function aplicarRegraBagagem(texto, tipoBagagem) {
     // Obter texto da regra
     const textoBagagem = obterTextoBagagem(tipoBagagem);
     
-    // Padrões existentes de bagagem para substituir
+    // Padrões existentes de bagagem para substituir - EXPANDIDO
     const padroesBagagem = [
         /✅[^\n]*bagagem[^\n]*/gi,
         /✅[^\n]*mala[^\n]*/gi,
         /✅[^\n]*item pessoal[^\n]*/gi,
         /✅[^\n]*só.*mão[^\n]*/gi,
-        /✅[^\n]*inclui[^\n]*/gi
+        /✅[^\n]*inclui[^\n]*/gi,
+        /✅[^\n]*com bagagem[^\n]*/gi, // ADICIONADO
+        /✅[^\n]*classe[^\n]*/gi, // ADICIONADO
+        /✅[^\n]*econômica[^\n]*/gi // ADICIONADO
     ];
     
     let substitucaoFeita = false;
@@ -192,7 +210,7 @@ function aplicarRegraBagagem(texto, tipoBagagem) {
 }
 
 // ================================================================================
-// 📝 OBTENÇÃO DE TEXTO DE BAGAGEM
+// 📝 OBTENÇÃO DE TEXTO DE BAGAGEM - CORRIGIDO
 // ================================================================================
 
 function obterTextoBagagem(tipoBagagem) {
@@ -214,7 +232,10 @@ function obterTextoBagagem(tipoBagagem) {
             return REGRAS_BAGAGEM.COM_DESPACHADA_32KG;
         
         default:
-            return REGRAS_BAGAGEM.SEM_DESPACHADA;
+            // DEFAULT MELHORADO: Se é internacional, assume bagagem despachada
+            return ehInternacional 
+                ? REGRAS_BAGAGEM.COM_DESPACHADA_23KG 
+                : REGRAS_BAGAGEM.SEM_DESPACHADA;
     }
 }
 
@@ -283,12 +304,19 @@ function padronizarFormatoBagagem(texto) {
         // " + " → " + "
         { pattern: /\s*\+\s*/g, replacement: ' + ' },
         // Múltiplos espaços
-        { pattern: /\s{2,}/g, replacement: ' ' }
+        { pattern: /\s{2,}/g, replacement: ' ' },
+        // Remover "Classe Econômica" solto
+        { pattern: /✅\s*Classe Econômica\s*$/gm, replacement: '' },
+        { pattern: /✅\s*classe econômica\s*$/gm, replacement: '' },
+        { pattern: /✅\s*com bagagem\s*$/gm, replacement: '' }
     ];
     
     for (const { pattern, replacement } of padronizacoes) {
         resultado = resultado.replace(pattern, replacement);
     }
+    
+    // Limpar linhas vazias extras criadas pela remoção
+    resultado = resultado.replace(/\n\s*\n\s*\n/g, '\n\n');
     
     return resultado;
 }
@@ -324,6 +352,13 @@ function validarBagagem(texto) {
         
         if (temAssentoTexto && !temAssento) {
             validacao.avisos.push('Referência a assento sem emoji específico');
+        }
+        
+        // Verificar se linha de bagagem está vazia ou incompleta
+        const linhaBagagemVazia = /✅\s*$/m.test(texto);
+        if (linhaBagagemVazia) {
+            validacao.erros.push('Linha de bagagem vazia encontrada');
+            validacao.valido = false;
         }
         
     } catch (error) {
@@ -396,5 +431,5 @@ export default {
 // 📋 LOG DE INICIALIZAÇÃO
 // ================================================================================
 
-console.log(`✅ Baggage Processor v${SYSTEM_CONFIG.VERSION} carregado`);
+console.log(`✅ Baggage Processor v${SYSTEM_CONFIG.VERSION} corrigido carregado`);
 console.log(`🎒 Regras disponíveis: ${Object.keys(REGRAS_BAGAGEM).length}`);
