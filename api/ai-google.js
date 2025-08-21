@@ -1,19 +1,9 @@
-// api/ai-google.js - CVC ITAQUA v3.17 REESCRITA COMPLETA
-// TODAS AS FUNCIONALIDADES EM UM ARQUIVO - SUPER SIMPLIFICADO
+// api/ai-google.js - CVC ITAQUA v3.18 ESTRUTURA MODULAR CORRIGIDA
+// HANDLER PRINCIPAL COM TODAS AS CORREÇÕES
 // ================================================================================
 
-const CONFIG = { VERSION: '3.17', SISTEMA: 'CVC ITAQUA' };
-
-const AEROPORTOS = {
-    'GRU': 'Guarulhos', 'CGH': 'Congonhas', 'VCP': 'Viracopos',
-    'GIG': 'Galeão', 'SDU': 'Santos Dumont', 'BSB': 'Brasília',
-    'CNF': 'Confins', 'SSA': 'Salvador', 'REC': 'Recife',
-    'FOR': 'Fortaleza', 'POA': 'Porto Alegre', 'FLN': 'Florianópolis',
-    'CWB': 'Curitiba', 'MAO': 'Manaus', 'MCO': 'Orlando',
-    'LIS': 'Lisboa', 'MAD': 'Madrid', 'BCN': 'Barcelona',
-    'CDG': 'Paris Charles de Gaulle', 'FCO': 'Roma Fiumicino',
-    'JFK': 'Nova York JFK', 'MIA': 'Miami', 'LAX': 'Los Angeles'
-};
+import { CONFIG, TEMPLATES, AEROPORTOS } from './templates.js';
+import { posProcessar, extrairDadosCompletos } from './corrections.js';
 
 // ================================================================================
 // BUSCA ONLINE DE AEROPORTOS
@@ -22,6 +12,7 @@ const AEROPORTOS = {
 async function buscarAeroportoOnline(codigo) {
     try {
         if (!process.env.OPENAI_API_KEY) return codigo;
+        console.log(`🔍 Buscando aeroporto: ${codigo}`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -31,229 +22,289 @@ async function buscarAeroportoOnline(codigo) {
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
-                messages: [{ role: 'user', content: `Qual cidade do aeroporto ${codigo}? Responda só o nome da cidade.` }],
+                messages: [{ 
+                    role: 'user', 
+                    content: `Qual é o nome da cidade do aeroporto ${codigo}? Responda APENAS o nome da cidade, exemplo: "Bogotá" ou "Salvador". Se não souber, responda "${codigo}".` 
+                }],
                 temperature: 0,
-                max_tokens: 10
+                max_tokens: 15
             })
         });
         
         if (response.ok) {
             const data = await response.json();
-            return data.choices[0].message.content.trim();
+            const resultado = data.choices[0].message.content.trim();
+            console.log(`✅ ${codigo} → ${resultado}`);
+            return resultado;
         }
         return codigo;
-    } catch {
+    } catch (error) {
+        console.error(`❌ Erro busca ${codigo}:`, error);
         return codigo;
     }
 }
 
 // ================================================================================
-// PÓS-PROCESSAMENTO ULTRA-SIMPLIFICADO v3.17
+// DETECÇÃO DE TIPO DE ORÇAMENTO
 // ================================================================================
 
-function posProcessarSimples(texto, conteudoOriginal, parcelamentoSelecionado) {
-    console.log('🔧 Pós-processamento ULTRA-SIMPLIFICADO v3.17...');
-    
-    let resultado = texto;
-    
-    // 1. Converter datas
-    const meses = { 'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04', 'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08', 'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12' };
-    
-    Object.entries(meses).forEach(([nome, num]) => {
-        const regex = new RegExp(`(\\d{1,2})\\s+de\\s+${nome}`, 'gi');
-        resultado = resultado.replace(regex, (match, dia) => `${dia.padStart(2, '0')}/${num}`);
-    });
-    
-    // 2. Converter aeroportos
-    Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
-        const regex = new RegExp(`\\b${codigo}\\b`, 'g');
-        resultado = resultado.replace(regex, nome);
-    });
-    
-    // 3. Corrigir (+1) - só para chegadas ≤ 8h
-    resultado = resultado.replace(/(\d{2}:\d{2})[^\/]*\/[^0-9]*([0-7]):\d{2}(\s*\([^)]*\))/g, '$1 / Orlando $2:XX (+1)$3');
-    resultado = resultado.replace(/:XX/g, function(match, offset) {
-        const antes = resultado.substring(0, offset);
-        const ultimoHorario = antes.match(/(\d{2}):\d{2}[^\/]*$/);
-        return ultimoHorario ? `:${ultimoHorario[1]}` : ':XX';
-    });
-    
-    // 4. Corrigir tipos de voo
-    resultado = resultado.replace(/uma escala/gi, 'com conexão');
-    resultado = resultado.replace(/\(direto\)/g, '(voo direto)');
-    
-    // 5. LIMPEZA TOTAL E RECONSTRUÇÃO
-    const linhas = resultado.split('\n');
-    const novasLinhas = [];
-    let dentroOpcao = false;
-    let dadosOpcao = {
-        titulo: '',
-        voos: [],
-        valor: '',
-        temParcelamento: false,
-        temBagagem: false,
-        temAssento: false,
-        link: ''
-    };
-    
-    for (let i = 0; i < linhas.length; i++) {
-        const linha = linhas[i].trim();
+function detectarTipoOrcamento(conteudoPrincipal, tipos) {
+    try {
+        const conteudoLower = conteudoPrincipal.toLowerCase();
         
-        // Detectar início de opção
-        if (linha.includes('**') && linha.includes('✈')) {
-            if (dentroOpcao) {
-                // Finalizar opção anterior
-                novasLinhas.push(...construirOpcao(dadosOpcao, parcelamentoSelecionado, conteudoOriginal));
-                novasLinhas.push('');
-            }
-            
-            // Iniciar nova opção
-            dentroOpcao = true;
-            dadosOpcao = {
-                titulo: linha,
-                voos: [],
-                valor: '',
-                temParcelamento: false,
-                temBagagem: false,
-                temAssento: false,
-                link: ''
-            };
-            novasLinhas.push(linha);
-            continue;
+        // Verificar tipos selecionados pelo usuário
+        if (tipos && tipos.includes('Dicas')) {
+            return 'DICAS';
         }
         
-        if (dentroOpcao) {
-            // Coletar dados da opção
-            if (linha.includes(' - ') && linha.includes(' / ')) {
-                dadosOpcao.voos.push(linha);
-                novasLinhas.push(linha);
-            } else if (linha === '--') {
-                novasLinhas.push(linha);
-            } else if (linha.includes('💰')) {
-                dadosOpcao.valor = linha;
-                // NÃO adicionar ainda - será reconstruído
-            } else if (linha.includes('💳')) {
-                dadosOpcao.temParcelamento = true;
-                dadosOpcao.parcelamento = linha;
-            } else if (linha.includes('com bagagem') || linha.includes('bagagem despachada')) {
-                dadosOpcao.temBagagem = true;
-            } else if (linha.includes('pré-reserva') || linha.includes('assento')) {
-                dadosOpcao.temAssento = true;
-            } else if (linha.includes('🔗')) {
-                dadosOpcao.link = linha;
-            }
-            // Ignorar outras linhas problemáticas
-        } else {
-            // Fora de opção
-            if (linha.includes('Valores sujeitos')) {
-                // Pular - será adicionado no final
-                continue;
-            }
-            novasLinhas.push(linha);
+        if (tipos && tipos.includes('Ranking')) {
+            return 'RANKING_HOTEIS';
         }
-    }
-    
-    // Finalizar última opção
-    if (dentroOpcao) {
-        novasLinhas.push(...construirOpcao(dadosOpcao, parcelamentoSelecionado, conteudoOriginal));
-    }
-    
-    // Adicionar versão
-    novasLinhas.push('');
-    novasLinhas.push(`Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`);
-    
-    console.log('✅ Pós-processamento v3.17 completo');
-    return novasLinhas.join('\n').replace(/\n{3,}/g, '\n\n').trim();
-}
-
-function construirOpcao(dados, parcelamentoSelecionado, conteudoOriginal) {
-    const linhas = [];
-    
-    if (!dados.valor) return linhas;
-    
-    // 1. Valor
-    linhas.push('');
-    linhas.push(dados.valor);
-    
-    // 2. Parcelamento
-    if (dados.temParcelamento && dados.parcelamento) {
-        linhas.push(dados.parcelamento);
-    } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-        // Aplicar parcelamento selecionado
-        const valorMatch = dados.valor.match(/R\$ ([\d.,]+)/);
-        if (valorMatch) {
-            const valor = valorMatch[1];
-            const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
-            const numParcelas = parseInt(parcelamentoSelecionado);
-            const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-            linhas.push(`💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`);
+        
+        if (tipos && tipos.includes('Hotel') && !tipos.includes('Aéreo')) {
+            return 'HOTEIS_MULTIPLAS';
         }
+        
+        if (tipos && tipos.includes('Cruzeiro')) {
+            return 'CRUZEIRO';
+        }
+        
+        // Detecção automática por conteúdo
+        if (conteudoLower.includes('gere dicas') || conteudoLower.includes('dicas para')) {
+            return 'DICAS';
+        }
+        
+        if (conteudoLower.includes('ranking de hotéis') || conteudoLower.includes('gere ranking')) {
+            return 'RANKING_HOTEIS';
+        }
+        
+        if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio')) {
+            return 'CRUZEIRO';
+        }
+        
+        // Verificar se é apenas hotel
+        if ((conteudoLower.includes('hotel') || conteudoLower.includes('pousada') || conteudoLower.includes('resort')) && 
+            !conteudoLower.includes('aeroporto') && !conteudoLower.includes('voo') && !conteudoLower.includes('airlines')) {
+            return 'HOTEIS_MULTIPLAS';
+        }
+        
+        // Verificar se é pacote completo
+        if (conteudoLower.includes('pacote') && 
+            (conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem'))) {
+            return 'PACOTE_COMPLETO';
+        }
+        
+        // Verificar se é multitrecho
+        if (tipos && tipos.includes('Multitrechos') ||
+            conteudoLower.includes('multitrecho') ||
+            conteudoLower.includes('multi-trecho') ||
+            (conteudoLower.match(/trecho \d+/g) && conteudoLower.match(/trecho \d+/g).length >= 2)) {
+            return 'MULTITRECHO';
+        }
+        
+        // Verificar se é somente ida
+        if (conteudoLower.includes('somente ida') ||
+            conteudoLower.includes('apenas ida') ||
+            conteudoLower.includes('one way')) {
+            return 'AEREO_SOMENTE_IDA';
+        }
+        
+        // Verificar se tem múltiplas opções
+        const numOpcoes = (conteudoLower.match(/\n[^Oo]*?(latam|gol|azul|copa|avianca|tap|iberia)/g) || []).length;
+        if (numOpcoes >= 2) {
+            if (numOpcoes >= 3) {
+                return 'MULTIPLAS_OPCOES_3';
+            } else {
+                return 'MULTIPLAS_OPCOES_2';
+            }
+        }
+        
+        // Verificar se tem conexão detalhada
+        if (conteudoLower.includes('espera de') || 
+            conteudoLower.includes('tempo de conexão') ||
+            /\d+h\s*\d+min\s*(de\s*)?espera/i.test(conteudoLower)) {
+            return 'AEREO_CONEXAO_DETALHADA';
+        }
+        
+        // Padrão: aéreo simples
+        return 'AEREO_SIMPLES';
+        
+    } catch (error) {
+        console.error('Erro ao detectar tipo:', error);
+        return 'AEREO_SIMPLES';
     }
-    
-    // 3. Bagagem
-    if (dados.temBagagem || conteudoOriginal.toLowerCase().includes('com bagagem')) {
-        linhas.push('✅ Inclui 1 item pessoal + 1 mala de mão de 10kg + 1 bagagem despachada de 23kg');
-    } else {
-        linhas.push('✅ Inclui 1 item pessoal + 1 mala de mão de 10kg');
-    }
-    
-    // 4. Assento
-    if (dados.temAssento || conteudoOriginal.toLowerCase().includes('pré-reserva')) {
-        linhas.push('💺 Inclui pré reserva de assento');
-    }
-    
-    // 5. Reembolso
-    linhas.push('🏷️ Não reembolsável');
-    
-    // 6. Link
-    if (dados.link) {
-        linhas.push(dados.link);
-    }
-    
-    return linhas;
 }
 
 // ================================================================================
-// DETECÇÃO E PROMPT
+// GERAÇÃO DE PROMPT MELHORADA
 // ================================================================================
 
-function detectarTipoOrcamento(conteudo, tipos) {
-    if (tipos && tipos.includes('Dicas')) return 'DICAS';
-    if (tipos && tipos.includes('Ranking')) return 'RANKING_HOTEIS';
-    if (conteudo.toLowerCase().includes('cruzeiro')) return 'CRUZEIRO';
-    return 'AEREO_SIMPLES';
-}
+function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehImagem = false) {
+    // Dicas de destino
+    if (tipoOrcamento === 'DICAS') {
+        return `
+Gere dicas de viagem para ${destino || 'o destino mencionado'}.
 
-function gerarPrompt(conteudo, passageiros, tipo, destino, ehImagem = false) {
-    if (tipo === 'DICAS') {
-        return `Gere dicas de viagem para ${destino || 'o destino'} com emojis e estrutura organizada.`;
+Use EXATAMENTE este formato:
+
+━━━━━━━━━━━━━━━━━━
+💡 *DICAS PARA ${(destino || 'DESTINO').toUpperCase()}*
+━━━━━━━━━━━━━━━━━━
+
+🌟 *Sobre o destino*
+[Descrição breve e atrativa do destino]
+
+🎯 *PRINCIPAIS PASSEIOS:*
+1. [Passeio 1]
+2. [Passeio 2]
+3. [Passeio 3]
+4. [Passeio 4]
+5. [Passeio 5]
+
+🌡️ *CLIMA:*
+• Temperatura: XX°C a XX°C
+• [Condição do clima]
+• Leve: [roupas recomendadas]
+
+🍽️ *GASTRONOMIA:*
+• Pratos típicos: [pratos]
+• Preço médio refeição: R$ XX
+• Dica: [restaurante ou região]
+
+💰 *CUSTOS MÉDIOS:*
+• Transporte público: R$ XX
+• Táxi do aeroporto: R$ XX
+• Entrada museus: R$ XX
+
+📱 *DICAS PRÁTICAS:*
+• [Moeda e câmbio]
+• [Idioma]
+• [Gorjetas]
+• [Segurança]
+
+🚨 *IMPORTANTE:*
+[Avisos específicos do destino]`;
     }
     
-    if (tipo === 'RANKING_HOTEIS') {
-        return `Gere ranking de hotéis para ${destino || 'o destino'} por categoria.`;
+    // Ranking de hotéis
+    if (tipoOrcamento === 'RANKING_HOTEIS') {
+        return `
+Gere um ranking de hotéis para ${destino || 'o destino mencionado'}.
+
+Use EXATAMENTE este formato:
+
+🏆 *RANKING DE HOTÉIS - ${(destino || 'DESTINO').toUpperCase()}*
+━━━━━━━━━━━━━━━━━━
+
+⭐⭐⭐⭐⭐ *CATEGORIA LUXO*
+
+🥇 *1º - [Nome Hotel Luxo 1]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+🥈 *2º - [Nome Hotel Luxo 2]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+━━━━━━━━━━━━━━━━━━
+
+⭐⭐⭐⭐ *CATEGORIA SUPERIOR*
+
+🥇 *1º - [Nome Hotel Superior 1]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+🥈 *2º - [Nome Hotel Superior 2]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+━━━━━━━━━━━━━━━━━━
+
+⭐⭐⭐ *CATEGORIA ECONÔMICA*
+
+🥇 *1º - [Nome Hotel Econômico 1]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+🥈 *2º - [Nome Hotel Econômico 2]*
+📍 [Localização]
+💰 Diária média: R$ [valor]
+✨ [Diferencial principal]
+
+━━━━━━━━━━━━━━━━━━
+
+📌 *DICA:* [Dica sobre escolha de hotel]`;
     }
     
-    return `
-FORMATE ESTE ORÇAMENTO PARA WHATSAPP:
+    // Para imagens
+    if (ehImagem) {
+        return `
+Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 
-${conteudo}
+⚠️ REGRAS CRÍTICAS:
+1. Use APENAS informações visíveis na imagem
+2. NÃO invente horários, cidades ou detalhes
+3. Mantenha exatamente os horários mostrados
+4. Se mostra "Uma escala" sem cidade, use "(com conexão)"
+5. Se mostra cidade de conexão, especifique
+6. NÃO adicione (+1) automaticamente - apenas se mostrar na imagem
 
-PASSAGEIROS: ${passageiros}
-
-FORMATO OBRIGATÓRIO:
+FORMATO:
 **{Companhia} - {Origem} ✈ {Destino}**
 {Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
 --
 {Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
 💰 R$ {valor} para {passageiros}
+✅ {bagagem se especificada}
+🏷️ {reembolso}
 
 REGRAS:
-- Datas: DD/MM (27/01)
-- "Uma escala" → "(com conexão)" 
+- Datas: DD/MM
+- Use nomes completos de aeroportos (Guarulhos, não GRU)
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.18)`;
+    }
+    
+    // Buscar template específico
+    const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
+    
+    return `
+Formate este orçamento de viagem para WhatsApp seguindo EXATAMENTE o template.
+
+⚠️ INSTRUÇÕES CRÍTICAS v3.18:
+
+1. Use SOMENTE as informações fornecidas no texto
+2. NÃO INVENTE horários, cidades ou detalhes
+3. DETECTAR tipo automaticamente se múltiplas opções
+4. Para HOTÉIS: use template de hotel, não de voo
+5. Mantenha passageiros exatos (adultos, bebês, crianças)
+6. Extraia links específicos se fornecidos
+7. Detecte parcelamento com entrada se presente
+
+TEXTO ORIGINAL:
+${conteudoPrincipal}
+
+PASSAGEIROS: ${passageiros}
+
+TEMPLATE A SEGUIR:
+${template}
+
+REGRAS ESPECÍFICAS:
+- Datas: DD/MM (27/01, não "27 de janeiro")
+- Aeroportos: nomes completos (Guarulhos, não GRU)
+- "Uma escala" → "(com conexão)"
+- "Duas escalas" → "(com múltiplas conexões)"
 - "Voo direto" → "(voo direto)"
-- Use apenas informações do texto
-- NÃO invente detalhes`;
+- Links: manter formato 🔗 https://...
+- Passageiros: formato "XX adultos + XX crianças + XX bebês"
+- Reembolso: "Reembolsável" ou "Não reembolsável"
+
+⚠️ CRÍTICO: NÃO INVENTE INFORMAÇÕES - USE APENAS O TEXTO!`;
 }
 
 // ================================================================================
@@ -261,35 +312,41 @@ REGRAS:
 // ================================================================================
 
 export default async function handler(req, res) {
+    // Headers CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Content-Type', 'application/json');
     
     try {
+        // OPTIONS
         if (req.method === 'OPTIONS') {
             return res.status(200).json({ success: true });
         }
         
+        // GET - Status
         if (req.method === 'GET') {
             return res.status(200).json({
                 success: true,
                 status: 'operational',
                 version: CONFIG.VERSION,
-                message: 'CVC Itaqua API v3.17 - Reescrita Completa'
+                timestamp: new Date().toISOString(),
+                message: 'CVC Itaqua API v3.18 - Estrutura Modular Corrigida'
             });
         }
         
+        // Validar POST
         if (req.method !== 'POST') {
             return res.status(200).json({
                 success: false,
-                error: 'Use POST',
+                error: 'Método não permitido - use POST',
                 result: 'Método não permitido'
             });
         }
         
-        console.log('🚀 v3.17: Processando...');
+        console.log('🚀 v3.18: Processando requisição...');
         
+        // Extrair dados com validação robusta
         const body = req.body || {};
         const {
             observacoes = '',
@@ -303,8 +360,10 @@ export default async function handler(req, res) {
             pdfContent = null
         } = body;
         
+        // Combinar conteúdo
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
         
+        // Validar entrada
         if (!conteudoPrincipal.trim() && !imagemBase64) {
             return res.status(200).json({
                 success: false,
@@ -313,32 +372,51 @@ export default async function handler(req, res) {
             });
         }
         
-        // Passageiros
-        const matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\)/i);
-        let passageiros;
-        if (matchPassageiros) {
-            const numAdultos = parseInt(matchPassageiros[1]) || 1;
-            passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
-        } else {
+        // Extrair dados e formatar passageiros
+        const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal);
+        let passageiros = dadosExtraidos.passageiros;
+        
+        if (!passageiros) {
             const numAdultos = parseInt(adultos) || 1;
+            const numCriancas = parseInt(criancas) || 0;
             passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
+            if (numCriancas > 0) {
+                passageiros += ` + ${String(numCriancas).padStart(2, '0')} criança${numCriancas > 1 ? 's' : ''}`;
+            }
         }
         
         console.log(`📋 Passageiros: ${passageiros}`);
-        console.log(`💳 Parcelamento: ${parcelamento || 'nenhum'}`);
+        console.log(`💳 Parcelamento selecionado: ${parcelamento || 'nenhum'}`);
+        console.log(`🎯 Tipos selecionados: ${tipos.join(', ') || 'nenhum'}`);
         
+        // Detectar tipo
         const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos);
-        const prompt = gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, !!imagemBase64);
+        console.log(`📄 Tipo detectado: ${tipoOrcamento}`);
         
-        // IA
+        // Gerar prompt
+        const prompt = gerarPrompt(
+            conteudoPrincipal, 
+            passageiros, 
+            tipoOrcamento, 
+            dadosExtraidos.destino || destino,
+            !!imagemBase64
+        );
+        
+        // Processar com IA
         let resultado = '';
         let iaUsada = 'none';
         
         try {
-            const usarClaude = imagemBase64 || conteudoPrincipal.length > 3000;
+            // Decidir qual IA usar
+            const usarClaude = imagemBase64 || 
+                              conteudoPrincipal.length > 3000 ||
+                              tipoOrcamento === 'PACOTE_COMPLETO' ||
+                              tipoOrcamento === 'MULTITRECHO' ||
+                              tipoOrcamento === 'DICAS' ||
+                              tipoOrcamento === 'RANKING_HOTEIS';
             
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-                console.log('🔮 Claude...');
+                console.log('🔮 Usando Claude...');
                 
                 const requestBody = {
                     model: 'claude-3-haiku-20240307',
@@ -370,14 +448,18 @@ export default async function handler(req, res) {
                     body: JSON.stringify(requestBody)
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    resultado = data.content[0].text;
-                    iaUsada = 'claude';
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Claude erro:', errorText);
+                    throw new Error(`Claude erro ${response.status}`);
                 }
                 
+                const data = await response.json();
+                resultado = data.content[0].text;
+                iaUsada = 'claude';
+                
             } else if (process.env.OPENAI_API_KEY) {
-                console.log('⚡ GPT...');
+                console.log('⚡ Usando GPT-4o-mini...');
                 
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
@@ -388,7 +470,10 @@ export default async function handler(req, res) {
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
                         messages: [
-                            { role: 'system', content: 'Formate orçamentos exatamente como solicitado.' },
+                            { 
+                                role: 'system', 
+                                content: 'Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido. Para dicas e rankings, use os formatos específicos solicitados.' 
+                            },
                             { role: 'user', content: prompt }
                         ],
                         temperature: 0.1,
@@ -396,48 +481,67 @@ export default async function handler(req, res) {
                     })
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    resultado = data.choices[0].message.content;
-                    iaUsada = 'gpt';
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('OpenAI erro:', errorText);
+                    throw new Error(`OpenAI erro ${response.status}`);
                 }
-            }
-            
-            if (!resultado) {
-                throw new Error('Nenhuma IA disponível');
+                
+                const data = await response.json();
+                resultado = data.choices[0].message.content;
+                iaUsada = 'gpt';
+                
+            } else {
+                throw new Error('Nenhuma API de IA configurada');
             }
             
         } catch (iaError) {
             console.error('❌ Erro IA:', iaError);
-            resultado = `Erro: ${iaError.message}`;
+            resultado = `Erro ao processar com IA: ${iaError.message}. Verifique as configurações de API.`;
             iaUsada = 'error';
         }
         
-        // PÓS-PROCESSAMENTO v3.17
-        if (resultado && !resultado.includes('Erro')) {
+        // Processar resultado
+        if (resultado && typeof resultado === 'string' && !resultado.includes('Erro')) {
+            // Remover formatação markdown se houver
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
             
-            // Converter aeroportos online se necessário
-            const codigosDesconhecidos = resultado.match(/\b[A-Z]{3}\b/g);
-            if (codigosDesconhecidos && process.env.OPENAI_API_KEY) {
-                for (const codigo of [...new Set(codigosDesconhecidos)]) {
+            // Buscar aeroportos online se necessário
+            console.log('🔄 Convertendo aeroportos...');
+            
+            // Primeiro, conversões locais
+            Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
+                const regex = new RegExp(`\\b${codigo}\\b`, 'g');
+                resultado = resultado.replace(regex, nome);
+            });
+            
+            // Buscar aeroportos não encontrados online
+            const codigosNaoEncontrados = resultado.match(/\b[A-Z]{3}\b/g);
+            if (codigosNaoEncontrados && process.env.OPENAI_API_KEY) {
+                console.log('🔍 Códigos para buscar online:', [...new Set(codigosNaoEncontrados)]);
+                
+                for (const codigo of [...new Set(codigosNaoEncontrados)]) {
                     if (!AEROPORTOS[codigo]) {
                         const nomeEncontrado = await buscarAeroportoOnline(codigo);
                         if (nomeEncontrado !== codigo) {
-                            resultado = resultado.replace(new RegExp(`\\b${codigo}\\b`, 'g'), nomeEncontrado);
+                            const regex = new RegExp(`\\b${codigo}\\b`, 'g');
+                            resultado = resultado.replace(regex, nomeEncontrado);
                         }
                     }
                 }
             }
             
-            resultado = posProcessarSimples(resultado, conteudoPrincipal, parcelamento);
+            // APLICAR PÓS-PROCESSAMENTO
+            console.log('🔧 Aplicando pós-processamento...');
+            resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
         }
         
-        console.log('✅ v3.17: Completo');
+        console.log('✅ v3.18: Processamento completo');
         
+        // SEMPRE retornar JSON válido
         return res.status(200).json({
             success: true,
-            result: resultado || 'Erro ao processar',
+            result: resultado || 'Erro ao processar. Tente novamente.',
             metadata: {
                 version: CONFIG.VERSION,
                 tipo: tipoOrcamento,
@@ -448,23 +552,30 @@ export default async function handler(req, res) {
         });
         
     } catch (error) {
-        console.error('❌ v3.17:', error);
+        console.error('❌ v3.18: Erro geral:', error);
+        
+        // SEMPRE retornar JSON válido mesmo em erro
         return res.status(200).json({
             success: false,
-            error: error.message || 'Erro interno',
-            result: 'Erro interno. Tente novamente.'
+            error: error.message || 'Erro interno do servidor',
+            result: 'Erro interno do servidor. Verifique os dados e tente novamente.'
         });
     }
 }
 
+// ================================================================================
+// LOGS DE INICIALIZAÇÃO
+// ================================================================================
+
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.17 - REESCRITA TOTAL               ║');
+console.log('║              CVC ITAQUA v3.18 - MODULAR CORRIGIDA             ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Lógica completamente reescrita                             ║');
-console.log('║ ✅ Pós-processamento ultra-simplificado                       ║');
-console.log('║ ✅ Construção linha por linha                                 ║');
-console.log('║ ✅ Zero duplicações garantido                                 ║');
-console.log('║ ✅ Parcelamento selecionado funcional                         ║');
-console.log('║ ✅ Busca online mantida                                       ║');
+console.log('║ ✅ Estrutura modular de 3 arquivos                           ║');
+console.log('║ ✅ Detecção melhorada de tipos                               ║');
+console.log('║ ✅ Prompts específicos para cada caso                         ║');
+console.log('║ ✅ Busca online de aeroportos                                 ║');
+console.log('║ ✅ Dicas e rankings funcionais                               ║');
+console.log('║ ✅ Templates de hotel e pacote                               ║');
+console.log('║ ✅ Passageiros com bebê/criança                              ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.17 - RECONSTRUÇÃO TOTAL!');
+console.log('🚀 Sistema v3.18 modular com TODAS as correções!');
