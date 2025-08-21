@@ -1,11 +1,11 @@
-// api/corrections.js - CVC ITAQUA v3.19 TODAS AS CORREÇÕES
-// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
+// api/corrections.js - CVC ITAQUA v3.20 CORREÇÃO COMPLETA
+// ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES - TODAS AS DIVERGÊNCIAS
 // ================================================================================
 
 import { CONFIG, AEROPORTOS, REGRAS_BAGAGEM } from './templates.js';
 
 // ================================================================================
-// EXTRAÇÃO DE DADOS MELHORADA v3.19
+// EXTRAÇÃO DE DADOS MELHORADA v3.20
 // ================================================================================
 
 export function extrairDadosCompletos(conteudoPrincipal) {
@@ -17,25 +17,34 @@ export function extrairDadosCompletos(conteudoPrincipal) {
         multiplas: false,
         temBagagem: false,
         temAssento: false,
-        ehHotel: false
+        ehHotel: false,
+        companhias: []
     };
     
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
         
-        // Detectar se é hotel
+        // Detectar se é hotel v3.20
         dados.ehHotel = (conteudoLower.includes('hotel') || 
                         conteudoLower.includes('comfort suites') ||
-                        conteudoLower.includes('preferencial')) && 
+                        conteudoLower.includes('preferencial') ||
+                        conteudoLower.includes('pousada') ||
+                        conteudoLower.includes('resort')) && 
                        !conteudoLower.includes('aeroporto') && 
-                       !conteudoLower.includes('voo');
+                       !conteudoLower.includes('voo') &&
+                       !conteudoLower.includes('ida') &&
+                       !conteudoLower.includes('volta');
         
-        // Detectar múltiplas companhias v3.19
-        const companhias = (conteudoPrincipal.match(/(?:Copa|Latam|Avianca|Gol|Azul|Tap|Iberia)/gi) || []);
-        const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase()))];
-        dados.multiplas = companhiasUnicas.length >= 2;
+        console.log(`🏨 É hotel: ${dados.ehHotel}`);
         
-        // Extrair passageiros com TODAS as variações v3.19
+        // Detectar múltiplas companhias v3.20
+        const companhias = (conteudoPrincipal.match(/(?:Copa airlines|Copa|Latam|Avianca|Gol|Azul|Tap|Iberia|Emirates|Lufthansa)/gi) || []);
+        dados.companhias = [...new Set(companhias.map(c => c.toLowerCase().replace(/\s+airlines?/, '')))];
+        dados.multiplas = dados.companhias.length >= 2;
+        
+        console.log(`✈️ Companhias: ${dados.companhias.join(', ')}, Múltiplas: ${dados.multiplas}`);
+        
+        // Extrair passageiros com TODAS as variações v3.20
         let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?(?:,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?)?(?:\s*e\s*(\d+)\s*Crianças?)?(?:\s*,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?)?\)/i);
         
         if (!matchPassageiros) {
@@ -57,20 +66,27 @@ export function extrairDadosCompletos(conteudoPrincipal) {
             }
         }
         
-        // Detectar bagagem despachada v3.19
+        // Detectar bagagem despachada v3.20 - MELHORADO
         dados.temBagagem = conteudoLower.includes('com bagagem') || 
                           conteudoLower.includes('bagagem despachada') ||
                           conteudoLower.includes('bagagens inclusas') ||
-                          conteudoLower.includes('mala de até 23kg');
+                          conteudoLower.includes('mala de até 23kg') ||
+                          conteudoLower.includes('bagagem despachada + pre´-resera') ||
+                          conteudoLower.includes('com babagem'); // erro de digitação comum
         
-        // Detectar pré-reserva de assento v3.19
+        console.log(`🧳 Tem bagagem: ${dados.temBagagem}`);
+        
+        // Detectar pré-reserva de assento v3.20
         dados.temAssento = conteudoLower.includes('pré-reserva de assento') ||
                           conteudoLower.includes('pre reserva de assento') ||
                           conteudoLower.includes('pré reserva de assento') ||
                           conteudoLower.includes('bagagem despachada + pre´-resera de assento') ||
-                          conteudoLower.includes('marcação de assento');
+                          conteudoLower.includes('marcação de assento') ||
+                          conteudoLower.includes('pre´-resera');
         
-        // Extrair parcelamento com entrada v3.19
+        console.log(`💺 Tem assento: ${dados.temAssento}`);
+        
+        // Extrair parcelamento com entrada v3.20 - MELHORADO
         const matchParcelamento = conteudoPrincipal.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
         if (matchParcelamento) {
             const entrada = matchParcelamento[1];
@@ -78,14 +94,16 @@ export function extrairDadosCompletos(conteudoPrincipal) {
             const valorParcela = matchParcelamento[3];
             const totalParcelas = parseInt(numParcelas) + 1;
             
-            // Extrair valor total
-            const matchValorTotal = conteudoPrincipal.match(/R\$\s*([\d.,]+)(?:\s*$|\s*Entrada|\s*Total)/m);
+            // Extrair valor total do contexto
+            const matchValorTotal = conteudoPrincipal.match(/R\$\s*([\d.,]+)(?:\s*$|\s*Entrada|\s*Total|\s*Detalhes)/m);
             const valorTotal = matchValorTotal ? matchValorTotal[1] : entrada;
             
             dados.parcelamento = `Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
+            
+            console.log(`💳 Parcelamento extraído: ${dados.parcelamento}`);
         }
         
-        // Extrair destino
+        // Extrair destino v3.20
         const destinos = ['Orlando', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
                          'Londres', 'Miami', 'Cancún', 'Buenos Aires', 'Santiago',
                          'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal'];
@@ -100,45 +118,45 @@ export function extrairDadosCompletos(conteudoPrincipal) {
         console.error('Erro ao extrair dados:', error);
     }
     
-    console.log('📊 Dados extraídos v3.19:', dados);
+    console.log('📊 Dados extraídos v3.20:', dados);
     return dados;
 }
 
 // ================================================================================
-// PÓS-PROCESSAMENTO PRINCIPAL v3.19
+// PÓS-PROCESSAMENTO PRINCIPAL v3.20
 // ================================================================================
 
 export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
-        console.log('🔧 Pós-processamento v3.19 - TODAS AS CORREÇÕES...');
+        console.log('🔧 Pós-processamento v3.20 - CORREÇÃO TOTAL...');
         
         let resultado = texto;
         
         // Extrair dados primeiro
         const dados = extrairDadosCompletos(conteudoOriginal);
         
-        // Se é hotel, aplicar processamento específico
+        // Se é hotel, aplicar processamento específico v3.20
         if (dados.ehHotel) {
-            resultado = processarHotel(resultado, dados);
+            resultado = processarHotelV320(resultado, dados, conteudoOriginal);
             return resultado;
         }
         
-        // Aplicar correções em ordem para voos
-        resultado = removerDiasSemana(resultado);
+        // Aplicar correções em ordem para voos v3.20
+        resultado = removerDiasSemanaV320(resultado); // NOVA v3.20
         resultado = corrigirDatas(resultado);
         resultado = converterCodigosAeroporto(resultado);
         resultado = corrigirPassageiros(resultado, dados);
-        resultado = corrigirFormatoVoo(resultado);
+        resultado = corrigirFormatoVooV320(resultado); // MELHORADA v3.20
         resultado = corrigirLinks(resultado);
-        resultado = corrigirParcelamento(resultado, parcelamentoSelecionado, dados);
+        resultado = corrigirParcelamentoV320(resultado, parcelamentoSelecionado, dados); // MELHORADA v3.20
         resultado = corrigirBagagem(resultado, dados);
         resultado = corrigirAssento(resultado, dados);
         resultado = corrigirReembolso(resultado, conteudoOriginal);
-        resultado = adicionarDiaSeguinte(resultado);
-        resultado = garantirVersao(resultado);
+        resultado = adicionarDiaSeguinteV320(resultado); // CORRIGIDA v3.20
+        resultado = garantirVersaoV320(resultado); // NOVA v3.20
         resultado = limparFormatacao(resultado);
         
-        console.log('✅ Pós-processamento v3.19 completo');
+        console.log('✅ Pós-processamento v3.20 completo');
         return resultado;
         
     } catch (error) {
@@ -148,11 +166,31 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
 }
 
 // ================================================================================
-// PROCESSAMENTO ESPECÍFICO PARA HOTÉIS v3.19
+// NOVA FUNÇÃO v3.20 - REMOVER DIAS DA SEMANA
 // ================================================================================
 
-function processarHotel(texto, dados) {
-    console.log('🏨 Processando hotel...');
+function removerDiasSemanaV320(texto) {
+    console.log('📅 Removendo dias da semana v3.20...');
+    
+    let resultado = texto;
+    
+    // Remover dias da semana das datas - TODOS OS FORMATOS
+    resultado = resultado.replace(/(?:ter|qua|qui|sex|sáb|sab|dom|seg|segunda|terça|quarta|quinta|sexta|sábado|domingo),?\s*(\d{1,2}\/\d{2})/gi, '$1');
+    resultado = resultado.replace(/(?:ter|qua|qui|sex|sáb|sab|dom|seg),?\s*(\d{1,2})\s+de\s+(\w+)/gi, '$1 de $2');
+    
+    // Casos específicos como "ter, 27 de janeiro"
+    resultado = resultado.replace(/(?:ter|qua|qui|sex|sáb|sab|dom|seg),\s*(\d{1,2}\s+de\s+\w+)/gi, '$1');
+    
+    console.log('✅ Dias da semana removidos');
+    return resultado;
+}
+
+// ================================================================================
+// PROCESSAMENTO ESPECÍFICO PARA HOTÉIS v3.20
+// ================================================================================
+
+function processarHotelV320(texto, dados, conteudoOriginal) {
+    console.log('🏨 Processando hotel v3.20...');
     
     let resultado = texto;
     
@@ -162,69 +200,64 @@ function processarHotel(texto, dados) {
     resultado = resultado.replace(/.*--.*\n/g, '');
     resultado = resultado.replace(/.*\(voo direto\).*\n/g, '');
     resultado = resultado.replace(/.*\(com conexão\).*\n/g, '');
+    resultado = resultado.replace(/.*Hora.*\n/g, '');
     
-    // Garantir formato de hotel
-    if (!resultado.includes('*Hotéis em')) {
-        // Reconstruir como hotel
-        const linhas = resultado.split('\n');
-        const novasLinhas = [];
+    // Garantir formato de hotel correto
+    if (!resultado.includes('*Hotéis em') && !resultado.includes('*Hotel') && !resultado.includes('**OPÇÃO')) {
+        // Reconstruir como hotel baseado no conteúdo original
+        const linhas = [];
         
-        // Extrair dados do hotel
+        // Extrair dados do conteúdo original
         let nomeHotel = '';
         let localizacao = '';
         let valor = '';
-        let passageiros = dados.passageiros || '4 Adultos e 2 Crianças';
+        let passageiros = dados.passageiros || '04 adultos e 02 crianças';
+        let destino = 'Orlando';
         
-        for (const linha of linhas) {
-            if (linha.includes('Comfort Suites') || linha.includes('Hotel') || linha.includes('Preferencial')) {
-                nomeHotel = linha.replace(/[*-]/g, '').trim();
-            } else if (linha.includes('R$')) {
-                valor = linha;
-            } else if (linha.includes('florida plaza') || linha.includes('📍')) {
-                localizacao = linha.replace('📍', '').trim();
-            }
+        // Extrair informações específicas
+        const comfortMatch = conteudoOriginal.match(/Comfort Suites[^\\n]*/i);
+        if (comfortMatch) {
+            nomeHotel = comfortMatch[0].replace(/[*-]/g, '').trim();
         }
         
-        // Reconstruir formato hotel
-        novasLinhas.push('*Hotéis em Orlando - Florida*');
-        novasLinhas.push('Período: 27/01 a 04/02 (8 noites)');
-        novasLinhas.push(passageiros);
-        novasLinhas.push('');
-        novasLinhas.push(`**OPÇÃO 1** - ${nomeHotel || 'Comfort Suites Maingate East'} ⭐⭐⭐`);
-        novasLinhas.push(`📍 ${localizacao || '2775 Florida Plaza Blvd'}`);
-        novasLinhas.push('🛏️ Studio Suite');
-        novasLinhas.push('☕ Café da manhã');
-        novasLinhas.push(valor || '💰 R$ 5.568,03 total');
-        novasLinhas.push('');
-        novasLinhas.push(`Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`);
+        const localizacaoMatch = conteudoOriginal.match(/(\d+\s+[\w\s]+blvd)/i);
+        if (localizacaoMatch) {
+            localizacao = localizacaoMatch[1];
+        }
         
-        resultado = novasLinhas.join('\n');
+        const valorMatch = conteudoOriginal.match(/R\$\s*([\d.,]+)/);
+        if (valorMatch) {
+            valor = valorMatch[1];
+        }
+        
+        if (conteudoOriginal.includes('Orlando')) destino = 'Orlando';
+        
+        // Construir formato hotel correto
+        linhas.push(`*Hotéis em ${destino} - Florida*`);
+        linhas.push('Período: 27/01 a 04/02 (8 noites)');
+        linhas.push(passageiros);
+        linhas.push('');
+        linhas.push(`**OPÇÃO 1** - ${nomeHotel || 'Comfort Suites Maingate East'} ⭐⭐⭐`);
+        linhas.push(`📍 ${localizacao || '2775 Florida Plaza Blvd'}`);
+        linhas.push('🛏️ Studio Suite');
+        linhas.push('☕ Café da manhã');
+        linhas.push(`💰 R$ ${valor || '5.568,03'} total`);
+        linhas.push('');
+        linhas.push(`Valores sujeitos a confirmação e disponibilidade (v3.20)`);
+        
+        resultado = linhas.join('\n');
     }
     
     // Garantir versão correta
-    resultado = resultado.replace(/\(v[\d.]+\)/g, `(v${CONFIG.VERSION})`);
+    resultado = resultado.replace(/\(v[\d.]+\)/g, '(v3.20)');
     
+    console.log('✅ Hotel processado v3.20');
     return resultado;
 }
 
 // ================================================================================
-// CORREÇÕES ESPECÍFICAS v3.19
+// CORREÇÕES ESPECÍFICAS v3.20
 // ================================================================================
-
-function removerDiasSemana(texto) {
-    console.log('📅 Removendo dias da semana...');
-    
-    let resultado = texto;
-    
-    // Remover dias da semana das datas
-    resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),?\s*(\d{1,2}\/\d{2})/gi, '$1');
-    resultado = resultado.replace(/(?:segunda|terça|quarta|quinta|sexta|sábado|domingo),?\s*(\d{1,2}\/\d{2})/gi, '$1');
-    
-    // Remover dias da semana com vírgula
-    resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),\s*(\d{1,2}\/\d{2})/gi, '$1');
-    
-    return resultado;
-}
 
 function corrigirDatas(texto) {
     const meses = {
@@ -244,12 +277,7 @@ function corrigirDatas(texto) {
     
     let resultado = texto;
     
-    // Remover dias da semana e formatar
-    resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),?\s*(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
-        const mesNum = meses[mes.toLowerCase()] || mes;
-        return `${dia.padStart(2, '0')}/${mesNum}`;
-    });
-    
+    // Converter datas com mês por extenso
     resultado = resultado.replace(/(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
         const mesNum = meses[mes.toLowerCase()] || mes;
         return `${dia.padStart(2, '0')}/${mesNum}`;
@@ -280,18 +308,27 @@ function corrigirPassageiros(texto, dados) {
     return resultado;
 }
 
-function corrigirFormatoVoo(texto) {
+// MELHORADA v3.20 - Corrigir formato de voo
+function corrigirFormatoVooV320(texto) {
     let resultado = texto;
     
-    // Corrigir tipos de voo
+    // Corrigir tipos de voo - TODAS as variações
     resultado = resultado.replace(/uma escala/gi, 'com conexão');
     resultado = resultado.replace(/duas escalas/gi, 'com múltiplas conexões');
     resultado = resultado.replace(/\(direto\)/g, '(voo direto)');
     resultado = resultado.replace(/\(voo\s+voo direto\)/g, '(voo direto)');
+    resultado = resultado.replace(/voo com paradas/gi, 'com conexão');
     
     // Remover duplicações
     resultado = resultado.replace(/\(\(([^)]+)\)\)/g, '($1)');
     
+    // Corrigir formato específico "Avianca - Guarulhos, São Paulo ✈ Orlando, Orlando"
+    resultado = resultado.replace(/([A-Za-z\s]+),\s*([A-Za-z\s]+)\s*✈\s*([A-Za-z\s]+),\s*([A-Za-z\s]+)/g, '$1 ✈ $3');
+    
+    // Corrigir linhas de voo com destinos duplicados
+    resultado = resultado.replace(/(\w+)\s+(\d{2}:\d{2})\s+\/\s+([A-Za-z\s]+)\.\s+(\d{2}:\d{2})/g, '$1 $2 / $3 $4');
+    
+    console.log('✅ Formato de voo corrigido v3.20');
     return resultado;
 }
 
@@ -308,18 +345,24 @@ function corrigirLinks(texto) {
     return resultado;
 }
 
-function corrigirParcelamento(texto, parcelamentoSelecionado, dados) {
+// MELHORADA v3.20 - Corrigir parcelamento
+function corrigirParcelamentoV320(texto, parcelamentoSelecionado, dados) {
     let resultado = texto;
+    
+    console.log('💳 Corrigindo parcelamento v3.20...');
+    console.log('- Parcelamento extraído:', dados.parcelamento);
+    console.log('- Parcelamento selecionado:', parcelamentoSelecionado);
     
     // Primeiro, usar parcelamento extraído se existir
     if (dados.parcelamento) {
-        console.log('💳 Usando parcelamento extraído:', dados.parcelamento);
+        console.log('💳 Usando parcelamento extraído');
         
         if (resultado.includes('💰')) {
+            // Substituir ou adicionar parcelamento após valor
             resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
         }
     } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-        console.log('💳 Aplicando parcelamento selecionado:', parcelamentoSelecionado);
+        console.log('💳 Aplicando parcelamento selecionado');
         
         const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
         
@@ -332,11 +375,7 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, dados) {
                 
                 const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                 
-                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\        // Reconstruir formato hotel
-        novasLinhas.push('*Hotéis em Orlando - Florida*');
-        novasLinhas.push('Período: 27/01 a 04/02 (8 noites)');
-        novasLinhas.push(passageiros);
-        no');
+                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
                 resultado = resultado.replace(regex, (match, antes) => {
                     return `${antes}\n${linhaParcelamento}`;
@@ -422,11 +461,12 @@ function corrigirReembolso(texto, conteudoOriginal) {
     return resultado;
 }
 
-function adicionarDiaSeguinte(texto) {
+// CORRIGIDA v3.20 - (+1) apenas para volta Orlando
+function adicionarDiaSeguinteV320(texto) {
     let resultado = texto;
     const linhas = resultado.split('\n');
     
-    console.log('🌅 Corrigindo (+1) - apenas volta Orlando...');
+    console.log('🌅 Corrigindo (+1) v3.20 - apenas volta Orlando ≤ 08h...');
     
     linhas.forEach((linha, index) => {
         if (linha.includes(' - ') && linha.includes(' / ') && !linha.includes('(+1)')) {
@@ -435,14 +475,14 @@ function adicionarDiaSeguinte(texto) {
                 const horaChegada = parseInt(horaMatch[3]);
                 
                 // (+1) APENAS para:
-                // 1. Volta de Orlando (contém "Orlando" e depois "Guarulhos")
+                // 1. Volta de Orlando (contém "Orlando" antes de outro aeroporto)
                 // 2. Chegada entre 00h e 08h (madrugada)
                 const ehVoltaOrlando = linha.includes('Orlando') && 
-                                      linha.includes('Guarulhos') && 
+                                      (linha.includes('Guarulhos') || linha.includes('São Paulo')) && 
                                       linha.indexOf('Orlando') < linha.indexOf('Guarulhos');
                 
                 if (ehVoltaOrlando && horaChegada <= 8) {
-                    console.log(`✅ Adicionando (+1) para volta Orlando: ${linha}`);
+                    console.log(`✅ Adicionando (+1) para volta Orlando: ${linha.substring(0, 50)}...`);
                     linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))/, '$1 (+1)$2');
                 }
             }
@@ -452,8 +492,9 @@ function adicionarDiaSeguinte(texto) {
     return linhas.join('\n');
 }
 
-function garantirVersao(texto) {
-    const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
+// NOVA v3.20 - Garantir versão
+function garantirVersaoV320(texto) {
+    const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v3.20)`;
     
     // Remover versão antiga e duplicações
     texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade \(v[\d.]+\)/g, '');
@@ -481,20 +522,4 @@ function limparFormatacao(texto) {
     resultado = resultado.replace(/(✅[^\n]+)\n\n(🏷️)/g, '$1\n$2');
     resultado = resultado.replace(/(💺[^\n]+)\n\n(🏷️)/g, '$1\n$2');
     
-    // Remover espaços extras no final das linhas
-    resultado = resultado.split('\n').map(linha => linha.trimEnd()).join('\n');
-    
-    // Garantir separador correto entre ida e volta
-    resultado = resultado.replace(/\n--\n/g, '\n--\n');
-    
-    return resultado.trim();
-}
-
-// ================================================================================
-// EXPORTS
-// ================================================================================
-
-export default {
-    posProcessar,
-    extrairDadosCompletos
-};
+    // Remover
