@@ -1,4 +1,4 @@
-// api/ai-google.js - CVC ITAQUA v3.18 ESTRUTURA MODULAR CORRIGIDA
+// api/ai-google.js - CVC ITAQUA v3.18 CORRIGIDO
 // HANDLER PRINCIPAL COM TODAS AS CORREÇÕES
 // ================================================================================
 
@@ -255,7 +255,7 @@ Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 6. NÃO adicione (+1) automaticamente - apenas se mostrar na imagem
 
 FORMATO:
-**{Companhia} - {Origem} ✈ {Destino}**
+*{Companhia} - {Origem} ✈ {Destino}*
 {Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
 --
 {Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
@@ -331,7 +331,7 @@ export default async function handler(req, res) {
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.18 - Estrutura Modular Corrigida'
+                message: 'CVC Itaqua API v3.18 - Corrigida e Funcional'
             });
         }
         
@@ -370,212 +370,3 @@ export default async function handler(req, res) {
                 error: 'Adicione informações sobre a viagem',
                 result: 'Por favor, adicione informações sobre a viagem'
             });
-        }
-        
-        // Extrair dados e formatar passageiros
-        const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal);
-        let passageiros = dadosExtraidos.passageiros;
-        
-        if (!passageiros) {
-            const numAdultos = parseInt(adultos) || 1;
-            const numCriancas = parseInt(criancas) || 0;
-            passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
-            if (numCriancas > 0) {
-                passageiros += ` + ${String(numCriancas).padStart(2, '0')} criança${numCriancas > 1 ? 's' : ''}`;
-            }
-        }
-        
-        console.log(`📋 Passageiros: ${passageiros}`);
-        console.log(`💳 Parcelamento selecionado: ${parcelamento || 'nenhum'}`);
-        console.log(`🎯 Tipos selecionados: ${tipos.join(', ') || 'nenhum'}`);
-        
-        // Detectar tipo
-        const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos);
-        console.log(`📄 Tipo detectado: ${tipoOrcamento}`);
-        
-        // Gerar prompt
-        const prompt = gerarPrompt(
-            conteudoPrincipal, 
-            passageiros, 
-            tipoOrcamento, 
-            dadosExtraidos.destino || destino,
-            !!imagemBase64
-        );
-        
-        // Processar com IA
-        let resultado = '';
-        let iaUsada = 'none';
-        
-        try {
-            // Decidir qual IA usar
-            const usarClaude = imagemBase64 || 
-                              conteudoPrincipal.length > 3000 ||
-                              tipoOrcamento === 'PACOTE_COMPLETO' ||
-                              tipoOrcamento === 'MULTITRECHO' ||
-                              tipoOrcamento === 'DICAS' ||
-                              tipoOrcamento === 'RANKING_HOTEIS';
-            
-            if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-                console.log('🔮 Usando Claude...');
-                
-                const requestBody = {
-                    model: 'claude-3-haiku-20240307',
-                    max_tokens: 3000,
-                    temperature: 0.1,
-                    messages: [{
-                        role: 'user',
-                        content: imagemBase64 ? [
-                            { type: 'text', text: prompt },
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: imagemBase64.split(';')[0].split(':')[1],
-                                    data: imagemBase64.split(',')[1]
-                                }
-                            }
-                        ] : prompt
-                    }]
-                };
-                
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
-                    method: 'POST',
-                    headers: {
-                        'x-api-key': process.env.ANTHROPIC_API_KEY,
-                        'anthropic-version': '2023-06-01',
-                        'content-type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Claude erro:', errorText);
-                    throw new Error(`Claude erro ${response.status}`);
-                }
-                
-                const data = await response.json();
-                resultado = data.content[0].text;
-                iaUsada = 'claude';
-                
-            } else if (process.env.OPENAI_API_KEY) {
-                console.log('⚡ Usando GPT-4o-mini...');
-                
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [
-                            { 
-                                role: 'system', 
-                                content: 'Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido. Para dicas e rankings, use os formatos específicos solicitados.' 
-                            },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: 0.1,
-                        max_tokens: 3000
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('OpenAI erro:', errorText);
-                    throw new Error(`OpenAI erro ${response.status}`);
-                }
-                
-                const data = await response.json();
-                resultado = data.choices[0].message.content;
-                iaUsada = 'gpt';
-                
-            } else {
-                throw new Error('Nenhuma API de IA configurada');
-            }
-            
-        } catch (iaError) {
-            console.error('❌ Erro IA:', iaError);
-            resultado = `Erro ao processar com IA: ${iaError.message}. Verifique as configurações de API.`;
-            iaUsada = 'error';
-        }
-        
-        // Processar resultado
-        if (resultado && typeof resultado === 'string' && !resultado.includes('Erro')) {
-            // Remover formatação markdown se houver
-            resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
-            
-            // Buscar aeroportos online se necessário
-            console.log('🔄 Convertendo aeroportos...');
-            
-            // Primeiro, conversões locais
-            Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
-                const regex = new RegExp(`\\b${codigo}\\b`, 'g');
-                resultado = resultado.replace(regex, nome);
-            });
-            
-            // Buscar aeroportos não encontrados online
-            const codigosNaoEncontrados = resultado.match(/\b[A-Z]{3}\b/g);
-            if (codigosNaoEncontrados && process.env.OPENAI_API_KEY) {
-                console.log('🔍 Códigos para buscar online:', [...new Set(codigosNaoEncontrados)]);
-                
-                for (const codigo of [...new Set(codigosNaoEncontrados)]) {
-                    if (!AEROPORTOS[codigo]) {
-                        const nomeEncontrado = await buscarAeroportoOnline(codigo);
-                        if (nomeEncontrado !== codigo) {
-                            const regex = new RegExp(`\\b${codigo}\\b`, 'g');
-                            resultado = resultado.replace(regex, nomeEncontrado);
-                        }
-                    }
-                }
-            }
-            
-            // APLICAR PÓS-PROCESSAMENTO
-            console.log('🔧 Aplicando pós-processamento...');
-            resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
-        }
-        
-        console.log('✅ v3.18: Processamento completo');
-        
-        // SEMPRE retornar JSON válido
-        return res.status(200).json({
-            success: true,
-            result: resultado || 'Erro ao processar. Tente novamente.',
-            metadata: {
-                version: CONFIG.VERSION,
-                tipo: tipoOrcamento,
-                passageiros: passageiros,
-                parcelamento_selecionado: parcelamento || 'nenhum',
-                ia_usada: iaUsada
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ v3.18: Erro geral:', error);
-        
-        // SEMPRE retornar JSON válido mesmo em erro
-        return res.status(200).json({
-            success: false,
-            error: error.message || 'Erro interno do servidor',
-            result: 'Erro interno do servidor. Verifique os dados e tente novamente.'
-        });
-    }
-}
-
-// ================================================================================
-// LOGS DE INICIALIZAÇÃO
-// ================================================================================
-
-console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.18 - MODULAR CORRIGIDA             ║');
-console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Estrutura modular de 3 arquivos                           ║');
-console.log('║ ✅ Detecção melhorada de tipos                               ║');
-console.log('║ ✅ Prompts específicos para cada caso                         ║');
-console.log('║ ✅ Busca online de aeroportos                                 ║');
-console.log('║ ✅ Dicas e rankings funcionais                               ║');
-console.log('║ ✅ Templates de hotel e pacote                               ║');
-console.log('║ ✅ Passageiros com bebê/criança                              ║');
-console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.18 modular com TODAS as correções!');
