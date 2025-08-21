@@ -66,7 +66,6 @@ export const AEROPORTOS = {
     'LAS': 'Las Vegas',
     'CUN': 'Cancún', 
     'MEX': 'Cidade do México', 
-    // Internacional - Adicionais para busca online
     'BOG': 'Bogotá',
     'PTY': 'Panamá',
     'SAL': 'San Salvador',
@@ -74,7 +73,6 @@ export const AEROPORTOS = {
     'AEP': 'Aeroparque',
     'SCL': 'Santiago', 
     'LIM': 'Lima',
-    'BOG': 'Bogotá', 
     'UIO': 'Quito', 
     'MVD': 'Montevidéu'
 };
