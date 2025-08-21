@@ -1,5 +1,5 @@
-// api/ai-google.js - CVC ITAQUA v3.19 SOLUÇÃO COMPLETA
-// TODAS AS DIVERGÊNCIAS CORRIGIDAS
+// api/ai-google.js - CVC ITAQUA v3.20 CORREÇÃO TOTAL
+// TODAS AS DIVERGÊNCIAS CORRIGIDAS - JSON SEMPRE VÁLIDO
 // ================================================================================
 
 import { CONFIG, TEMPLATES, AEROPORTOS, REGRAS_BAGAGEM } from './templates.js';
@@ -45,7 +45,7 @@ async function buscarAeroportoOnline(codigo) {
 }
 
 // ================================================================================
-// DETECÇÃO MELHORADA DE TIPO DE ORÇAMENTO v3.19
+// DETECÇÃO MELHORADA DE TIPO DE ORÇAMENTO v3.20
 // ================================================================================
 
 function detectarTipoOrcamento(conteudoPrincipal, tipos) {
@@ -82,7 +82,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
             return 'CRUZEIRO';
         }
         
-        // 3. DETECÇÃO ESPECÍFICA DE HOTEL (SEM VOO)
+        // 3. DETECÇÃO ESPECÍFICA DE HOTEL (SEM VOO) v3.20
         const temHotel = conteudoLower.includes('hotel') || 
                         conteudoLower.includes('pousada') || 
                         conteudoLower.includes('resort') ||
@@ -93,21 +93,28 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
                       conteudoLower.includes('voo') || 
                       conteudoLower.includes('airlines') ||
                       conteudoLower.includes('gru') ||
-                      conteudoLower.includes('mco');
+                      conteudoLower.includes('mco') ||
+                      conteudoLower.includes('ida') ||
+                      conteudoLower.includes('volta');
+        
+        console.log(`🔍 Detecção Hotel: temHotel=${temHotel}, temVoo=${temVoo}`);
         
         if (temHotel && !temVoo) {
+            console.log('✅ Detectado como HOTEL');
             return 'HOTEIS_MULTIPLAS';
         }
         
-        // 4. DETECÇÃO DE MÚLTIPLAS OPÇÕES/COMPANHIAS v3.19
-        const companhias = (conteudoPrincipal.match(/(?:Copa|Latam|Avianca|Gol|Azul|Tap|Iberia)/gi) || []);
-        const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase()))];
+        // 4. DETECÇÃO DE MÚLTIPLAS COMPANHIAS v3.20
+        const companhias = (conteudoPrincipal.match(/(?:Copa airlines|Latam|Avianca|Gol|Azul|Tap|Iberia|Copa|Emirates|Lufthansa)/gi) || []);
+        const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase().replace(/\s+airlines?/, '')))];
         
         console.log(`🔍 Companhias detectadas: ${companhiasUnicas.join(', ')}`);
         
         if (companhiasUnicas.length >= 3) {
+            console.log('✅ Detectado: MULTIPLAS_OPCOES_3');
             return 'MULTIPLAS_OPCOES_3';
         } else if (companhiasUnicas.length >= 2) {
+            console.log('✅ Detectado: MULTIPLAS_COMPANHIAS');
             return 'MULTIPLAS_COMPANHIAS';
         }
         
@@ -131,6 +138,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
         }
         
         // 6. PADRÃO: AÉREO SIMPLES
+        console.log('✅ Detectado: AEREO_SIMPLES (padrão)');
         return 'AEREO_SIMPLES';
         
     } catch (error) {
@@ -140,7 +148,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos) {
 }
 
 // ================================================================================
-// GERAÇÃO DE PROMPT ESPECÍFICA v3.19
+// GERAÇÃO DE PROMPT ESPECÍFICA v3.20
 // ================================================================================
 
 function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehImagem = false) {
@@ -249,13 +257,13 @@ Use EXATAMENTE este formato:
 Use hotéis REAIS de ${destino || 'Orlando'}, não genéricos.`;
     }
     
-    // HOTÉIS (SEM VOO)
+    // HOTÉIS (SEM VOO) v3.20
     if (tipoOrcamento === 'HOTEIS_MULTIPLAS') {
         const template = TEMPLATES.HOTEIS_MULTIPLAS;
         return `
 Formate este orçamento de HOTEL para WhatsApp seguindo o template específico.
 
-⚠️ ESTE É UM ORÇAMENTO DE HOTEL - NÃO ADICIONE VOOS!
+⚠️ CRÍTICO: ESTE É UM ORÇAMENTO DE HOTEL - NÃO ADICIONE VOOS!
 
 CONTEÚDO:
 ${conteudoPrincipal}
@@ -265,33 +273,62 @@ PASSAGEIROS: ${passageiros}
 TEMPLATE HOTEL:
 ${template}
 
-REGRAS ESPECÍFICAS:
-- NÃO adicionar voos ou aeroportos
-- Usar formato de hotel: *Hotéis em {destino}*
-- Período: {data_entrada} a {data_saida}
-- Formato: **OPÇÃO X** - {nome_hotel}
+REGRAS ESPECÍFICAS PARA HOTEL v3.20:
+- NÃO adicionar voos, aeroportos ou "✈"
+- Usar formato: *Hotéis em {destino}*
+- Período: {data_entrada} a {data_saida} ({noites} noites)
+- Formato: **OPÇÃO X** - {nome_hotel} ⭐{estrelas}
 - 📍 {localização}
 - 🛏️ {tipo_quarto}
 - ☕ {regime alimentar}
 - 💰 R$ {valor} total
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.19)`;
+- NUNCA usar formato de voo (---, horários, aeroportos)
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.20)`;
     }
     
-    // PARA IMAGENS
+    // MÚLTIPLAS COMPANHIAS v3.20
+    if (tipoOrcamento === 'MULTIPLAS_COMPANHIAS') {
+        const template = TEMPLATES.MULTIPLAS_COMPANHIAS;
+        return `
+Formate estas MÚLTIPLAS OPÇÕES de companhias para WhatsApp.
+
+CONTEÚDO:
+${conteudoPrincipal}
+
+PASSAGEIROS: ${passageiros}
+
+TEMPLATE MÚLTIPLAS COMPANHIAS:
+${template}
+
+REGRAS ESPECÍFICAS v3.20:
+- Uma seção para CADA companhia
+- *OPÇÃO 1 - {Companhia1} - {Origem} ✈ {Destino}*
+- *OPÇÃO 2 - {Companhia2} - {Origem} ✈ {Destino}*
+- Remover dias da semana das datas
+- Datas: DD/MM (27/01)
+- Aeroportos: nomes completos
+- "Uma escala" → "(com conexão)"
+- Extrair parcelamento específico se tiver "Entrada de R$"
+- Detectar "Com bagagem" = incluir despachada
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.20)`;
+    }
+    
+    // PARA IMAGENS v3.20
     if (ehImagem) {
         return `
 Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 
-⚠️ REGRAS CRÍTICAS v3.19:
+⚠️ REGRAS CRÍTICAS v3.20:
 1. Use APENAS informações visíveis na imagem
 2. NÃO invente horários, cidades ou detalhes
 3. Mantenha exatamente os horários mostrados
 4. Se mostra "Uma escala" sem cidade, use "(com conexão)"
 5. Se mostra cidade de conexão, especifique
-6. REMOVER dias da semana (ter, qua, qui, etc.)
+6. REMOVER dias da semana: "ter, 27/01" → "27/01"
 7. NÃO adicione (+1) automaticamente - apenas se mostrar na imagem
+8. Para múltiplas companhias, detectar e usar template apropriado
 
-FORMATO:
+FORMATO PADRÃO:
 *{Companhia} - {Origem} ✈ {Destino}*
 {Data} - {Aeroporto Origem} {Hora} / {Aeroporto Destino} {Hora} ({tipo voo})
 --
@@ -304,24 +341,25 @@ FORMATO:
 REGRAS:
 - Datas: DD/MM (27/01, NÃO "ter, 27/01")
 - Use nomes completos de aeroportos (Guarulhos, não GRU)
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.19)`;
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.20)`;
     }
     
-    // TEMPLATE PADRÃO
+    // TEMPLATE PADRÃO v3.20
     const template = TEMPLATES[tipoOrcamento] || TEMPLATES.AEREO_SIMPLES;
     
     return `
 Formate este orçamento de viagem para WhatsApp seguindo EXATAMENTE o template.
 
-⚠️ INSTRUÇÕES CRÍTICAS v3.19:
+⚠️ INSTRUÇÕES CRÍTICAS v3.20:
 
 1. Use SOMENTE as informações fornecidas no texto
 2. NÃO INVENTE horários, cidades ou detalhes
-3. REMOVER dias da semana (ter, qua, qui, sex, sáb, dom)
-4. Para múltiplas companhias, detectar automaticamente
+3. REMOVER dias da semana: "ter, 27 de janeiro" → "27/01"
+4. Para múltiplas companhias, detectar automaticamente e usar template específico
 5. Mantenha passageiros exatos (adultos, bebês, crianças)
-6. Extraia parcelamento com entrada se presente
-7. Detecte "Com bagagem" e "pré-reserva de assento"
+6. Extraia parcelamento "Entrada de R$ X + Nx de R$ Y"
+7. Detecte "Com bagagem" = incluir bagagem despachada
+8. Detecte "pré-reserva de assento" = incluir linha 💺
 
 TEXTO ORIGINAL:
 ${conteudoPrincipal}
@@ -331,7 +369,7 @@ PASSAGEIROS: ${passageiros}
 TEMPLATE A SEGUIR:
 ${template}
 
-REGRAS ESPECÍFICAS v3.19:
+REGRAS ESPECÍFICAS v3.20:
 - Datas: DD/MM (27/01, NÃO "ter, 27 de janeiro")
 - Aeroportos: nomes completos (Guarulhos, não GRU)
 - "Uma escala" → "(com conexão)"
@@ -340,15 +378,16 @@ REGRAS ESPECÍFICAS v3.19:
 - Links: manter formato 🔗 https://...
 - Passageiros: formato "XX adultos + XX crianças + XX bebês"
 - (+1) APENAS para volta Orlando chegada ≤ 08h
-- Bagagem: detectar "Com bagagem" = despachada incluída
-- Assento: detectar "pré-reserva" = incluir linha 💺
+- Bagagem: "Com bagagem" = despachada incluída
+- Assento: "pré-reserva" = incluir linha 💺
 - Reembolso: "Reembolsável" ou "Não reembolsável"
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v3.20)
 
 ⚠️ CRÍTICO: NÃO INVENTE INFORMAÇÕES - USE APENAS O TEXTO!`;
 }
 
 // ================================================================================
-// HANDLER PRINCIPAL v3.19
+// HANDLER PRINCIPAL v3.20 - JSON SEMPRE VÁLIDO
 // ================================================================================
 
 export default async function handler(req, res) {
@@ -356,7 +395,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     
     try {
         // OPTIONS
@@ -369,9 +408,9 @@ export default async function handler(req, res) {
             return res.status(200).json({
                 success: true,
                 status: 'operational',
-                version: CONFIG.VERSION,
+                version: '3.20',
                 timestamp: new Date().toISOString(),
-                message: 'CVC Itaqua API v3.19 - Solução Completa'
+                message: 'CVC Itaqua API v3.20 - Correção Total - JSON Sempre Válido'
             });
         }
         
@@ -384,7 +423,7 @@ export default async function handler(req, res) {
             });
         }
         
-        console.log('🚀 v3.19: Processando requisição...');
+        console.log('🚀 v3.20: Processando requisição...');
         
         // Extrair dados com validação robusta
         const body = req.body || {};
@@ -412,7 +451,7 @@ export default async function handler(req, res) {
             });
         }
         
-        // Extrair dados e formatar passageiros
+        // Extrair dados e formatar passageiros v3.20
         const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal);
         let passageiros = dadosExtraidos.passageiros;
         
@@ -447,14 +486,15 @@ export default async function handler(req, res) {
         let iaUsada = 'none';
         
         try {
-            // Decidir qual IA usar
+            // Decidir qual IA usar v3.20
             const usarClaude = imagemBase64 || 
                               conteudoPrincipal.length > 3000 ||
                               tipoOrcamento === 'PACOTE_COMPLETO' ||
                               tipoOrcamento === 'MULTITRECHO' ||
                               tipoOrcamento === 'DICAS' ||
                               tipoOrcamento === 'RANKING_HOTEIS' ||
-                              tipoOrcamento === 'HOTEIS_MULTIPLAS';
+                              tipoOrcamento === 'HOTEIS_MULTIPLAS' ||
+                              tipoOrcamento === 'MULTIPLAS_COMPANHIAS';
             
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 console.log('🔮 Usando Claude...');
@@ -491,8 +531,8 @@ export default async function handler(req, res) {
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Claude erro:', errorText);
-                    throw new Error(`Claude erro ${response.status}`);
+                    console.error('Claude erro:', response.status, errorText);
+                    throw new Error(`Claude erro ${response.status}: ${errorText.substring(0, 100)}`);
                 }
                 
                 const data = await response.json();
@@ -513,7 +553,7 @@ export default async function handler(req, res) {
                         messages: [
                             { 
                                 role: 'system', 
-                                content: 'Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido. Para hotéis, use formato de hotel. Para dicas e rankings, seja específico para o destino.' 
+                                content: 'Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido. Para hotéis, use formato de hotel. Para múltiplas companhias, use template específico. REMOVA dias da semana das datas.' 
                             },
                             { role: 'user', content: prompt }
                         ],
@@ -524,8 +564,8 @@ export default async function handler(req, res) {
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('OpenAI erro:', errorText);
-                    throw new Error(`OpenAI erro ${response.status}`);
+                    console.error('OpenAI erro:', response.status, errorText);
+                    throw new Error(`OpenAI erro ${response.status}: ${errorText.substring(0, 100)}`);
                 }
                 
                 const data = await response.json();
@@ -533,7 +573,7 @@ export default async function handler(req, res) {
                 iaUsada = 'gpt';
                 
             } else {
-                throw new Error('Nenhuma API de IA configurada');
+                throw new Error('Nenhuma API de IA configurada (OPENAI_API_KEY ou ANTHROPIC_API_KEY)');
             }
             
         } catch (iaError) {
@@ -542,7 +582,7 @@ export default async function handler(req, res) {
             iaUsada = 'error';
         }
         
-        // Processar resultado
+        // Processar resultado v3.20
         if (resultado && typeof resultado === 'string' && !resultado.includes('Erro')) {
             // Remover formatação markdown se houver
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
@@ -572,53 +612,59 @@ export default async function handler(req, res) {
                 }
             }
             
-            // APLICAR PÓS-PROCESSAMENTO v3.19
-            console.log('🔧 Aplicando pós-processamento v3.19...');
+            // APLICAR PÓS-PROCESSAMENTO v3.20
+            console.log('🔧 Aplicando pós-processamento v3.20...');
             resultado = posProcessar(resultado, conteudoPrincipal, parcelamento);
         }
         
-        console.log('✅ v3.19: Processamento completo');
+        console.log('✅ v3.20: Processamento completo');
         
-        // SEMPRE retornar JSON válido
+        // SEMPRE retornar JSON válido v3.20
         return res.status(200).json({
             success: true,
-            result: resultado || 'Erro ao processar. Tente novamente.',
+            result: resultado || 'Erro ao processar. Tente novamente com informações diferentes.',
             metadata: {
-                version: CONFIG.VERSION,
+                version: '3.20',
                 tipo: tipoOrcamento,
                 passageiros: passageiros,
                 parcelamento_selecionado: parcelamento || 'nenhum',
-                ia_usada: iaUsada
+                ia_usada: iaUsada,
+                timestamp: new Date().toISOString()
             }
         });
         
     } catch (error) {
-        console.error('❌ v3.19: Erro geral:', error);
+        console.error('❌ v3.20: Erro geral:', error);
         
-        // SEMPRE retornar JSON válido mesmo em erro
+        // SEMPRE retornar JSON válido mesmo em erro v3.20
         return res.status(200).json({
             success: false,
             error: error.message || 'Erro interno do servidor',
-            result: 'Erro interno do servidor. Verifique os dados e tente novamente.'
+            result: 'Erro interno do servidor. Verifique os dados e tente novamente.',
+            metadata: {
+                version: '3.20',
+                timestamp: new Date().toISOString()
+            }
         });
     }
 }
 
 // ================================================================================
-// LOGS DE INICIALIZAÇÃO v3.19
+// LOGS DE INICIALIZAÇÃO v3.20
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v3.19 - SOLUÇÃO COMPLETA              ║');
+console.log('║              CVC ITAQUA v3.20 - CORREÇÃO TOTAL                ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ Todas as divergências corrigidas                          ║');
-console.log('║ ✅ Detecção inteligente de múltiplas companhias               ║');
-console.log('║ ✅ Template específico para hotéis                           ║');
-console.log('║ ✅ Extração correta de parcelamento                          ║');
-console.log('║ ✅ Detecção precisa de bagagem e assento                     ║');
-console.log('║ ✅ Remoção de dias da semana                                 ║');
-console.log('║ ✅ (+1) apenas para volta Orlando                            ║');
+console.log('║ ✅ JSON SEMPRE VÁLIDO - erro corrigido                       ║');
+console.log('║ ✅ Dias da semana removidos                                  ║');
+console.log('║ ✅ (+1) apenas para volta Orlando ≤ 08h                     ║');
+console.log('║ ✅ Parcelamento com entrada extraído                         ║');
+console.log('║ ✅ "Com bagagem" detectado                                   ║');
+console.log('║ ✅ Múltiplas companhias com template específico             ║');
+console.log('║ ✅ Hotel sem voos                                            ║');
 console.log('║ ✅ Dicas específicas por destino                             ║');
-console.log('║ ✅ JSON sempre válido                                        ║');
+console.log('║ ✅ Detalhes de voo completos                                 ║');
+console.log('║ ✅ Pós-processamento robusto                                 ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log('🚀 Sistema v3.19 - TODAS AS DIVERGÊNCIAS CORRIGIDAS!');
+console.log('🚀 Sistema v3.20 - TODAS AS DIVERGÊNCIAS CORRIGIDAS!');
