@@ -1,14 +1,14 @@
-// api/templates.js - CVC ITAQUA v3.19
+// api/templates.js - CVC ITAQUA v3.20 ATUALIZADA
 // ARQUIVO 1: TEMPLATES E CONSTANTES
 // ================================================================================
 
 export const CONFIG = {
-    VERSION: '3.19',
+    VERSION: '3.20',
     SISTEMA: 'CVC ITAQUA'
 };
 
 // ================================================================================
-// TABELA DE AEROPORTOS
+// TABELA DE AEROPORTOS COMPLETA
 // ================================================================================
 
 export const AEROPORTOS = {
@@ -78,7 +78,7 @@ export const AEROPORTOS = {
 };
 
 // ================================================================================
-// REGRAS DE BAGAGEM
+// REGRAS DE BAGAGEM PADRONIZADAS
 // ================================================================================
 
 export const REGRAS_BAGAGEM = {
@@ -92,7 +92,7 @@ export const REGRAS_BAGAGEM = {
 };
 
 // ================================================================================
-// TEMPLATES DOS PRODUTOS (TODOS DO MANUAL)
+// TEMPLATES DOS PRODUTOS (TODOS DO MANUAL) v3.20
 // ================================================================================
 
 export const TEMPLATES = {
@@ -199,7 +199,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS
+    // 7. MÚLTIPLAS COMPANHIAS INTERNACIONAIS v3.20
     MULTIPLAS_COMPANHIAS: `*OPÇÃO 1 - {companhia1} - {cidade_origem} ✈ {cidade_destino}*
 {data_ida1} - {aeroporto_origem1} {hora_ida1} / {aeroporto_destino1} {hora_chegada1} ({tipo_voo1})
 --
@@ -221,7 +221,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🏷️ {reembolso}
 Valores sujeitos a confirmação e disponibilidade`,
 
-    // 8. HOTÉIS - MÚLTIPLAS OPÇÕES
+    // 8. HOTÉIS - MÚLTIPLAS OPÇÕES v3.20
     HOTEIS_MULTIPLAS: `*Hotéis em {destino}*
 Período: {data_entrada} a {data_saida} ({noites} noites)
 {passageiros}
@@ -334,7 +334,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
 
-    // 12. DICAS DE DESTINO
+    // 12. DICAS DE DESTINO v3.20
     DICAS: `━━━━━━━━━━━━━━━━━━
 💡 *DICAS PARA {DESTINO}*
 ━━━━━━━━━━━━━━━━━━
@@ -373,7 +373,7 @@ Valores sujeitos a confirmação e disponibilidade`,
 🚨 *IMPORTANTE:*
 {avisos_especificos}`,
 
-    // 13. RANKING DE HOTÉIS
+    // 13. RANKING DE HOTÉIS v3.20
     RANKING_HOTEIS: `🏆 *RANKING DE HOTÉIS - {DESTINO}*
 ━━━━━━━━━━━━━━━━━━
 
