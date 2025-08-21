@@ -1,27 +1,4 @@
-// NOVA FUNÇÃO v3.18 - Reembolso específico
-function corrigirReembolsoV318(texto, conteudoOriginal) {
-    let resultado = texto;
-    const conteudoLower = conteudoOriginal.toLowerCase();
-    
-    // Determinar tipo de reembolso pelo conteúdo
-    let tipoReembolso = 'Não reembolsável'; // padrão
-    
-    if (conteudoLower.includes('reembolsável') && !conteudoLower.includes('não reembolsável')) {
-        tipoReembolso = 'Reembolsável conforme regras do bilhete';
-    }
-    
-    // Substituir ou adicionar linha de reembolso
-    if (resultado.includes('🏷️')) {
-        resultado = resultado.replace(/🏷️[^\n]*/g, `🏷️ ${tipoReembolso}`);
-    } else {
-        // Adicionar após bagagem/assento
-        const linhas = resultado.split('\n');
-        const indiceVersao = linhas.findIndex(linha => linha.includes('Valores sujeitos'));
-        if (indiceVersao > 0) {
-            linhas.splice(indiceVersao, 0, `🏷️ ${tipoReembolso}`);
-            resultado = linhas.join('\n');
-        } else {
-            resultado += `\// api/corrections.js - CVC ITAQUA v3.18
+// api/corrections.js - CVC ITAQUA v3.18 CORRIGIDO
 // ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
 // ================================================================================
 
@@ -41,7 +18,7 @@ export function extrairDadosCompletos(conteudoPrincipal) {
     };
     
     try {
-        // Detectar se tem múltiplas opções (v3.12)
+        // Detectar se tem múltiplas opções (v3.18)
         const temMultiplasOpcoes = conteudoPrincipal.includes('Copa airlines') && 
                                   conteudoPrincipal.includes('Latam');
         dados.multiplas = temMultiplasOpcoes;
@@ -59,7 +36,7 @@ export function extrairDadosCompletos(conteudoPrincipal) {
             }
         }
         
-        // Extrair parcelamento por opção (v3.12)
+        // Extrair parcelamento por opção (v3.18)
         if (temMultiplasOpcoes) {
             // Dividir por seções
             const secoes = conteudoPrincipal.split(/(?=\d{2} de \w+ - \d{2} de \w+)/);
@@ -123,14 +100,14 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         resultado = corrigirDatas(resultado);
         resultado = converterCodigosAeroporto(resultado);
         resultado = corrigirPassageiros(resultado, dados);
-        resultado = corrigirFormatoVooV318(resultado, conteudoOriginal); // NOVA v3.18
+        resultado = corrigirFormatoVooV318(resultado, conteudoOriginal);
         resultado = corrigirLinks(resultado, dados);
-        resultado = corrigirParcelamentoV318(resultado, parcelamentoSelecionado, conteudoOriginal, dados); // NOVA v3.18
-        resultado = corrigirBaggagemV318(resultado, conteudoOriginal); // MELHORADA v3.18
+        resultado = corrigirParcelamentoV318(resultado, parcelamentoSelecionado, conteudoOriginal, dados);
+        resultado = corrigirBaggagemV318(resultado, conteudoOriginal);
         resultado = corrigirAssento(resultado, conteudoOriginal);
-        resultado = corrigirReembolsoV318(resultado, conteudoOriginal); // NOVA v3.18
-        resultado = adicionarDiaSeguinteV318(resultado); // CORRIGIDA v3.18
-        resultado = garantirVersaoV318(resultado); // NOVA v3.18
+        resultado = corrigirReembolsoV318(resultado, conteudoOriginal);
+        resultado = adicionarDiaSeguinteV318(resultado);
+        resultado = garantirVersaoV318(resultado);
         resultado = limparFormatacao(resultado);
         
         console.log('✅ Pós-processamento v3.18 completo');
@@ -143,7 +120,7 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
 }
 
 // ================================================================================
-// CORREÇÕES ESPECÍFICAS v3.11
+// CORREÇÕES ESPECÍFICAS v3.18
 // ================================================================================
 
 function corrigirDatas(texto) {
@@ -248,22 +225,11 @@ function corrigirLinks(texto, dados) {
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
-    // Adicionar links específicos se não existirem
-    if (dados && dados.links && dados.links.length > 0 && !resultado.includes('🔗')) {
-        // Encontrar última linha antes da versão e adicionar primeiro link
-        const linhas = resultado.split('\n');
-        const indiceVersao = linhas.findIndex(linha => linha.includes('Valores sujeitos'));
-        if (indiceVersao > 0) {
-            linhas.splice(indiceVersao, 0, `🔗 ${dados.links[0]}`);
-            resultado = linhas.join('\n');
-        }
-    }
-    
     return resultado;
 }
 
-// NOVA FUNÇÃO v3.12 - Parcelamento específico por opção
-function corrigirParcelamentoV312(texto, parcelamentoSelecionado, conteudoOriginal, dados) {
+// NOVA FUNÇÃO v3.18 - Parcelamento específico
+function corrigirParcelamentoV318(texto, parcelamentoSelecionado, conteudoOriginal, dados) {
     let resultado = texto;
     
     // Se tem múltiplas opções, processar separadamente
@@ -295,13 +261,11 @@ function corrigirParcelamentoV312(texto, parcelamentoSelecionado, conteudoOrigin
         
     } else {
         // Lógica original para opção única
-        const dadosParc = extrairDadosCompletos(conteudoOriginal);
-        
-        if (dadosParc.parcelamento) {
-            console.log('Usando parcelamento extraído:', dadosParc.parcelamento);
+        if (dados.parcelamento) {
+            console.log('Usando parcelamento extraído:', dados.parcelamento);
             
             if (resultado.includes('💰')) {
-                resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dadosParc.parcelamento}`);
+                resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
             }
         } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
             console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
@@ -317,55 +281,7 @@ function corrigirParcelamentoV312(texto, parcelamentoSelecionado, conteudoOrigin
                     
                     const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                     
-                    const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\function corrigirParcelamento(texto, parcelamentoSelecionado, conteudoOriginal) {
-    let resultado = texto;
-    
-    // Primeiro, verificar se tem parcelamento com entrada no conteúdo original
-    const dados = extrairDadosCompletos(conteudoOriginal);
-    
-    if (dados.parcelamento) {
-        // Usar parcelamento extraído do conteúdo
-        console.log('Usando parcelamento extraído:', dados.parcelamento);
-        
-        // Garantir que há quebra de linha antes do parcelamento
-        if (resultado.includes('💰')) {
-            resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
-        }
-    } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
-        // Usar parcelamento selecionado pelo usuário
-        console.log('Aplicando parcelamento selecionado:', parcelamentoSelecionado);
-        
-        const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
-        
-        if (valoresEncontrados) {
-            valoresEncontrados.forEach(valorMatch => {
-                const valor = valorMatch.match(/[\d.,]+/)[0];
-                const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
-                const numParcelas = parseInt(parcelamentoSelecionado);
-                const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-                
-                const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
-                
-                // Adicionar ou substituir parcelamento com quebra de linha
-                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
-                resultado = resultado.replace(regex, (match, antes) => {
-                    return `${antes}\n${linhaParcelamento}`;
-                });
-            });
-        }
-    } else {
-        // Remover linha de parcelamento se não foi selecionado e não tem no conteúdo
-        console.log('Removendo parcelamento (não selecionado)');
-        resultado = resultado.replace(/\n💳[^\n]+/g, '');
-        resultado = resultado.replace(/💳[^\n]+\n/g, '');
-    }
-    
-    // Garantir quebra de linha após parcelamento e antes da bagagem
-    resultado = resultado.replace(/(💳[^\n]+)✅/g, '$1\n✅');
-    
-    return resultado;
-}');
+                    const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                     const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
                     resultado = resultado.replace(regex, (match, antes) => {
                         return `${antes}\n${linhaParcelamento}`;
@@ -427,8 +343,38 @@ function corrigirAssento(texto, conteudoOriginal) {
     return resultado;
 }
 
-// CORRIGIDA v3.12 - Lógica (+1) mais precisa
-function adicionarDiaSeguinteV312(texto) {
+// NOVA FUNÇÃO v3.18 - Reembolso específico
+function corrigirReembolsoV318(texto, conteudoOriginal) {
+    let resultado = texto;
+    const conteudoLower = conteudoOriginal.toLowerCase();
+    
+    // Determinar tipo de reembolso pelo conteúdo
+    let tipoReembolso = 'Não reembolsável'; // padrão
+    
+    if (conteudoLower.includes('reembolsável') && !conteudoLower.includes('não reembolsável')) {
+        tipoReembolso = 'Reembolsável conforme regras do bilhete';
+    }
+    
+    // Substituir ou adicionar linha de reembolso
+    if (resultado.includes('🏷️')) {
+        resultado = resultado.replace(/🏷️[^\n]*/g, `🏷️ ${tipoReembolso}`);
+    } else {
+        // Adicionar após bagagem/assento
+        const linhas = resultado.split('\n');
+        const indiceVersao = linhas.findIndex(linha => linha.includes('Valores sujeitos'));
+        if (indiceVersao > 0) {
+            linhas.splice(indiceVersao, 0, `🏷️ ${tipoReembolso}`);
+            resultado = linhas.join('\n');
+        } else {
+            resultado += `\n🏷️ ${tipoReembolso}`;
+        }
+    }
+    
+    return resultado;
+}
+
+// CORRIGIDA v3.18 - Lógica (+1) mais precisa
+function adicionarDiaSeguinteV318(texto) {
     let resultado = texto;
     const linhas = resultado.split('\n');
     
@@ -439,7 +385,7 @@ function adicionarDiaSeguinteV312(texto) {
                 const horaSaida = parseInt(horaMatch[1]);
                 const horaChegada = parseInt(horaMatch[3]);
                 
-                // LÓGICA CORRIGIDA v3.12:
+                // LÓGICA CORRIGIDA v3.18:
                 // (+1) APENAS se:
                 // 1. Voo internacional (Orlando, Lisboa, etc.)
                 // 2. Saída após 20h OU chegada antes 8h (madrugada)
@@ -450,17 +396,12 @@ function adicionarDiaSeguinteV312(texto) {
                                        linha.includes('Londres') || linha.includes('Roma') ||
                                        linha.includes('Barcelona');
                 
-                // Orlando ida: 11:10→22:40 = mesmo dia (NÃO usar +1)
-                // Orlando volta: 13:40→03:50 = madrugada (USAR +1)
-                // Lisboa: sempre +1 por ser longa distância
-                
                 if (ehInternacional) {
                     // Para Orlando: só +1 se chegada for madrugada (antes das 8h)
                     if (linha.includes('Orlando')) {
                         if (horaChegada <= 8) {  // Chegada madrugada
                             linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))/, '$1 (+1)$2');
                         }
-                        // NÃO adicionar +1 para Orlando 11:10→22:40 (mesmo dia)
                     } else {
                         // Para Europa: sempre +1 por ser muito longa distância
                         linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))/, '$1 (+1)$2');
@@ -473,53 +414,8 @@ function adicionarDiaSeguinteV312(texto) {
     return linhas.join('\n');
 }
 
-// NOVA FUNÇÃO v3.12 - Reembolso consistente por opção
-function corrigirReembolsoV312(texto, conteudoOriginal) {
-    let resultado = texto;
-    
-    // Garantir que sempre há linha de reembolso para cada opção
-    const opcoes = resultado.split(/(?=\*\*\w+)/);
-    
-    opcoes.forEach((opcao, index) => {
-        if (opcao.trim() === '') return;
-        
-        if (!opcao.includes('🏷️')) {
-            // Adicionar linha de reembolso após bagagem ou após valor
-            if (opcao.includes('✅')) {
-                opcao = opcao.replace(/(✅[^\n]+)(\n|$)/, '$1\n🏷️ Não reembolsável\n');
-            } else if (opcao.includes('💰')) {
-                opcao = opcao.replace(/(💰[^\n]+)(\n|$)/, '$1\n🏷️ Não reembolsável\n');
-            }
-        }
-        
-        opcoes[index] = opcao;
-    });
-    
-    resultado = opcoes.join('');
-    
-    // Remover duplicações de reembolso dentro da mesma opção
-    const linhasReembolso = resultado.match(/🏷️[^\n]+/g);
-    if (linhasReembolso && linhasReembolso.length > 2) { // Mais de 2 = duplicação
-        let contador = 0;
-        resultado = resultado.replace(/🏷️[^\n]+/g, match => {
-            contador++;
-            // Manter apenas as 2 primeiras (uma para cada opção)
-            if (contador <= 2) {
-                return match;
-            }
-            return '';
-        });
-    }
-    
-    // Padronizar texto de reembolso
-    resultado = resultado.replace(/🏷️ Reembolsável[^\n]*/g, '🏷️ Reembolsável conforme regras do bilhete');
-    resultado = resultado.replace(/🏷️ Não-reembolsável/g, '🏷️ Não reembolsável');
-    
-    return resultado;
-}
-
-// NOVA FUNÇÃO v3.12
-function garantirVersaoV312(texto) {
+// NOVA FUNÇÃO v3.18
+function garantirVersaoV318(texto) {
     const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
     
     // Remover versão antiga e duplicações
