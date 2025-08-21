@@ -1,4 +1,27 @@
-// api/corrections.js - CVC ITAQUA v3.12
+// NOVA FUNÇÃO v3.18 - Reembolso específico
+function corrigirReembolsoV318(texto, conteudoOriginal) {
+    let resultado = texto;
+    const conteudoLower = conteudoOriginal.toLowerCase();
+    
+    // Determinar tipo de reembolso pelo conteúdo
+    let tipoReembolso = 'Não reembolsável'; // padrão
+    
+    if (conteudoLower.includes('reembolsável') && !conteudoLower.includes('não reembolsável')) {
+        tipoReembolso = 'Reembolsável conforme regras do bilhete';
+    }
+    
+    // Substituir ou adicionar linha de reembolso
+    if (resultado.includes('🏷️')) {
+        resultado = resultado.replace(/🏷️[^\n]*/g, `🏷️ ${tipoReembolso}`);
+    } else {
+        // Adicionar após bagagem/assento
+        const linhas = resultado.split('\n');
+        const indiceVersao = linhas.findIndex(linha => linha.includes('Valores sujeitos'));
+        if (indiceVersao > 0) {
+            linhas.splice(indiceVersao, 0, `🏷️ ${tipoReembolso}`);
+            resultado = linhas.join('\n');
+        } else {
+            resultado += `\// api/corrections.js - CVC ITAQUA v3.18
 // ARQUIVO 2: PÓS-PROCESSAMENTO E CORREÇÕES
 // ================================================================================
 
@@ -83,18 +106,15 @@ export function extrairDadosCompletos(conteudoPrincipal) {
 }
 
 // ================================================================================
-// PÓS-PROCESSAMENTO PRINCIPAL v3.12
+// PÓS-PROCESSAMENTO PRINCIPAL v3.18
 // ================================================================================
 
 export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
     try {
-        console.log('🔧 Pós-processamento v3.12...');
+        console.log('🔧 Pós-processamento v3.18...');
         console.log('Parcelamento selecionado:', parcelamentoSelecionado);
         
         let resultado = texto;
-        
-        // Remover conteúdo de dicas se aparecer misturado
-        resultado = resultado.replace(/Dicas de Viagem para[^]*$/m, '');
         
         // Extrair dados primeiro
         const dados = extrairDadosCompletos(conteudoOriginal);
@@ -103,17 +123,17 @@ export function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado) {
         resultado = corrigirDatas(resultado);
         resultado = converterCodigosAeroporto(resultado);
         resultado = corrigirPassageiros(resultado, dados);
-        resultado = corrigirFormatoVooV312(resultado, conteudoOriginal); // NOVA v3.12
-        resultado = corrigirLinks(resultado);
-        resultado = corrigirParcelamentoV312(resultado, parcelamentoSelecionado, conteudoOriginal, dados); // NOVA v3.12
-        resultado = corrigirBagagem(resultado, conteudoOriginal);
+        resultado = corrigirFormatoVooV318(resultado, conteudoOriginal); // NOVA v3.18
+        resultado = corrigirLinks(resultado, dados);
+        resultado = corrigirParcelamentoV318(resultado, parcelamentoSelecionado, conteudoOriginal, dados); // NOVA v3.18
+        resultado = corrigirBaggagemV318(resultado, conteudoOriginal); // MELHORADA v3.18
         resultado = corrigirAssento(resultado, conteudoOriginal);
-        resultado = corrigirReembolsoV312(resultado, conteudoOriginal); // NOVA v3.12
-        resultado = adicionarDiaSeguinteV312(resultado); // CORRIGIDA v3.12
-        resultado = garantirVersaoV312(resultado); // NOVA v3.12
+        resultado = corrigirReembolsoV318(resultado, conteudoOriginal); // NOVA v3.18
+        resultado = adicionarDiaSeguinteV318(resultado); // CORRIGIDA v3.18
+        resultado = garantirVersaoV318(resultado); // NOVA v3.18
         resultado = limparFormatacao(resultado);
         
-        console.log('✅ Pós-processamento v3.12 completo');
+        console.log('✅ Pós-processamento v3.18 completo');
         return resultado;
         
     } catch (error) {
@@ -175,56 +195,69 @@ function corrigirPassageiros(texto, dados) {
     return texto.replace(/\d{2} adultos?(?:\s*\+\s*\d{2} crianças?)?/gi, dados.passageiros);
 }
 
-// NOVA FUNÇÃO v3.12 - Corrigir formato específico de voo
-function corrigirFormatoVooV312(texto, conteudoOriginal) {
+// NOVA FUNÇÃO v3.18 - Corrigir formato específico de voo
+function corrigirFormatoVooV318(texto, conteudoOriginal) {
     let resultado = texto;
     
-    // Detectar aeroporto de destino do conteúdo original
-    let destinoAeroporto = 'Orlando'; // padrão
-    if (conteudoOriginal.includes('MCO')) destinoAeroporto = 'Orlando';
-    if (conteudoOriginal.includes('LIS')) destinoAeroporto = 'Lisboa';
-    if (conteudoOriginal.includes('MAD')) destinoAeroporto = 'Madrid';
+    // Detectar se é hotel (não aplicar correções de voo)
+    if (conteudoOriginal.toLowerCase().includes('hotel') && 
+        !conteudoOriginal.toLowerCase().includes('aeroporto') && 
+        !conteudoOriginal.toLowerCase().includes('voo')) {
+        return resultado;
+    }
     
-    // Corrigir formato "/ (com conexão) horário"
-    resultado = resultado.replace(/(\w+)\s+(\d{2}:\d{2})\s+\/\s+\(com conexão\)\s+(\d{2}:\d{2})/g, 
-        `$1 $2 / ${destinoAeroporto} $3 (com conexão)`);
+    // Remover dias da semana das datas se aparecerem
+    resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|dom),?\s*(\d{2}\/\d{2})/gi, '$1');
     
-    // Corrigir caso contrário também
-    resultado = resultado.replace(/(\w+)\s+(\d{2}:\d{2})\s+\/\s+(\d{2}:\d{2})\s+\(com conexão\)/g, 
-        `$1 $2 / ${destinoAeroporto} $3 (com conexão)`);
+    // Corrigir (+1) apenas quando realmente necessário
+    resultado = resultado.replace(/(\d{2}:\d{2})\s*\+1/g, '$1 (+1)');
     
-    // Remover duplicações de parênteses
-    resultado = resultado.replace(/\(\(([^)]+)\)\)/g, '($1)');
-    resultado = resultado.replace(/\(voo \(voo direto\)\)/g, '(voo direto)');
-    resultado = resultado.replace(/\(\(voo direto\)\)/g, '(voo direto)');
-    resultado = resultado.replace(/\(\(com conexão\)\)/g, '(com conexão)');
+    // Garantir formato correto de voo
+    resultado = resultado.replace(/(\d{2}\/\d{2}) - (\w+) (\d{2}:\d{2}) \/ (\w+) (\d{2}:\d{2})(?:\s*\+1)?\s*\(([^)]+)\)/g, 
+        (match, data, origem, horaOrigem, destino, horaDestino, tipo) => {
+            // Verificar se precisa de (+1)
+            const hora = parseInt(horaDestino.split(':')[0]);
+            const precisaPlus1 = hora <= 8 && destino.toLowerCase().includes('guarulhos');
+            
+            if (precisaPlus1) {
+                return `${data} - ${origem} ${horaOrigem} / ${destino} ${horaDestino} (+1) (${tipo})`;
+            } else {
+                return `${data} - ${origem} ${horaOrigem} / ${destino} ${horaDestino} (${tipo})`;
+            }
+        });
     
-    // IMPORTANTE: Sempre usar "conexão" e nunca "escala"
-    resultado = resultado.replace(/uma escala em/gi, 'com conexão em');
-    resultado = resultado.replace(/\(uma escala/gi, '(com conexão');
-    resultado = resultado.replace(/Uma escala/gi, '(com conexão)');
-    resultado = resultado.replace(/com escala/gi, 'com conexão');
-    resultado = resultado.replace(/escala em/gi, 'conexão em');
-    
-    // Corrigir "direto" para "voo direto"
+    // Corrigir tipos de voo
+    resultado = resultado.replace(/uma escala/gi, 'com conexão');
+    resultado = resultado.replace(/duas escalas/gi, 'com múltiplas conexões');
     resultado = resultado.replace(/\(direto\)/g, '(voo direto)');
+    resultado = resultado.replace(/\(voo\s+voo direto\)/g, '(voo direto)');
+    
+    // Remover duplicações
+    resultado = resultado.replace(/\(\(([^)]+)\)\)/g, '($1)');
     
     return resultado;
 }
 
-function corrigirLinks(texto) {
+function corrigirLinks(texto, dados) {
+    let resultado = texto;
+    
     // Converter markdown links para links diretos
-    let resultado = texto.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
+    resultado = resultado.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
     
-    // Se ainda houver formato markdown, remover
-    resultado = resultado.replace(/🔗 \[.+\]/g, '');
-    
-    // Remover link genérico se for apenas www.cvc.com.br
+    // Remover links genéricos
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
     
-    // Manter apenas links específicos (com path)
-    resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\n/g, '');
+    // Adicionar links específicos se não existirem
+    if (dados && dados.links && dados.links.length > 0 && !resultado.includes('🔗')) {
+        // Encontrar última linha antes da versão e adicionar primeiro link
+        const linhas = resultado.split('\n');
+        const indiceVersao = linhas.findIndex(linha => linha.includes('Valores sujeitos'));
+        if (indiceVersao > 0) {
+            linhas.splice(indiceVersao, 0, `🔗 ${dados.links[0]}`);
+            resultado = linhas.join('\n');
+        }
+    }
     
     return resultado;
 }
@@ -352,60 +385,27 @@ function corrigirParcelamentoV312(texto, parcelamentoSelecionado, conteudoOrigin
     return resultado;
 }
 
-function corrigirBagagem(texto, conteudoOriginal) {
+// MELHORADA v3.18 - Bagagem mais precisa
+function corrigirBaggagemV318(texto, conteudoOriginal) {
     let resultado = texto;
     const conteudoLower = conteudoOriginal.toLowerCase();
     
-    // Primeiro, remover linhas incorretas
-    resultado = resultado.replace(/✅ Não reembolsável/g, '');
-    resultado = resultado.replace(/✅ Com bagagem e pré-reserva de assento/g, '');
-    
-    // Detectar bagagem e assento separadamente
-    let temBagagem = false;
-    let temAssento = false;
+    // Detectar tipo de bagagem pelo conteúdo
+    let tipoBagagem = REGRAS_BAGAGEM.SEM_DESPACHADA; // padrão
     
     if (conteudoLower.includes('com bagagem') || 
-        conteudoLower.includes('com babagem') ||
-        conteudoLower.includes('bagagem despachada')) {
-        temBagagem = true;
+        conteudoLower.includes('bagagem despachada') ||
+        conteudoLower.includes('mala de até 23kg') ||
+        conteudoLower.includes('bagagens inclusas')) {
+        tipoBagagem = REGRAS_BAGAGEM.COM_DESPACHADA_23KG;
     }
     
-    if (conteudoLower.includes('pre reserva') || 
-        conteudoLower.includes('pré reserva') || 
-        conteudoLower.includes('pré-reserva') ||
-        conteudoLower.includes('marcação de assento')) {
-        temAssento = true;
-    }
+    // Substituir linhas de bagagem existentes
+    resultado = resultado.replace(/✅[^\n]*/g, `✅ ${tipoBagagem}`);
     
-    // Aplicar formato correto de bagagem
-    if (temBagagem) {
-        // Substituir ou adicionar linha de bagagem
-        if (resultado.includes('✅')) {
-            resultado = resultado.replace(/✅[^\n]+/g, '✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG);
-        } else {
-            // Adicionar após o valor/parcelamento
-            resultado = resultado.replace(/(💳[^\n]+|💰[^\n]+)(\n|$)/, (match, linha) => {
-                if (linha.includes('💳')) {
-                    return linha + '\n✅ ' + REGRAS_BAGAGEM.COM_DESPACHADA_23KG;
-                } else {
-                    return linha + '\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA;
-                }
-            });
-        }
-    } else {
-        // Sem bagagem despachada
-        if (resultado.includes('✅')) {
-            resultado = resultado.replace(/✅[^\n]+/g, '✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA);
-        } else {
-            resultado = resultado.replace(/(💳[^\n]+|💰[^\n]+)(\n|$)/, (match, linha) => {
-                return linha + '\n✅ ' + REGRAS_BAGAGEM.SEM_DESPACHADA;
-            });
-        }
-    }
-    
-    // Adicionar assento se necessário
-    if (temAssento && !resultado.includes('💺')) {
-        resultado = resultado.replace(/(✅[^\n]+)(\n|$)/, '$1\n💺 Inclui pré reserva de assento');
+    // Se não tem linha de bagagem, adicionar após valor/parcelamento
+    if (!resultado.includes('✅')) {
+        resultado = resultado.replace(/(💰[^\n]+|💳[^\n]+)(\n|$)/, `$1\n✅ ${tipoBagagem}\n`);
     }
     
     return resultado;
