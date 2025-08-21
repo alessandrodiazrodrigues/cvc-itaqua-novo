@@ -79,7 +79,7 @@ function extrairParcelamentoComEntrada(texto) {
     
     console.log('🔍 Buscando parcelamento com entrada...');
     
-    // Padrões de parcelamento com entrada
+    // Padrões de parcelamento com entrada - EXPANDIDOS
     const padroes = [
         // "Entrada de R$ 1.162,10 + 5x de R$ 478,60"
         /entrada\s+de\s+r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+r\$\s*([\d.,]+)/gi,
@@ -88,7 +88,16 @@ function extrairParcelamentoComEntrada(texto) {
         // "Primeira parcela R$ 1.162,10 + 5x R$ 478,60"
         /primeira\s+parcela\s+r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+r\$\s*([\d.,]+)/gi,
         // "1ª parcela R$ 1.162,10 + 5x R$ 478,60"
-        /1[ªº]\s+parcela\s+r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+r\$\s*([\d.,]+)/gi
+        /1[ªº]\s+parcela\s+r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+r\$\s*([\d.,]+)/gi,
+        // NOVOS PADRÕES ADICIONADOS:
+        // "Entrada de R$ 8.822,07 + 4x de R$ 5.144,23 s/ juros"
+        /entrada\s+de\s+r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+r\$\s*([\d.,]+)\s+s\/\s+juros/gi,
+        // "R$ 8.822,07 + 4x de R$ 5.144,23 s/ juros c/ taxa"
+        /r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+r\$\s*([\d.,]+)\s+s\/\s+juros/gi,
+        // "R$ 8.822,07 + 4x de R$ 5.144,23"
+        /r\$\s*([\d.,]+)\s*\+\s*(\d+)x\s+de\s+r\$\s*([\d.,]+)/gi,
+        // Padrão mais flexível para capturar variações
+        /([\d.,]+)\s*\+\s*(\d+)x\s+de\s+r?\$?\s*([\d.,]+)/gi
     ];
     
     for (const padrao of padroes) {
