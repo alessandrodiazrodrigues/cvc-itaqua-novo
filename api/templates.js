@@ -1,9 +1,9 @@
-// api/templates.js - CVC ITAQUA v3.18
+// api/templates.js - CVC ITAQUA v3.19
 // ARQUIVO 1: TEMPLATES E CONSTANTES
 // ================================================================================
 
 export const CONFIG = {
-    VERSION: '3.18',
+    VERSION: '3.19',
     SISTEMA: 'CVC ITAQUA'
 };
 
@@ -58,7 +58,7 @@ export const AEROPORTOS = {
     'ZRH': 'Zurique', 
     'VIE': 'Viena',
     
-    // Internacional - Américas
+    // Internacional - Américas e outros
     'JFK': 'Nova York JFK', 
     'MIA': 'Miami', 
     'LAX': 'Los Angeles', 
