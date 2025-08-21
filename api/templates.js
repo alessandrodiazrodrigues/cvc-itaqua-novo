@@ -1,9 +1,9 @@
-// api/templates.js - CVC ITAQUA v3.12
+// api/templates.js - CVC ITAQUA v3.18
 // ARQUIVO 1: TEMPLATES E CONSTANTES
 // ================================================================================
 
 export const CONFIG = {
-    VERSION: '3.12',
+    VERSION: '3.18',
     SISTEMA: 'CVC ITAQUA'
 };
 
@@ -66,7 +66,10 @@ export const AEROPORTOS = {
     'LAS': 'Las Vegas',
     'CUN': 'Cancún', 
     'MEX': 'Cidade do México', 
+    // Internacional - Adicionais para busca online
+    'BOG': 'Bogotá',
     'PTY': 'Panamá',
+    'SAL': 'San Salvador',
     'EZE': 'Ezeiza',
     'AEP': 'Aeroparque',
     'SCL': 'Santiago', 
