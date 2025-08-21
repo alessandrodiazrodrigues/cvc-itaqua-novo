@@ -1,5 +1,49 @@
 // api/processors/format-processor.js - PROCESSADOR DE FORMATAÇÃO FINAL v4.0
 // ================================================================================
+// ✈️ CORREÇÃO DE TIPOS DE VOO
+// ================================================================================
+
+function corrigirTiposVoo(texto) {
+    let resultado = texto;
+    
+    console.log('✈️ Corrigindo tipos de voo...');
+    
+    // Correções de tipos de voo
+    const correcoes = [
+        // "Uma escala" → "(com conexão)"
+        { pattern: /\(uma escala\)/gi, replacement: '(com conexão)' },
+        // "Duas escalas" → "(com múltiplas conexões)"
+        { pattern: /\(duas escalas\)/gi, replacement: '(com múltiplas conexões)' },
+        // "Voo direto" → "(voo direto)"
+        { pattern: /\(direto\)/gi, replacement: '(voo direto)' },
+        // Corrigir duplicações
+        { pattern: /\(voo\s+voo direto\)/gi, replacement: '(voo direto)' },
+        // Múltiplas escalas variações
+        { pattern: /\(três escalas\)/gi, replacement: '(com múltiplas conexões)' },
+        { pattern: /\(várias escalas\)/gi, replacement: '(com múltiplas conexões)' },
+        // Sem parênteses para com parênteses
+        { pattern: /uma escala(?!\))/gi, replacement: '(com conexão)' },
+        { pattern: /duas escalas(?!\))/gi, replacement: '(com múltiplas conexões)' }
+    ];
+    
+    let alteracoes = 0;
+    for (const { pattern, replacement } of correcoes) {
+        const antes = resultado;
+        resultado = resultado.replace(pattern, replacement);
+        if (resultado !== antes) {
+            alteracoes++;
+            console.log(`✈️ Aplicado: ${replacement}`);
+        }
+    }
+    
+    if (alteracoes === 0) {
+        console.log('✈️ Nenhuma correção de tipo de voo necessária');
+    }
+    
+    return resultado;
+}
+
+// ================================================================================
 // 🔧 FORMATAÇÃO FINAL, VERSÃO E LIMPEZA GERAL
 // 🎯 Regra: (+1) apenas volta Orlando ≤ 08h | Versão v4.0 | Limpeza final
 // ================================================================================
