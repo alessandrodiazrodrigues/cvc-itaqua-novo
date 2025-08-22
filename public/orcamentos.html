@@ -455,6 +455,48 @@
             .checkbox-group { grid-template-columns: 1fr; }
             .cost-card { margin: 10px 0; }
         }
+        
+        /* RODAPÉ DA API */
+        .api-footer {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-top: 2px solid #dee2e6;
+            padding: 15px 0;
+            margin-top: 20px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .footer-info, .footer-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .footer-info i {
+            color: var(--cvc-azul);
+        }
+        
+        #statusIcon.online {
+            color: #28a745;
+            animation: pulse-green 2s infinite;
+        }
+        
+        #statusIcon.offline {
+            color: #dc3545;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @media (max-width: 768px) {
+            .api-footer .text-end {
+                text-align: left !important;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -736,6 +778,26 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Rodapé com Versão da API -->
+            <div class="api-footer">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="footer-info">
+                                <i class="fas fa-code"></i>
+                                <span id="apiVersion">Carregando versão da API...</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="footer-status">
+                                <i class="fas fa-circle" id="statusIcon"></i>
+                                <span id="statusText">Verificando status...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -770,6 +832,7 @@
             setupCheckboxesClicaveis();
             setupCamposCriancas();
             atualizarDisplayCustos();
+            verificarVersaoAPI();
             
             console.log('✅ CVC Itaqua v2.0 carregado e pronto!');
         });
@@ -1300,6 +1363,61 @@
         }
         
         // ================================================================================
+        // 🔍 VERIFICAÇÃO DE VERSÃO DA API
+        // ================================================================================
+        
+        async function verificarVersaoAPI() {
+            try {
+                console.log('🔍 Verificando versão da API...');
+                
+                const response = await fetch('/api/ai-google', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Atualizar informações da versão
+                    const versionElement = document.getElementById('apiVersion');
+                    const statusIcon = document.getElementById('statusIcon');
+                    const statusText = document.getElementById('statusText');
+                    
+                    if (data.version) {
+                        versionElement.textContent = `API CVC Itaqua v${data.version}`;
+                    } else {
+                        versionElement.textContent = 'API CVC Itaqua';
+                    }
+                    
+                    // Status online
+                    statusIcon.className = 'fas fa-circle online';
+                    statusText.textContent = 'Operacional';
+                    statusText.style.color = '#28a745';
+                    
+                    console.log(`✅ API v${data.version || 'N/A'} - Operacional`);
+                    
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar API:', error);
+                
+                // Status offline
+                const versionElement = document.getElementById('apiVersion');
+                const statusIcon = document.getElementById('statusIcon');
+                const statusText = document.getElementById('statusText');
+                
+                versionElement.textContent = 'API CVC Itaqua';
+                statusIcon.className = 'fas fa-circle offline';
+                statusText.textContent = 'Offline';
+                statusText.style.color = '#dc3545';
+            }
+        }
+        
+        // ================================================================================
         // 🎯 LOG FINAL
         // ================================================================================
         
@@ -1313,6 +1431,7 @@
         console.log("- ✅ Dicas e Rankings usando o manual");
         console.log("- ✅ Sistema super simplificado");
         console.log("- ✅ Apenas 140 linhas no backend!");
+        console.log("- ✅ Verificação automática de versão da API!");
     </script>
 </body>
 </html>
