@@ -1,7 +1,7 @@
 // ================================================================================================
-// 🏢 CVC ITAQUA v4.02 - API CONSOLIDADA COMPLETA + CORREÇÕES v4.02
+// 🏢 CVC ITAQUA v4.03 - API CONSOLIDADA COMPLETA + CORREÇÕES v4.03
 // ================================================================================================
-// VERSÃO COMPLETA COM TODAS AS FUNCIONALIDADES + CORREÇÕES ESPECÍFICAS v4.02
+// VERSÃO COMPLETA COM TODAS AS FUNCIONALIDADES + CORREÇÕES ESPECÍFICAS v4.03
 // - TODOS os 11 templates do manual v4.0
 // - Detecção inteligente automática
 // - Processamento de imagens e PDFs
@@ -12,21 +12,23 @@
 // - Títulos sempre com cidades CORRIGIDOS v4.02
 // - Ranking de hotéis FUNCIONAL v4.02
 // - Dicas de cruzeiro específicas v4.02
-// - Cruzeiro sempre inclui taxas v4.02
+// - CRUZEIRO CORRIGIDO v4.03: Sem bagagem, formato cabines correto, taxas incluídas
+// - DICAS CORRIGIDAS v4.03: Estado global funcional, detecção automática de destino
 // ================================================================================================
 
 const CONFIG = {
-    VERSION: '4.02',
+    VERSION: '4.03',
     SISTEMA: 'CVC ITAQUA',
     MAX_TOKENS: 3000,
     TIMEOUT: 30000
 };
 
-// Estado global para lembrar último destino (para ranking/dicas) - v4.02
+// Estado global para lembrar último destino (para ranking/dicas) - CORRIGIDO v4.03
 let ESTADO_GLOBAL = {
     ultimoDestino: '',
     ultimoOrcamento: '',
-    ultimoTipo: ''
+    ultimoTipo: '',
+    ultimoConteudo: ''
 };
 
 // ================================================================================================
@@ -136,7 +138,7 @@ const TEMPLATES = {
 ✅ {bagagem}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -167,7 +169,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.02)`,
 ✅ Cancelamento/alteração com multas
 💳 {parcelamento2}
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -196,7 +198,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.02)`,
 ✅ Reembolsável conforme regras do bilhete
 ✅ Marcação de assento
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const opcoes = (conteudo.match(/opção\s*\d+|plano\s*\d+/gi) || []).length;
@@ -216,7 +218,7 @@ Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa
 
 ⚠️ Passagem somente de ida - sem retorno incluído
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -247,7 +249,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.02)`,
 ✅ {bagagem}
 🏷️ {reembolso}
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -284,7 +286,7 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 💰 R$ {valor3} total
 
 💳 {parcelamento}
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -331,7 +333,7 @@ Pacote para {passageiros}
 🛏️ {tipo_quarto3} com {regime3}
 💰 R$ {valor3} para {passageiros}
 
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
@@ -344,11 +346,11 @@ Valores sujeitos a confirmação e disponibilidade (v4.02)`,
         }
     },
 
-    // 🚢 8. CRUZEIRO
+    // 🚢 8. CRUZEIRO - CORRIGIDO v4.03
     CRUZEIRO: {
         template: `🚢 *Cruzeiro {nome_navio}* – {duracao} noites
 {passageiros}
-📅 Embarque: {data_embarque} ({dia_semana})
+📅 Embarque: {data_embarque}
 📍 Saída e chegada: {porto}
 🌊 {roteiro}
 
@@ -358,7 +360,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.02)`,
 🛏 Opções de Cabines:
 {opcoes_cabines}
 
-✅ Inclui: hospedagem a bordo, pensão completa, taxas
+✅ Inclui: hospedagem a bordo, pensão completa, taxas e impostos
 🚫 Não inclui: bebidas, excursões
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
@@ -500,7 +502,7 @@ Oferecemos reservas em todos esses hotéis, traslados exclusivos e pacotes perso
 💳 {parcelamento2}
 
 🏷️ {reembolso}
-Valores sujeitos a confirmação e disponibilidade (v4.02)`,
+Valores sujeitos a confirmação e disponibilidade (v4.03)`,
         
         detectar: (conteudo) => {
             const companhias = (conteudo.match(/(?:Copa|Latam|Avianca|Gol|Azul|Tap|Iberia|American|United|Delta|Air France|KLM|Lufthansa)/gi) || []);
@@ -609,6 +611,51 @@ Os navios Costa oferecem o melhor da hospitalidade italiana em alto mar, com des
 🎁 *PRODUTOS CVC:*
 Oferecemos pacotes de bebidas italianas, excursões exclusivas, transfer e **seguro viagem europeu**. Consulte nossos especialistas!`
 };
+
+// ================================================================================================
+// FUNÇÃO PARA EXTRAIR DESTINO AUTOMATICAMENTE - CORRIGIDA v4.03
+// ================================================================================================
+
+function extrairDestinoAutomatico(conteudo) {
+    try {
+        console.log('🔍 v4.03: Extraindo destino automaticamente...');
+        
+        const conteudoLower = conteudo.toLowerCase();
+        
+        // 1. Destinos prioritários - Brasil (cruzeiros)
+        const destinosBrasil = [
+            'Santos', 'Rio de Janeiro', 'Salvador', 'Recife', 'Fortaleza', 
+            'Maceió', 'Natal', 'Porto Seguro', 'Ilha Grande', 'Búzios'
+        ];
+        
+        // 2. Destinos internacionais
+        const destinosInternacionais = [
+            'Orlando', 'Miami', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 
+            'Paris', 'Roma', 'Londres', 'Cancún', 'Buenos Aires', 'Santiago'
+        ];
+        
+        // 3. Procurar destinos na ordem de prioridade
+        for (const destino of [...destinosBrasil, ...destinosInternacionais]) {
+            if (conteudo.includes(destino)) {
+                console.log(`✅ v4.03: Destino encontrado automaticamente: ${destino}`);
+                return destino;
+            }
+        }
+        
+        // 4. Para cruzeiros, priorizar "Santos" se não encontrar nada
+        if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('msc')) {
+            console.log(`✅ v4.03: Cruzeiro detectado - usando destino padrão: Santos`);
+            return 'Santos';
+        }
+        
+        console.log(`⚠️ v4.03: Nenhum destino encontrado automaticamente`);
+        return null;
+        
+    } catch (error) {
+        console.error('❌ v4.03: Erro ao extrair destino:', error);
+        return null;
+    }
+}
 
 // ================================================================================================
 // DETECÇÃO INTELIGENTE DE PRODUTOS
@@ -738,7 +785,17 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
                 matchPassageiros = conteudoPrincipal.match(/(\d+)\s*Adultos?,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?/i);
             }
             
-            if (matchPassageiros) {
+            // Para cruzeiros, detectar formato específico - CORRIGIDO v4.03
+            if (!matchPassageiros && dados.ehCruzeiro) {
+                const passageiroMatch = conteudoPrincipal.match(/(\d+)\s*Passageiros?/i);
+                if (passageiroMatch) {
+                    const numPassageiros = parseInt(passageiroMatch[1]);
+                    dados.passageiros = `${String(numPassageiros).padStart(2, '0')} passageiro${numPassageiros > 1 ? 's' : ''}`;
+                    console.log(`✅ Passageiros CRUZEIRO (TEXTO): ${dados.passageiros}`);
+                }
+            }
+            
+            if (matchPassageiros && !dados.passageiros) {
                 const adultos = parseInt(matchPassageiros[1]) || 1;
                 const bebes = parseInt(matchPassageiros[2] || matchPassageiros[5]) || 0;
                 const criancas = parseInt(matchPassageiros[3] || matchPassageiros[4] || matchPassageiros[6]) || 0;
@@ -754,17 +811,27 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
             }
         }
         
+        // 🥉 PRIORIDADE 3: DESTINO AUTOMÁTICO (se não tiver no HTML nem no texto específico)
         if (!dados.destino) {
             console.log('📋 Extraindo destino do texto...');
-            // Extrair destino do texto
+            
+            // Primeiro, procurar destinos explícitos no texto
             const destinos = ['Orlando', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
                              'Londres', 'Miami', 'Cancún', 'Buenos Aires', 'Santiago',
-                             'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal', 'Porto Seguro'];
+                             'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal', 'Porto Seguro', 'Santos'];
             for (const destino of destinos) {
                 if (conteudoPrincipal.includes(destino)) {
                     dados.destino = destino;
                     console.log(`✅ Destino (TEXTO): ${dados.destino}`);
                     break;
+                }
+            }
+            
+            // Se ainda não encontrou, usar extração automática
+            if (!dados.destino) {
+                dados.destino = extrairDestinoAutomatico(conteudoPrincipal);
+                if (dados.destino) {
+                    console.log(`✅ Destino (AUTOMÁTICO): ${dados.destino}`);
                 }
             }
         }
@@ -774,17 +841,21 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
         const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase()))];
         dados.multiplas = companhiasUnicas.length >= 2;
         
-        // Detectar bagagem despachada
-        dados.temBagagem = conteudoLower.includes('com bagagem') || 
-                          conteudoLower.includes('bagagem despachada') ||
-                          conteudoLower.includes('bagagens inclusas') ||
-                          conteudoLower.includes('mala de até 23kg');
+        // Detectar bagagem despachada - NÃO APLICAR PARA CRUZEIROS v4.03
+        if (!dados.ehCruzeiro) {
+            dados.temBagagem = conteudoLower.includes('com bagagem') || 
+                              conteudoLower.includes('bagagem despachada') ||
+                              conteudoLower.includes('bagagens inclusas') ||
+                              conteudoLower.includes('mala de até 23kg');
+        }
         
-        // Detectar pré-reserva de assento
-        dados.temAssento = conteudoLower.includes('pré-reserva de assento') ||
-                          conteudoLower.includes('pre reserva de assento') ||
-                          conteudoLower.includes('pré reserva de assento') ||
-                          conteudoLower.includes('marcação de assento');
+        // Detectar pré-reserva de assento - NÃO APLICAR PARA CRUZEIROS v4.03
+        if (!dados.ehCruzeiro) {
+            dados.temAssento = conteudoLower.includes('pré-reserva de assento') ||
+                              conteudoLower.includes('pre reserva de assento') ||
+                              conteudoLower.includes('pré reserva de assento') ||
+                              conteudoLower.includes('marcação de assento');
+        }
         
         // Extrair parcelamento com entrada
         const matchParcelamento = conteudoPrincipal.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
@@ -804,22 +875,28 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
         console.error('❌ Erro ao extrair dados:', error);
     }
     
-    console.log('📊 Dados extraídos FINAIS (com prioridade HTML):', dados);
+    console.log('📊 Dados extraídos FINAIS v4.03 (com prioridade HTML):', dados);
     return dados;
 }
 
 // ================================================================================================
-// PÓS-PROCESSAMENTO COMPLETO v4.02
+// PÓS-PROCESSAMENTO COMPLETO v4.03
 // ================================================================================================
 
 function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado, dadosFormularioHTML = {}) {
     try {
-        console.log('🔧 Iniciando pós-processamento v4.02...');
+        console.log('🔧 Iniciando pós-processamento v4.03...');
         
         let resultado = texto;
         
         // Extrair dados primeiro (com prioridade HTML)
         const dados = extrairDadosCompletos(conteudoOriginal, dadosFormularioHTML);
+        
+        // CRUZEIRO: Processamento específico v4.03
+        if (dados.ehCruzeiro) {
+            resultado = processarCruzeiro(resultado, dados);
+            return resultado;
+        }
         
         // Se é hotel, aplicar processamento específico
         if (dados.ehHotel) {
@@ -845,13 +922,97 @@ function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado, dadosFor
         resultado = garantirVersao(resultado);
         resultado = limparFormatacao(resultado);
         
-        console.log('✅ Pós-processamento v4.02 completo');
+        console.log('✅ Pós-processamento v4.03 completo');
         return resultado;
         
     } catch (error) {
         console.error('❌ Erro no pós-processamento:', error);
         return texto;
     }
+}
+
+// ================================================================================================
+// PROCESSAMENTO ESPECÍFICO PARA CRUZEIROS v4.03
+// ================================================================================================
+
+function processarCruzeiro(texto, dados) {
+    console.log('🚢 v4.03: Processando cruzeiro...');
+    
+    let resultado = texto;
+    
+    // 1. REMOVER BAGAGEM - Cruzeiro não tem bagagem aérea
+    resultado = resultado.replace(/✅[^\n]*bagagem[^\n]*\n/gi, '');
+    resultado = resultado.replace(/\n✅[^\n]*bagagem[^\n]*/gi, '');
+    resultado = resultado.replace(/✅[^\n]*mala[^\n]*\n/gi, '');
+    resultado = resultado.replace(/\n✅[^\n]*mala[^\n]*/gi, '');
+    
+    // 2. REMOVER REEMBOLSO - Não se aplica a cruzeiros
+    resultado = resultado.replace(/🏷️[^\n]*\n/g, '');
+    resultado = resultado.replace(/\n🏷️[^\n]*/g, '');
+    
+    // 3. CORRIGIR FORMATO DAS CABINES
+    const linhas = resultado.split('\n');
+    const novasLinhas = [];
+    let dentroOpcoesCapines = false;
+    
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i];
+        
+        if (linha.includes('Opções de Cabines:')) {
+            novasLinhas.push(linha);
+            dentroOpcoesCapines = true;
+            continue;
+        }
+        
+        if (dentroOpcoesCapines) {
+            // Se encontrar uma linha que claramente não é de cabine, parar
+            if (linha.includes('✅') || linha.includes('🚫') || linha.includes('📲') || linha.includes('Valores sujeitos')) {
+                dentroOpcoesCapines = false;
+                novasLinhas.push(linha);
+                continue;
+            }
+            
+            // Processar linha de cabine
+            if (linha.trim() && !linha.includes(':') && linha.includes('R$')) {
+                // Formato: "Interna - Bella - IB: R$ 1.129,00 (Passageiro 1)"
+                // Vamos simplificar para: "Interna - Bella - IB: R$ 1.129,00"
+                const linhaMelhorada = linha
+                    .replace(/\(Passageiro \d+\)/g, '')
+                    .replace(/Passageiro \d+/g, '')
+                    .trim();
+                
+                novasLinhas.push(linhaMelhorada);
+            } else if (linha.trim()) {
+                novasLinhas.push(linha);
+            }
+        } else {
+            novasLinhas.push(linha);
+        }
+    }
+    
+    resultado = novasLinhas.join('\n');
+    
+    // 4. GARANTIR TAXAS INCLUÍDAS
+    if (resultado.includes('✅ Inclui:')) {
+        resultado = resultado.replace(/✅ Inclui: ([^\n]+)/g, '✅ Inclui: hospedagem a bordo, pensão completa, taxas e impostos');
+    }
+    
+    // 5. REMOVER "Total a pagar" da linha de cabines e colocar no final
+    const matchTotal = resultado.match(/Total a pagar[:\s]*R\$\s*([\d.,]+)/i);
+    if (matchTotal) {
+        const valorTotal = matchTotal[1];
+        // Remover a linha "Total a pagar" de onde estiver
+        resultado = resultado.replace(/[^\n]*Total a pagar[^\n]*\n?/gi, '');
+        
+        // Adicionar no final, antes de "📲"
+        resultado = resultado.replace(/📲/, `💰 Total a pagar: R$ ${valorTotal} (incluindo taxas)\n\n📲`);
+    }
+    
+    // 6. Garantir versão correta
+    resultado = resultado.replace(/\(v[\d.]+\)/g, `(v${CONFIG.VERSION})`);
+    
+    console.log('✅ v4.03: Cruzeiro processado - bagagem removida, formato cabines corrigido');
+    return resultado;
 }
 
 function processarHotel(texto, dados) {
@@ -1106,7 +1267,7 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, dados) {
                 
                 const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                 
-                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\            // Se é a segunda opção e não tem "Preferencial" = ⭐');
                 const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
                 resultado = resultado.replace(regex, (match, antes) => {
                     return `${antes}\n${linhaParcelamento}`;
@@ -1126,6 +1287,12 @@ function corrigirBagagem(texto, dados) {
     let resultado = texto;
     
     console.log('✅ Corrigindo bagagem. Tem bagagem:', dados.temBagagem);
+    
+    // NÃO APLICAR BAGAGEM PARA CRUZEIROS v4.03
+    if (dados.ehCruzeiro) {
+        console.log('🚢 v4.03: Pulando bagagem para cruzeiro');
+        return resultado;
+    }
     
     let tipoBagagem;
     if (dados.temBagagem) {
@@ -1148,6 +1315,12 @@ function corrigirAssento(texto, dados) {
     
     console.log('💺 Corrigindo assento. Tem assento:', dados.temAssento);
     
+    // NÃO APLICAR ASSENTO PARA CRUZEIROS v4.03
+    if (dados.ehCruzeiro) {
+        console.log('🚢 v4.03: Pulando assento para cruzeiro');
+        return resultado;
+    }
+    
     if (dados.temAssento && !resultado.includes('💺')) {
         resultado = resultado.replace(/(✅[^\n]+)(\n|$)/, '$1\n💺 Inclui pré reserva de assento\n');
     } else if (!dados.temAssento) {
@@ -1161,6 +1334,12 @@ function corrigirAssento(texto, dados) {
 function corrigirReembolso(texto, conteudoOriginal) {
     let resultado = texto;
     const conteudoLower = conteudoOriginal.toLowerCase();
+    
+    // NÃO APLICAR REEMBOLSO PARA CRUZEIROS v4.03
+    if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('msc')) {
+        console.log('🚢 v4.03: Pulando reembolso para cruzeiro');
+        return resultado;
+    }
     
     let tipoReembolso = 'Não reembolsável';
     
@@ -1289,7 +1468,7 @@ function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehI
     // 🥇 PRIORIDADE HTML: Usar destino do formulário se disponível
     const destinoFinal = dadosFormularioHTML.destino || destino || ESTADO_GLOBAL.ultimoDestino || 'Orlando';
     
-    // DICAS ESPECÍFICAS
+    // DICAS ESPECÍFICAS - CORRIGIDO v4.03
     if (tipoOrcamento === 'DICAS') {
         // CORREÇÃO v4.02: Detectar se é cruzeiro para usar template específico
         if (conteudoPrincipal.toLowerCase().includes('cruzeiro') || 
@@ -1300,13 +1479,25 @@ function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehI
             return TEMPLATES_DICAS_CRUZEIRO[tipoNavio];
         }
         
+        // v4.03: MELHORAR DESTINO PARA DICAS
+        let destinoParaDicas = destinoFinal;
+        
+        // Se não tem destino definido, tentar extrair do último conteúdo processado
+        if (!destinoParaDicas || destinoParaDicas === 'Orlando') {
+            const destinoExtraido = extrairDestinoAutomatico(ESTADO_GLOBAL.ultimoConteudo || conteudoPrincipal);
+            if (destinoExtraido) {
+                destinoParaDicas = destinoExtraido;
+                console.log(`🎯 v4.03: Destino para dicas extraído: ${destinoParaDicas}`);
+            }
+        }
+        
         return `
-Gere dicas de viagem ESPECÍFICAS para ${destinoFinal}.
+Gere dicas de viagem ESPECÍFICAS para ${destinoParaDicas}.
 
 Use EXATAMENTE este formato:
 
 ━━━━━━━━━━━━━━━━━━
-💡 *DICAS PARA ${destinoFinal.toUpperCase()}*
+💡 *DICAS PARA ${destinoParaDicas.toUpperCase()}*
 ━━━━━━━━━━━━━━━━━━
 
 🌟 *Sobre o destino*
@@ -1327,7 +1518,6 @@ Use EXATAMENTE este formato:
 🍽️ *GASTRONOMIA:*
 • Pratos típicos: [pratos locais]
 • Preço médio refeição: R$ XX
-• Dica: [restaurante ou região específica]
 
 💰 *CUSTOS MÉDIOS:*
 • Transporte público: R$ XX
@@ -1346,28 +1536,40 @@ Use EXATAMENTE este formato:
 🎁 *PRODUTOS CVC:*
 Oferecemos passeios guiados, traslados confortáveis, seguro viagem completo e chip internacional. Consulte nossos especialistas!
 
-Seja ESPECÍFICO para ${destinoFinal}, não genérico.`;
+Seja ESPECÍFICO para ${destinoParaDicas}, não genérico.`;
     }
     
-    // RANKING DE HOTÉIS
+    // RANKING DE HOTÉIS - CORRIGIDO v4.03
     if (tipoOrcamento === 'RANKING_HOTEIS') {
+        // v4.03: MELHORAR DESTINO PARA RANKING
+        let destinoParaRanking = destinoFinal;
+        
+        // Se não tem destino definido, tentar extrair do último conteúdo processado
+        if (!destinoParaRanking || destinoParaRanking === 'Orlando') {
+            const destinoExtraido = extrairDestinoAutomatico(ESTADO_GLOBAL.ultimoConteudo || conteudoPrincipal);
+            if (destinoExtraido) {
+                destinoParaRanking = destinoExtraido;
+                console.log(`🎯 v4.03: Destino para ranking extraído: ${destinoParaRanking}`);
+            }
+        }
+        
         return `
-Gere um ranking ESPECÍFICO de hotéis para ${destinoFinal}.
+Gere um ranking ESPECÍFICO de hotéis para ${destinoParaRanking}.
 
 Use EXATAMENTE este formato:
 
-🏆 *RANKING DE HOTÉIS - ${destinoFinal.toUpperCase()}*
+🏆 *RANKING DE HOTÉIS - ${destinoParaRanking.toUpperCase()}*
 ━━━━━━━━━━━━━━━━━━
 
 ⭐⭐⭐⭐⭐ *CATEGORIA LUXO*
 
-🥇 *1º - [Nome Hotel Luxo Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥇 *1º - [Nome Hotel Luxo Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
-🥈 *2º - [Nome Hotel Luxo Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥈 *2º - [Nome Hotel Luxo Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
@@ -1375,13 +1577,13 @@ Use EXATAMENTE este formato:
 
 ⭐⭐⭐⭐ *CATEGORIA SUPERIOR*
 
-🥇 *1º - [Nome Hotel Superior Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥇 *1º - [Nome Hotel Superior Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
-🥈 *2º - [Nome Hotel Superior Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥈 *2º - [Nome Hotel Superior Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
@@ -1389,24 +1591,24 @@ Use EXATAMENTE este formato:
 
 ⭐⭐⭐ *CATEGORIA ECONÔMICA*
 
-🥇 *1º - [Nome Hotel Econômico Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥇 *1º - [Nome Hotel Econômico Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
-🥈 *2º - [Nome Hotel Econômico Real de ${destinoFinal}]*
-📍 [Localização específica de ${destinoFinal}]
+🥈 *2º - [Nome Hotel Econômico Real de ${destinoParaRanking}]*
+📍 [Localização específica de ${destinoParaRanking}]
 💰 Diária média: R$ [valor real]
 ✨ [Diferencial específico]
 
 ━━━━━━━━━━━━━━━━━━
 
-📌 *DICA:* [Dica específica sobre escolha de hotel em ${destinoFinal}]
+📌 *DICA:* [Dica específica sobre escolha de hotel em ${destinoParaRanking}]
 
 🎁 *PRODUTOS CVC:*
 Oferecemos reservas em todos esses hotéis, traslados exclusivos e pacotes personalizados. Consulte nossos especialistas!
 
-⚠️ IMPORTANTE: Use hotéis REAIS que existem em ${destinoFinal}, não inventados.`;
+⚠️ IMPORTANTE: Use hotéis REAIS que existem em ${destinoParaRanking}, não inventados.`;
     }
     
     // HOTÉIS (SEM VOO)
@@ -1425,7 +1627,7 @@ PASSAGEIROS: ${passageiros}
 TEMPLATE HOTEL:
 ${template}
 
-REGRAS ESPECÍFICAS v4.02:
+REGRAS ESPECÍFICAS v4.03:
 - NÃO adicionar voos ou aeroportos
 - Usar formato de hotel: *Hotéis em {destino}*
 - Período: {data_entrada} a {data_saida}
@@ -1437,10 +1639,10 @@ REGRAS ESPECÍFICAS v4.02:
 - CATEGORIAS v4.02: Se contém "Preferencial" = ⭐ Preferencial
 - Se é segunda opção sem "Preferencial" = ⭐ Recomendado  
 - Demais = ⭐⭐⭐
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.02)`;
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.03)`;
     }
     
-    // CRUZEIRO
+    // CRUZEIRO - CORRIGIDO v4.03
     if (tipoOrcamento === 'CRUZEIRO') {
         return `
 Formate este orçamento de CRUZEIRO para WhatsApp.
@@ -1448,14 +1650,15 @@ Formate este orçamento de CRUZEIRO para WhatsApp.
 CONTEÚDO:
 ${conteudoPrincipal}
 
-REGRAS ESPECÍFICAS CRUZEIRO v4.02:
+REGRAS ESPECÍFICAS CRUZEIRO v4.03:
 - SEMPRE detectar o número correto de passageiros do texto
-- CORREÇÃO v4.02: SEMPRE incluir "✅ Inclui: hospedagem a bordo, pensão completa, taxas"
-- NUNCA escrever "Não inclui taxas" para cruzeiros
+- CORREÇÃO v4.03: NUNCA incluir bagagem ou reembolso (não se aplica a cruzeiros)
+- SEMPRE incluir "✅ Inclui: hospedagem a bordo, pensão completa, taxas e impostos"
+- CORREÇÃO v4.03: Formato das cabines: "Tipo - Nome - Código: R$ valor" (sem "Passageiro X")
 - Se tem roteiro detalhado, incluir as paradas
-- Formato de cabines: Nome - Categoria - Código: R$ valor
 - Use o template de cruzeiro correto
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.02)
+- CORREÇÃO v4.03: Total final separado e destacado
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.03)
 
 TEMPLATE CRUZEIRO:
 🚢 *Cruzeiro {nome_navio}* – {duracao} noites
@@ -1470,8 +1673,10 @@ TEMPLATE CRUZEIRO:
 🛏 Opções de Cabines:
 {opcoes_cabines}
 
-✅ Inclui: hospedagem a bordo, pensão completa, taxas
+✅ Inclui: hospedagem a bordo, pensão completa, taxas e impostos
 🚫 Não inclui: bebidas, excursões
+
+💰 Total a pagar: R$ {valor_total} (incluindo taxas)
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`;
     }
@@ -1481,7 +1686,7 @@ TEMPLATE CRUZEIRO:
         return `
 Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 
-⚠️ REGRAS CRÍTICAS v4.02:
+⚠️ REGRAS CRÍTICAS v4.03:
 1. Use APENAS informações visíveis na imagem
 2. NÃO invente horários, cidades ou detalhes
 3. Mantenha exatamente os horários mostrados
@@ -1491,6 +1696,7 @@ Extraia e formate este orçamento de viagem da imagem para WhatsApp.
 7. NÃO adicione (+1) automaticamente - apenas se mostrar na imagem
 8. CORREÇÃO v4.02: TÍTULO com cidades (*Gol - São Paulo ✈ Porto Seguro*)
 9. CORREÇÃO v4.02: Se for hotel com "Preferencial" = ⭐ Preferencial
+10. CORREÇÃO v4.03: Se for cruzeiro, NÃO incluir bagagem ou reembolso
 
 FORMATO:
 *{Companhia} - {Cidade Origem} ✈ {Cidade Destino}*
@@ -1499,13 +1705,13 @@ FORMATO:
 {Data} - {Aeroporto Destino} {Hora} / {Aeroporto Origem} {Hora} ({tipo voo})
 
 💰 R$ {valor} para {passageiros}
-✅ {bagagem se especificada}
-🏷️ {reembolso}
+✅ {bagagem se especificada - EXCETO cruzeiros}
+🏷️ {reembolso - EXCETO cruzeiros}
 
 REGRAS:
 - Datas: DD/MM (27/01, NÃO "ter, 27/01")
 - Use nomes completos de aeroportos (Guarulhos, não GRU)
-- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.02)`;
+- Termine com: Valores sujeitos a confirmação e disponibilidade (v4.03)`;
     }
     
     // TEMPLATE PADRÃO
@@ -1514,7 +1720,7 @@ REGRAS:
     return `
 Formate este orçamento de viagem para WhatsApp seguindo EXATAMENTE o template.
 
-⚠️ INSTRUÇÕES CRÍTICAS v4.02:
+⚠️ INSTRUÇÕES CRÍTICAS v4.03:
 
 1. Use SOMENTE as informações fornecidas no texto
 2. NÃO INVENTE horários, cidades ou detalhes
@@ -1525,6 +1731,7 @@ Formate este orçamento de viagem para WhatsApp seguindo EXATAMENTE o template.
 7. Detecte "Com bagagem" e "pré-reserva de assento"
 8. CORREÇÃO v4.02: TÍTULO com cidades (*Gol - São Paulo ✈ Porto Seguro*)
 9. CORREÇÃO v4.02: HOTÉIS com categorias (⭐ Preferencial, ⭐ Recomendado, ⭐⭐⭐)
+10. CORREÇÃO v4.03: CRUZEIROS sem bagagem/reembolso
 
 TEXTO ORIGINAL:
 ${conteudoPrincipal}
@@ -1534,7 +1741,7 @@ PASSAGEIROS: ${passageiros}
 TEMPLATE A SEGUIR:
 ${template}
 
-REGRAS ESPECÍFICAS v4.02:
+REGRAS ESPECÍFICAS v4.03:
 - Datas: DD/MM (22/10, NÃO "qua, 22 de outubro")
 - Aeroportos: nomes completos (Porto Seguro, não BPS)
 - "Uma escala" → "(com conexão)"
@@ -1543,11 +1750,12 @@ REGRAS ESPECÍFICAS v4.02:
 - Links: manter formato 🔗 https://...
 - Passageiros: formato "XX adultos + XX crianças + XX bebês"
 - (+1) APENAS para volta Orlando chegada ≤ 08h
-- Bagagem: detectar "Com bagagem" = despachada incluída
-- Assento: detectar "pré-reserva" = incluir linha 💺
-- Reembolso: "Reembolsável" ou "Não reembolsável"
+- Bagagem: detectar "Com bagagem" = despachada incluída (EXCETO cruzeiros)
+- Assento: detectar "pré-reserva" = incluir linha 💺 (EXCETO cruzeiros)
+- Reembolso: "Reembolsável" ou "Não reembolsável" (EXCETO cruzeiros)
 - MÚLTIPLAS OPÇÕES: **OPÇÃO 1 - COMPANHIA** - R$ valor
 - PACOTES: Usar destino correto no título
+- CRUZEIROS: Formato cabines correto, taxas incluídas, sem bagagem/reembolso
 
 ⚠️ CRÍTICO: NÃO INVENTE INFORMAÇÕES - USE APENAS O TEXTO!`;
 }
@@ -1576,16 +1784,16 @@ export default async function handler(req, res) {
                 status: 'operational',
                 version: CONFIG.VERSION,
                 timestamp: new Date().toISOString(),
-                message: `CVC Itaqua API v${CONFIG.VERSION} - COMPLETA com Correções`,
+                message: `CVC Itaqua API v${CONFIG.VERSION} - COMPLETA com Correções CRUZEIRO e DICAS`,
                 templates_disponiveis: Object.keys(TEMPLATES),
                 total_templates: Object.keys(TEMPLATES).length,
                 ultimo_destino: ESTADO_GLOBAL.ultimoDestino || 'nenhum',
-                corrrecoes_v402: [
-                    '🏨 Categorias de hotéis corrigidas (⭐ Preferencial/⭐ Recomendado/⭐⭐⭐)',
-                    '🏙️ Títulos com cidades corrigidos (São Paulo, não Congonhas)',
-                    '🎯 Ranking de hotéis funcional (usa último destino)',
-                    '💡 Dicas de cruzeiro específicas (MSC/Costa)',
-                    '🚢 Cruzeiro sempre inclui taxas'
+                corrrecoes_v403: [
+                    '🚢 Cruzeiro corrigido: sem bagagem, formato cabines, taxas incluídas',
+                    '💡 Dicas corrigidas: estado global funcional, detecção automática destino',
+                    '🎯 Ranking funcional: usa último destino processado',
+                    '🏨 Categorias hotéis mantidas',
+                    '🏙️ Títulos com cidades mantidos'
                 ]
             });
         }
@@ -1661,13 +1869,14 @@ export default async function handler(req, res) {
         const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos, dadosFormularioHTML);
         console.log(`📄 Tipo detectado: ${tipoOrcamento}`);
         
-        // v4.02: Atualizar estado global se não for dicas/ranking
+        // v4.03: Atualizar estado global SEMPRE que não for dicas/ranking
         if (tipoOrcamento !== 'DICAS' && tipoOrcamento !== 'RANKING_HOTEIS') {
             const destinoAtual = dadosExtraidos.destino || destino;
             if (destinoAtual) {
                 ESTADO_GLOBAL.ultimoDestino = destinoAtual;
                 ESTADO_GLOBAL.ultimoTipo = tipoOrcamento;
-                console.log(`🌍 v4.02: Estado global atualizado - Último destino: ${ESTADO_GLOBAL.ultimoDestino}`);
+                ESTADO_GLOBAL.ultimoConteudo = conteudoPrincipal; // v4.03: Salvar conteúdo para extração posterior
+                console.log(`🌍 v4.03: Estado global atualizado - Último destino: ${ESTADO_GLOBAL.ultimoDestino}`);
             }
         }
         
@@ -1753,7 +1962,7 @@ export default async function handler(req, res) {
                         messages: [
                             { 
                                 role: 'system', 
-                                content: `Você é um assistente da CVC especializado em orçamentos v${CONFIG.VERSION}. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações. Para hotéis, use categorias corretas. Para dicas e rankings, seja específico. SEMPRE use cidades nos títulos. Para cruzeiros, SEMPRE inclua taxas.` 
+                                content: `Você é um assistente da CVC especializado em orçamentos v${CONFIG.VERSION}. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações. Para hotéis, use categorias corretas. Para dicas e rankings, seja específico. SEMPRE use cidades nos títulos. Para cruzeiros, NÃO inclua bagagem ou reembolso, SEMPRE inclua taxas.` 
                             },
                             { role: 'user', content: prompt }
                         ],
@@ -1822,8 +2031,8 @@ export default async function handler(req, res) {
                 }
             }
             
-            // APLICAR PÓS-PROCESSAMENTO v4.02 (COM PRIORIDADE HTML)
-            console.log('🔧 Aplicando pós-processamento v4.02...');
+            // APLICAR PÓS-PROCESSAMENTO v4.03 (COM PRIORIDADE HTML)
+            console.log('🔧 Aplicando pós-processamento v4.03...');
             try {
                 resultado = posProcessar(resultado, conteudoPrincipal, parcelamento, dadosFormularioHTML);
             } catch (posError) {
@@ -1848,7 +2057,7 @@ export default async function handler(req, res) {
                 templates_disponiveis: Object.keys(TEMPLATES).length,
                 prioridade_html: true,
                 estado_global: ESTADO_GLOBAL,
-                corrrecoes_v402: true
+                corrrecoes_v403: true
             },
             ia_usada: iaUsada
         });
@@ -1871,11 +2080,11 @@ export default async function handler(req, res) {
 }
 
 // ================================================================================================
-// 🎯 LOGS DE INICIALIZAÇÃO v4.02 COMPLETA
+// 🎯 LOGS DE INICIALIZAÇÃO v4.03 COMPLETA
 // ================================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║              CVC ITAQUA v4.02 - API COMPLETA CORRIGIDA        ║');
+console.log('║            CVC ITAQUA v4.03 - API COMPLETA CORRIGIDA           ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
 console.log('║ ✅ ARQUIVO ÚNICO - TODAS as funcionalidades                  ║');
 console.log('║ ✅ 11 Templates completos do manual v4.0                     ║');
@@ -1884,36 +2093,39 @@ console.log('║ ✅ Processamento de imagens (Claude) e texto (GPT)           �
 console.log('║ ✅ Pós-processamento completo e robusto                      ║');
 console.log('║ ✅ Sistema otimizado para 80%+ uptime                        ║');
 console.log('║ ✅ PRIORIDADE HTML sobre texto colado                        ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Categorias hotéis FUNCIONAIS             ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Títulos com cidades FUNCIONAIS           ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Ranking hotéis FUNCIONAL                 ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Dicas cruzeiro ESPECÍFICAS               ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Estado global para destinos              ║');
-console.log('║ ⭐ CORRIGIDO v4.02: Cruzeiro sempre inclui taxas             ║');
+console.log('║ ⭐ MANTIDO v4.02: Categorias hotéis FUNCIONAIS               ║');
+console.log('║ ⭐ MANTIDO v4.02: Títulos com cidades FUNCIONAIS             ║');
+console.log('║ ⭐ MANTIDO v4.02: Ranking hotéis FUNCIONAL                   ║');
+console.log('║ 🚢 CORRIGIDO v4.03: CRUZEIRO sem bagagem/reembolso           ║');
+console.log('║ 🚢 CORRIGIDO v4.03: Formato cabines correto                  ║');
+console.log('║ 🚢 CORRIGIDO v4.03: Taxas sempre incluídas                   ║');
+console.log('║ 💡 CORRIGIDO v4.03: DICAS estado global funcional            ║');
+console.log('║ 💡 CORRIGIDO v4.03: Detecção automática destino              ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log(`🚀 Sistema v${CONFIG.VERSION} - VERSÃO COMPLETA COM TODAS AS CORREÇÕES!`);
+console.log(`🚀 Sistema v${CONFIG.VERSION} - VERSÃO COMPLETA COM CORREÇÕES CRUZEIRO E DICAS!`);
 console.log(`📊 Templates disponíveis: ${Object.keys(TEMPLATES).length}`);
 console.log(`🎯 Objetivo: 80%+ uptime, zero falhas críticas`);
 console.log(`🥇 PRIORIDADE: Dados HTML sobre texto`);
-console.log(`⭐ CORREÇÕES v4.02 IMPLEMENTADAS:`);
-console.log(`   🏨 Categorias: ⭐ Preferencial/⭐ Recomendado/⭐⭐⭐`);
-console.log(`   🏙️ Títulos: São Paulo (não Congonhas)`);
-console.log(`   🎯 Ranking: Funcional com último destino`);
-console.log(`   💡 Dicas: Templates específicos para cruzeiros`);
-console.log(`   🚢 Cruzeiro: SEMPRE inclui taxas`);
-console.log(`   🌍 Estado: Global para rastreamento de destinos`);
+console.log(`⭐ CORREÇÕES v4.03 IMPLEMENTADAS:`);
+console.log(`   🚢 Cruzeiro: SEM bagagem, SEM reembolso, formato cabines correto`);
+console.log(`   🚢 Cruzeiro: Taxas SEMPRE incluídas, total destacado`);
+console.log(`   💡 Dicas: Estado global funcional para último destino`);
+console.log(`   💡 Dicas: Detecção automática de destino do conteúdo`);
+console.log(`   🎯 Ranking: Funciona com estado global`);
+console.log(`   🏨 Hotéis: Categorias mantidas funcionais`);
+console.log(`   🏙️ Títulos: Cidades mantidas funcionais`);
 console.log('🔄 Pronto para deploy na Vercel!');
 
 // ================================================================================================
-// 📋 RESUMO FINAL v4.02 COMPLETA
+// 📋 RESUMO FINAL v4.03 COMPLETA
 // ================================================================================================
 /*
-🏢 CVC ITAQUA v4.02 - API CONSOLIDADA COMPLETA CORRIGIDA
+🏢 CVC ITAQUA v4.03 - API CONSOLIDADA COMPLETA CORRIGIDA
 
 ✅ TODAS AS FUNCIONALIDADES ORIGINAIS MANTIDAS:
 - 11 Templates completos do manual
-- Detecção inteligente automática
-- Processamento de imagens e PDFs  
+- Detecção inteligente automática  
+- Processamento de imagens e PDFs
 - Pós-processamento robusto
 - Sistema para 80%+ uptime
 - Prioridade HTML sobre texto
@@ -1923,14 +2135,27 @@ console.log('🔄 Pronto para deploy na Vercel!');
 - JSON sempre válido
 - Timeouts e fallbacks
 
-⭐ CORREÇÕES v4.02 ADICIONADAS:
+⭐ CORREÇÕES v4.02 MANTIDAS:
 ✅ Categorias de hotéis: ⭐ Preferencial/⭐ Recomendado/⭐⭐⭐
-✅ Títulos com cidades: São Paulo (não Congonhas/Guarulhos)
+✅ Títulos com cidades: São Paulo (não Congonhas/Guarulhos)  
 ✅ Ranking de hotéis funcional com estado global
 ✅ Dicas de cruzeiro específicas (MSC/Costa)
-✅ Cruzeiro sempre inclui taxas
-✅ Estado global para rastreamento de destinos
+
+🚢 CORREÇÕES v4.03 CRUZEIRO:
+✅ Processamento específico para cruzeiros
+✅ Remoção de bagagem (não se aplica)
+✅ Remoção de reembolso (não se aplica)
+✅ Formato correto das cabines
+✅ Taxas sempre incluídas
+✅ Total destacado no final
+
+💡 CORREÇÕES v4.03 DICAS:
+✅ Estado global funcional para rastreamento de destinos
+✅ Detecção automática de destino do conteúdo processado
+✅ Salva último conteúdo para extração posterior
+✅ Ranking usa último destino corretamente
+✅ Fallback inteligente para destinos
 
 🎯 RESULTADO: 
-Versão COMPLETA que mantém TUDO que funcionava + aplica as correções específicas
+Versão COMPLETA que mantém TUDO que funcionava + corrige CRUZEIRO e DICAS especificamente
 */
