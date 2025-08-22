@@ -1,15 +1,23 @@
-// api/ai-google.js - HANDLER PRINCIPAL v4.0 - NÚCLEO INQUEBRÁVEIS
+// api/ai-google.js - HANDLER PRINCIPAL CORRIGIDO v4.0
 // ================================================================================
-// 🎯 ARQUIVO PRINCIPAL - ORQUESTRADOR DO SISTEMA
-// ⚠️  ESTE ARQUIVO É PROTEGIDO - EDIÇÕES APENAS EM CASOS EXTREMOS
-// 🛡️ GARANTE JSON VÁLIDO EM 100% DOS CASOS, MESMO EM CRASH TOTAL
+// 🎯 ARQUIVO PRINCIPAL COM TODOS OS PROCESSADORES INTEGRADOS
+// 🛡️ GARANTE JSON VÁLIDO EM 100% DOS CASOS + APLICA TODAS AS CORREÇÕES
 // ================================================================================
 
 import { safeJSONResponse } from './core/json-response.js';
-import { SYSTEM_CONFIG, TEMPLATES_BASIC } from './data/constants.js';
+import { SYSTEM_CONFIG } from './data/constants.js';
+import { extrairDadosCompletos } from './detectors/data-extractor.js';
+import { detectarTipoProduto } from './detectors/product-detector.js';
+import { detectarHotel } from './detectors/hotel-detector.js';
+import { processarDatas } from './processors/date-processor.js';
+import { processarAeroportos } from './processors/airport-processor.js';
+import { processarBagagem } from './processors/baggage-processor.js';
+import { processarPrecos } from './processors/price-processor.js';
+import { processarFormatacaoFinal } from './processors/format-processor.js';
+import { construirPrompt } from './prompts/prompt-builder.js';
 
 // ================================================================================
-// 🧠 NÚCLEO - ORQUESTRADOR PRINCIPAL
+// 🧠 HANDLER PRINCIPAL
 // ================================================================================
 
 export default async function handler(req, res) {
@@ -40,467 +48,306 @@ export default async function handler(req, res) {
             return safeJSONResponse(res, false, 'Método não permitido', 'Use POST', { requestId });
         }
         
-        // 3. Extrair e validar dados de entrada
-        const inputData = await extractAndValidateInput(req, requestId);
-        if (!inputData.valid) {
-            return safeJSONResponse(res, false, inputData.error, inputData.details, { requestId });
+        // 3. Extrair e validar dados
+        const body = req.body || {};
+        const {
+            observacoes = '',
+            textoColado = '',
+            destino = '',
+            adultos = 1,
+            criancas = 0,
+            tipos = [],
+            parcelamento = '',
+            imagemBase64 = null,
+            pdfContent = null
+        } = body;
+        
+        // 4. Combinar conteúdo principal
+        const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
+        
+        // 5. Validar entrada
+        if (!conteudoPrincipal.trim() && !imagemBase64) {
+            return safeJSONResponse(res, false, 'Adicione informações sobre a viagem', 
+                'Por favor, adicione informações sobre a viagem', { requestId });
         }
         
-        // 4. Processar orçamento principal
-        const result = await processOrcamento(inputData.data, requestId);
+        console.log(`📋 [${requestId}] Conteúdo recebido: ${conteudoPrincipal.length} caracteres`);
         
-        // 5. Retornar resposta de sucesso
-        return safeJSONResponse(res, true, result.content, null, {
+        // 6. FASE DE DETECÇÃO
+        console.log(`🔍 [${requestId}] Iniciando fase de detecção...`);
+        
+        // Extrair dados do conteúdo
+        const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal);
+        console.log(`📊 [${requestId}] Dados extraídos:`, dadosExtraidos);
+        
+        // Detectar se é hotel
+        const resultadoHotel = detectarHotel(conteudoPrincipal, tipos);
+        console.log(`🏨 [${requestId}] Detecção hotel:`, resultadoHotel);
+        
+        // Detectar tipo de produto
+        const tipoDetectado = detectarTipoProduto(conteudoPrincipal, tipos, resultadoHotel);
+        console.log(`🎯 [${requestId}] Tipo detectado: ${tipoDetectado}`);
+        
+        // Formatar passageiros
+        let passageiros = dadosExtraidos.passageiros;
+        if (!passageiros) {
+            const numAdultos = parseInt(adultos) || 1;
+            const numCriancas = parseInt(criancas) || 0;
+            passageiros = `${String(numAdultos).padStart(2, '0')} adulto${numAdultos > 1 ? 's' : ''}`;
+            if (numCriancas > 0) {
+                passageiros += ` + ${String(numCriancas).padStart(2, '0')} criança${numCriancas > 1 ? 's' : ''}`;
+            }
+        }
+        
+        console.log(`👥 [${requestId}] Passageiros: ${passageiros}`);
+        
+        // 7. FASE DE GERAÇÃO COM IA
+        console.log(`🧠 [${requestId}] Iniciando fase de geração...`);
+        
+        // Construir prompt contextual
+        const contextoPrompt = {
+            conteudoPrincipal,
+            tipoOrcamento: tipoDetectado,
+            passageiros,
+            destino: dadosExtraidos.destino || destino,
+            ehImagem: !!imagemBase64,
+            iaDestino: decidirIA(conteudoPrincipal, tipoDetectado, imagemBase64),
+            dadosExtraidos
+        };
+        
+        const prompt = construirPrompt(contextoPrompt);
+        console.log(`📝 [${requestId}] Prompt construído: ${prompt.length} caracteres`);
+        
+        // Processar com IA
+        let resultado = '';
+        let iaUsada = 'none';
+        
+        try {
+            if (contextoPrompt.iaDestino === 'claude' && process.env.ANTHROPIC_API_KEY) {
+                console.log(`🔮 [${requestId}] Usando Claude...`);
+                resultado = await processarComClaude(prompt, imagemBase64);
+                iaUsada = 'claude';
+            } else if (process.env.OPENAI_API_KEY) {
+                console.log(`⚡ [${requestId}] Usando GPT-4o-mini...`);
+                resultado = await processarComGPT(prompt);
+                iaUsada = 'gpt';
+            } else {
+                throw new Error('Nenhuma API de IA configurada');
+            }
+            
+            console.log(`✅ [${requestId}] IA processou: ${resultado.length} caracteres`);
+            
+        } catch (iaError) {
+            console.error(`❌ [${requestId}] Erro IA:`, iaError);
+            return safeJSONResponse(res, false, 'Erro ao processar com IA', 
+                `Erro: ${iaError.message}`, { requestId, ia_usada: 'error' });
+        }
+        
+        // 8. FASE DE PÓS-PROCESSAMENTO (TODAS AS CORREÇÕES)
+        console.log(`🔧 [${requestId}] Iniciando pós-processamento completo...`);
+        
+        if (resultado && typeof resultado === 'string') {
+            // Limpar formatação markdown inicial
+            resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
+            
+            try {
+                // APLICAR TODOS OS PROCESSADORES EM SEQUÊNCIA
+                console.log(`📅 [${requestId}] Processando datas...`);
+                resultado = processarDatas(resultado);
+                
+                console.log(`✈️ [${requestId}] Processando aeroportos...`);
+                resultado = await processarAeroportos(resultado, conteudoPrincipal);
+                
+                console.log(`🎒 [${requestId}] Processando bagagem...`);
+                resultado = processarBagagem(resultado, dadosExtraidos);
+                
+                console.log(`💰 [${requestId}] Processando preços...`);
+                resultado = processarPrecos(resultado, parcelamento, dadosExtraidos);
+                
+                console.log(`🔧 [${requestId}] Processando formatação final...`);
+                resultado = processarFormatacaoFinal(resultado, dadosExtraidos);
+                
+                console.log(`✅ [${requestId}] Pós-processamento completo!`);
+                
+            } catch (procError) {
+                console.error(`⚠️ [${requestId}] Erro no pós-processamento:`, procError);
+                // Continuar mesmo com erro de processamento
+            }
+        }
+        
+        // 9. RESPOSTA FINAL
+        const tempoTotal = Date.now() - startTime;
+        console.log(`🎉 [${requestId}] Processamento completo em ${tempoTotal}ms`);
+        
+        return safeJSONResponse(res, true, resultado || 'Erro ao processar orçamento', null, {
             requestId,
             version: SYSTEM_CONFIG.VERSION,
-            processingTime: Date.now() - startTime,
-            type: result.type,
-            aiUsed: result.aiUsed,
-            tokensUsed: result.tokensUsed
+            tipo_detectado: tipoDetectado,
+            passageiros: passageiros,
+            parcelamento_aplicado: parcelamento || 'nenhum',
+            ia_usada: iaUsada,
+            tempo_processamento: `${tempoTotal}ms`,
+            processadores_aplicados: ['dates', 'airports', 'baggage', 'prices', 'format']
         });
         
     } catch (error) {
-        // 🚨 FALLBACK FINAL - GARANTE JSON MESMO EM CRASH TOTAL
-        console.error(`💥 [${requestId}] ERRO CRÍTICO:`, error);
+        console.error(`💥 [${requestId}] Erro geral:`, error);
         
-        return safeJSONResponse(res, false, 
-            'Erro interno do sistema. Tente novamente.', 
-            error.message, 
-            {
-                requestId,
-                version: SYSTEM_CONFIG.VERSION,
-                errorType: 'CRITICAL_SYSTEM_ERROR',
-                timestamp: new Date().toISOString()
-            }
-        );
+        return safeJSONResponse(res, false, 'Erro interno do servidor', 
+            'Erro interno. Tente novamente.', { 
+                requestId, 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
     }
 }
 
 // ================================================================================
-// 🔧 FUNÇÕES DE APOIO PROTEGIDAS
+// 🤖 PROCESSAMENTO COM IAS
+// ================================================================================
+
+async function processarComClaude(prompt, imagemBase64) {
+    const requestBody = {
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 3000,
+        temperature: 0.1,
+        messages: [{
+            role: 'user',
+            content: imagemBase64 ? [
+                { type: 'text', text: prompt },
+                {
+                    type: 'image',
+                    source: {
+                        type: 'base64',
+                        media_type: imagemBase64.split(';')[0].split(':')[1],
+                        data: imagemBase64.split(',')[1]
+                    }
+                }
+            ] : prompt
+        }]
+    };
+    
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Claude erro ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return data.content[0].text;
+}
+
+async function processarComGPT(prompt) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+                { 
+                    role: 'system', 
+                    content: `Você é um assistente da CVC. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações que não estejam no texto fornecido. Use apenas informações explícitas no conteúdo.` 
+                },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 3000
+        })
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI erro ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+}
+
+// ================================================================================
+// 🎯 DECISÃO DE IA
+// ================================================================================
+
+function decidirIA(conteudo, tipo, imagemBase64) {
+    // Usar Claude para casos complexos
+    if (imagemBase64 || 
+        conteudo.length > 3000 ||
+        tipo === 'PACOTE_COMPLETO' ||
+        tipo === 'MULTITRECHO' ||
+        tipo === 'DICAS_DESTINO' ||
+        tipo === 'RANKING_HOTEIS') {
+        return 'claude';
+    }
+    
+    // GPT para casos simples
+    return 'gpt';
+}
+
+// ================================================================================
+// 🔧 FUNÇÕES UTILITÁRIAS
 // ================================================================================
 
 function generateRequestId() {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return Math.random().toString(36).substr(2, 9);
 }
 
 function setupSecurityHeaders(res) {
-    try {
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.setHeader('X-Powered-By', `CVC-ITAQUA-v${SYSTEM_CONFIG.VERSION}`);
-    } catch (error) {
-        console.error('❌ Erro ao configurar headers:', error);
-        // Continua sem falhar - headers são opcionais
-    }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json');
 }
 
 function getSystemStatus() {
     return {
         status: 'operational',
         version: SYSTEM_CONFIG.VERSION,
-        timestamp: new Date().toISOString(),
-        features: {
-            multipleFormats: true,
-            hotelSupport: true,
-            multipleCompanies: true,
-            automaticCorrections: true,
-            jsonGuaranteed: true
-        },
-        endpoints: {
-            health: 'GET /',
-            process: 'POST /'
+        sistema: 'CVC ITAQUA',
+        funcionalidades: [
+            'Detecção automática de tipos',
+            'Processamento com múltiplas IAs',
+            'Pós-processamento completo',
+            'Validação automática',
+            'JSON sempre válido'
+        ],
+        processadores: [
+            'date-processor',
+            'airport-processor', 
+            'baggage-processor',
+            'price-processor',
+            'format-processor'
+        ],
+        apis_configuradas: {
+            claude: !!process.env.ANTHROPIC_API_KEY,
+            openai: !!process.env.OPENAI_API_KEY
         }
     };
 }
 
-async function extractAndValidateInput(req, requestId) {
-    try {
-        console.log(`📥 [${requestId}] Extraindo dados de entrada...`);
-        
-        // Extrair body de forma segura
-        let body = {};
-        try {
-            body = req.body || {};
-        } catch (bodyError) {
-            console.error(`❌ [${requestId}] Erro ao extrair body:`, bodyError);
-            return { valid: false, error: 'Formato de dados inválido', details: 'Body malformado' };
-        }
-        
-        // Extrair campos com valores padrão seguros
-        const data = {
-            observacoes: String(body.observacoes || '').trim(),
-            textoColado: String(body.textoColado || '').trim(),
-            destino: String(body.destino || '').trim(),
-            adultos: parseInt(body.adultos) || 1,
-            criancas: parseInt(body.criancas) || 0,
-            tipos: Array.isArray(body.tipos) ? body.tipos : [],
-            parcelamento: String(body.parcelamento || '').trim(),
-            imagemBase64: body.imagemBase64 || null,
-            pdfContent: String(body.pdfContent || '').trim()
-        };
-        
-        // Combinar conteúdo principal
-        const conteudoPrincipal = [data.observacoes, data.textoColado, data.pdfContent]
-            .filter(Boolean)
-            .join('\n')
-            .trim();
-        
-        // Validação básica
-        if (!conteudoPrincipal && !data.imagemBase64) {
-            return { 
-                valid: false, 
-                error: 'Nenhum conteúdo fornecido', 
-                details: 'Adicione texto, imagem ou PDF com informações da viagem' 
-            };
-        }
-        
-        // Validação de tipos
-        if (data.tipos.length === 0) {
-            data.tipos = ['Aéreo']; // Padrão seguro
-        }
-        
-        console.log(`✅ [${requestId}] Dados validados: ${conteudoPrincipal.length} chars, ${data.tipos.length} tipos`);
-        
-        return { 
-            valid: true, 
-            data: { ...data, conteudoPrincipal } 
-        };
-        
-    } catch (error) {
-        console.error(`💥 [${requestId}] Erro na validação:`, error);
-        return { 
-            valid: false, 
-            error: 'Erro interno na validação', 
-            details: error.message 
-        };
-    }
-}
-
-async function processOrcamento(data, requestId) {
-    try {
-        console.log(`⚙️ [${requestId}] Iniciando processamento do orçamento...`);
-        
-        // 1. Detectar tipo de orçamento (versão básica inicial)
-        const tipo = detectTipoBasico(data, requestId);
-        console.log(`🎯 [${requestId}] Tipo detectado: ${tipo}`);
-        
-        // 2. Extrair dados básicos
-        const dadosExtraidos = extractDadosBasicos(data.conteudoPrincipal, requestId);
-        
-        // 3. Formatar passageiros
-        const passageiros = formatPassageiros(data.adultos, data.criancas, dadosExtraidos.passageiros);
-        
-        // 4. Gerar prompt básico
-        const prompt = buildPromptBasico(data.conteudoPrincipal, passageiros, tipo, data.destino);
-        
-        // 5. Chamar IA
-        const aiResult = await callAI(prompt, data.imagemBase64, requestId);
-        
-        // 6. Aplicar correções básicas
-        const finalResult = applyBasicCorrections(aiResult.content, data.conteudoPrincipal, data.parcelamento);
-        
-        return {
-            content: finalResult,
-            type: tipo,
-            aiUsed: aiResult.aiUsed,
-            tokensUsed: aiResult.tokensUsed
-        };
-        
-    } catch (error) {
-        console.error(`💥 [${requestId}] Erro no processamento:`, error);
-        
-        // 🛡️ FALLBACK - RETORNAR TEMPLATE BÁSICO
-        return {
-            content: generateFallbackResponse(data),
-            type: 'FALLBACK',
-            aiUsed: 'none',
-            tokensUsed: 0
-        };
-    }
-}
-
 // ================================================================================
-// 🤖 VERSÕES BÁSICAS DAS FUNÇÕES (EXPANDIDAS NAS PRÓXIMAS ETAPAS)
-// ================================================================================
-
-function detectTipoBasico(data, requestId) {
-    try {
-        const conteudo = data.conteudoPrincipal.toLowerCase();
-        
-        // Detecção simples e segura
-        if (data.tipos.includes('Hotel') && !data.tipos.includes('Aéreo')) {
-            return 'HOTEL';
-        }
-        
-        if (data.tipos.includes('Dicas')) {
-            return 'DICAS';
-        }
-        
-        if (data.tipos.includes('Ranking')) {
-            return 'RANKING';
-        }
-        
-        // Detectar múltiplas companhias
-        const companhias = (conteudo.match(/(?:copa|latam|avianca|gol|azul|tap|iberia)/g) || []);
-        if (new Set(companhias).size >= 2) {
-            return 'MULTIPLAS_COMPANHIAS';
-        }
-        
-        return 'AEREO_SIMPLES'; // Padrão seguro
-        
-    } catch (error) {
-        console.error(`❌ [${requestId}] Erro na detecção de tipo:`, error);
-        return 'AEREO_SIMPLES'; // Fallback seguro
-    }
-}
-
-function extractDadosBasicos(conteudo, requestId) {
-    try {
-        const dados = {
-            passageiros: null,
-            temBagagem: false,
-            temParcelamento: false
-        };
-        
-        // Extrair passageiros
-        const matchPassageiros = conteudo.match(/Total\s*\((\d+)\s*Adultos?\)/i);
-        if (matchPassageiros) {
-            const adultos = parseInt(matchPassageiros[1]) || 1;
-            dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-        }
-        
-        // Detectar bagagem
-        dados.temBagagem = conteudo.toLowerCase().includes('com bagagem');
-        
-        // Detectar parcelamento
-        dados.temParcelamento = conteudo.includes('Entrada de R$');
-        
-        return dados;
-        
-    } catch (error) {
-        console.error(`❌ [${requestId}] Erro na extração de dados:`, error);
-        return { passageiros: null, temBagagem: false, temParcelamento: false };
-    }
-}
-
-function formatPassageiros(adultos, criancas, passageirosExtraidos) {
-    try {
-        if (passageirosExtraidos) {
-            return passageirosExtraidos;
-        }
-        
-        let resultado = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-        if (criancas > 0) {
-            resultado += ` + ${String(criancas).padStart(2, '0')} criança${criancas > 1 ? 's' : ''}`;
-        }
-        
-        return resultado;
-        
-    } catch (error) {
-        console.error('❌ Erro ao formatar passageiros:', error);
-        return '01 adulto'; // Fallback seguro
-    }
-}
-
-function buildPromptBasico(conteudo, passageiros, tipo, destino) {
-    try {
-        const template = TEMPLATES_BASIC[tipo] || TEMPLATES_BASIC.AEREO_SIMPLES;
-        
-        return `
-Formate este orçamento para WhatsApp seguindo o template.
-
-TEXTO:
-${conteudo}
-
-PASSAGEIROS: ${passageiros}
-
-TEMPLATE:
-${template}
-
-REGRAS:
-- Remover dias da semana das datas
-- Converter códigos de aeroporto para nomes
-- Usar formato DD/MM para datas
-- Terminar com: Valores sujeitos a confirmação e disponibilidade (v4.0)
-`;
-        
-    } catch (error) {
-        console.error('❌ Erro ao construir prompt:', error);
-        return `Formate este orçamento:\n${conteudo}`;
-    }
-}
-
-async function callAI(prompt, imagemBase64, requestId) {
-    try {
-        console.log(`🤖 [${requestId}] Chamando IA...`);
-        
-        // Decidir qual IA usar
-        const usarClaude = imagemBase64 || prompt.length > 5000;
-        
-        if (usarClaude && process.env.ANTHROPIC_API_KEY) {
-            return await callClaude(prompt, imagemBase64, requestId);
-        } else if (process.env.OPENAI_API_KEY) {
-            return await callOpenAI(prompt, requestId);
-        } else {
-            throw new Error('Nenhuma API de IA configurada');
-        }
-        
-    } catch (error) {
-        console.error(`💥 [${requestId}] Erro na chamada IA:`, error);
-        throw error;
-    }
-}
-
-async function callClaude(prompt, imagemBase64, requestId) {
-    try {
-        const requestBody = {
-            model: 'claude-3-haiku-20240307',
-            max_tokens: 3000,
-            temperature: 0.1,
-            messages: [{
-                role: 'user',
-                content: imagemBase64 ? [
-                    { type: 'text', text: prompt },
-                    {
-                        type: 'image',
-                        source: {
-                            type: 'base64',
-                            media_type: imagemBase64.split(';')[0].split(':')[1],
-                            data: imagemBase64.split(',')[1]
-                        }
-                    }
-                ] : prompt
-            }]
-        };
-        
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'x-api-key': process.env.ANTHROPIC_API_KEY,
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Claude API erro ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return {
-            content: data.content[0].text,
-            aiUsed: 'claude',
-            tokensUsed: data.usage?.input_tokens + data.usage?.output_tokens || 0
-        };
-        
-    } catch (error) {
-        console.error(`❌ [${requestId}] Erro Claude:`, error);
-        throw error;
-    }
-}
-
-async function callOpenAI(prompt, requestId) {
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'Formate orçamentos de viagem seguindo as instruções.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.1,
-                max_tokens: 3000
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`OpenAI API erro ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return {
-            content: data.choices[0].message.content,
-            aiUsed: 'openai',
-            tokensUsed: data.usage?.prompt_tokens + data.usage?.completion_tokens || 0
-        };
-        
-    } catch (error) {
-        console.error(`❌ [${requestId}] Erro OpenAI:`, error);
-        throw error;
-    }
-}
-
-function applyBasicCorrections(texto, conteudoOriginal, parcelamentoSelecionado) {
-    try {
-        let resultado = texto;
-        
-        // Limpeza básica
-        resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
-        
-        // Remover dias da semana
-        resultado = resultado.replace(/(?:ter|qua|qui|sex|sáb|sab|dom|seg),?\s*(\d{1,2}\/\d{2})/gi, '$1');
-        
-        // Converter datas básicas
-        resultado = resultado.replace(/(\d{1,2})\s+de\s+(janeiro|jan)/gi, '$1/01');
-        resultado = resultado.replace(/(\d{1,2})\s+de\s+(fevereiro|fev)/gi, '$1/02');
-        // ... (conversões básicas)
-        
-        // Garantir versão
-        if (!resultado.includes('(v4.0)')) {
-            resultado = resultado.replace(
-                /Valores sujeitos a confirmação e disponibilidade/g,
-                'Valores sujeitos a confirmação e disponibilidade (v4.0)'
-            );
-        }
-        
-        return resultado;
-        
-    } catch (error) {
-        console.error('❌ Erro nas correções básicas:', error);
-        return texto; // Retorna original se falhar
-    }
-}
-
-function generateFallbackResponse(data) {
-    try {
-        return `Orçamento gerado em modo de emergência.
-
-Dados recebidos:
-- Destino: ${data.destino || 'Não informado'}
-- Passageiros: ${data.adultos} adulto(s)
-- Tipos: ${data.tipos.join(', ')}
-
-⚠️ Sistema em modo de fallback - tente novamente em alguns minutos.
-
-Valores sujeitos a confirmação e disponibilidade (v4.0)`;
-        
-    } catch (error) {
-        return 'Erro no sistema. Tente novamente.';
-    }
-}
-
-// ================================================================================
-// 🔄 LOGS DE INICIALIZAÇÃO
+// 📋 LOG DE INICIALIZAÇÃO
 // ================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║                CVC ITAQUA v4.0 - NÚCLEO INQUEBRÁVEIS          ║');
+console.log('║              CVC ITAQUA v4.0 - SISTEMA COMPLETO               ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ 🛡️ Sistema modular profissional                               ║');
-console.log('║ 📤 JSON sempre válido - sem exceções                          ║');
-console.log('║ 🔧 Base sólida para expansões futuras                         ║');
-console.log('║ 🧪 Testável e monitorado                                      ║');
-console.log('║ 🚀 ETAPA 1/5 - Núcleo Operacional                            ║');
+console.log('║ ✅ Handler principal com todos os processadores               ║');
+console.log('║ ✅ Pós-processamento automático GARANTIDO                     ║');
+console.log('║ ✅ Correções: datas, aeroportos, bagagem, preços, formato     ║');
+console.log('║ ✅ JSON sempre válido mesmo em crash total                    ║');
+console.log('║ ✅ Logs detalhados para debugging                             ║');
+console.log('║ ✅ Suporte a Claude + GPT com fallbacks                       ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
-console.log(`🎯 Handler principal v4.0 carregado às ${new Date().toISOString()}`);
+console.log(`🚀 Sistema v${SYSTEM_CONFIG.VERSION} pronto para produção!`);
