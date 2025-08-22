@@ -1,5 +1,18 @@
 // api/ai-google.js - SISTEMA HÍBRIDO v4.01 - CORREÇÕES GARANTIDAS
 // ================================================================================
+// 👥 FORMATAÇÃO DE PASSAGEIROS USANDO DADOS EXTRAÍDOS
+// ================================================================================
+
+function formatarPassageiros(dadosDetectados) {
+    if (dadosDetectados.passageiros) {
+        return dadosDetectados.passageiros;
+    }
+    
+    // Fallback básico
+    return '01 adulto';
+}
+
+// ================================================================================
 // 🎯 SISTEMA QUE FORÇA APLICAÇÃO DE TODAS AS CORREÇÕES
 // 🛡️ GARANTE JSON VÁLIDO + APLICA CORREÇÕES MESMO SE IA FALHAR
 // ================================================================================
@@ -61,22 +74,37 @@ export default async function handler(req, res) {
         
         console.log(`📥 [${requestId}] Entrada: ${conteudoPrincipal.length} chars`);
         
-        // 3. DETECÇÃO BÁSICA
-        const dadosDetectados = detectarDadosBasicos(conteudoPrincipal);
-        const tipoOrcamento = detectarTipo(conteudoPrincipal, tipos);
+        // 3. DETECÇÃO USANDO MÓDULOS REAIS
+        const dadosDetectados = extrairDadosCompletos(conteudoPrincipal);
+        const resultadoHotel = detectarHotel(conteudoPrincipal, tipos);
+        const tipoOrcamento = detectarTipoProduto(conteudoPrincipal, tipos, resultadoHotel);
         
         console.log(`🎯 [${requestId}] Tipo: ${tipoOrcamento}`);
         console.log(`📊 [${requestId}] Dados:`, dadosDetectados);
         
-        // 4. FORMATAÇÃO COM IA (se disponível)
+        // 4. GERAÇÃO DE PROMPT USANDO MÓDULO REAL
         let resultadoIA = '';
         let iaUsada = 'none';
         
         try {
             if (process.env.OPENAI_API_KEY) {
-                console.log(`🧠 [${requestId}] Processando com IA...`);
-                resultadoIA = await processarComIA(conteudoPrincipal, tipoOrcamento);
+                console.log(`🧠 [${requestId}] Processando com IA usando prompt builder...`);
+                
+                // USAR O MÓDULO REAL DE PROMPT BUILDER
+                const contextoPrompt = {
+                    conteudoPrincipal,
+                    tipoOrcamento,
+                    passageiros: formatarPassageiros(dadosDetectados),
+                    destino: dadosDetectados.destino || destino,
+                    ehImagem: !!imagemBase64,
+                    iaDestino: 'gpt',
+                    dadosExtraidos: dadosDetectados
+                };
+                
+                const prompt = construirPrompt(contextoPrompt);
+                resultadoIA = await processarComIA(prompt, tipoOrcamento);
                 iaUsada = 'gpt';
+                
                 console.log(`✅ [${requestId}] IA gerou: ${resultadoIA.length} chars`);
             } else {
                 console.log(`⚠️ [${requestId}] IA não disponível, usando template básico`);
@@ -117,6 +145,13 @@ export default async function handler(req, res) {
             processamento: {
                 entrada_chars: conteudoPrincipal.length,
                 saida_chars: resultadoFinal.length,
+                processadores_usados: [
+                    'date-processor.js',
+                    'airport-processor.js', 
+                    'baggage-processor.js',
+                    'price-processor.js',
+                    'format-processor.js'
+                ],
                 correcoes: [
                     'datas_corrigidas',
                     'aeroportos_convertidos', 
@@ -475,26 +510,10 @@ function detectarTipo(conteudo, tipos) {
 }
 
 // ================================================================================
-// 🧠 PROCESSAMENTO COM IA
+// 🧠 PROCESSAMENTO COM IA SIMPLIFICADO
 // ================================================================================
 
-async function processarComIA(conteudo, tipo) {
-    const prompt = `Formate este orçamento de viagem para WhatsApp seguindo o padrão CVC.
-
-TEXTO:
-${conteudo}
-
-REGRAS:
-1. Título: *Companhia - Origem ✈ Destino*
-2. Formato de data: DD/MM
-3. Separador ida/volta: --
-4. Valor: 💰 R$ XXX para XXX
-5. Bagagem: ✅ (descrição)
-6. Reembolso: 🏷️ (condição)
-7. Final: Valores sujeitos a confirmação e disponibilidade (v4.01)
-
-Use APENAS informações do texto fornecido.`;
-
+async function processarComIA(prompt, tipo) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
