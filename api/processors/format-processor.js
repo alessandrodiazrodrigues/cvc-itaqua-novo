@@ -403,8 +403,7 @@ export function gerarEstatisticas(texto) {
 export default {
     processarFormatacaoFinal,
     validarEstrutura,
-    gerarEstatisticas,
-    corrigirTiposVoo
+    gerarEstatisticas
 };
 
 // ================================================================================
