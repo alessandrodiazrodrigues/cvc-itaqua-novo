@@ -111,8 +111,22 @@ export default async function handler(req, res) {
             version: SYSTEM_CONFIG.VERSION,
             tipo: tipoOrcamento,
             ia_usada: iaUsada,
+            ia_status: getIAStatus(iaUsada),
             tempo: `${tempoTotal}ms`,
-            correcoes_aplicadas: true
+            correcoes_aplicadas: true,
+            processamento: {
+                entrada_chars: conteudoPrincipal.length,
+                saida_chars: resultadoFinal.length,
+                correcoes: [
+                    'datas_corrigidas',
+                    'aeroportos_convertidos', 
+                    'passageiros_formatados',
+                    'bagagem_internacional',
+                    'tipos_voo_padronizados',
+                    'reembolso_formatado',
+                    'versao_atualizada'
+                ]
+            }
         });
         
     } catch (error) {
@@ -524,6 +538,17 @@ Valores sujeitos a confirmação e disponibilidade (v${SYSTEM_CONFIG.VERSION})`;
 // ================================================================================
 // 🔧 UTILITÁRIOS
 // ================================================================================
+
+function getIAStatus(iaUsada) {
+    const status = {
+        'gpt': '✅ OpenAI GPT-4o-mini usado com sucesso',
+        'claude': '✅ Anthropic Claude usado com sucesso', 
+        'fallback': '⚠️ IA falhou, template básico aplicado',
+        'none': '⚠️ IA não configurada, template básico usado'
+    };
+    
+    return status[iaUsada] || '❓ Status desconhecido';
+}
 
 function generateRequestId() {
     return Math.random().toString(36).substr(2, 9);
