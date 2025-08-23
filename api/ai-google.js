@@ -32,79 +32,79 @@ let ESTADO_GLOBAL = {
 
 const AEROPORTOS = {
     // Brasil - Principais - CORRIGIDO v4.06: CIDADE (AEROPORTO) para múltiplos
-    'GRU': 'São Paulo (Guarulhos)', 
-    'CGH': 'São Paulo (Congonhas)', 
+    'GRU': 'São Paulo (Guarulhos)',
+    'CGH': 'São Paulo (Congonhas)',
     'VCP': 'São Paulo (Viracopos)',
-    'GIG': 'Rio de Janeiro (Galeão)', 
-    'SDU': 'Rio de Janeiro (Santos Dumont)', 
+    'GIG': 'Rio de Janeiro (Galeão)',
+    'SDU': 'Rio de Janeiro (Santos Dumont)',
     'BSB': 'Brasília',
-    'CNF': 'Belo Horizonte (Confins)', 
+    'CNF': 'Belo Horizonte (Confins)',
     'PLU': 'Belo Horizonte (Pampulha)',
-    'SSA': 'Salvador', 
+    'SSA': 'Salvador',
     'REC': 'Recife',
-    'FOR': 'Fortaleza', 
-    'POA': 'Porto Alegre', 
+    'FOR': 'Fortaleza',
+    'POA': 'Porto Alegre',
     'FLN': 'Florianópolis',
-    'CWB': 'Curitiba', 
-    'MAO': 'Manaus', 
+    'CWB': 'Curitiba',
+    'MAO': 'Manaus',
     'BEL': 'Belém',
-    'NAT': 'Natal', 
-    'MCZ': 'Maceió', 
+    'NAT': 'Natal',
+    'MCZ': 'Maceió',
     'AJU': 'Aracaju',
-    'JPA': 'João Pessoa', 
-    'THE': 'Teresina', 
+    'JPA': 'João Pessoa',
+    'THE': 'Teresina',
     'SLZ': 'São Luís',
-    'CGB': 'Cuiabá', 
-    'CGR': 'Campo Grande', 
+    'CGB': 'Cuiabá',
+    'CGR': 'Campo Grande',
     'GYN': 'Goiânia',
     'VIX': 'Vitória',
     'BPS': 'Porto Seguro',
-    
+
     // Internacional - Principais - CORRIGIDO v4.06: CIDADE (AEROPORTO) para múltiplos
     'MCO': 'Orlando',
-    'LIS': 'Lisboa', 
-    'OPO': 'Porto', 
+    'LIS': 'Lisboa',
+    'OPO': 'Porto',
     'MAD': 'Madrid',
-    'BCN': 'Barcelona', 
+    'BCN': 'Barcelona',
     'CDG': 'Paris (Charles de Gaulle)',
-    'ORY': 'Paris (Orly)', 
+    'ORY': 'Paris (Orly)',
     'FCO': 'Roma (Fiumicino)',
     'CIA': 'Roma (Ciampino)',
     'MXP': 'Milão (Malpensa)',
-    'LIN': 'Milão (Linate)', 
-    'VCE': 'Veneza', 
+    'LIN': 'Milão (Linate)',
+    'VCE': 'Veneza',
     'NAP': 'Nápoles',
     'LHR': 'Londres (Heathrow)',
     'LGW': 'Londres (Gatwick)',
-    'STN': 'Londres (Stansted)', 
-    'AMS': 'Amsterdam', 
+    'STN': 'Londres (Stansted)',
+    'AMS': 'Amsterdam',
     'FRA': 'Frankfurt',
-    'MUC': 'Munique', 
-    'ZRH': 'Zurique', 
+    'MUC': 'Munique',
+    'ZRH': 'Zurique',
     'VIE': 'Viena',
     'JFK': 'Nova York (JFK)',
     'LGA': 'Nova York (LaGuardia)',
-    'EWR': 'Nova York (Newark)', 
-    'MIA': 'Miami', 
-    'LAX': 'Los Angeles', 
-    'SFO': 'São Francisco', 
+    'EWR': 'Nova York (Newark)',
+    'MIA': 'Miami',
+    'LAX': 'Los Angeles',
+    'SFO': 'São Francisco',
     'LAS': 'Las Vegas',
-    'CUN': 'Cancún', 
-    'MEX': 'Cidade do México', 
+    'CUN': 'Cancún',
+    'MEX': 'Cidade do México',
     'BOG': 'Bogotá',
     'PTY': 'Panamá',
     'EZE': 'Buenos Aires (Ezeiza)',
     'AEP': 'Buenos Aires (Jorge Newbery)',
-    'SCL': 'Santiago', 
+    'SCL': 'Santiago',
     'LIM': 'Lima',
-    'UIO': 'Quito', 
+    'UIO': 'Quito',
     'MVD': 'Montevidéu'
 };
 
 // Mapeamento de aeroportos para cidades (CORRIGIDO v4.02)
 const AEROPORTO_PARA_CIDADE = {
     'São Paulo (Guarulhos)': 'São Paulo',
-    'São Paulo (Congonhas)': 'São Paulo', 
+    'São Paulo (Congonhas)': 'São Paulo',
     'São Paulo (Viracopos)': 'São Paulo',
     'Rio de Janeiro (Galeão)': 'Rio de Janeiro',
     'Rio de Janeiro (Santos Dumont)': 'Rio de Janeiro',
@@ -128,7 +128,7 @@ const REGRAS_BAGAGEM = {
 // ================================================================================================
 
 const TEMPLATES = {
-    
+
     // ✈️ 1. AÉREO IDA E VOLTA SIMPLES
     AEREO_SIMPLES: {
         template: `*{companhia} - {cidade_origem} ✈ {cidade_destino}*
@@ -142,7 +142,7 @@ const TEMPLATES = {
 🔗 {link}
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -175,7 +175,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 🔗 {link2}
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             const opcoes = (conteudo.match(/opção\s*\d+|plano\s*\d+/gi) || []).length;
@@ -207,7 +207,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 🔗 {link3}
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const opcoes = (conteudo.match(/opção\s*\d+|plano\s*\d+/gi) || []).length;
             return opcoes >= 3;
@@ -228,7 +228,7 @@ Inclui 1 item pessoal + 01 mala de mão de 10kg por pessoa
 ⚠️ Passagem somente de ida - sem retorno incluído
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -260,7 +260,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 🔗 {link}
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -300,7 +300,7 @@ Período: {data_entrada} a {data_saida} ({noites} noites)
 
 💳 {parcelamento}
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -350,7 +350,7 @@ Pacote para {passageiros}
 🔗 {link3}
 
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -383,7 +383,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 🔗 {link}
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -439,7 +439,7 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 
 🎁 *PRODUTOS CVC:*
 Oferecemos passeios guiados, traslados confortáveis, seguro viagem completo e chip internacional. Consulte nossos especialistas!`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -491,7 +491,7 @@ Oferecemos passeios guiados, traslados confortáveis, seguro viagem completo e c
 
 🎁 *PRODUTOS CVC:*
 Oferecemos reservas em todos esses hotéis, traslados exclusivos e pacotes personalizados. Consulte nossos especialistas!`,
-        
+
         detectar: (conteudo) => {
             const lower = conteudo.toLowerCase();
             return (
@@ -524,7 +524,7 @@ Oferecemos reservas em todos esses hotéis, traslados exclusivos e pacotes perso
 
 🏷️ {reembolso}
 Valores sujeitos a confirmação e disponibilidade (v4.07)`,
-        
+
         detectar: (conteudo) => {
             const companhias = (conteudo.match(/(?:Copa|Latam|Avianca|Gol|Azul|Tap|Iberia|American|United|Delta|Air France|KLM|Lufthansa)/gi) || []);
             const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase()))];
@@ -532,7 +532,6 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
         }
     }
 };
-
 // ================================================================================================
 // FUNÇÃO PARA EXTRAIR DESTINO AUTOMATICAMENTE
 // ================================================================================================
@@ -540,21 +539,21 @@ Valores sujeitos a confirmação e disponibilidade (v4.07)`,
 function extrairDestinoAutomatico(conteudo) {
     try {
         console.log('🔍 v4.07: Extraindo destino automaticamente...');
-        
+
         const conteudoLower = conteudo.toLowerCase();
-        
+
         // 1. Destinos prioritários - Brasil (cruzeiros)
         const destinosBrasil = [
-            'Santos', 'Rio de Janeiro', 'Salvador', 'Recife', 'Fortaleza', 
+            'Santos', 'Rio de Janeiro', 'Salvador', 'Recife', 'Fortaleza',
             'Maceió', 'Natal', 'Porto Seguro', 'Ilha Grande', 'Búzios'
         ];
-        
+
         // 2. Destinos internacionais
         const destinosInternacionais = [
-            'Orlando', 'Miami', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 
+            'Orlando', 'Miami', 'Lisboa', 'Porto', 'Madrid', 'Barcelona',
             'Paris', 'Roma', 'Londres', 'Cancún', 'Buenos Aires', 'Santiago'
         ];
-        
+
         // 3. Procurar destinos na ordem de prioridade
         for (const destino of [...destinosBrasil, ...destinosInternacionais]) {
             if (conteudo.includes(destino)) {
@@ -562,16 +561,16 @@ function extrairDestinoAutomatico(conteudo) {
                 return destino;
             }
         }
-        
+
         // 4. Para cruzeiros, priorizar "Santos" se não encontrar nada
         if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('msc')) {
             console.log(`✅ v4.07: Cruzeiro detectado - usando destino padrão: Santos`);
             return 'Santos';
         }
-        
+
         console.log(`⚠️ v4.07: Nenhum destino encontrado automaticamente`);
         return null;
-        
+
     } catch (error) {
         console.error('❌ v4.07: Erro ao extrair destino:', error);
         return null;
@@ -585,27 +584,27 @@ function extrairDestinoAutomatico(conteudo) {
 function detectarTipoOrcamento(conteudoPrincipal, tipos = [], dadosFormularioHTML = {}) {
     try {
         console.log('🔍 Detectando tipo de orçamento...');
-        
+
         // 1. TIPOS SELECIONADOS PELO USUÁRIO
         if (tipos && tipos.includes('Dicas')) {
             return 'DICAS';
         }
-        
+
         if (tipos && tipos.includes('Ranking')) {
             return 'RANKING_HOTEIS';
         }
-        
+
         if (tipos && tipos.includes('Hotel') && !tipos.includes('Aéreo')) {
             return 'HOTEIS_MULTIPLAS';
         }
-        
+
         if (tipos && tipos.includes('Cruzeiro')) {
             return 'CRUZEIRO';
         }
 
         // 2. DETECÇÃO AUTOMÁTICA POR CONTEÚDO
         const conteudoLower = conteudoPrincipal.toLowerCase();
-        
+
         // Detectar PACOTE COMPLETO primeiro (aéreo + hotel + serviços)
         if ((conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem')) &&
             (conteudoLower.includes('voo') || conteudoLower.includes('aéreo') || conteudoLower.includes('passagem')) &&
@@ -613,7 +612,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos = [], dadosFormularioHTM
             console.log('✅ Tipo detectado: PACOTE_COMPLETO');
             return 'PACOTE_COMPLETO';
         }
-        
+
         // Testar cada template em ordem de prioridade
         for (const [tipo, config] of Object.entries(TEMPLATES)) {
             if (config.detectar && config.detectar(conteudoPrincipal)) {
@@ -625,7 +624,7 @@ function detectarTipoOrcamento(conteudoPrincipal, tipos = [], dadosFormularioHTM
         // 3. FALLBACK: AÉREO SIMPLES
         console.log('📄 Fallback: AEREO_SIMPLES');
         return 'AEREO_SIMPLES';
-        
+
     } catch (error) {
         console.error('❌ Erro ao detectar tipo:', error);
         return 'AEREO_SIMPLES';
@@ -650,25 +649,25 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
         ehCruzeiro: false,
         links: []
     };
-    
+
     try {
         const conteudoLower = conteudoPrincipal.toLowerCase();
-        
+
         // 🥇 PRIORIDADE 1: DADOS DO HTML (FORMULÁRIO) - SEMPRE PREVALECE
         console.log('📋 Dados do formulário HTML:', dadosFormularioHTML);
-        
+
         if (dadosFormularioHTML.destino) {
             dados.destino = dadosFormularioHTML.destino;
             console.log(`✅ Destino (HTML): ${dados.destino}`);
         }
-        
+
         if (dadosFormularioHTML.adultos || dadosFormularioHTML.criancas) {
             const adultos = parseInt(dadosFormularioHTML.adultos) || 1;
             const criancas = parseInt(dadosFormularioHTML.criancas) || 0;
             const idadesCriancas = dadosFormularioHTML.idadesCriancas || [];
-            
+
             dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
-            
+
             if (criancas > 0) {
                 for (let i = 0; i < criancas; i++) {
                     const idade = idadesCriancas[i] || 0;
@@ -681,7 +680,7 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
             }
             console.log(`✅ Passageiros (HTML): ${dados.passageiros}`);
         }
-        
+
         // CORREÇÃO v4.06: Extrair links automaticamente
         console.log('🔗 v4.07: Extraindo links do texto...');
         const urlPattern = /https?:\/\/[^\s\n]+/g;
@@ -690,43 +689,43 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
             dados.links = linksEncontrados;
             console.log(`✅ v4.07: Links encontrados: ${dados.links.length}`);
         }
-        
+
         // Detectar tipo de produto
         dados.ehCruzeiro = conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('msc');
-        
+
         dados.ehPacote = (conteudoLower.includes('hotel') || conteudoLower.includes('hospedagem')) &&
-                        (conteudoLower.includes('voo') || conteudoLower.includes('aéreo') || conteudoLower.includes('passagem')) &&
-                        (conteudoLower.includes('traslado') || conteudoLower.includes('ingresso') || conteudoLower.includes('transporte'));
-        
-        dados.ehHotel = (conteudoLower.includes('hotel') || 
-                        conteudoLower.includes('comfort suites') ||
-                        conteudoLower.includes('preferencial')) && 
-                       !dados.ehPacote &&
-                       !conteudoLower.includes('aeroporto') && 
-                       !conteudoLower.includes('voo') &&
-                       !conteudoLower.includes('passagem');
-        
+            (conteudoLower.includes('voo') || conteudoLower.includes('aéreo') || conteudoLower.includes('passagem')) &&
+            (conteudoLower.includes('traslado') || conteudoLower.includes('ingresso') || conteudoLower.includes('transporte'));
+
+        dados.ehHotel = (conteudoLower.includes('hotel') ||
+                conteudoLower.includes('comfort suites') ||
+                conteudoLower.includes('preferencial')) &&
+            !dados.ehPacote &&
+            !conteudoLower.includes('aeroporto') &&
+            !conteudoLower.includes('voo') &&
+            !conteudoLower.includes('passagem');
+
         // 🥈 PRIORIDADE 2: DADOS DO TEXTO (só se não tiver no HTML)
         if (!dados.passageiros) {
             console.log('📋 v4.07: Extraindo passageiros do texto...');
-            
+
             // Tentar formato "Total (X Adultos)"
             let matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?\)/i);
-            
+
             if (!matchPassageiros) {
                 // Tentar formato "X Adultos" direto
                 matchPassageiros = conteudoPrincipal.match(/(\d+)\s*Adultos?(?!\s*e\s*\d+\s*(?:bebês?|crianças?))/i);
             }
-            
+
             if (!matchPassageiros) {
                 // Tentar formato complexo com bebês e crianças
                 matchPassageiros = conteudoPrincipal.match(/Total\s*\((\d+)\s*Adultos?(?:,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?)?(?:\s*e\s*(\d+)\s*Crianças?)?(?:\s*,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?)?\)/i);
             }
-            
+
             if (!matchPassageiros) {
                 matchPassageiros = conteudoPrincipal.match(/(\d+)\s*Adultos?,\s*(\d+)\s*Bebês?\s*e\s*(\d+)\s*Crianças?/i);
             }
-            
+
             // Para cruzeiros, detectar formato específico - CORRIGIDO v4.03
             if (!matchPassageiros && dados.ehCruzeiro) {
                 const passageiroMatch = conteudoPrincipal.match(/(\d+)\s*Passageiros?/i);
@@ -736,12 +735,12 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
                     console.log(`✅ v4.07: Passageiros CRUZEIRO (TEXTO): ${dados.passageiros}`);
                 }
             }
-            
+
             if (matchPassageiros && !dados.passageiros) {
                 const adultos = parseInt(matchPassageiros[1]) || 1;
                 const bebes = parseInt(matchPassageiros[2] || matchPassageiros[5]) || 0;
                 const criancas = parseInt(matchPassageiros[3] || matchPassageiros[4] || matchPassageiros[6]) || 0;
-                
+
                 // CORREÇÃO v4.06: Formato correto de passageiros
                 dados.passageiros = `${String(adultos).padStart(2, '0')} adulto${adultos > 1 ? 's' : ''}`;
                 if (bebes > 0) {
@@ -753,15 +752,16 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
                 console.log(`✅ v4.07: Passageiros (TEXTO): ${dados.passageiros}`);
             }
         }
-        
+
         // 🥉 PRIORIDADE 3: DESTINO AUTOMÁTICO (se não tiver no HTML nem no texto específico)
         if (!dados.destino) {
             console.log('📋 v4.07: Extraindo destino do texto...');
-            
+
             // Primeiro, procurar destinos explícitos no texto
-            const destinos = ['Orlando', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma', 
-                             'Londres', 'Miami', 'Cancún', 'Buenos Aires', 'Santiago',
-                             'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal', 'Porto Seguro', 'Santos'];
+            const destinos = ['Orlando', 'Lisboa', 'Porto', 'Madrid', 'Barcelona', 'Paris', 'Roma',
+                'Londres', 'Miami', 'Cancún', 'Buenos Aires', 'Santiago',
+                'Salvador', 'Maceió', 'Recife', 'Fortaleza', 'Natal', 'Porto Seguro', 'Santos'
+            ];
             for (const destino of destinos) {
                 if (conteudoPrincipal.includes(destino)) {
                     dados.destino = destino;
@@ -769,7 +769,7 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
                     break;
                 }
             }
-            
+
             // Se ainda não encontrou, usar extração automática
             if (!dados.destino) {
                 dados.destino = extrairDestinoAutomatico(conteudoPrincipal);
@@ -778,28 +778,28 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
                 }
             }
         }
-        
+
         // Detectar múltiplas companhias
         const companhias = (conteudoPrincipal.match(/(?:Copa|Latam|Avianca|Gol|Azul|Tap|Iberia)/gi) || []);
         const companhiasUnicas = [...new Set(companhias.map(c => c.toLowerCase()))];
         dados.multiplas = companhiasUnicas.length >= 2;
-        
+
         // Detectar bagagem despachada - NÃO APLICAR PARA CRUZEIROS v4.03
         if (!dados.ehCruzeiro) {
-            dados.temBagagem = conteudoLower.includes('com bagagem') || 
-                              conteudoLower.includes('bagagem despachada') ||
-                              conteudoLower.includes('bagagens inclusas') ||
-                              conteudoLower.includes('mala de até 23kg');
+            dados.temBagagem = conteudoLower.includes('com bagagem') ||
+                conteudoLower.includes('bagagem despachada') ||
+                conteudoLower.includes('bagagens inclusas') ||
+                conteudoLower.includes('mala de até 23kg');
         }
-        
+
         // Detectar pré-reserva de assento - NÃO APLICAR PARA CRUZEIROS v4.03
         if (!dados.ehCruzeiro) {
             dados.temAssento = conteudoLower.includes('pré-reserva de assento') ||
-                              conteudoLower.includes('pre reserva de assento') ||
-                              conteudoLower.includes('pré reserva de assento') ||
-                              conteudoLower.includes('marcação de assento');
+                conteudoLower.includes('pre reserva de assento') ||
+                conteudoLower.includes('pré reserva de assento') ||
+                conteudoLower.includes('marcação de assento');
         }
-        
+
         // Extrair parcelamento com entrada
         const matchParcelamento = conteudoPrincipal.match(/Entrada de R\$\s*([\d.,]+)\s*\+\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i);
         if (matchParcelamento) {
@@ -807,17 +807,17 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
             const numParcelas = matchParcelamento[2];
             const valorParcela = matchParcelamento[3];
             const totalParcelas = parseInt(numParcelas) + 1;
-            
+
             const matchValorTotal = conteudoPrincipal.match(/R\$\s*([\d.,]+)(?:\s*$|\s*Entrada|\s*Total)/m);
             const valorTotal = matchValorTotal ? matchValorTotal[1] : entrada;
-            
+
             dados.parcelamento = `Total de R$ ${valorTotal} em até ${totalParcelas}x, sendo a primeira de R$ ${entrada}, mais ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
         }
-        
+
     } catch (error) {
         console.error('❌ v4.07: Erro ao extrair dados:', error);
     }
-    
+
     console.log('📊 v4.07: Dados extraídos FINAIS (com prioridade HTML):', dados);
     return dados;
 }
@@ -829,24 +829,24 @@ function extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML = {}) {
 function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado, dadosFormularioHTML = {}) {
     try {
         console.log('🔧 v4.07: Iniciando pós-processamento...');
-        
+
         let resultado = texto;
-        
+
         // Extrair dados primeiro (com prioridade HTML)
         const dados = extrairDadosCompletos(conteudoOriginal, dadosFormularioHTML);
-        
+
         // CRUZEIRO: Processamento específico v4.03
         if (dados.ehCruzeiro) {
             resultado = processarCruzeiro(resultado, dados);
             return resultado;
         }
-        
+
         // Se é hotel, aplicar processamento específico
         if (dados.ehHotel) {
             resultado = processarHotel(resultado, dados);
             return resultado;
         }
-        
+
         // Aplicar correções em ordem
         resultado = removerDiasSemana(resultado);
         resultado = corrigirDatas(resultado);
@@ -864,49 +864,48 @@ function posProcessar(texto, conteudoOriginal, parcelamentoSelecionado, dadosFor
         resultado = adicionarDiaSeguinte(resultado);
         resultado = garantirVersao(resultado);
         resultado = limparFormatacao(resultado);
-        
+
         console.log('✅ v4.07: Pós-processamento completo');
         return resultado;
-        
+
     } catch (error) {
         console.error('❌ v4.07: Erro no pós-processamento:', error);
         return texto;
     }
 }
-
 // ================================================================================================
 // FUNÇÕES DE PÓS-PROCESSAMENTO INDIVIDUAIS
 // ================================================================================================
 
 function processarCruzeiro(texto, dados) {
     console.log('🚢 v4.07: Processando cruzeiro...');
-    
+
     let resultado = texto;
-    
+
     // 1. REMOVER BAGAGEM - Cruzeiro não tem bagagem aérea
     resultado = resultado.replace(/✅[^\n]*bagagem[^\n]*\n/gi, '');
     resultado = resultado.replace(/\n✅[^\n]*bagagem[^\n]*/gi, '');
     resultado = resultado.replace(/✅[^\n]*mala[^\n]*\n/gi, '');
     resultado = resultado.replace(/\n✅[^\n]*mala[^\n]*/gi, '');
-    
+
     // 2. REMOVER REEMBOLSO - Não se aplica a cruzeiros
     resultado = resultado.replace(/🏷️[^\n]*\n/g, '');
     resultado = resultado.replace(/\n🏷️[^\n]*/g, '');
-    
+
     // 3. CORRIGIR FORMATO DAS CABINES
     const linhas = resultado.split('\n');
     const novasLinhas = [];
     let dentroOpcoesCapines = false;
-    
+
     for (let i = 0; i < linhas.length; i++) {
         const linha = linhas[i];
-        
+
         if (linha.includes('Opções de Cabines:')) {
             novasLinhas.push(linha);
             dentroOpcoesCapines = true;
             continue;
         }
-        
+
         if (dentroOpcoesCapines) {
             // Se encontrar uma linha que claramente não é de cabine, parar
             if (linha.includes('✅') || linha.includes('🚫') || linha.includes('📲') || linha.includes('Valores sujeitos')) {
@@ -914,7 +913,7 @@ function processarCruzeiro(texto, dados) {
                 novasLinhas.push(linha);
                 continue;
             }
-            
+
             // Processar linha de cabine
             if (linha.trim() && !linha.includes(':') && linha.includes('R$')) {
                 // Formato: "Interna - Bella - IB: R$ 1.129,00 (Passageiro 1)"
@@ -923,7 +922,7 @@ function processarCruzeiro(texto, dados) {
                     .replace(/\(Passageiro \d+\)/g, '')
                     .replace(/Passageiro \d+/g, '')
                     .trim();
-                
+
                 novasLinhas.push(linhaMelhorada);
             } else if (linha.trim()) {
                 novasLinhas.push(linha);
@@ -932,25 +931,25 @@ function processarCruzeiro(texto, dados) {
             novasLinhas.push(linha);
         }
     }
-    
+
     resultado = novasLinhas.join('\n');
-    
+
     // 4. GARANTIR TAXAS INCLUÍDAS
     if (resultado.includes('✅ Inclui:')) {
         resultado = resultado.replace(/✅ Inclui: ([^\n]+)/g, '✅ Inclui: hospedagem a bordo, pensão completa, taxas e impostos');
     }
-    
+
     // 5. REMOVER "Total a pagar" da linha de cabines e colocar no final
     const matchTotal = resultado.match(/Total a pagar[:\s]*R\$\s*([\d.,]+)/i);
     if (matchTotal) {
         const valorTotal = matchTotal[1];
         // Remover a linha "Total a pagar" de onde estiver
         resultado = resultado.replace(/[^\n]*Total a pagar[^\n]*\n?/gi, '');
-        
+
         // Adicionar no final, antes de "📲"
         resultado = resultado.replace(/📲/, `💰 Total a pagar: R$ ${valorTotal} (incluindo taxas)\n\n📲`);
     }
-    
+
     // 6. CORREÇÃO v4.06: Adicionar links se existir
     if (dados.links && dados.links.length > 0) {
         const link = dados.links[0];
@@ -958,36 +957,36 @@ function processarCruzeiro(texto, dados) {
             resultado = resultado.replace(/💰 Total a pagar/, `🔗 ${link}\n\n💰 Total a pagar`);
         }
     }
-    
+
     // 7. Garantir versão correta
     resultado = resultado.replace(/\(v[\d.]+\)/g, `(v${CONFIG.VERSION})`);
-    
+
     console.log('✅ v4.07: Cruzeiro processado - bagagem removida, formato cabines corrigido, links incluídos');
     return resultado;
 }
 
 function processarHotel(texto, dados) {
     console.log('🏨 v4.07: Processando hotel...');
-    
+
     let resultado = texto;
-    
+
     // Remover qualquer referência a voo/aeroporto
     resultado = resultado.replace(/.*Aeroporto.*\n/g, '');
     resultado = resultado.replace(/.*✈.*\n/g, '');
     resultado = resultado.replace(/.*--.*\n/g, '');
     resultado = resultado.replace(/.*\(voo direto\).*\n/g, '');
     resultado = resultado.replace(/.*\(com conexão\).*\n/g, '');
-    
+
     // Garantir formato de hotel
     if (!resultado.includes('*Hotéis em')) {
         const linhas = resultado.split('\n');
         const novasLinhas = [];
-        
+
         let nomeHotel = '';
         let localizacao = '';
         let valor = '';
         let passageiros = dados.passageiros || '02 adultos + 02 crianças';
-        
+
         for (const linha of linhas) {
             if (linha.includes('Comfort Suites') || linha.includes('Hotel') || linha.includes('Preferencial')) {
                 nomeHotel = linha.replace(/[*-]/g, '').trim();
@@ -997,7 +996,7 @@ function processarHotel(texto, dados) {
                 localizacao = linha.replace('📍', '').trim();
             }
         }
-        
+
         novasLinhas.push('*Hotéis em Porto Seguro - Bahia*');
         novasLinhas.push('Período: 10/09 a 17/09 (7 noites)');
         novasLinhas.push(passageiros);
@@ -1007,112 +1006,124 @@ function processarHotel(texto, dados) {
         novasLinhas.push('🛏️ Standard Ala Da Piscina');
         novasLinhas.push('☕ Café da manhã');
         novasLinhas.push(valor || '💰 R$ 8.215,78 total');
-        
+
         // CORREÇÃO v4.06: Adicionar links se existir
         if (dados.links && dados.links.length > 0) {
             novasLinhas.push(`🔗 ${dados.links[0]}`);
         }
-        
+
         novasLinhas.push('');
         novasLinhas.push(`Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`);
-        
+
         resultado = novasLinhas.join('\n');
     }
-    
+
     resultado = resultado.replace(/\(v[\d.]+\)/g, `(v${CONFIG.VERSION})`);
-    
+
     return resultado;
 }
 
 function removerDiasSemana(texto) {
     console.log('📅 v4.07: Removendo dias da semana...');
-    
+
     let resultado = texto;
     resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),?\s*(\d{1,2}\/\d{2})/gi, '$1');
     resultado = resultado.replace(/(?:segunda|terça|quarta|quinta|sexta|sábado|domingo),?\s*(\d{1,2}\/\d{2})/gi, '$1');
-    
+
     return resultado;
 }
 
 function corrigirDatas(texto) {
     const meses = {
-        'janeiro': '01', 'jan': '01',
-        'fevereiro': '02', 'fev': '02',
-        'março': '03', 'mar': '03',
-        'abril': '04', 'abr': '04',
-        'maio': '05', 'mai': '05',
-        'junho': '06', 'jun': '06',
-        'julho': '07', 'jul': '07',
-        'agosto': '08', 'ago': '08',
-        'setembro': '09', 'set': '09',
-        'outubro': '10', 'out': '10',
-        'novembro': '11', 'nov': '11',
-        'dezembro': '12', 'dez': '12'
+        'janeiro': '01',
+        'jan': '01',
+        'fevereiro': '02',
+        'fev': '02',
+        'março': '03',
+        'mar': '03',
+        'abril': '04',
+        'abr': '04',
+        'maio': '05',
+        'mai': '05',
+        'junho': '06',
+        'jun': '06',
+        'julho': '07',
+        'jul': '07',
+        'agosto': '08',
+        'ago': '08',
+        'setembro': '09',
+        'set': '09',
+        'outubro': '10',
+        'out': '10',
+        'novembro': '11',
+        'nov': '11',
+        'dezembro': '12',
+        'dez': '12'
     };
-    
+
     let resultado = texto;
-    
+
     resultado = resultado.replace(/(?:seg|ter|qua|qui|sex|sáb|sab|dom),?\s*(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
         const mesNum = meses[mes.toLowerCase()] || mes;
         return `${dia.padStart(2, '0')}/${mesNum}`;
     });
-    
+
     resultado = resultado.replace(/(\d{1,2})\s+de\s+(\w+)/gi, (match, dia, mes) => {
         const mesNum = meses[mes.toLowerCase()] || mes;
         return `${dia.padStart(2, '0')}/${mesNum}`;
     });
-    
+
     return resultado;
 }
 
 function converterCodigosAeroporto(texto) {
     let resultado = texto;
-    
+
     Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
         const regex = new RegExp(`\\b${codigo}\\b`, 'g');
         resultado = resultado.replace(regex, nome);
     });
-    
+
     return resultado;
 }
 
 function corrigirTituloCidades(texto) {
     console.log('🏙️ v4.07: Corrigindo títulos - aeroportos para cidades...');
-    
+
     let resultado = texto;
-    
+
     // Corrigir duplicações específicas
     resultado = resultado.replace(/([A-Za-z\s()]+)\s*\(\1\)/g, '$1');
-    
+
     // Corrigir títulos de orçamentos para usar nomes de cidades
     Object.entries(AEROPORTO_PARA_CIDADE).forEach(([aeroporto, cidade]) => {
         const aeroportoEscapado = aeroporto.replace(/[()]/g, '\\$&');
-        
+
         // Para títulos do tipo *Companhia - Aeroporto ✈ Destino*
         const regexTitulo = new RegExp(`(\\*[^-]+ - )${aeroportoEscapado}( ✈ [^*]+\\*)`, 'g');
         resultado = resultado.replace(regexTitulo, `$1${cidade}$2`);
-        
+
         // Para títulos do tipo *Companhia - Destino ✈ Aeroporto*
         const regexTituloVolta = new RegExp(`(\\*[^-]+ - [^✈]+ ✈ )${aeroportoEscapado}(\\*)`, 'g');
         resultado = resultado.replace(regexTituloVolta, `$1${cidade}$2`);
     });
-    
+
     console.log('✅ v4.07: Títulos corrigidos para nomes de cidades');
     return resultado;
 }
 
 function corrigirCategoriasHotel(texto) {
     console.log('🏨 v4.07: Corrigindo categorias de hotéis...');
-    
+
     let resultado = texto;
-    
+
     const linhas = resultado.split('\n');
     let contadorOpcoes = 0;
-    
+
     linhas.forEach((linha, index) => {
         if (linha.includes('**OPÇÃO') && linha.includes('**')) {
             contadorOpcoes++;
-            
+
             // Se contém "Preferencial" explicitamente = ⭐ Preferencial
             if (linha.toLowerCase().includes('preferencial')) {
                 linhas[index] = linha.replace(/(⭐)[^⭐\n]*/, '$1 Preferencial');
@@ -1128,71 +1139,71 @@ function corrigirCategoriasHotel(texto) {
                 linhas[index] = linha.replace(/(⭐)[^⭐\n]*/, '$1⭐⭐');
                 console.log(`✅ Aplicada categoria "⭐⭐⭐" na opção ${contadorOpcoes}`);
             }
-            // Primeira opção sem "Preferencial" = ⭐⭐⭐ 
+            // Primeira opção sem "Preferencial" = ⭐⭐⭐
             else if (contadorOpcoes === 1 && !linha.toLowerCase().includes('preferencial')) {
                 linhas[index] = linha.replace(/(⭐)[^⭐\n]*/, '$1⭐⭐');
                 console.log(`✅ Aplicada categoria "⭐⭐⭐" na opção ${contadorOpcoes}`);
             }
         }
     });
-    
+
     resultado = linhas.join('\n');
-    
+
     console.log('✅ v4.07: Categorias de hotéis corrigidas');
     return resultado;
 }
 
 function corrigirMultiplasOpcoes(resultado) {
     console.log('✈️ v4.07: Corrigindo múltiplas opções...');
-    
+
     if (resultado.includes('OPÇÃO 1') && resultado.includes('OPÇÃO 2')) {
         resultado = resultado.replace(/(\*\*OPÇÃO \d+\*\*)\s*-\s*([^-\n]+)\s*-\s*(R\$[^-\n]+)/g, '$1 - $2 - $3');
-        
+
         const tituloMatch = resultado.match(/\*([^-]+) -/);
         const companhiaPrincipal = tituloMatch ? tituloMatch[1] : 'Companhia';
-        
+
         resultado = resultado.replace(/(\*\*OPÇÃO \d+\*\*)\s*-\s*(R\$[^-\n]+)/g, `$1 - ${companhiaPrincipal} - $2`);
     }
-    
+
     console.log('✅ v4.07: Múltiplas opções corrigidas');
     return resultado;
 }
 
 function corrigirPassageiros(texto, dados) {
     if (!dados.passageiros) return texto;
-    
+
     console.log(`🧑‍🤝‍🧑 v4.07: Aplicando passageiros: ${dados.passageiros}`);
-    
+
     let resultado = texto;
     resultado = resultado.replace(/\d{1,2}\s*adultos?(?:\s*[,+]\s*\d{1,2}\s*(?:bebês?|crianças?))*(?:\s*e\s*\d{1,2}\s*crianças?)?/gi, dados.passageiros);
     resultado = resultado.replace(/Total\s*\([^)]+\)/gi, dados.passageiros);
-    
+
     return resultado;
 }
 
 function corrigirFormatoVoo(texto) {
     let resultado = texto;
-    
+
     resultado = resultado.replace(/uma escala/gi, 'com conexão');
     resultado = resultado.replace(/duas escalas/gi, 'com múltiplas conexões');
     resultado = resultado.replace(/\(direto\)/g, '(voo direto)');
     resultado = resultado.replace(/\(voo\s+voo direto\)/g, '(voo direto)');
-    
+
     resultado = resultado.replace(/\(\(([^)]+)\)\)/g, '($1)');
-    
+
     return resultado;
 }
 
 function corrigirLinks(texto, dados) {
     console.log('🔗 v4.07: Corrigindo links...');
-    
+
     let resultado = texto;
-    
+
     // Se temos links extraídos, adicionar ao resultado
     if (dados.links && dados.links.length > 0) {
         const link = dados.links[0]; // Usar primeiro link
         console.log(`✅ v4.07: Aplicando link: ${link}`);
-        
+
         // Se não tem linha de link, adicionar
         if (!resultado.includes('🔗')) {
             // Para cruzeiros, adicionar antes do total
@@ -1202,49 +1213,59 @@ function corrigirLinks(texto, dados) {
                     `🔗 ${link}\n\n$1`
                 );
             }
+            // CORREÇÃO: Adicionei um 'else' para tratar outros casos, se necessário, para evitar que links não apareçam.
+            else if (resultado.includes('🏷️')) {
+                 resultado = resultado.replace(/(🏷️[^\n]+)/, `$1\n🔗 ${link}`);
+            } else if (resultado.includes('✅')) {
+                 resultado = resultado.replace(/(✅[^\n]+)/, `$1\n🔗 ${link}`);
+            }
         }
     }
-    
+
     // Converter markdown links para links diretos
     resultado = resultado.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '🔗 $2');
-    
+
     // Remover links genéricos
     resultado = resultado.replace(/🔗 https:\/\/www\.cvc\.com\.br\s*$/gm, '');
     resultado = resultado.replace(/🔗 www\.cvc\.com\.br\s*$/gm, '');
-    
+
     return resultado;
 }
 
 function corrigirParcelamento(texto, parcelamentoSelecionado, dados) {
     let resultado = texto;
-    
+
     if (dados.parcelamento) {
         console.log('💳 v4.07: Usando parcelamento extraído:', dados.parcelamento);
-        
+
         if (resultado.includes('💰')) {
             resultado = resultado.replace(/(💰 R\$ [\d.,]+ para [^\n]+)(?:\n💳[^\n]*)?/g, `$1\n💳 ${dados.parcelamento}`);
         }
     } else if (parcelamentoSelecionado && parcelamentoSelecionado !== '') {
         console.log('💳 v4.07: Aplicando parcelamento selecionado:', parcelamentoSelecionado);
-        
+
         const valoresEncontrados = resultado.match(/💰 R\$ ([\d.,]+)/g);
-        
+
         if (valoresEncontrados) {
             valoresEncontrados.forEach(valorMatch => {
                 const valor = valorMatch.match(/[\d.,]+/)[0];
                 const valorNum = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
                 const numParcelas = parseInt(parcelamentoSelecionado);
                 const valorParcela = (valorNum / numParcelas).toFixed(2).replace('.', ',');
-                
+
                 const linhaParcelamento = `💳 ${numParcelas}x de R$ ${valorParcela} s/ juros no cartão`;
                 
+                // >>>>> INÍCIO DA CORREÇÃO <<<<<
                 // CORREÇÃO ESCAPE: Escape correto dos caracteres especiais
-                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\                resultado = resultado.replace(
-                    /(');
-                const regex = new RegExp(`(${escapedValue}[^💳\\n]*)(💳[^\\n]*)?`, 'gs');
-                resultado = resultado.replace(regex, (match, antes) => {
-                    return `${antes}\n${linhaParcelamento}`;
+                const escapedValue = valorMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                
+                // Regex para encontrar a linha do valor e opcionalmente uma linha de parcelamento existente para substituí-la
+                const regex = new RegExp(`(${escapedValue}[^\\n]*)(?:\\n💳[^\n]*)?`, 'g');
+                
+                resultado = resultado.replace(regex, (match, linhaDoValor) => {
+                    return `${linhaDoValor.trimEnd()}\n${linhaParcelamento}`;
                 });
+                // >>>>> FIM DA CORREÇÃO <<<<<
             });
         }
     } else {
@@ -1252,74 +1273,74 @@ function corrigirParcelamento(texto, parcelamentoSelecionado, dados) {
         resultado = resultado.replace(/\n💳[^\n]+/g, '');
         resultado = resultado.replace(/💳[^\n]+\n/g, '');
     }
-    
+
     return resultado;
 }
 
 function corrigirBagagem(texto, dados) {
     let resultado = texto;
-    
+
     console.log('✅ v4.07: Corrigindo bagagem. Tem bagagem:', dados.temBagagem);
-    
+
     // NÃO APLICAR BAGAGEM PARA CRUZEIROS v4.03
     if (dados.ehCruzeiro) {
         console.log('🚢 v4.07: Pulando bagagem para cruzeiro');
         return resultado;
     }
-    
+
     let tipoBagagem;
     if (dados.temBagagem) {
         tipoBagagem = REGRAS_BAGAGEM.COM_DESPACHADA_23KG;
     } else {
         tipoBagagem = REGRAS_BAGAGEM.SEM_DESPACHADA;
     }
-    
+
     if (resultado.includes('✅')) {
         resultado = resultado.replace(/✅[^\n]*/g, `✅ ${tipoBagagem}`);
     } else {
         resultado = resultado.replace(/(💰[^\n]+|💳[^\n]+)(\n|$)/, `$1\n✅ ${tipoBagagem}\n`);
     }
-    
+
     return resultado;
 }
 
 function corrigirAssento(texto, dados) {
     let resultado = texto;
-    
+
     console.log('💺 v4.07: Corrigindo assento. Tem assento:', dados.temAssento);
-    
+
     // NÃO APLICAR ASSENTO PARA CRUZEIROS v4.03
     if (dados.ehCruzeiro) {
         console.log('🚢 v4.07: Pulando assento para cruzeiro');
         return resultado;
     }
-    
+
     if (dados.temAssento && !resultado.includes('💺')) {
         resultado = resultado.replace(/(✅[^\n]+)(\n|$)/, '$1\n💺 Inclui pré reserva de assento\n');
     } else if (!dados.temAssento) {
         resultado = resultado.replace(/💺[^\n]*\n/g, '');
         resultado = resultado.replace(/\n💺[^\n]+/g, '');
     }
-    
+
     return resultado;
 }
 
 function corrigirReembolso(texto, conteudoOriginal) {
     let resultado = texto;
     const conteudoLower = conteudoOriginal.toLowerCase();
-    
+
     // NÃO APLICAR REEMBOLSO PARA CRUZEIROS v4.03
     if (conteudoLower.includes('cruzeiro') || conteudoLower.includes('navio') || conteudoLower.includes('msc')) {
         console.log('🚢 v4.07: Pulando reembolso para cruzeiro');
         return resultado;
     }
-    
+
     let tipoReembolso = 'Não reembolsável';
-    
+
     if (conteudoLower.includes('reembolsável') && !conteudoLower.includes('não reembolsável')) {
         tipoReembolso = 'Reembolsável conforme regras do bilhete';
     }
-    
+
     if (resultado.includes('🏷️')) {
         resultado = resultado.replace(/🏷️[^\n]*/g, `🏷️ ${tipoReembolso}`);
     } else {
@@ -1332,27 +1353,27 @@ function corrigirReembolso(texto, conteudoOriginal) {
             resultado += `\n🏷️ ${tipoReembolso}`;
         }
     }
-    
+
     return resultado;
 }
 
 function adicionarDiaSeguinte(texto) {
     let resultado = texto;
     const linhas = resultado.split('\n');
-    
+
     console.log('🌅 v4.07: Corrigindo (+1) - apenas volta Orlando...');
-    
+
     linhas.forEach((linha, index) => {
         if (linha.includes(' - ') && linha.includes(' / ') && !linha.includes('(+1)')) {
             const horaMatch = linha.match(/(\d{2}):(\d{2})[^\/]+\/[^0-9]*(\d{2}):(\d{2})/);
             if (horaMatch) {
                 const horaChegada = parseInt(horaMatch[3]);
-                
+
                 // (+1) APENAS para volta de Orlando (contém "Orlando" e depois "São Paulo")
-                const ehVoltaOrlando = linha.includes('Orlando') && 
-                                      linha.includes('São Paulo') && 
-                                      linha.indexOf('Orlando') < linha.indexOf('São Paulo');
-                
+                const ehVoltaOrlando = linha.includes('Orlando') &&
+                    linha.includes('São Paulo') &&
+                    linha.indexOf('Orlando') < linha.indexOf('São Paulo');
+
                 if (ehVoltaOrlando && horaChegada <= 8) {
                     console.log(`✅ v4.07: Adicionando (+1) para volta Orlando: ${linha}`);
                     linhas[index] = linha.replace(/(\d{2}:\d{2})(\s*\([^)]+\))/, '$1 (+1)$2');
@@ -1360,45 +1381,44 @@ function adicionarDiaSeguinte(texto) {
             }
         }
     });
-    
+
     return linhas.join('\n');
 }
 
 function garantirVersao(texto) {
     const versaoTexto = `Valores sujeitos a confirmação e disponibilidade (v${CONFIG.VERSION})`;
-    
+
     // Remover versão antiga e duplicações
     texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade \(v[\d.]+\)/g, '');
     texto = texto.replace(/Valores sujeitos a confirmação e disponibilidade/g, '');
     texto = texto.replace(/\(v[\d.]+\)/g, '');
-    
+
     // Adicionar versão correta UMA ÚNICA VEZ no final
     if (!texto.includes(versaoTexto)) {
         texto = texto.trim() + '\n\n' + versaoTexto;
     }
-    
+
     return texto;
 }
 
 function limparFormatacao(texto) {
     let resultado = texto;
-    
+
     // Remover múltiplas quebras de linha
     resultado = resultado.replace(/\n{3,}/g, '\n\n');
-    
+
     // Remover quebra de linha extra antes de 🏷️ quando não tem 💺
     resultado = resultado.replace(/\n\n🏷️/g, '\n🏷️');
-    
+
     // Garantir apenas uma quebra entre elementos
     resultado = resultado.replace(/(✅[^\n]+)\n\n(🏷️)/g, '$1\n$2');
     resultado = resultado.replace(/(💺[^\n]+)\n\n(🏷️)/g, '$1\n$2');
-    
+
     // Remover espaços extras no final das linhas
     resultado = resultado.split('\n').map(linha => linha.trimEnd()).join('\n');
-    
+
     return resultado.trim();
 }
-
 // ================================================================================================
 // COMUNICAÇÃO COM IAS
 // ================================================================================================
@@ -1407,7 +1427,7 @@ async function buscarAeroportoOnline(codigo) {
     try {
         if (!process.env.OPENAI_API_KEY) return codigo;
         console.log(`🔍 v4.07: Buscando aeroporto: ${codigo}`);
-        
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -1416,15 +1436,15 @@ async function buscarAeroportoOnline(codigo) {
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
-                messages: [{ 
-                    role: 'user', 
-                    content: `Qual é o nome da cidade do aeroporto ${codigo}? Responda APENAS o nome da cidade, exemplo: "Bogotá" ou "Salvador". Se não souber, responda "${codigo}".` 
+                messages: [{
+                    role: 'user',
+                    content: `Qual é o nome da cidade do aeroporto ${codigo}? Responda APENAS o nome da cidade, exemplo: "Bogotá" ou "Salvador". Se não souber, responda "${codigo}".`
                 }],
                 temperature: 0,
                 max_tokens: 15
             })
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             const resultado = data.choices[0].message.content.trim();
@@ -1441,12 +1461,12 @@ async function buscarAeroportoOnline(codigo) {
 function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehImagem = false, dadosFormularioHTML = {}) {
     // 🥇 PRIORIDADE HTML: Usar destino do formulário se disponível
     const destinoFinal = dadosFormularioHTML.destino || destino || ESTADO_GLOBAL.ultimoDestino || 'Orlando';
-    
+
     // DICAS ESPECÍFICAS - CORRIGIDO v4.03
     if (tipoOrcamento === 'DICAS') {
         // v4.03: MELHORAR DESTINO PARA DICAS
         let destinoParaDicas = destinoFinal;
-        
+
         // Se não tem destino definido, tentar extrair do último conteúdo processado
         if (!destinoParaDicas || destinoParaDicas === 'Orlando') {
             const destinoExtraido = extrairDestinoAutomatico(ESTADO_GLOBAL.ultimoConteudo || conteudoPrincipal);
@@ -1455,7 +1475,7 @@ function gerarPrompt(conteudoPrincipal, passageiros, tipoOrcamento, destino, ehI
                 console.log(`🎯 v4.07: Destino para dicas extraído: ${destinoParaDicas}`);
             }
         }
-        
+
         return `
 Gere dicas de viagem ESPECÍFICAS para ${destinoParaDicas}.
 
@@ -1503,12 +1523,12 @@ Oferecemos passeios guiados, traslados confortáveis, seguro viagem completo e c
 
 Seja ESPECÍFICO para ${destinoParaDicas}, não genérico.`;
     }
-    
+
     // RANKING DE HOTÉIS - CORRIGIDO v4.03
     if (tipoOrcamento === 'RANKING_HOTEIS') {
         // v4.03: MELHORAR DESTINO PARA RANKING
         let destinoParaRanking = destinoFinal;
-        
+
         // Se não tem destino definido, tentar extrair do último conteúdo processado
         if (!destinoParaRanking || destinoParaRanking === 'Orlando') {
             const destinoExtraido = extrairDestinoAutomatico(ESTADO_GLOBAL.ultimoConteudo || conteudoPrincipal);
@@ -1517,7 +1537,7 @@ Seja ESPECÍFICO para ${destinoParaDicas}, não genérico.`;
                 console.log(`🎯 v4.07: Destino para ranking extraído: ${destinoParaRanking}`);
             }
         }
-        
+
         return `
 Gere um ranking ESPECÍFICO de hotéis para ${destinoParaRanking}.
 
@@ -1575,7 +1595,7 @@ Oferecemos reservas em todos esses hotéis, traslados exclusivos e pacotes perso
 
 ⚠️ IMPORTANTE: Use hotéis REAIS que existem em ${destinoParaRanking}, não inventados.`;
     }
-    
+
     // HOTÉIS (SEM VOO)
     if (tipoOrcamento === 'HOTEIS_MULTIPLAS') {
         const template = TEMPLATES.HOTEIS_MULTIPLAS.template;
@@ -1607,7 +1627,7 @@ REGRAS ESPECÍFICAS v4.07:
 - Demais = ⭐⭐⭐
 - Termine com: Valores sujeitos a confirmação e disponibilidade (v4.07)`;
     }
-    
+
     // CRUZEIRO - CORRIGIDO v4.03
     if (tipoOrcamento === 'CRUZEIRO') {
         return `
@@ -1648,7 +1668,7 @@ TEMPLATE CRUZEIRO:
 
 📲 Me chama pra garantir a sua cabine! 🌴🛳️`;
     }
-    
+
     // PARA IMAGENS
     if (ehImagem) {
         return `
@@ -1687,10 +1707,10 @@ REGRAS:
 - Links: incluir se visíveis
 - Termine com: Valores sujeitos a confirmação e disponibilidade (v4.07)`;
     }
-    
+
     // TEMPLATE PADRÃO
-    const template = TEMPLATES[tipoOrcamento]?.template || TEMPLATES.AEREO_SIMPLES.template;
-    
+    const template = TEMPLATES[tipoOrcamento] ?.template || TEMPLATES.AEREO_SIMPLES.template;
+
     return `
 Formate este orçamento de viagem para WhatsApp seguindo EXATAMENTE o template.
 
@@ -1746,13 +1766,15 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Content-Type', 'application/json');
-    
+
     try {
         // OPTIONS
         if (req.method === 'OPTIONS') {
-            return res.status(200).json({ success: true });
+            return res.status(200).json({
+                success: true
+            });
         }
-        
+
         // GET - Status
         if (req.method === 'GET') {
             return res.status(200).json({
@@ -1780,7 +1802,7 @@ export default async function handler(req, res) {
                 ]
             });
         }
-        
+
         // Validar POST
         if (req.method !== 'POST') {
             return res.status(200).json({
@@ -1789,24 +1811,24 @@ export default async function handler(req, res) {
                 result: 'Método não permitido'
             });
         }
-        
+
         console.log(`🚀 v${CONFIG.VERSION}: Processando requisição...`);
-        
+
         // Extrair dados com validação robusta
         const body = req.body || {};
         const {
             observacoes = '',
-            textoColado = '',
-            destino = '',
-            adultos = 1,
-            criancas = 0,
-            tipos = [],
-            parcelamento = '',
-            imagemBase64 = null,
-            pdfContent = null,
-            idadesCriancas = []
+                textoColado = '',
+                destino = '',
+                adultos = 1,
+                criancas = 0,
+                tipos = [],
+                parcelamento = '',
+                imagemBase64 = null,
+                pdfContent = null,
+                idadesCriancas = []
         } = body;
-        
+
         // 🥇 PRIORIDADE HTML: Montar dados do formulário
         const dadosFormularioHTML = {
             destino: destino || '',
@@ -1814,12 +1836,12 @@ export default async function handler(req, res) {
             criancas: criancas || 0,
             idadesCriancas: idadesCriancas || []
         };
-        
+
         console.log('📋 v4.07: Dados do formulário HTML (PRIORIDADE):', dadosFormularioHTML);
-        
+
         // Combinar conteúdo
         const conteudoPrincipal = (observacoes || textoColado || pdfContent || '').toString();
-        
+
         // Validar entrada
         if (!conteudoPrincipal.trim() && !imagemBase64) {
             return res.status(200).json({
@@ -1828,11 +1850,11 @@ export default async function handler(req, res) {
                 result: 'Por favor, adicione informações sobre a viagem'
             });
         }
-        
+
         // Extrair dados e formatar passageiros (COM PRIORIDADE HTML)
         const dadosExtraidos = extrairDadosCompletos(conteudoPrincipal, dadosFormularioHTML);
         let passageiros = dadosExtraidos.passageiros;
-        
+
         // Fallback se não conseguiu extrair passageiros
         if (!passageiros) {
             const numAdultos = parseInt(adultos) || 1;
@@ -1842,17 +1864,17 @@ export default async function handler(req, res) {
                 passageiros += ` e ${String(numCriancas).padStart(2, '0')} criança${numCriancas > 1 ? 's' : ''}`;
             }
         }
-        
+
         console.log(`📋 v4.07: Passageiros FINAIS: ${passageiros}`);
         console.log(`💳 v4.07: Parcelamento selecionado: ${parcelamento || 'nenhum'}`);
         console.log(`🎯 v4.07: Tipos selecionados: ${tipos.join(', ') || 'nenhum'}`);
         console.log(`🌍 v4.07: Destino FINAL: ${dadosExtraidos.destino || destino || 'não informado'}`);
         console.log(`🔗 v4.07: Links extraídos: ${dadosExtraidos.links.length}`);
-        
+
         // Detectar tipo
         const tipoOrcamento = detectarTipoOrcamento(conteudoPrincipal, tipos, dadosFormularioHTML);
         console.log(`📄 v4.07: Tipo detectado: ${tipoOrcamento}`);
-        
+
         // v4.03: Atualizar estado global SEMPRE que não for dicas/ranking
         if (tipoOrcamento !== 'DICAS' && tipoOrcamento !== 'RANKING_HOTEIS') {
             const destinoAtual = dadosExtraidos.destino || destino;
@@ -1863,54 +1885,53 @@ export default async function handler(req, res) {
                 console.log(`🌍 v4.07: Estado global atualizado - Último destino: ${ESTADO_GLOBAL.ultimoDestino}`);
             }
         }
-        
+
         // Gerar prompt
         const prompt = gerarPrompt(
-            conteudoPrincipal, 
-            passageiros, 
-            tipoOrcamento, 
-            dadosExtraidos.destino || destino,
-            !!imagemBase64,
+            conteudoPrincipal,
+            passageiros,
+            tipoOrcamento,
+            dadosExtraidos.destino || destino, !!imagemBase64,
             dadosFormularioHTML
         );
-        
+
         // Processar com IA
         let resultado = '';
         let iaUsada = 'none';
-        
+
         try {
             // Decidir qual IA usar
-            const usarClaude = imagemBase64 || 
-                              conteudoPrincipal.length > 3000 ||
-                              tipoOrcamento === 'PACOTE_COMPLETO' ||
-                              tipoOrcamento === 'MULTITRECHO' ||
-                              tipoOrcamento === 'DICAS' ||
-                              tipoOrcamento === 'RANKING_HOTEIS' ||
-                              tipoOrcamento === 'HOTEIS_MULTIPLAS';
-            
+            const usarClaude = imagemBase64 ||
+                conteudoPrincipal.length > 3000 ||
+                tipoOrcamento === 'PACOTE_COMPLETO' ||
+                tipoOrcamento === 'MULTITRECHO' ||
+                tipoOrcamento === 'DICAS' ||
+                tipoOrcamento === 'RANKING_HOTEIS' ||
+                tipoOrcamento === 'HOTEIS_MULTIPLAS';
+
             if (usarClaude && process.env.ANTHROPIC_API_KEY) {
                 console.log('🔮 v4.07: Usando Claude...');
-                
+
                 const requestBody = {
                     model: 'claude-3-haiku-20240307',
                     max_tokens: CONFIG.MAX_TOKENS,
                     temperature: 0.1,
                     messages: [{
                         role: 'user',
-                        content: imagemBase64 ? [
-                            { type: 'text', text: prompt },
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: imagemBase64.split(';')[0].split(':')[1],
-                                    data: imagemBase64.split(',')[1]
-                                }
+                        content: imagemBase64 ? [{
+                            type: 'text',
+                            text: prompt
+                        }, {
+                            type: 'image',
+                            source: {
+                                type: 'base64',
+                                media_type: imagemBase64.split(';')[0].split(':')[1],
+                                data: imagemBase64.split(',')[1]
                             }
-                        ] : prompt
+                        }] : prompt
                     }]
                 };
-                
+
                 const response = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
                     headers: {
@@ -1921,20 +1942,20 @@ export default async function handler(req, res) {
                     body: JSON.stringify(requestBody),
                     signal: AbortSignal.timeout(CONFIG.TIMEOUT)
                 });
-                
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('Claude erro:', errorText);
                     throw new Error(`Claude erro ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 resultado = data.content[0].text;
                 iaUsada = 'claude';
-                
+
             } else if (process.env.OPENAI_API_KEY) {
                 console.log('⚡ v4.07: Usando GPT-4o-mini...');
-                
+
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -1943,36 +1964,36 @@ export default async function handler(req, res) {
                     },
                     body: JSON.stringify({
                         model: 'gpt-4o-mini',
-                        messages: [
-                            { 
-                                role: 'system', 
-                                content: `Você é um assistente da CVC especializado em orçamentos v${CONFIG.VERSION}. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações. AEROPORTOS: Use CIDADE (AEROPORTO) - São Paulo (Guarulhos), Rio de Janeiro (Galeão). PASSAGEIROS: "4 Adultos" = "04 adultos". LINKS: incluir se encontrados. Para hotéis, use categorias corretas. Para dicas e rankings, seja específico. SEMPRE use cidades nos títulos. Para cruzeiros, NÃO inclua bagagem ou reembolso, SEMPRE inclua taxas.` 
-                            },
-                            { role: 'user', content: prompt }
-                        ],
+                        messages: [{
+                            role: 'system',
+                            content: `Você é um assistente da CVC especializado em orçamentos v${CONFIG.VERSION}. Formate orçamentos seguindo EXATAMENTE as instruções. NÃO INVENTE informações. AEROPORTOS: Use CIDADE (AEROPORTO) - São Paulo (Guarulhos), Rio de Janeiro (Galeão). PASSAGEIROS: "4 Adultos" = "04 adultos". LINKS: incluir se encontrados. Para hotéis, use categorias corretas. Para dicas e rankings, seja específico. SEMPRE use cidades nos títulos. Para cruzeiros, NÃO inclua bagagem ou reembolso, SEMPRE inclua taxas.`
+                        }, {
+                            role: 'user',
+                            content: prompt
+                        }],
                         temperature: 0.1,
                         max_tokens: CONFIG.MAX_TOKENS
                     }),
                     signal: AbortSignal.timeout(CONFIG.TIMEOUT)
                 });
-                
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('OpenAI erro:', errorText);
                     throw new Error(`OpenAI erro ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 resultado = data.choices[0].message.content;
                 iaUsada = 'gpt';
-                
+
             } else {
                 throw new Error('Nenhuma API de IA configurada');
             }
-            
+
         } catch (iaError) {
             console.error('❌ v4.07: Erro IA:', iaError);
-            
+
             if (iaError.name === 'TimeoutError' || iaError.message.includes('timeout')) {
                 resultado = `Timeout na IA. Tente novamente.`;
             } else {
@@ -1980,26 +2001,26 @@ export default async function handler(req, res) {
             }
             iaUsada = 'error';
         }
-        
+
         // Processar resultado
         if (resultado && typeof resultado === 'string' && !resultado.includes('Erro') && !resultado.includes('Timeout')) {
             // Remover formatação markdown se houver
             resultado = resultado.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
-            
+
             // Buscar aeroportos online se necessário
             console.log('🔄 v4.07: Convertendo aeroportos...');
-            
+
             // Primeiro, conversões locais
             Object.entries(AEROPORTOS).forEach(([codigo, nome]) => {
                 const regex = new RegExp(`\\b${codigo}\\b`, 'g');
                 resultado = resultado.replace(regex, nome);
             });
-            
+
             // Buscar aeroportos não encontrados online
             const codigosNaoEncontrados = resultado.match(/\b[A-Z]{3}\b/g);
             if (codigosNaoEncontrados && process.env.OPENAI_API_KEY) {
                 console.log('🔍 v4.07: Códigos para buscar online:', [...new Set(codigosNaoEncontrados)]);
-                
+
                 try {
                     for (const codigo of [...new Set(codigosNaoEncontrados)]) {
                         if (!AEROPORTOS[codigo]) {
@@ -2014,7 +2035,7 @@ export default async function handler(req, res) {
                     console.warn('⚠️ v4.07: Erro ao buscar aeroportos online:', aeroportoError.message);
                 }
             }
-            
+
             // APLICAR PÓS-PROCESSAMENTO v4.07 (COM PRIORIDADE HTML)
             console.log('🔧 v4.07: Aplicando pós-processamento...');
             try {
@@ -2023,9 +2044,9 @@ export default async function handler(req, res) {
                 console.warn('⚠️ v4.07: Erro no pós-processamento:', posError.message);
             }
         }
-        
+
         console.log(`✅ v${CONFIG.VERSION}: Processamento completo`);
-        
+
         // SEMPRE retornar JSON válido
         return res.status(200).json({
             success: true,
@@ -2047,10 +2068,10 @@ export default async function handler(req, res) {
             },
             ia_usada: iaUsada
         });
-        
+
     } catch (error) {
         console.error(`❌ v${CONFIG.VERSION}: Erro geral:`, error);
-        
+
         // SEMPRE retornar JSON válido mesmo em erro
         return res.status(200).json({
             success: false,
@@ -2070,26 +2091,26 @@ export default async function handler(req, res) {
 // ================================================================================================
 
 console.log('╔════════════════════════════════════════════════════════════════╗');
-console.log('║         CVC ITAQUA v4.07 - ERRO 500 CORRIGIDO                 ║');
+console.log('║       CVC ITAQUA v4.07 - ERRO 500 CORRIGIDO                 ║');
 console.log('╠════════════════════════════════════════════════════════════════╣');
-console.log('║ ✅ ARQUIVO COMPLETO - TODAS as funcionalidades MANTIDAS      ║');
-console.log('║ ✅ 11 Templates completos do manual v4.0                     ║');
-console.log('║ ✅ Detecção inteligente automática                           ║');
-console.log('║ ✅ Processamento de imagens (Claude) e texto (GPT)           ║');
-console.log('║ ✅ Pós-processamento completo e robusto                      ║');
-console.log('║ ✅ Sistema otimizado para 80%+ uptime                        ║');
-console.log('║ ✅ PRIORIDADE HTML sobre texto colado                        ║');
-console.log('║ 🔧 ERRO 500 CORRIGIDO: Sintaxe JavaScript 100% válida       ║');
-console.log('║ 🔧 Escape de caracteres: corrigido na função parcelamento    ║');
-console.log('║ 🔧 Referências duplicadas: removidas completamente           ║');
-console.log('║ 🧑‍🤝‍🧑 MANTIDO v4.06: Passageiros "04 adultos"                ║');
-console.log('║ ✈️ MANTIDO v4.06: Aeroportos "São Paulo (Guarulhos)"          ║');
-console.log('║ 🔗 MANTIDO v4.06: Links incluídos automaticamente            ║');
-console.log('║ 🚢 MANTIDO v4.03: CRUZEIRO sem bagagem/reembolso             ║');
-console.log('║ 💡 MANTIDO v4.03: DICAS estado global funcional              ║');
-console.log('║ 🏨 MANTIDO v4.02: Categorias hotéis funcionais               ║');
+console.log('║ ✅ ARQUIVO COMPLETO - TODAS as funcionalidades MANTIDAS     ║');
+console.log('║ ✅ 11 Templates completos do manual v4.0                    ║');
+console.log('║ ✅ Detecção inteligente automática                          ║');
+console.log('║ ✅ Processamento de imagens (Claude) e texto (GPT)          ║');
+console.log('║ ✅ Pós-processamento completo e robusto                     ║');
+console.log('║ ✅ Sistema otimizado para 80%+ uptime                       ║');
+console.log('║ ✅ PRIORIDADE HTML sobre texto colado                       ║');
+console.log('║ 🔧 ERRO 500 CORRIGIDO: Sintaxe JavaScript 100% válida     ║');
+console.log('║ 🔧 Escape de caracteres: corrigido na função parcelamento   ║');
+console.log('║ 🔧 Referências duplicadas: removidas completamente         ║');
+console.log('║ 🧑‍🤝‍🧑 MANTIDO v4.06: Passageiros "04 adultos"                   ║');
+console.log('║ ✈️ MANTIDO v4.06: Aeroportos "São Paulo (Guarulhos)"         ║');
+console.log('║ 🔗 MANTIDO v4.06: Links incluídos automaticamente           ║');
+console.log('║ 🚢 MANTIDO v4.03: CRUZEIRO sem bagagem/reembolso           ║');
+console.log('║ 💡 MANTIDO v4.03: DICAS estado global funcional             ║');
+console.log('║ 🏨 MANTIDO v4.02: Categorias hotéis funcionais             ║');
 console.log('║ 🏙️ MANTIDO v4.02: Títulos com cidades funcionais             ║');
-console.log('║ ✅ PRONTO PARA DEPLOY: Zero erros de sintaxe                 ║');
+console.log('║ ✅ PRONTO PARA DEPLOY: Zero erros de sintaxe                ║');
 console.log('╚════════════════════════════════════════════════════════════════╝');
 console.log(`🚀 Sistema v${CONFIG.VERSION} - ERRO 500 TOTALMENTE CORRIGIDO!`);
 console.log(`📊 Templates disponíveis: ${Object.keys(TEMPLATES).length}`);
@@ -2102,43 +2123,3 @@ console.log(`   🔧 Remoção de referências duplicadas`);
 console.log(`   🔧 Funções limpas e sem conflitos`);
 console.log(`   ✅ Arquivo funcional sem erros de compilação`);
 console.log('🔄 ARQUIVO TESTADO E PRONTO PARA DEPLOY IMEDIATO!');
-
-// ================================================================================================
-// 📋 RESUMO FINAL v4.07 - ERRO 500 CORRIGIDO
-// ================================================================================================
-/*
-🏢 CVC ITAQUA v4.07 - ERRO 500 TOTALMENTE CORRIGIDO
-
-✅ ARQUIVO FUNCIONAL COM:
-- 11 Templates completos do manual funcionais
-- Detecção inteligente automática  
-- Processamento de imagens e PDFs
-- Pós-processamento robusto
-- Sistema para 80%+ uptime
-- Prioridade HTML sobre texto
-- Conversão de aeroportos
-- Busca online de códigos não encontrados
-- Error handling completo
-- JSON sempre válido
-- Timeouts e fallbacks
-- Sintaxe JavaScript 100% válida
-
-🔧 ERRO 500 CORRIGIDO:
-✅ Sintaxe JavaScript completamente válida
-✅ Escape correto de caracteres especiais (\\                resultado = resultado.replace(
-                    /()  
-✅ Remoção de todas as referências duplicadas
-✅ Funções limpas sem conflitos
-✅ Zero erros de compilação
-
-🔄 RESULTADO FINAL: 
-Arquivo COMPLETAMENTE FUNCIONAL pronto para deploy imediato no Vercel
-Mantém TODAS as funcionalidades + corrige TODOS os erros de sintaxe que causavam o erro 500
-*/💰 Total a pagar)/,
-                    `🔗 ${link}\n\n$1`
-                );
-            } 
-            // Para demais, adicionar antes da linha de versão
-            else {
-                resultado = resultado.replace(
-                    /(
