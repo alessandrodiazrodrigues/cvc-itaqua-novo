@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 CVC Itaqua - Geração de Orçamento com IA v4.04</title>
+    <title>🤖 CVC Itaqua - Geração de Orçamento com IA</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -491,7 +491,7 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-robot"></i> Geração de Orçamento com IA v4.04
+                                <i class="fas fa-robot"></i> Geração de Orçamento com IA
                             </h1>
                             <p class="header-subtitle">
                                 Sistema completo com 11 templates - CVC Itaquaquecetuba
@@ -501,7 +501,7 @@
                     
                     <!-- Status da API -->
                     <div id="apiStatus" class="api-status loading">
-                        <i class="fas fa-spinner fa-spin"></i> Verificando status da API v4.04...
+                        <i class="fas fa-spinner fa-spin"></i> Verificando status da API...
                     </div>
                     
                     <!-- Estimador de Custos -->
@@ -770,7 +770,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log("🚀 Iniciando CVC Itaqua v4.04 COMPLETO...");
+        console.log("🚀 Iniciando CVC Itaqua...");
         
         // ================================================================================
         // 🎯 VARIÁVEIS GLOBAIS
@@ -783,7 +783,7 @@
             pdfContent: null,
             custoDia: 0,
             orcamentosHoje: 0,
-            versaoAPI: 'v4.04'
+            versaoAPI: 'carregando...'
         };
         
         // ================================================================================
@@ -791,7 +791,7 @@
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📋 Inicializando sistema CVC v4.04...');
+            console.log('📋 Inicializando sistema CVC...');
             
             setupEventListeners();
             setupPasteArea();
@@ -800,7 +800,7 @@
             atualizarDisplayCustos();
             verificarVersaoAPI();
             
-            console.log('✅ CVC Itaqua v4.04 carregado e pronto!');
+            console.log('✅ CVC Itaqua carregado e pronto!');
         });
         
         function setupEventListeners() {
@@ -818,7 +818,7 @@
         }
         
         // ================================================================================
-        // 🔍 VERIFICAÇÃO DE VERSÃO DA API v4.04
+        // 🔍 VERIFICAÇÃO DE VERSÃO DA API - DINÂMICA
         // ================================================================================
         
         async function verificarVersaoAPI() {
@@ -827,7 +827,7 @@
             try {
                 console.log('🔍 Verificando versão da API...');
                 statusElement.className = 'api-status loading';
-                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando API v4.04...';
+                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando API...';
                 
                 const response = await fetch('/api/ai-google', {
                     method: 'GET',
@@ -1053,7 +1053,7 @@
         }
         
         // ================================================================================
-        // 📋 COLETA DE DADOS DO FORMULÁRIO v4.04
+        // 📋 COLETA DE DADOS DO FORMULÁRIO
         // ================================================================================
         
         function coletarDadosFormulario() {
@@ -1100,17 +1100,17 @@
                 pdfContent: estadoGlobal.pdfContent
             };
             
-            console.log('[v4.04] 📋 Dados coletados:', dados);
+            console.log('📋 Dados coletados:', dados);
             return dados;
         }
         
         // ================================================================================
-        // 📡 COMUNICAÇÃO COM API v4.04
+        // 📡 COMUNICAÇÃO COM API
         // ================================================================================
         
         async function enviarParaAPI(dados) {
-            console.log('[v4.04] 🚀 Enviando para API...');
-            console.log('[v4.04] 📤 Dados:', dados);
+            console.log('🚀 Enviando para API...');
+            console.log('📤 Dados:', dados);
             
             try {
                 const response = await fetch('/api/ai-google', {
@@ -1122,32 +1122,32 @@
                 });
 
                 const data = await response.json();
-                console.log('[v4.04] 📥 Resposta:', data);
+                console.log('📥 Resposta:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
                 if (data.success) {
-                    console.log('[v4.04] ✅ Sucesso! IA usada:', data.ia_usada);
-                    console.log('[v4.04] 📊 Metadados:', data.metadata);
+                    console.log('✅ Sucesso! IA usada:', data.ia_usada);
+                    console.log('📊 Metadados:', data.metadata);
                     return data.result;
                 } else {
                     throw new Error(data.error || 'Erro desconhecido');
                 }
             } catch (error) {
-                console.error('[v4.04] ❌ Erro:', error);
+                console.error('❌ Erro:', error);
                 throw error;
             }
         }
         
         // ================================================================================
-        // 🎯 HANDLER DO FORMULÁRIO PRINCIPAL v4.04
+        // 🎯 HANDLER DO FORMULÁRIO PRINCIPAL
         // ================================================================================
         
         async function handleSubmit(e) {
             e.preventDefault();
-            console.log('[v4.04] 🚀 Iniciando geração de orçamento...');
+            console.log('🚀 Iniciando geração de orçamento...');
             
             const botao = e.target.querySelector('button[type="submit"]');
             const textoOriginal = botao.textContent;
@@ -1188,7 +1188,7 @@
                 await copiarTexto();
                 
             } catch (error) {
-                console.error('[v4.04] ❌ Erro:', error);
+                console.error('❌ Erro:', error);
                 exibirErro(error.message);
             } finally {
                 // Restaurar botão
@@ -1201,7 +1201,7 @@
         function mostrarLoading() {
             document.getElementById('orcamentoIA').innerHTML = `
                 <div class="loading">
-                    🤖 Processando com IA v4.04...
+                    🤖 Processando com IA...
                     <div style="margin-top: 10px; font-size: 0.9rem;">
                         11 templates disponíveis - Detecção automática inteligente
                     </div>
@@ -1215,7 +1215,7 @@
         
         function exibirResultado(resultado) {
             document.getElementById('orcamentoIA').innerText = resultado;
-            console.log('[v4.04] ✅ Orçamento exibido com sucesso!');
+            console.log('✅ Orçamento exibido com sucesso!');
         }
         
         function exibirErro(mensagem) {
@@ -1230,7 +1230,7 @@
         }
         
         // ================================================================================
-        // 💡 DICAS E RANKING v4.04
+        // 💡 DICAS E RANKING
         // ================================================================================
         
         function habilitarBotoesDicas() {
@@ -1264,10 +1264,10 @@
                 const resultado = await enviarParaAPI(dados);
                 document.getElementById('dicasIA').innerText = resultado;
                 
-                console.log('[v4.04] ✅ Dicas geradas com sucesso!');
+                console.log('✅ Dicas geradas com sucesso!');
                 
             } catch (error) {
-                console.error('[v4.04] ❌ Erro ao gerar dicas:', error);
+                console.error('❌ Erro ao gerar dicas:', error);
                 document.getElementById('dicasIA').innerHTML = `
                     <div class="error">❌ Erro ao gerar dicas: ${error.message}</div>
                 `;
@@ -1292,10 +1292,10 @@
                 const resultado = await enviarParaAPI(dados);
                 document.getElementById('rankingIA').innerText = resultado;
                 
-                console.log('[v4.04] ✅ Ranking gerado com sucesso!');
+                console.log('✅ Ranking gerado com sucesso!');
                 
             } catch (error) {
-                console.error('[v4.04] ❌ Erro ao gerar ranking:', error);
+                console.error('❌ Erro ao gerar ranking:', error);
                 document.getElementById('rankingIA').innerHTML = `
                     <div class="error">❌ Erro ao gerar ranking: ${error.message}</div>
                 `;
@@ -1379,18 +1379,19 @@
         }
         
         // ================================================================================
-        // 🎯 LOG FINAL v4.04
+        // 🎯 LOG FINAL
         // ================================================================================
         
-        console.log("🎯 CVC Itaqua v4.04 COMPLETO COM TODAS AS CORREÇÕES!");
+        console.log("🎯 CVC Itaqua COMPLETO COM VERSÃO DINÂMICA!");
         console.log("📋 Funcionalidades:");
-        console.log("- ✅ Interface CVC moderna ATUALIZADA");
-        console.log("- ✅ API v4.04 com 11 templates completos");
-        console.log("- ✅ Cruzeiro dinâmico (roteiro, cabines, bebidas)");
-        console.log("- ✅ Bagagem detecta 'mala despachada'");
-        console.log("- ✅ Somente ida detecta ausência de volta");
-        console.log("- ✅ Pacote completo com traslados e seguros");
-        console.log("- ✅ Detecção inteligente melhorada");
+        console.log("- ✅ Interface CVC moderna");
+        console.log("- ✅ API com 11 templates completos");
+        console.log("- ✅ Versão da API detectada automaticamente");
+        console.log("- ✅ Extração correta de passageiros");
+        console.log("- ✅ Aeroportos precisos (São Paulo (Guarulhos))");
+        console.log("- ✅ Links incluídos automaticamente");
+        console.log("- ✅ Cruzeiro sem bagagem/reembolso");
+        console.log("- ✅ Dicas com estado global");
         console.log("- ✅ Prioridade HTML sobre texto");
         console.log("- ✅ Estado global funcional");
         console.log("- ✅ Sistema super robusto");
