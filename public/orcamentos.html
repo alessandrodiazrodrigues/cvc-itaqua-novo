@@ -96,7 +96,7 @@
             font-size: 1.1rem;
         }
         
-        /* STATUS API */
+        /* STATUS API - APENAS ASSISTANT */
         .api-status {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
@@ -116,41 +116,6 @@
         
         .api-status.error {
             color: #dc3545;
-        }
-        
-        /* SELETOR DE API */
-        .api-selector {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 15px;
-            backdrop-filter: blur(10px);
-            text-align: center;
-        }
-        
-        .api-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .api-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 8px 15px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .api-option:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .api-option input[type="radio"] {
-            accent-color: var(--cvc-amarelo);
         }
         
         /* ESTIMADOR DE CUSTOS */
@@ -534,23 +499,7 @@
                         </div>
                     </div>
                     
-                    <!-- Seletor de API -->
-                    <div class="api-selector">
-                        <div class="api-toggle">
-                            <div class="api-option">
-                                <input type="radio" name="apiChoice" id="useAssistant" value="assistant" checked>
-                                <label for="useAssistant" style="color: white; cursor: pointer;">
-                                    <i class="fas fa-robot"></i> OpenAI Assistant
-                                </label>
-                            </div>
-                            <div class="api-option">
-                                <input type="radio" name="apiChoice" id="useHybrid" value="hybrid">
-                                <label for="useHybrid" style="color: white; cursor: pointer;">
-                                    <i class="fas fa-layer-group"></i> Sistema Híbrido
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+
                     
                     <!-- Status da API -->
                     <div id="apiStatus" class="api-status loading">
@@ -879,54 +828,31 @@
             const statusElement = document.getElementById('apiStatus');
             
             try {
-                console.log('🔍 Verificando versão da API...');
+                console.log('🔍 Verificando OpenAI Assistant...');
                 statusElement.className = 'api-status loading';
-                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando API...';
+                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando Assistant...';
                 
-                // Verifica qual API está selecionada
-                const useAssistant = document.getElementById('useAssistant').checked;
+                // Teste básico do Assistant
+                const response = await fetch('/api/openai-assistant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'test' })
+                });
                 
-                if (useAssistant) {
-                    // Verificar OpenAI Assistant
-                    const response = await fetch('/api/openai-assistant', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: 'test' })
-                    });
-                    
-                    if (response.ok) {
-                        statusElement.className = 'api-status success';
-                        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> OpenAI Assistant funcionando - 14 templates disponíveis`;
-                    } else {
-                        throw new Error('Assistant não disponível');
-                    }
+                if (response.ok) {
+                    statusElement.className = 'api-status success';
+                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> OpenAI Assistant funcionando - 14 templates disponíveis`;
+                    console.log('✅ Assistant funcionando');
                 } else {
-                    // Verificar sistema híbrido
-                    const response = await fetch('/api/ai-google', {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        statusElement.className = 'api-status success';
-                        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> Sistema Híbrido ${data.version || 'v4.03'} funcionando`;
-                    } else {
-                        throw new Error('Sistema híbrido não disponível');
-                    }
+                    throw new Error('Assistant não disponível');
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao verificar API:', error);
+                console.error('❌ Erro ao verificar Assistant:', error);
                 statusElement.className = 'api-status error';
-                statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro na API: ${error.message}`;
+                statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro no Assistant: ${error.message}`;
             }
         }
-        
-        // Listener para mudança de API
-        document.querySelectorAll('input[name="apiChoice"]').forEach(radio => {
-            radio.addEventListener('change', verificarVersaoAPI);
-        });
         
         // ================================================================================
         // 🖱️ CHECKBOXES TOTALMENTE CLICÁVEIS
@@ -1179,31 +1105,19 @@
         // ================================================================================
         
         async function enviarParaAPI(dados) {
-            const useAssistant = document.getElementById('useAssistant').checked;
-            
-            console.log(`🚀 Enviando para ${useAssistant ? 'OpenAI Assistant' : 'Sistema Híbrido'}...`);
+            console.log('🚀 Enviando para OpenAI Assistant...');
             console.log('📤 Dados:', dados);
             
             try {
-                let endpoint, body;
-                
-                if (useAssistant) {
-                    endpoint = '/api/openai-assistant';
-                    body = {
-                        message: dados.observacoes || dados.textoColado,
-                        destino: dados.destino
-                    };
-                } else {
-                    endpoint = '/api/ai-google';
-                    body = dados;
-                }
-                
-                const response = await fetch(endpoint, {
+                const response = await fetch('/api/openai-assistant', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({
+                        message: dados.observacoes || dados.textoColado,
+                        destino: dados.destino
+                    })
                 });
 
                 const data = await response.json();
@@ -1214,11 +1128,11 @@
                 }
 
                 if (data.success) {
-                    console.log('✅ Sucesso! IA usada:', data.ia_usada);
+                    console.log('✅ Sucesso! Assistant processou:', data.ia_usada);
                     console.log('📊 Metadados:', data.metadata);
                     return data.result;
                 } else {
-                    throw new Error(data.error || 'Erro desconhecido');
+                    throw new Error(data.error || 'Erro desconhecido do Assistant');
                 }
             } catch (error) {
                 console.error('❌ Erro:', error);
@@ -1284,10 +1198,9 @@
         }
         
         function mostrarLoading() {
-            const useAssistant = document.getElementById('useAssistant').checked;
             document.getElementById('orcamentoIA').innerHTML = `
                 <div class="loading">
-                    🤖 Processando com ${useAssistant ? 'OpenAI Assistant' : 'Sistema Híbrido'}...
+                    🤖 Processando com OpenAI Assistant...
                     <div style="margin-top: 10px; font-size: 0.9rem;">
                         14 templates disponíveis - Detecção automática inteligente
                     </div>
@@ -1468,16 +1381,15 @@
         // 🎯 LOG FINAL
         // ================================================================================
         
-        console.log("🎯 CVC Itaqua v4.04 HÍBRIDO COMPLETO!");
-        console.log("📋 Funcionalidades:");
-        console.log("- ✅ Interface CVC moderna");
-        console.log("- ✅ OpenAI Assistant + Sistema Híbrido");
-        console.log("- ✅ Seletor de API dinâmico");
-        console.log("- ✅ 14 templates completos");
-        console.log("- ✅ Detecção automática de passageiros");
-        console.log("- ✅ Campos vazios para detecção automática");
-        console.log("- ✅ Estado global funcional");
-        console.log("- ✅ Sistema super robusto");
+        console.log("CVC Itaqua v4.04 - OpenAI Assistant EXCLUSIVO!");
+        console.log("Funcionalidades:");
+        console.log("- Interface CVC moderna");
+        console.log("- OpenAI Assistant integrado");
+        console.log("- 14 templates completos");
+        console.log("- Detecção automática de passageiros");
+        console.log("- Campos vazios para detecção automática");
+        console.log("- Estado global funcional");
+        console.log("- Sistema simplificado e robusto");
     </script>
 </body>
 </html>
