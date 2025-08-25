@@ -118,6 +118,41 @@
             color: #dc3545;
         }
         
+        /* SELETOR DE API */
+        .api-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        
+        .api-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .api-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .api-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .api-option input[type="radio"] {
+            accent-color: var(--cvc-amarelo);
+        }
+        
         /* ESTIMADOR DE CUSTOS */
         .cost-estimator {
             background: rgba(255, 255, 255, 0.1);
@@ -494,8 +529,26 @@
                                 <i class="fas fa-robot"></i> Geração de Orçamento com IA
                             </h1>
                             <p class="header-subtitle">
-                                Sistema completo com 11 templates - CVC Itaquaquecetuba
+                                Sistema completo com 14 templates - CVC Itaquaquecetuba
                             </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Seletor de API -->
+                    <div class="api-selector">
+                        <div class="api-toggle">
+                            <div class="api-option">
+                                <input type="radio" name="apiChoice" id="useAssistant" value="assistant" checked>
+                                <label for="useAssistant" style="color: white; cursor: pointer;">
+                                    <i class="fas fa-robot"></i> OpenAI Assistant
+                                </label>
+                            </div>
+                            <div class="api-option">
+                                <input type="radio" name="apiChoice" id="useHybrid" value="hybrid">
+                                <label for="useHybrid" style="color: white; cursor: pointer;">
+                                    <i class="fas fa-layer-group"></i> Sistema Híbrido
+                                </label>
+                            </div>
                         </div>
                     </div>
                     
@@ -771,7 +824,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log("🚀 Iniciando CVC Itaqua...");
+        console.log("🚀 Iniciando CVC Itaqua v4.04...");
         
         // ================================================================================
         // 🎯 VARIÁVEIS GLOBAIS
@@ -801,7 +854,7 @@
             atualizarDisplayCustos();
             verificarVersaoAPI();
             
-            console.log('✅ CVC Itaqua carregado e pronto!');
+            console.log('✅ CVC Itaqua v4.04 carregado e pronto!');
         });
         
         function setupEventListeners() {
@@ -830,26 +883,37 @@
                 statusElement.className = 'api-status loading';
                 statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando API...';
                 
-                const response = await fetch('/api/ai-google', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
+                // Verifica qual API está selecionada
+                const useAssistant = document.getElementById('useAssistant').checked;
                 
-                if (data.success && data.version) {
-                    statusElement.className = 'api-status success';
-                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> API ${data.version} funcionando - ${data.total_templates || 11} templates disponíveis`;
-                    estadoGlobal.versaoAPI = data.version;
-                    console.log('✅ API funcionando:', data.version);
+                if (useAssistant) {
+                    // Verificar OpenAI Assistant
+                    const response = await fetch('/api/openai-assistant', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: 'test' })
+                    });
+                    
+                    if (response.ok) {
+                        statusElement.className = 'api-status success';
+                        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> OpenAI Assistant funcionando - 14 templates disponíveis`;
+                    } else {
+                        throw new Error('Assistant não disponível');
+                    }
                 } else {
-                    throw new Error('Resposta inválida da API');
+                    // Verificar sistema híbrido
+                    const response = await fetch('/api/ai-google', {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        statusElement.className = 'api-status success';
+                        statusElement.innerHTML = `<i class="fas fa-check-circle"></i> Sistema Híbrido ${data.version || 'v4.03'} funcionando`;
+                    } else {
+                        throw new Error('Sistema híbrido não disponível');
+                    }
                 }
                 
             } catch (error) {
@@ -858,6 +922,11 @@
                 statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro na API: ${error.message}`;
             }
         }
+        
+        // Listener para mudança de API
+        document.querySelectorAll('input[name="apiChoice"]').forEach(radio => {
+            radio.addEventListener('change', verificarVersaoAPI);
+        });
         
         // ================================================================================
         // 🖱️ CHECKBOXES TOTALMENTE CLICÁVEIS
@@ -1061,7 +1130,7 @@
             const observacoes = document.getElementById('observacoes').value || '';
             const textoColado = document.getElementById('textoColado').value || '';
             const destino = document.getElementById('destino').value || '';
-            const adultos = document.getElementById('adultos').value || 2;
+            const adultos = document.getElementById('adultos').value || '';
             const criancas = parseInt(document.getElementById('criancas').value) || 0;
             
             // Coletar idades das crianças
@@ -1092,7 +1161,7 @@
                 observacoes,
                 textoColado,
                 destino,
-                adultos: parseInt(adultos),
+                adultos: adultos ? parseInt(adultos) : null,
                 criancas,
                 idadesCriancas,
                 tipos,
@@ -1110,16 +1179,31 @@
         // ================================================================================
         
         async function enviarParaAPI(dados) {
-            console.log('🚀 Enviando para API...');
+            const useAssistant = document.getElementById('useAssistant').checked;
+            
+            console.log(`🚀 Enviando para ${useAssistant ? 'OpenAI Assistant' : 'Sistema Híbrido'}...`);
             console.log('📤 Dados:', dados);
             
             try {
-                const response = await fetch('/api/ai-google', {
+                let endpoint, body;
+                
+                if (useAssistant) {
+                    endpoint = '/api/openai-assistant';
+                    body = {
+                        message: dados.observacoes || dados.textoColado,
+                        destino: dados.destino
+                    };
+                } else {
+                    endpoint = '/api/ai-google';
+                    body = dados;
+                }
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(dados)
+                    body: JSON.stringify(body)
                 });
 
                 const data = await response.json();
@@ -1200,11 +1284,12 @@
         }
         
         function mostrarLoading() {
+            const useAssistant = document.getElementById('useAssistant').checked;
             document.getElementById('orcamentoIA').innerHTML = `
                 <div class="loading">
-                    🤖 Processando com IA...
+                    🤖 Processando com ${useAssistant ? 'OpenAI Assistant' : 'Sistema Híbrido'}...
                     <div style="margin-top: 10px; font-size: 0.9rem;">
-                        11 templates disponíveis - Detecção automática inteligente
+                        14 templates disponíveis - Detecção automática inteligente
                     </div>
                 </div>
             `;
@@ -1383,20 +1468,16 @@
         // 🎯 LOG FINAL
         // ================================================================================
         
-        console.log("🎯 CVC Itaqua COMPLETO COM VERSÃO DINÂMICA!");
+        console.log("🎯 CVC Itaqua v4.04 HÍBRIDO COMPLETO!");
         console.log("📋 Funcionalidades:");
         console.log("- ✅ Interface CVC moderna");
-        console.log("- ✅ API com 11 templates completos");
-        console.log("- ✅ Versão da API detectada automaticamente");
-        console.log("- ✅ Extração correta de passageiros");
-        console.log("- ✅ Aeroportos precisos (São Paulo (Guarulhos))");
-        console.log("- ✅ Links incluídos automaticamente");
-        console.log("- ✅ Cruzeiro sem bagagem/reembolso");
-        console.log("- ✅ Dicas com estado global");
-        console.log("- ✅ Prioridade HTML sobre texto");
+        console.log("- ✅ OpenAI Assistant + Sistema Híbrido");
+        console.log("- ✅ Seletor de API dinâmico");
+        console.log("- ✅ 14 templates completos");
+        console.log("- ✅ Detecção automática de passageiros");
+        console.log("- ✅ Campos vazios para detecção automática");
         console.log("- ✅ Estado global funcional");
         console.log("- ✅ Sistema super robusto");
-        console.log("- ✅ Verificação automática de versão da API!");
     </script>
 </body>
 </html>
