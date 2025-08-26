@@ -1,32 +1,35 @@
 {
-  "functions": {
-    "api/ai-google.js": {
-      "maxDuration": 30
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/((?!api/.*).*)",
-      "destination": "/public/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-Requested-With, Content-Type, Authorization"
-        }
-      ]
-    }
-  ]
+ "functions": {
+   "api/ai-google.js": {
+     "maxDuration": 30
+   },
+   "api/openai-assistant.js": {
+     "maxDuration": 60
+   }
+ },
+ "rewrites": [
+   {
+     "source": "/((?!api/.*).*)",
+     "destination": "/public/$1"
+   }
+ ],
+ "headers": [
+   {
+     "source": "/api/(.*)",
+     "headers": [
+       {
+         "key": "Access-Control-Allow-Origin",
+         "value": "*"
+       },
+       {
+         "key": "Access-Control-Allow-Methods",
+         "value": "GET, POST, PUT, DELETE, OPTIONS"
+       },
+       {
+         "key": "Access-Control-Allow-Headers",
+         "value": "X-Requested-With, Content-Type, Authorization"
+       }
+     ]
+   }
+ ]
 }
