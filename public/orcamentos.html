@@ -1161,7 +1161,7 @@
             
             try {
                 // Extrair destino (padrão: *Companhia - Origem ✈ Destino*)
-                const destinoMatch = orcamento.match(/\*[^-]+-[^✈]+✈\s*([^*]+)\*/);
+                const destinoMatch = orcamento.match(/\*[^-]+-[^✈]+✈\s*([^\n\r*]+)/);
                 if (destinoMatch) {
                     contexto.destino = destinoMatch[1].trim();
                 }
@@ -1254,8 +1254,8 @@
                 // Habilitar botões de dicas
                 habilitarBotoesDicas();
                 
-                // Copiar automaticamente
-                await copiarTexto();
+                // Remover cópia automática que estava causando erro
+                // await copiarTexto();
                 
             } catch (error) {
                 console.error('❌ Erro:', error);
