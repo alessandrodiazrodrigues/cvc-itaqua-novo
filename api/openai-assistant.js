@@ -20,7 +20,10 @@ export default async function handler(req, res) {
 
    try {
        console.log('Iniciando Assistant OpenAI...');
-       console.log('Mensagem recebida:', req.body.message?.substring(0, 100));
+       
+       // Teste da chave API primeiro
+       const models = await openai.models.list();
+       console.log('Conexão OpenAI OK, modelos disponíveis:', models.data.length);
        
        // Para teste simples, retornar sucesso
        if (req.body.message === 'test') {
@@ -30,6 +33,8 @@ export default async function handler(req, res) {
                ia_usada: 'OpenAI Assistant'
            });
        }
+
+       console.log('Mensagem recebida:', req.body.message?.substring(0, 100));
 
        // Validar se tem Assistant ID
        if (!process.env.ASSISTANT_ID) {
