@@ -96,7 +96,7 @@
             font-size: 1.1rem;
         }
         
-        /* STATUS API - APENAS ASSISTANT */
+        /* STATUS API */
         .api-status {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
@@ -499,8 +499,6 @@
                         </div>
                     </div>
                     
-
-                    
                     <!-- Status da API -->
                     <div id="apiStatus" class="api-status loading">
                         <i class="fas fa-spinner fa-spin"></i> Verificando status da API...
@@ -632,8 +630,8 @@
                                     <i class="fas fa-users"></i>
                                     Adultos
                                 </label>
-                                <input type="number" class="form-control" id="adultos" min="0" max="10" value=""
-                                       placeholder="Deixe vazio para detectar automaticamente">
+                                <input type="number" class="form-control" id="adultos" min="1" max="10" value="2"
+                                       placeholder="Número de adultos">
                             </div>
                             
                             <div class="form-group">
@@ -641,8 +639,7 @@
                                     <i class="fas fa-child"></i>
                                     Crianças
                                 </label>
-                                <input type="number" class="form-control" id="criancas" min="0" max="5" value=""
-                                       placeholder="Deixe vazio para detectar automaticamente">
+                                <input type="number" class="form-control" id="criancas" min="0" max="5" value="0">
                                 
                                 <!-- CAMPOS DINÂMICOS DE IDADE -->
                                 <div id="idadesCriancas" style="display: none; margin-top: 15px;">
@@ -821,7 +818,7 @@
         }
         
         // ================================================================================
-        // 🔍 VERIFICAÇÃO DE VERSÃO DA API - DINÂMICA
+        // 🔍 VERIFICAÇÃO DE VERSÃO DA API - OpenAI Assistant
         // ================================================================================
         
         async function verificarVersaoAPI() {
@@ -830,27 +827,34 @@
             try {
                 console.log('🔍 Verificando OpenAI Assistant...');
                 statusElement.className = 'api-status loading';
-                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando Assistant...';
+                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando API...';
                 
-                // Teste básico do Assistant
                 const response = await fetch('/api/openai-assistant', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: 'test' })
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
                 
-                if (response.ok) {
+                if (data.success && data.version) {
                     statusElement.className = 'api-status success';
-                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> OpenAI Assistant funcionando - 14 templates disponíveis`;
+                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> ${data.ia_usada} ${data.version} funcionando - ${data.total_templates || 14} templates disponíveis`;
+                    estadoGlobal.versaoAPI = data.version;
                     console.log('✅ Assistant funcionando');
                 } else {
-                    throw new Error('Assistant não disponível');
+                    throw new Error('Resposta inválida da API');
                 }
                 
             } catch (error) {
                 console.error('❌ Erro ao verificar Assistant:', error);
                 statusElement.className = 'api-status error';
-                statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro no Assistant: ${error.message}`;
+                statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Assistant não disponível`;
             }
         }
         
@@ -1056,7 +1060,7 @@
             const observacoes = document.getElementById('observacoes').value || '';
             const textoColado = document.getElementById('textoColado').value || '';
             const destino = document.getElementById('destino').value || '';
-            const adultos = document.getElementById('adultos').value || '';
+            const adultos = document.getElementById('adultos').value || 2;
             const criancas = parseInt(document.getElementById('criancas').value) || 0;
             
             // Coletar idades das crianças
@@ -1087,7 +1091,7 @@
                 observacoes,
                 textoColado,
                 destino,
-                adultos: adultos ? parseInt(adultos) : null,
+                adultos: parseInt(adultos),
                 criancas,
                 idadesCriancas,
                 tipos,
@@ -1101,7 +1105,7 @@
         }
         
         // ================================================================================
-        // 📡 COMUNICAÇÃO COM API
+        // 📡 COMUNICAÇÃO COM API - OpenAI Assistant
         // ================================================================================
         
         async function enviarParaAPI(dados) {
@@ -1114,10 +1118,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        message: dados.observacoes || dados.textoColado,
-                        destino: dados.destino
-                    })
+                    body: JSON.stringify(dados)
                 });
 
                 const data = await response.json();
@@ -1132,11 +1133,81 @@
                     console.log('📊 Metadados:', data.metadata);
                     return data.result;
                 } else {
-                    throw new Error(data.error || 'Erro desconhecido do Assistant');
+                    throw new Error(data.error || 'Erro desconhecido');
                 }
             } catch (error) {
                 console.error('❌ Erro:', error);
                 throw error;
+            }
+        }
+        
+        // ================================================================================
+        // 🔍 EXTRAÇÃO DE CONTEXTO DO ORÇAMENTO
+        // ================================================================================
+        
+        function extrairContextoDoOrcamento(orcamento) {
+            if (!orcamento) return null;
+            
+            const contexto = {
+                destino: '',
+                dataIda: '',
+                dataVolta: '', 
+                dias: '',
+                adultos: '',
+                criancas: '',
+                hoteis: [],
+                companhias: []
+            };
+            
+            try {
+                // Extrair destino (padrão: *Companhia - Origem ✈ Destino*)
+                const destinoMatch = orcamento.match(/\*[^-]+-[^✈]+✈\s*([^*]+)\*/);
+                if (destinoMatch) {
+                    contexto.destino = destinoMatch[1].trim();
+                }
+                
+                // Extrair datas (padrão: dd/mm a dd/mm)
+                const datasMatch = orcamento.match(/(\d{1,2}\/\d{1,2})\s*a\s*(\d{1,2}\/\d{1,2})/);
+                if (datasMatch) {
+                    contexto.dataIda = datasMatch[1];
+                    contexto.dataVolta = datasMatch[2];
+                }
+                
+                // Extrair duração (padrão: (X dias e Y noites))
+                const diasMatch = orcamento.match(/\((\d+)\s*dias?\s*e?\s*(\d+)?\s*noites?\)/);
+                if (diasMatch) {
+                    contexto.dias = diasMatch[1];
+                }
+                
+                // Extrair passageiros (padrão: para XX adultos + YY bebês + ZZ crianças)
+                const adultosMatch = orcamento.match(/(\d+)\s*adultos?/i);
+                if (adultosMatch) {
+                    contexto.adultos = adultosMatch[1];
+                }
+                
+                const criancasMatch = orcamento.match(/(\d+)\s*(?:bebês?|crianças?)/i);
+                if (criancasMatch) {
+                    contexto.criancas = criancasMatch[1];
+                }
+                
+                // Extrair hotéis mencionados (buscar nomes após "Hotel:", "Hospedagem:" etc)
+                const hotelMatches = orcamento.match(/(?:Hotel|Hospedagem):\s*([^\n\r]+)/gi);
+                if (hotelMatches) {
+                    contexto.hoteis = hotelMatches.map(h => h.replace(/^(?:Hotel|Hospedagem):\s*/i, '').trim());
+                }
+                
+                // Extrair companhias aéreas
+                const companhiaMatches = orcamento.match(/\*([^-]+)-/g);
+                if (companhiaMatches) {
+                    contexto.companhias = companhiaMatches.map(c => c.replace(/\*|−/g, '').trim());
+                }
+                
+                console.log('🔍 Contexto extraído:', contexto);
+                return contexto;
+                
+            } catch (error) {
+                console.error('❌ Erro ao extrair contexto:', error);
+                return null;
             }
         }
         
@@ -1200,7 +1271,7 @@
         function mostrarLoading() {
             document.getElementById('orcamentoIA').innerHTML = `
                 <div class="loading">
-                    🤖 Processando com OpenAI Assistant...
+                    🤖 Processando com IA...
                     <div style="margin-top: 10px; font-size: 0.9rem;">
                         14 templates disponíveis - Detecção automática inteligente
                     </div>
@@ -1229,7 +1300,7 @@
         }
         
         // ================================================================================
-        // 💡 DICAS E RANKING
+        // 💡 DICAS E RANKING COM CONTEXTO
         // ================================================================================
         
         function habilitarBotoesDicas() {
@@ -1247,17 +1318,43 @@
         
         async function gerarDicasDestino() {
             try {
+                const contexto = extrairContextoDoOrcamento(estadoGlobal.ultimoOrcamento);
+                const destino = contexto?.destino || 'destino selecionado';
+                
                 document.getElementById('secaoDicas').style.display = 'block';
                 document.getElementById('dicasIA').innerHTML = `
                     <div class="loading">
-                        🧭 Gerando dicas para ${estadoGlobal.ultimoDestino}...
+                        🧭 Gerando dicas para ${destino}...
                     </div>
                 `;
                 
+                let observacoes = `Gere dicas de viagem baseadas neste orçamento:`;
+                
+                if (contexto) {
+                    observacoes += `\n\nDESTINO: ${contexto.destino}`;
+                    if (contexto.dataIda && contexto.dataVolta) {
+                        observacoes += `\nDATAS: ${contexto.dataIda} a ${contexto.dataVolta}`;
+                    }
+                    if (contexto.dias) {
+                        observacoes += `\nDURAÇÃO: ${contexto.dias} dias`;
+                    }
+                    if (contexto.adultos) {
+                        observacoes += `\nPASSAGEIROS: ${contexto.adultos} adultos`;
+                        if (contexto.criancas) {
+                            observacoes += ` + ${contexto.criancas} crianças`;
+                        }
+                    }
+                    if (contexto.hoteis && contexto.hoteis.length > 0) {
+                        observacoes += `\nHOTÉIS: ${contexto.hoteis.join(', ')}`;
+                    }
+                }
+                
+                observacoes += `\n\nORÇAMENTO COMPLETO:\n${estadoGlobal.ultimoOrcamento}`;
+                
                 const dados = {
-                    observacoes: `GERE DICAS: Crie dicas de viagem para ${estadoGlobal.ultimoDestino}.`,
+                    observacoes: observacoes,
                     tipos: ['Dicas'],
-                    destino: estadoGlobal.ultimoDestino
+                    destino: contexto?.destino || ''
                 };
                 
                 const resultado = await enviarParaAPI(dados);
@@ -1275,17 +1372,41 @@
         
         async function gerarRankingHoteis() {
             try {
+                const contexto = extrairContextoDoOrcamento(estadoGlobal.ultimoOrcamento);
+                const destino = contexto?.destino || 'destino selecionado';
+                
                 document.getElementById('secaoRanking').style.display = 'block';
                 document.getElementById('rankingIA').innerHTML = `
                     <div class="loading">
-                        🏆 Gerando ranking de hotéis para ${estadoGlobal.ultimoDestino}...
+                        🏆 Gerando ranking de hotéis para ${destino}...
                     </div>
                 `;
                 
+                let observacoes = `Gere ranking dos hotéis baseado neste orçamento:`;
+                
+                if (contexto) {
+                    observacoes += `\n\nDESTINO: ${contexto.destino}`;
+                    if (contexto.dataIda && contexto.dataVolta) {
+                        observacoes += `\nDATAS: ${contexto.dataIda} a ${contexto.dataVolta}`;
+                    }
+                    if (contexto.adultos) {
+                        observacoes += `\nPASSAGEIROS: ${contexto.adultos} adultos`;
+                        if (contexto.criancas) {
+                            observacoes += ` + ${contexto.criancas} crianças (considere dicas para famílias)`;
+                        }
+                    }
+                    if (contexto.hoteis && contexto.hoteis.length > 0) {
+                        observacoes += `\nHOTÉIS DO ORÇAMENTO: ${contexto.hoteis.join(', ')}`;
+                        observacoes += `\n\nCrie ranking destes hotéis específicos com avaliações, localização, facilidades e recomendações.`;
+                    }
+                }
+                
+                observacoes += `\n\nORÇAMENTO COMPLETO:\n${estadoGlobal.ultimoOrcamento}`;
+                
                 const dados = {
-                    observacoes: `GERE RANKING: Crie um ranking de hotéis para ${estadoGlobal.ultimoDestino}.`,
+                    observacoes: observacoes,
                     tipos: ['Ranking'],
-                    destino: estadoGlobal.ultimoDestino
+                    destino: contexto?.destino || ''
                 };
                 
                 const resultado = await enviarParaAPI(dados);
