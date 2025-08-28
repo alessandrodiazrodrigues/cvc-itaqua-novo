@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Controles de Embarques - CVC Itaqua</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --cvc-azul: #003399;
+            --cvc-amarelo: #FFD700;
+            --cvc-verde: #00A859;
+            --cvc-azul-claro: #4A90E2;
+            --cvc-azul-escuro: #002266;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: var(--cvc-amarelo);
+            border-radius: 50%;
+            opacity: 0.1;
+            transform: translate(50%, -50%);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cvc-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--cvc-azul);
+            font-size: 18px;
+        }
+        
+        .stats-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--cvc-amarelo);
+        }
+        
+        .stat-card .numero {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--cvc-amarelo);
+            line-height: 1;
+        }
+        
+        .stat-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-pills {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 12px;
+            margin: 0 5px;
+            font-weight: 600;
+            color: var(--cvc-azul);
+            transition: all 0.3s ease;
+            padding: 12px 20px;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--cvc-azul);
+            color: white;
+        }
+        
+        .nav-pills .nav-link:hover:not(.active) {
+            background: var(--cvc-azul-claro);
+            color: white;
+        }
+        
+        .content-section {
+            padding: 30px;
+        }
+        
+        .filtros-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .embarque-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--cvc-azul);
+            transition: all 0.3s ease;
+        }
+        
+        .embarque-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .embarque-card.conferencia {
+            border-left-color: #FF9800;
+        }
+        
+        .embarque-card.checkin {
+            border-left-color: #2196F3;
+        }
+        
+        .embarque-card.posvenda {
+            border-left-color: #4CAF50;
+        }
+        
+        .embarque-card.concluido {
+            opacity: 0.7;
+            border-left-color: #4CAF50;
+            background: #f8fff8;
+        }
+        
+        .embarque-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .cliente-info h5 {
+            margin: 0 0 5px 0;
+            color: var(--cvc-azul);
+            font-weight: 700;
+        }
+        
+        .cliente-info p {
+            margin: 2px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .data-info {
+            text-align: right;
+            background: rgba(0, 51, 153, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .data-destaque {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--cvc-azul);
+        }
+        
+        .acoes-card {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn-acao {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+        }
+        
+        .btn-acao:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-conferido {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+            border: none;
+        }
+        
+        .btn-checkin {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .btn-posvenda {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            border: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .badge-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-urgente {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .badge-atencao {
+            background: #fff8e1;
+            color: #f57f17;
+        }
+        
+        .badge-ok {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        @media (max-width: 768px) {
+            .embarque-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .data-info {
+                text-align: left;
+            }
+            
+            .acoes-card {
+                justify-content: stretch;
+            }
+            
+            .btn-acao {
+                flex: 1;
+                text-align: center;
+            }
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <div class="header-content">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap">
+                        <div class="cvc-logo me-4">
+                            CVC
+                        </div>
+                        <div class="text-center">
+                            <h1 class="mb-0">Dashboard de Controles de Embarques</h1>
+                            <p class="mb-0">Sistema inteligente de acompanhamento - CVC Itaquaquecetuba</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Estatísticas -->
+                    <div class="stats-container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('conferencia')">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span class="numero" id="stat-conferencia">0</span>
+                                    <span class="label">Conferências Pendentes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('checkin')">
+                                    <i class="fas fa-plane-departure"></i>
+                                    <span class="numero" id="stat-checkin">0</span>
+                                    <span class="label">Check-ins Pendentes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('posvenda')">
+                                    <i class="fas fa-phone"></i>
+                                    <span class="numero" id="stat-posvenda">0</span>
+                                    <span class="label">Pós-vendas Pendentes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-pills">
+                <ul class="nav nav-pills justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#conferencia" data-bs-toggle="pill">
+                            <i class="fas fa-clipboard-check"></i> Conferência
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#checkin" data-bs-toggle="pill">
+                            <i class="fas fa-plane-departure"></i> Check-in
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#posvenda" data-bs-toggle="pill">
+                            <i class="fas fa-phone"></i> Pós-vendas
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Main Content -->
+            <div class="content-section">
+                <!-- Filtros -->
+                <div class="filtros-section">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Vendedor</label>
+                            <select id="filtroVendedor" class="form-select">
+                                <option value="meus">Meus Embarques</option>
+                                <option value="todos">Todos os Embarques</option>
+                                <option value="Alessandro">Alessandro</option>
+                                <option value="Ana Paula">Ana Paula</option>
+                                <option value="Adriana">Adriana</option>
+                                <option value="Adrielly">Adrielly</option>
+                                <option value="Bia">Bia</option>
+                                <option value="Conceição">Conceição</option>
+                                <option value="Jhully">Jhully</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <select id="filtroStatus" class="form-select">
+                                <option value="pendentes">Apenas Pendentes</option>
+                                <option value="concluidos">Apenas Concluídos</option>
+                                <option value="todos">Todos os Status</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Buscar Cliente</label>
+                            <input type="text" id="buscaCliente" class="form-control" placeholder="Nome do cliente ou CPF">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="aplicarFiltros()">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Conferência Tab -->
+                    <div class="tab-pane fade show active" id="conferencia">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-clipboard-check text-warning"></i> Conferências (10 dias antes)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('conferencia')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('conferencia')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-conferencia" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Check-in Tab -->
+                    <div class="tab-pane fade" id="checkin">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-plane-departure text-primary"></i> Check-ins (2 dias antes)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('checkin')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('checkin')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-checkin" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pós-vendas Tab -->
+                    <div class="tab-pane fade" id="posvenda">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-phone text-success"></i> Pós-vendas (2 dias após retorno)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('posvenda')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('posvenda')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-posvenda" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuração da API
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
+        
+        let dadosEmbarques = [];
+        let vendedorAtual = 'Alessandro'; // Será detectado automaticamente
+        let abaAtiva = 'conferencia';
+        let statusAtivo = 'pendentes';
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard de Embarques carregado');
+            
+            // Configurar eventos
+            configurarEventos();
+            
+            // Carregar dados iniciais
+            carregarEmbarques();
+            
+            // Atualizar automaticamente a cada 30 segundos
+            setInterval(atualizarAutomatico, 30000);
+        });
+        
+        function configurarEventos() {
+            // Tabs
+            document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    const targetId = e.target.getAttribute('href').substring(1);
+                    abaAtiva = targetId;
+                    renderizarLista();
+                });
+            });
+            
+            // Filtros
+            document.getElementById('filtroVendedor').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+            document.getElementById('buscaCliente').addEventListener('input', debounce(aplicarFiltros, 300));
+        }
+        
+        async function carregarEmbarques() {
+            try {
+                mostrarLoading();
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'listar_embarques' })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    dadosEmbarques = result.data.embarques || [];
+                    processarDados();
+                    atualizarEstatisticas();
+                    renderizarLista();
+                } else {
+                    throw new Error(result.message || 'Erro ao carregar dados');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar embarques:', error);
+                mostrarToast('Erro ao carregar dados: ' + error.message, 'error');
+                mostrarErro(error.message);
+            }
+        }
+        
+        function processarDados() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            dadosEmbarques.forEach(embarque => {
+                if (embarque.dataIda) {
+                    const dataIda = new Date(embarque.dataIda);
+                    const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
+                    embarque.diasParaIda = diasParaIda;
+                }
+                
+                if (embarque.dataVolta) {
+                    const dataVolta = new Date(embarque.dataVolta);
+                    const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
+                    embarque.diasAposVolta = diasAposVolta;
+                }
+                
+                // Determinar tipo de controle necessário
+                embarque.tipoControle = determinarTipoControle(embarque);
+            });
+        }
+        
+        function determinarTipoControle(embarque) {
+            const hoje = new Date();
+            
+            if (embarque.diasParaIda <= 10 && embarque.diasParaIda >= 0) {
+                return 'conferencia';
+            }
+            
+            if (embarque.diasParaIda <= 2 && embarque.diasParaIda >= 0) {
+                return 'checkin';
+            }
+            
+            if (embarque.diasAposVolta >= 2) {
+                return 'posvenda';
+            }
+            
+            return null;
+        }
+        
+        function atualizarEstatisticas() {
+            const stats = {
+                conferencia: 0,
+                checkin: 0,
+                posvenda: 0
+            };
+            
+            dadosEmbarques.forEach(embarque => {
+                if (embarque.tipoControle === 'conferencia' && !embarque.conferenciaFeita) {
+                    stats.conferencia++;
+                }
+                if (embarque.tipoControle === 'checkin' && !embarque.checkinFeito) {
+                    stats.checkin++;
+                }
+                if (embarque.tipoControle === 'posvenda' && !embarque.posVendaFeito) {
+                    stats.posvenda++;
+                }
+            });
+            
+            document.getElementById('stat-conferencia').textContent = stats.conferencia;
+            document.getElementById('stat-checkin').textContent = stats.checkin;
+            document.getElementById('stat-posvenda').textContent = stats.posvenda;
+        }
+        
+        function renderizarLista() {
+            const containerId = `lista-${abaAtiva}`;
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            const embarquesFiltrados = filtrarEmbarques();
+            
+            if (embarquesFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>Nenhum embarque encontrado</h5>
+                        <p>Não há embarques ${statusAtivo} para ${abaAtiva} no momento.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = embarquesFiltrados
+                .map(embarque => criarCardEmbarque(embarque))
+                .join('');
+        }
+        
+        function filtrarEmbarques() {
+            let embarques = dadosEmbarques;
+            
+            // Filtrar por tipo de controle
+            embarques = embarques.filter(e => e.tipoControle === abaAtiva);
+            
+            // Filtrar por status (pendente/concluído)
+            const statusFiltro = document.getElementById('filtroStatus').value;
+            if (statusFiltro === 'pendentes') {
+                embarques = embarques.filter(e => !isControleConcluido(e));
+            } else if (statusFiltro === 'concluidos') {
+                embarques = embarques.filter(e => isControleConcluido(e));
+            }
+            
+            // Filtrar por vendedor
+            const vendedorFiltro = document.getElementById('filtroVendedor').value;
+            if (vendedorFiltro === 'meus') {
+                embarques = embarques.filter(e => e.vendedor === vendedorAtual);
+            } else if (vendedorFiltro !== 'todos') {
+                embarques = embarques.filter(e => e.vendedor === vendedorFiltro);
+            }
+            
+            // Filtrar por busca
+            const busca = document.getElementById('buscaCliente').value.toLowerCase();
+            if (busca) {
+                embarques = embarques.filter(e => 
+                    e.nomeCliente.toLowerCase().includes(busca) ||
+                    e.cpf.includes(busca)
+                );
+            }
+            
+            return embarques;
+        }
+        
+        function isControleConcluido(embarque) {
+            switch (abaAtiva) {
+                case 'conferencia':
+                    return embarque.conferenciaFeita;
+                case 'checkin':
+                    return embarque.checkinFeito;
+                case 'posvenda':
+                    return embarque.posVendaFeito;
+                default:
+                    return false;
+            }
+        }
+        
+        function criarCardEmbarque(embarque) {
+            const isConcluido = isControleConcluido(embarque);
+            const dataFormatada = formatarData(embarque.dataIda);
+            const dataVoltaFormatada = embarque.dataVolta ? formatarData(embarque.dataVolta) : '';
+            
+            return `
+                <div class="embarque-card ${abaAtiva} ${isConcluido ? 'concluido' : ''}">
+                    <div class="embarque-info">
+                        <div class="cliente-info">
+                            <h5>${embarque.nomeCliente}</h5>
+                            <p><i class="fas fa-id-card"></i> CPF: ${formatarCPF(embarque.cpf)}</p>
+                            <p><i class="fas fa-user-tie"></i> Vendedor: ${embarque.vendedor}</p>
+                            <p><i class="fas fa-plane"></i> ${embarque.tipoServico || 'Aéreo'} - ${embarque.cia || 'N/A'}</p>
+                            ${embarque.whatsappCliente ? `<p><i class="fab fa-whatsapp"></i> ${embarque.whatsappCliente}</p>` : ''}
+                        </div>
+                        <div class="data-info">
+                            <div class="data-destaque">${dataFormatada}</div>
+                            <small>${abaAtiva === 'posvenda' ? 'Retorno' : 'Embarque'}</small>
+                            ${dataVoltaFormatada ? `<div style="margin-top: 8px;"><small>Volta: ${dataVoltaFormatada}</small></div>` : ''}
+                            ${getBadgeUrgencia(embarque)}
+                        </div>
+                    </div>
+                    
+                    ${embarque.observacoes ? `<p class="mb-3"><i class="fas fa-comment"></i> ${embarque.observacoes}</p>` : ''}
+                    
+                    <div class="acoes-card">
+                        ${gerarBotoesAcao(embarque, isConcluido)}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function gerarBotoesAcao(embarque, isConcluido) {
+            if (isConcluido) {
+                return `<span class="badge bg-success"><i class="fas fa-check"></i> Concluído</span>`;
+            }
+            
+            switch (abaAtiva) {
+                case 'conferencia':
+                    return `
+                        <button class="btn btn-conferido btn-acao" onclick="marcarConferido('${embarque.id}')">
+                            <i class="fas fa-clipboard-check"></i> Conferido
+                        </button>
+                        <button class="btn btn-outline-info btn-acao" onclick="adicionarObservacao('${embarque.id}')">
+                            <i class="fas fa-comment"></i> Observação
+                        </button>
+                    `;
+                case 'checkin':
+                    return `
+                        <button class="btn btn-checkin btn-acao" onclick="marcarCheckin('${embarque.id}')">
+                            <i class="fas fa-plane-departure"></i> Check-in Feito
+                        </button>
+                        <button class="btn btn-outline-success btn-acao" onclick="enviarCartao('${embarque.id}')">
+                            <i class="fas fa-mobile-alt"></i> Cartão Enviado
+                        </button>
+                    `;
+                case 'posvenda':
+                    return `
+                        <button class="btn btn-posvenda btn-acao" onclick="marcarPosVenda('${embarque.id}')">
+                            <i class="fas fa-phone"></i> Contatado
+                        </button>
+                        <button class="btn btn-outline-primary btn-acao" onclick="agendarFollowup('${embarque.id}')">
+                            <i class="fas fa-calendar"></i> Agendar
+                        </button>
+                    `;
+                default:
+                    return '';
+            }
+        }
+        
+        function getBadgeUrgencia(embarque) {
+            if (abaAtiva === 'conferencia' && embarque.diasParaIda <= 3) {
+                return '<span class="badge badge-urgente">Urgente</span>';
+            }
+            if (abaAtiva === 'checkin' && embarque.diasParaIda <= 1) {
+                return '<span class="badge badge-urgente">Urgente</span>';
+            }
+            if (abaAtiva === 'posvenda' && embarque.diasAposVolta >= 7) {
+                return '<span class="badge badge-atencao">Atrasado</span>';
+            }
+            return '<span class="badge badge-ok">Normal</span>';
+        }
+        
+        async function marcarConferido(id) {
+            await atualizarControle(id, 'conferencia', 'Conferência realizada');
+        }
+        
+        async function marcarCheckin(id) {
+            await atualizarControle(id, 'checkin', 'Check-in realizado');
+        }
+        
+        async function marcarPosVenda(id) {
+            await atualizarControle(id, 'posvenda', 'Pós-venda realizada');
+        }
+        
+        async function atualizarControle(id, tipo, mensagem) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'atualizar_controle_embarque',
+                        id: id,
+                        tipo: tipo,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarToast(mensagem, 'success');
+                    await carregarEmbarques(); // Recarregar dados
+                } else {
+                    throw new Error(result.message || 'Erro ao atualizar');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar controle:', error);
+                mostrarToast('Erro ao atualizar: ' + error.message, 'error');
+            }
+        }
+        
+        // Funções auxiliares
+        function formatarData(data) {
+            if (!data) return 'N/A';
+            return new Date(data).toLocaleDateString('pt-BR');
+        }
+        
+        function formatarCPF(cpf) {
+            if (!cpf) return 'N/A';
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        
+        function mostrarLoading() {
+            document.querySelectorAll('.lista-embarques').forEach(lista => {
+                lista.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando embarques...</p>
+                    </div>
+                `;
+            });
+        }
+        
+        function mostrarErro(mensagem) {
+            document.querySelectorAll('.lista-embarques').forEach(lista => {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        <h5>Erro ao carregar dados</h5>
+                        <p>${mensagem}</p>
+                        <button class="btn btn-primary" onclick="carregarEmbarques()">Tentar Novamente</button>
+                    </div>
+                `;
+            });
+        }
+        
+        function mostrarToast(mensagem, tipo = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${tipo === 'success' ? 'success' : tipo === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${mensagem}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.querySelector('.toast-container').appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+        
+        function aplicarFiltros() {
+            renderizarLista();
+        }
+        
+        function abrirAba(aba) {
+            const tabElement = document.querySelector(`[href="#${aba}"]`);
+            if (tabElement) {
+                const tab = new bootstrap.Tab(tabElement);
+                tab.show();
+            }
+        }
+        
+        function mostrarPendentes(tipo) {
+            document.getElementById('filtroStatus').value = 'pendentes';
+            aplicarFiltros();
+        }
+        
+        function mostrarConcluidos(tipo) {
+            document.getElementById('filtroStatus').value = 'concluidos';
+            aplicarFiltros();
+        }
+        
+        function atualizarAutomatico() {
+            console.log('Atualização automática...');
+            carregarEmbarques();
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Funções adicionais (placeholder)
+        function adicionarObservacao(id) {
+            const observacao = prompt('Digite a observação:');
+            if (observacao) {
+                mostrarToast('Observação adicionada (funcionalidade em desenvolvimento)', 'info');
+            }
+        }
+        
+        function enviarCartao(id) {
+            mostrarToast('Cartão de embarque enviado (funcionalidade em desenvolvimento)', 'success');
+        }
+        
+        function agendarFollowup(id) {
+            mostrarToast('Follow-up agendado (funcionalidade em desenvolvimento)', 'info');
+        }
+    </script>
+</body>
+</html>
