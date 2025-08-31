@@ -536,30 +536,52 @@
         async function carregarEmbarques() {
             try {
                 mostrarLoading();
+                console.log('🔗 Fazendo requisição para:', API_URL);
+                
+                const payload = { action: 'listar_embarques' };
+                console.log('📤 Payload enviado:', payload);
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'listar_embarques' })
+                    headers: { 
+                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
                 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', response.headers);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 
                 const result = await response.json();
+                console.log('📥 Resultado completo da API:', result);
                 
                 if (result.success) {
+                    console.log('✅ Sucesso! Dados recebidos:', result.data);
                     dadosEmbarques = result.data.embarques || [];
+                    console.log('📊 Total de embarques:', dadosEmbarques.length);
+                    
                     processarDados();
                     atualizarEstatisticas();
                     renderizarLista();
                 } else {
-                    throw new Error(result.message || 'Erro ao carregar dados');
+                    console.error('❌ API retornou erro:', result);
+                    throw new Error(result.message || result.error || 'Erro desconhecido da API');
                 }
                 
             } catch (error) {
-                console.error('Erro ao carregar embarques:', error);
+                console.error('❌ Erro completo:', error);
                 mostrarToast('Erro ao carregar dados: ' + error.message, 'error');
                 mostrarErro(error.message);
+                
+                // Mostrar dados de debug no console
+                console.log('🔍 DEBUG - Verificar:');
+                console.log('   1. API_URL está correta?', API_URL);
+                console.log('   2. Google Apps Script está funcionando?');
+                console.log('   3. CORS está configurado?');
+                console.log('   4. Ação "listar_embarques" existe na API?');
             }
         }
         
