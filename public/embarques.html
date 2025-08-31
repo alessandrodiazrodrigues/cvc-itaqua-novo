@@ -586,42 +586,86 @@
         }
         
         function processarDados() {
+            console.log('🔄 Processando dados dos embarques...');
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
-            dadosEmbarques.forEach(embarque => {
-                if (embarque.dataIda) {
-                    const dataIda = new Date(embarque.dataIda);
-                    const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
-                    embarque.diasParaIda = diasParaIda;
+            let processados = 0;
+            let conferencias = 0;
+            let checkins = 0;
+            let posVendas = 0;
+            
+            dadosEmbarques.forEach((embarque, index) => {
+                try {
+                    // Debug do primeiro embarque
+                    if (index === 0) {
+                        console.log('📋 Exemplo de embarque recebido:', embarque);
+                    }
+                    
+                    // Processar data ida
+                    if (embarque.dataIda) {
+                        const dataIda = new Date(embarque.dataIda);
+                        if (!isNaN(dataIda.getTime())) {
+                            const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
+                            embarque.diasParaIda = diasParaIda;
+                        }
+                    }
+                    
+                    // Processar data volta  
+                    if (embarque.dataVolta) {
+                        const dataVolta = new Date(embarque.dataVolta);
+                        if (!isNaN(dataVolta.getTime())) {
+                            const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
+                            embarque.diasAposVolta = diasAposVolta;
+                        }
+                    }
+                    
+                    // Determinar tipo de controle necessário
+                    embarque.tipoControle = determinarTipoControle(embarque);
+                    
+                    // Contar por tipo
+                    if (embarque.tipoControle === 'conferencia') conferencias++;
+                    if (embarque.tipoControle === 'checkin') checkins++;
+                    if (embarque.tipoControle === 'posvenda') posVendas++;
+                    
+                    processados++;
+                } catch (error) {
+                    console.error('Erro ao processar embarque:', embarque, error);
                 }
-                
-                if (embarque.dataVolta) {
-                    const dataVolta = new Date(embarque.dataVolta);
-                    const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
-                    embarque.diasAposVolta = diasAposVolta;
-                }
-                
-                // Determinar tipo de controle necessário
-                embarque.tipoControle = determinarTipoControle(embarque);
             });
+            
+            console.log(`✅ Processados ${processados}/${dadosEmbarques.length} embarques`);
+            console.log(`📊 Conferências: ${conferencias}, Check-ins: ${checkins}, Pós-vendas: ${posVendas}`);
         }
         
         function determinarTipoControle(embarque) {
             const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
             
+            // Debug das datas
+            console.log(`🔍 Analisando embarque: ${embarque.nomeCliente}`);
+            console.log(`   Data Ida: ${embarque.dataIda} | Dias para ida: ${embarque.diasParaIda}`);
+            console.log(`   Data Volta: ${embarque.dataVolta} | Dias após volta: ${embarque.diasAposVolta}`);
+            
+            // Conferência: 10 dias antes do embarque
             if (embarque.diasParaIda <= 10 && embarque.diasParaIda >= 0) {
+                console.log(`   ✅ CONFERÊNCIA: ${embarque.diasParaIda} dias para embarque`);
                 return 'conferencia';
             }
             
+            // Check-in: 2 dias antes do embarque  
             if (embarque.diasParaIda <= 2 && embarque.diasParaIda >= 0) {
+                console.log(`   ✅ CHECK-IN: ${embarque.diasParaIda} dias para embarque`);
                 return 'checkin';
             }
             
+            // Pós-vendas: 2 dias após o retorno
             if (embarque.diasAposVolta >= 2) {
+                console.log(`   ✅ PÓS-VENDA: ${embarque.diasAposVolta} dias após volta`);
                 return 'posvenda';
             }
             
+            console.log(`   ⏸️ NENHUM CONTROLE: fora dos períodos`);
             return null;
         }
         
