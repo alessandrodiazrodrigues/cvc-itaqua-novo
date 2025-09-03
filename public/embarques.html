@@ -563,6 +563,17 @@
                     dadosEmbarques = result.data.embarques || [];
                     console.log('📊 Total de embarques:', dadosEmbarques.length);
                     
+                    // Mostrar primeiro embarque para debug
+                    if (dadosEmbarques.length > 0) {
+                        console.log('🔍 PRIMEIRO EMBARQUE (estrutura completa):', dadosEmbarques[0]);
+                        console.log('🔍 Campos de data disponíveis:', {
+                            dataIda: dadosEmbarques[0].dataIda,
+                            dataVolta: dadosEmbarques[0].dataVolta,
+                            data_ida: dadosEmbarques[0].data_ida,
+                            data_volta: dadosEmbarques[0].data_volta
+                        });
+                    }
+                    
                     processarDados();
                     atualizarEstatisticas();
                     renderizarLista();
@@ -586,56 +597,25 @@
         }
         
         function processarDados() {
-            console.log('🔄 Processando dados dos embarques...');
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
-            let processados = 0;
-            let conferencias = 0;
-            let checkins = 0;
-            let posVendas = 0;
-            
-            dadosEmbarques.forEach((embarque, index) => {
-                try {
-                    // Debug do primeiro embarque
-                    if (index === 0) {
-                        console.log('📋 Exemplo de embarque recebido:', embarque);
-                    }
-                    
-                    // Processar data ida
-                    if (embarque.dataIda) {
-                        const dataIda = new Date(embarque.dataIda);
-                        if (!isNaN(dataIda.getTime())) {
-                            const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
-                            embarque.diasParaIda = diasParaIda;
-                        }
-                    }
-                    
-                    // Processar data volta  
-                    if (embarque.dataVolta) {
-                        const dataVolta = new Date(embarque.dataVolta);
-                        if (!isNaN(dataVolta.getTime())) {
-                            const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
-                            embarque.diasAposVolta = diasAposVolta;
-                        }
-                    }
-                    
-                    // Determinar tipo de controle necessário
-                    embarque.tipoControle = determinarTipoControle(embarque);
-                    
-                    // Contar por tipo
-                    if (embarque.tipoControle === 'conferencia') conferencias++;
-                    if (embarque.tipoControle === 'checkin') checkins++;
-                    if (embarque.tipoControle === 'posvenda') posVendas++;
-                    
-                    processados++;
-                } catch (error) {
-                    console.error('Erro ao processar embarque:', embarque, error);
+            dadosEmbarques.forEach(embarque => {
+                if (embarque.dataIda) {
+                    const dataIda = new Date(embarque.dataIda);
+                    const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
+                    embarque.diasParaIda = diasParaIda;
                 }
+                
+                if (embarque.dataVolta) {
+                    const dataVolta = new Date(embarque.dataVolta);
+                    const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
+                    embarque.diasAposVolta = diasAposVolta;
+                }
+                
+                // Determinar tipo de controle necessário
+                embarque.tipoControle = determinarTipoControle(embarque);
             });
-            
-            console.log(`✅ Processados ${processados}/${dadosEmbarques.length} embarques`);
-            console.log(`📊 Conferências: ${conferencias}, Check-ins: ${checkins}, Pós-vendas: ${posVendas}`);
         }
         
         function determinarTipoControle(embarque) {
