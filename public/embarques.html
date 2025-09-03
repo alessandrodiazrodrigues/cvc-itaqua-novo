@@ -343,7 +343,7 @@ Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`
                 analise += `\nTotal de datas futuras encontradas: ${datasEncontradas.length}`;
                 
                 datasEncontradas.slice(0, 20).forEach((item, i) => {
-                    analise += `\n${i + 1:2}. Pos ${item.indice} | ${item.campo} | ${item.data.toLocaleDateString('pt-BR')} | ${item.cliente}`;
+                    analise += `\n${(i + 1).toString().padStart(2)}. Pos ${item.indice} | ${item.campo} | ${item.data.toLocaleDateString('pt-BR')} | ${item.cliente}`;
                 });
                 
                 if (datasEncontradas.length > 20) {
