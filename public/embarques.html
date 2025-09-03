@@ -3,245 +3,576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 Análise da Planilha de Embarques - CVC</title>
+    <title>Dashboard Controles de Embarques - CVC Itaqua</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        :root {
+            --cvc-azul: #003399;
+            --cvc-amarelo: #FFD700;
+            --cvc-verde: #00A859;
+            --cvc-azul-claro: #4A90E2;
+            --cvc-azul-escuro: #002266;
+        }
+        
         body {
-            font-family: 'Courier New', monospace;
-            margin: 20px;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1400px;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #003399, #4A90E2);
+        .header-section {
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
             color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: var(--cvc-amarelo);
+            border-radius: 50%;
+            opacity: 0.1;
+            transform: translate(50%, -50%);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cvc-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--cvc-azul);
+            font-size: 18px;
+        }
+        
+        .stats-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
             border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
         
-        .section {
-            margin-bottom: 30px;
-            padding: 15px;
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--cvc-amarelo);
+        }
+        
+        .stat-card .numero {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--cvc-amarelo);
+            line-height: 1;
+        }
+        
+        .stat-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-pills {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 12px;
+            margin: 0 5px;
+            font-weight: 600;
+            color: var(--cvc-azul);
+            transition: all 0.3s ease;
+            padding: 12px 20px;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--cvc-azul);
+            color: white;
+        }
+        
+        .nav-pills .nav-link:hover:not(.active) {
+            background: var(--cvc-azul-claro);
+            color: white;
+        }
+        
+        .content-section {
+            padding: 30px;
+        }
+        
+        .filtros-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
             border: 2px solid #dee2e6;
+        }
+        
+        .embarque-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--cvc-azul);
+            transition: all 0.3s ease;
+        }
+        
+        .embarque-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .embarque-card.conferencia {
+            border-left-color: #FF9800;
+        }
+        
+        .embarque-card.checkin {
+            border-left-color: #2196F3;
+        }
+        
+        .embarque-card.posvenda {
+            border-left-color: #4CAF50;
+        }
+        
+        .embarque-card.concluido {
+            opacity: 0.7;
+            border-left-color: #4CAF50;
+            background: #f8fff8;
+        }
+        
+        .embarque-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .cliente-info h5 {
+            margin: 0 0 5px 0;
+            color: var(--cvc-azul);
+            font-weight: 700;
+        }
+        
+        .cliente-info p {
+            margin: 2px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .data-info {
+            text-align: right;
+            background: rgba(0, 51, 153, 0.1);
+            padding: 10px;
             border-radius: 8px;
-            background: #fafafa;
         }
         
-        .section h3 {
-            margin-top: 0;
-            color: #003399;
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 5px;
+        .data-destaque {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--cvc-azul);
         }
         
-        .analysis-output {
-            background: #000;
-            color: #00ff00;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            line-height: 1.4;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
+        .acoes-card {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
         
-        .btn {
-            background: linear-gradient(135deg, #003399, #4A90E2);
+        .btn-acao {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+        }
+        
+        .btn-acao:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-conferido {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 10px 5px;
-            font-size: 14px;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        .btn-checkin {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
         }
         
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .btn-posvenda {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            border: none;
         }
         
-        .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        
-        .status.loading {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .stat-box {
+        .loading {
             text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-radius: 8px;
-            border-left: 4px solid #2196F3;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #1976D2;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
+            padding: 40px;
             color: #666;
-            margin-top: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .badge-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-urgente {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .badge-atencao {
+            background: #fff8e1;
+            color: #f57f17;
+        }
+        
+        .badge-ok {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .embarque-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .data-info {
+                text-align: left;
+            }
+            
+            .acoes-card {
+                justify-content: stretch;
+            }
+            
+            .btn-acao {
+                flex: 1;
+                text-align: center;
+            }
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔍 Analisador de Estrutura da Planilha</h1>
-            <p>Ferramenta para mapear todos os campos e identificar padrões nos dados</p>
-        </div>
-        
-        <!-- Controles -->
-        <div class="section">
-            <h3>🎯 Controles de Análise</h3>
-            <button class="btn" id="btnAnalisarEstrutura" onclick="analisarEstrutura()">
-                📊 Analisar Estrutura Completa
-            </button>
-            <button class="btn" id="btnAnalisarDatas" onclick="analisarCamposDatas()">
-                📅 Focar em Campos de Data
-            </button>
-            <button class="btn" id="btnAnalisarAmostras" onclick="analisarAmostras()">
-                🔬 Analisar Amostras de Dados
-            </button>
-            <button class="btn" id="btnLimparLog" onclick="limparLog()">
-                🗑️ Limpar Log
-            </button>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <div class="header-content">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap">
+                        <div class="cvc-logo me-4">
+                            CVC
+                        </div>
+                        <div class="text-center">
+                            <h1 class="mb-0">Dashboard de Controles de Embarques</h1>
+                            <p class="mb-0">Sistema inteligente de acompanhamento - CVC Itaquaquecetuba</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Estatísticas -->
+                    <div class="stats-container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('conferencia')">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span class="numero" id="stat-conferencia">0</span>
+                                    <span class="label">Conferências Pendentes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('checkin')">
+                                    <i class="fas fa-plane-departure"></i>
+                                    <span class="numero" id="stat-checkin">0</span>
+                                    <span class="label">Check-ins Pendentes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card" onclick="abrirAba('posvenda')">
+                                    <i class="fas fa-phone"></i>
+                                    <span class="numero" id="stat-posvenda">0</span>
+                                    <span class="label">Pós-vendas Pendentes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <div id="status" class="status" style="display: none;"></div>
-        </div>
-        
-        <!-- Estatísticas Rápidas -->
-        <div class="section">
-            <h3>📊 Estatísticas Rápidas</h3>
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-total">-</div>
-                    <div class="stat-label">Total de Registros</div>
+            <!-- Navigation -->
+            <nav class="nav-pills">
+                <ul class="nav nav-pills justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#conferencia" data-bs-toggle="pill">
+                            <i class="fas fa-clipboard-check"></i> Conferência
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#checkin" data-bs-toggle="pill">
+                            <i class="fas fa-plane-departure"></i> Check-in
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#posvenda" data-bs-toggle="pill">
+                            <i class="fas fa-phone"></i> Pós-vendas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#debug" data-bs-toggle="pill">
+                            <i class="fas fa-bug"></i> Debug
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Main Content -->
+            <div class="content-section">
+                <!-- Filtros -->
+                <div class="filtros-section">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Vendedor</label>
+                            <select id="filtroVendedor" class="form-select">
+                                <option value="todos">Todos os Embarques</option>
+                                <option value="Alessandro">Alessandro</option>
+                                <option value="Ana Paula">Ana Paula</option>
+                                <option value="Adriana">Adriana</option>
+                                <option value="Adrielly">Adrielly</option>
+                                <option value="Bia">Bia</option>
+                                <option value="Conceição">Conceição</option>
+                                <option value="Jhully">Jhully</option>
+                                <option value="Carol">Carol</option>
+                                <option value="Caroliny">Caroliny</option>
+                                <option value="Daina">Daina</option>
+                                <option value="Elaine">Elaine</option>
+                                <option value="Ilana">Ilana</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <select id="filtroStatus" class="form-select">
+                                <option value="pendentes">Apenas Pendentes</option>
+                                <option value="concluidos">Apenas Concluídos</option>
+                                <option value="todos">Todos os Status</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Buscar Cliente</label>
+                            <input type="text" id="buscaCliente" class="form-control" placeholder="Nome do cliente ou CPF">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="aplicarFiltros()">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-campos">-</div>
-                    <div class="stat-label">Campos Únicos</div>
+                
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Debug Tab -->
+                    <div class="tab-pane fade" id="debug">
+                        <h4><i class="fas fa-bug text-info"></i> Informações de Debug</h4>
+                        <div id="debug-info" class="debug-info">
+                            Carregando informações de debug...
+                        </div>
+                        <button class="btn btn-info" onclick="atualizarDebug()">
+                            <i class="fas fa-refresh"></i> Atualizar Debug
+                        </button>
+                    </div>
+                    
+                    <!-- Conferência Tab -->
+                    <div class="tab-pane fade show active" id="conferencia">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-clipboard-check text-warning"></i> Conferências (10 dias antes)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('conferencia')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('conferencia')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-conferencia" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Check-in Tab -->
+                    <div class="tab-pane fade" id="checkin">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-plane-departure text-primary"></i> Check-ins (2 dias antes)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('checkin')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('checkin')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-checkin" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pós-vendas Tab -->
+                    <div class="tab-pane fade" id="posvenda">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4><i class="fas fa-phone text-success"></i> Pós-vendas (2 dias após retorno)</h4>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="mostrarPendentes('posvenda')">Pendentes</button>
+                                <button class="btn btn-outline-success" onclick="mostrarConcluidos('posvenda')">Concluídos</button>
+                            </div>
+                        </div>
+                        <div id="lista-posvenda" class="lista-embarques">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Carregando embarques...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-datas">-</div>
-                    <div class="stat-label">Campos de Data</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-validos">-</div>
-                    <div class="stat-label">Registros Válidos</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Log de Análise -->
-        <div class="section">
-            <h3>📋 Log de Análise Detalhada</h3>
-            <div id="analysisLog" class="analysis-output">
-[SISTEMA] Aguardando análise... Clique em um dos botões acima para começar.
-            </div>
-        </div>
-        
-        <!-- Resultados Estruturados -->
-        <div class="section">
-            <h3>📈 Mapeamento de Campos Recomendado</h3>
-            <div id="recomendacoes" class="analysis-output">
-[SISTEMA] As recomendações aparecerão após a análise.
             </div>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
+        // Configuração da API
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
-        let dadosOriginais = [];
-        let analiseResultados = {};
+        let dadosEmbarques = [];
+        let dadosOriginais = []; // Para debug
+        let vendedorAtual = 'Alessandro';
+        let abaAtiva = 'conferencia';
+        let statusAtivo = 'pendentes';
         
-        function log(mensagem) {
-            const logElement = document.getElementById('analysisLog');
-            const timestamp = new Date().toLocaleTimeString();
-            logElement.textContent += `\n[${timestamp}] ${mensagem}`;
-            logElement.scrollTop = logElement.scrollHeight;
-        }
-        
-        function mostrarStatus(mensagem, tipo = 'loading') {
-            const statusElement = document.getElementById('status');
-            statusElement.textContent = mensagem;
-            statusElement.className = `status ${tipo}`;
-            statusElement.style.display = 'block';
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard de Embarques - Versão Corrigida');
             
-            if (tipo === 'success' || tipo === 'error') {
-                setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        function atualizarStats(total, campos, camposDatas, validos) {
-            document.getElementById('stat-total').textContent = total || '-';
-            document.getElementById('stat-campos').textContent = campos || '-';
-            document.getElementById('stat-datas').textContent = camposDatas || '-';
-            document.getElementById('stat-validos').textContent = validos || '-';
-        }
-        
-        async function carregarDados() {
-            if (dadosOriginais.length > 0) {
-                log('📁 Usando dados já carregados em cache');
-                return dadosOriginais;
-            }
+            configurarEventos();
+            carregarEmbarques();
             
+            // Atualizar automaticamente a cada 2 minutos para debug
+            setInterval(atualizarAutomatico, 120000);
+        });
+        
+        function configurarEventos() {
+            // Tabs
+            document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    const targetId = e.target.getAttribute('href').substring(1);
+                    abaAtiva = targetId;
+                    
+                    if (targetId !== 'debug') {
+                        renderizarLista();
+                    } else {
+                        atualizarDebug();
+                    }
+                });
+            });
+            
+            // Filtros
+            document.getElementById('filtroVendedor').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+            document.getElementById('buscaCliente').addEventListener('input', debounce(aplicarFiltros, 300));
+        }
+        
+        async function carregarEmbarques() {
             try {
-                mostrarStatus('🔄 Carregando dados da API...', 'loading');
-                log('🌐 Fazendo requisição para a API...');
+                mostrarLoading();
+                console.log('🔗 Fazendo requisição para:', API_URL);
+                
+                const payload = { action: 'listar_embarques' };
+                console.log('📤 Payload enviado:', payload);
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -249,300 +580,588 @@
                         'Content-Type': 'text/plain;charset=utf-8',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ action: 'listar_embarques' })
+                    body: JSON.stringify(payload)
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 
                 const result = await response.json();
+                console.log('📥 Resultado completo da API:', result);
                 
                 if (result.success) {
-                    dadosOriginais = result.data.embarques || [];
-                    log(`✅ ${dadosOriginais.length} registros carregados com sucesso`);
-                    mostrarStatus('✅ Dados carregados com sucesso!', 'success');
-                    return dadosOriginais;
+                    console.log('✅ Sucesso! Dados recebidos:', result.data);
+                    dadosOriginais = result.data.embarques || []; // Para debug
+                    console.log('📊 Total de embarques originais:', dadosOriginais.length);
+                    
+                    // Mostrar amostra dos dados
+                    if (dadosOriginais.length > 0) {
+                        console.log('🔍 PRIMEIRA LINHA (estrutura completa):', dadosOriginais[0]);
+                        console.log('🔍 ÚLTIMAS 3 LINHAS:', dadosOriginais.slice(-3));
+                    }
+                    
+                    // Processar e filtrar dados
+                    dadosEmbarques = processarEmbarques(dadosOriginais);
+                    console.log('📊 Total de embarques processados:', dadosEmbarques.length);
+                    
+                    atualizarEstatisticas();
+                    renderizarLista();
                 } else {
-                    throw new Error(result.message || 'Erro da API');
+                    console.error('❌ API retornou erro:', result);
+                    throw new Error(result.message || result.error || 'Erro desconhecido da API');
                 }
                 
             } catch (error) {
-                log(`❌ ERRO ao carregar dados: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
-                throw error;
+                console.error('❌ Erro completo:', error);
+                mostrarToast('Erro ao carregar dados: ' + error.message, 'error');
+                mostrarErro(error.message);
             }
         }
         
-        async function analisarEstrutura() {
-            try {
-                const dados = await carregarDados();
-                
-                log('\n🔍 ========== ANÁLISE DE ESTRUTURA COMPLETA ==========');
-                log(`📊 Analisando ${dados.length} registros...`);
-                
-                // Mapear todos os campos únicos
-                const todosOsCampos = new Set();
-                const tipoCampos = {};
-                const valorExemplos = {};
-                
-                dados.forEach((item, index) => {
-                    Object.keys(item).forEach(campo => {
-                        todosOsCampos.add(campo);
-                        
-                        // Analisar tipo do campo
-                        const valor = item[campo];
-                        if (valor !== null && valor !== undefined && valor !== '') {
-                            if (!tipoCampos[campo]) {
-                                tipoCampos[campo] = new Set();
-                                valorExemplos[campo] = [];
-                            }
-                            
-                            tipoCampos[campo].add(typeof valor);
-                            
-                            // Guardar exemplos (máximo 3)
-                            if (valorExemplos[campo].length < 3) {
-                                valorExemplos[campo].push(valor);
-                            }
+        function processarEmbarques(embarquesOriginais) {
+            console.log('⚙️ Iniciando processamento dos embarques...');
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const embarquesProcessados = [];
+            
+            embarquesOriginais.forEach((embarque, index) => {
+                try {
+                    // Processar dados básicos
+                    const embarqueProcessado = {
+                        ...embarque,
+                        id: embarque.id || (index + 1).toString()
+                    };
+                    
+                    // Verificar e processar datas
+                    let dataIda = null;
+                    let dataVolta = null;
+                    
+                    // Tentar diferentes formatos de data
+                    const camposDataIda = ['dataIda', 'data_ida', 'Data Ida'];
+                    const camposDataVolta = ['dataVolta', 'data_volta', 'Data Volta'];
+                    
+                    for (let campo of camposDataIda) {
+                        if (embarque[campo]) {
+                            dataIda = parseDate(embarque[campo]);
+                            if (dataIda) break;
                         }
-                    });
-                });
-                
-                log(`\n📋 CAMPOS ENCONTRADOS (${todosOsCampos.size} únicos):`);
-                log('==========================================');
-                
-                Array.from(todosOsCampos).sort().forEach((campo, index) => {
-                    const tipos = tipoCampos[campo] ? Array.from(tipoCampos[campo]).join(', ') : 'vazio';
-                    const exemplos = valorExemplos[campo] ? valorExemplos[campo].join(' | ') : 'N/A';
+                    }
                     
-                    log(`${index + 1:2d}. ${campo}`);
-                    log(`    Tipos: ${tipos}`);
-                    log(`    Exemplos: ${exemplos.substring(0, 100)}${exemplos.length > 100 ? '...' : ''}`);
-                    log('');
-                });
-                
-                atualizarStats(dados.length, todosOsCampos.size, 0, dados.length);
-                
-                // Salvar resultados para outras análises
-                analiseResultados.campos = Array.from(todosOsCampos);
-                analiseResultados.tipos = tipoCampos;
-                analiseResultados.exemplos = valorExemplos;
-                
-                mostrarStatus('✅ Análise de estrutura concluída!', 'success');
-                
-            } catch (error) {
-                log(`❌ ERRO na análise: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
-            }
-        }
-        
-        async function analisarCamposDatas() {
-            try {
-                const dados = await carregarDados();
-                
-                log('\n📅 ========== ANÁLISE DE CAMPOS DE DATA ==========');
-                log(`🔍 Procurando campos de data em ${dados.length} registros...`);
-                
-                const camposPossiveis = new Set();
-                const padroesDatas = {};
-                
-                // Buscar campos que podem conter datas
-                dados.forEach(item => {
-                    Object.keys(item).forEach(campo => {
-                        const campoLower = campo.toLowerCase();
-                        const valor = item[campo];
-                        
-                        // Identificar campos que podem ser datas
-                        if (campoLower.includes('data') || 
-                            campoLower.includes('date') ||
-                            campoLower.includes('viagem') ||
-                            campoLower.includes('embarque') ||
-                            campoLower.includes('ida') ||
-                            campoLower.includes('volta') ||
-                            campoLower.includes('retorno') ||
-                            campoLower.includes('cadastro') ||
-                            campoLower.includes('checkin') ||
-                            campo.toLowerCase().includes('timestamp')) {
-                            
-                            camposPossiveis.add(campo);
-                            
-                            if (valor && typeof valor === 'string') {
-                                if (!padroesDatas[campo]) {
-                                    padroesDatas[campo] = new Set();
-                                }
-                                
-                                // Analisar formato da data
-                                if (valor.match(/\d{4}-\d{2}-\d{2}/)) {
-                                    padroesDatas[campo].add('ISO (YYYY-MM-DD)');
-                                } else if (valor.match(/\d{2}\/\d{2}\/\d{4}/)) {
-                                    padroesDatas[campo].add('BR/US (DD/MM/YYYY ou MM/DD/YYYY)');
-                                } else if (valor.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
-                                    padroesDatas[campo].add('ISO DateTime');
-                                } else if (valor.match(/\d{2}-\d{2}-\d{4}/)) {
-                                    padroesDatas[campo].add('Hífen (DD-MM-YYYY)');
-                                } else if (valor.match(/\d{2}\.\d{2}\.\d{4}/)) {
-                                    padroesDatas[campo].add('Ponto (DD.MM.YYYY)');
-                                }
-                            }
+                    for (let campo of camposDataVolta) {
+                        if (embarque[campo]) {
+                            dataVolta = parseDate(embarque[campo]);
+                            if (dataVolta) break;
                         }
-                    });
-                });
-                
-                log(`\n🎯 CAMPOS DE DATA IDENTIFICADOS (${camposPossiveis.size}):`);
-                log('================================================');
-                
-                Array.from(camposPossiveis).sort().forEach((campo, index) => {
-                    // Contar quantos registros têm valor neste campo
-                    let contadorValores = 0;
-                    let exemplosValores = [];
+                    }
                     
-                    dados.forEach(item => {
-                        if (item[campo] && item[campo] !== '' && item[campo] !== 'undefined') {
-                            contadorValores++;
-                            if (exemplosValores.length < 5) {
-                                exemplosValores.push(item[campo]);
-                            }
-                        }
-                    });
+                    if (!dataIda) {
+                        console.log(`⚠️ Embarque ${index + 1}: Data de ida não encontrada ou inválida`);
+                        return; // Pular este embarque
+                    }
                     
-                    const percentual = ((contadorValores / dados.length) * 100).toFixed(1);
-                    const padroes = padroesDatas[campo] ? Array.from(padroesDatas[campo]).join(', ') : 'Formato não reconhecido';
+                    // Calcular dias
+                    const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
+                    let diasAposVolta = 0;
                     
-                    log(`${index + 1:2d}. ${campo}`);
-                    log(`    Preenchidos: ${contadorValores}/${dados.length} (${percentual}%)`);
-                    log(`    Formatos: ${padroes}`);
-                    log(`    Exemplos: ${exemplosValores.join(' | ')}`);
-                    log('');
-                });
-                
-                atualizarStats(dados.length, analiseResultados.campos?.length || 0, camposPossiveis.size, contadorValores);
-                
-                mostrarStatus('✅ Análise de datas concluída!', 'success');
-                
-                // Gerar recomendações
-                gerarRecomendacoes(camposPossiveis, padroesDatas, dados);
-                
-            } catch (error) {
-                log(`❌ ERRO na análise de datas: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
-            }
-        }
-        
-        async function analisarAmostras() {
-            try {
-                const dados = await carregarDados();
-                
-                log('\n🔬 ========== ANÁLISE DE AMOSTRAS ==========');
-                log('📦 Mostrando primeiros 5 registros completos...\n');
-                
-                dados.slice(0, 5).forEach((item, index) => {
-                    log(`--- REGISTRO ${index + 1} ---`);
-                    Object.keys(item).sort().forEach(campo => {
-                        const valor = item[campo];
-                        const valorStr = typeof valor === 'string' && valor.length > 50 
-                            ? valor.substring(0, 50) + '...' 
-                            : String(valor);
-                        log(`  ${campo}: ${valorStr}`);
-                    });
-                    log('');
-                });
-                
-                mostrarStatus('✅ Análise de amostras concluída!', 'success');
-                
-            } catch (error) {
-                log(`❌ ERRO na análise de amostras: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
-            }
-        }
-        
-        function gerarRecomendacoes(camposDatas, padroesDatas, dados) {
-            const recomendacoesDiv = document.getElementById('recomendacoes');
-            
-            let recomendacaoTexto = '[SISTEMA] RECOMENDAÇÕES PARA O DASHBOARD\n';
-            recomendacaoTexto += '=====================================\n\n';
-            
-            // Identificar os melhores campos para data de ida
-            const candidatosIda = Array.from(camposDatas).filter(campo => 
-                campo.toLowerCase().includes('ida') || 
-                campo.toLowerCase().includes('viagem') ||
-                campo.toLowerCase().includes('embarque')
-            );
-            
-            const candidatosVolta = Array.from(camposDatas).filter(campo => 
-                campo.toLowerCase().includes('volta') || 
-                campo.toLowerCase().includes('retorno')
-            );
-            
-            const candidatosCadastro = Array.from(camposDatas).filter(campo => 
-                campo.toLowerCase().includes('cadastro') || 
-                campo.toLowerCase().includes('timestamp')
-            );
-            
-            recomendacaoTexto += '🎯 MAPEAMENTO RECOMENDADO PARA DASHBOARD:\n\n';
-            
-            recomendacaoTexto += 'const camposDataIda = [\n';
-            [...candidatosIda, ...candidatosCadastro].forEach(campo => {
-                // Contar preenchidos
-                const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
-                const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
-                recomendacaoTexto += `    '${campo}',  // ${preenchidos} registros (${percentual}%)\n`;
-            });
-            recomendacaoTexto += '];\n\n';
-            
-            recomendacaoTexto += 'const camposDataVolta = [\n';
-            candidatosVolta.forEach(campo => {
-                const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
-                const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
-                recomendacaoTexto += `    '${campo}',  // ${preenchidos} registros (${percentual}%)\n`;
-            });
-            recomendacaoTexto += '];\n\n';
-            
-            // Análise de qualidade dos dados
-            recomendacaoTexto += '📊 QUALIDADE DOS DADOS:\n';
-            Array.from(camposDatas).forEach(campo => {
-                const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
-                const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
-                const qualidade = percentual > 50 ? '✅ ALTA' : percentual > 20 ? '⚠️ MÉDIA' : '❌ BAIXA';
-                recomendacaoTexto += `  ${campo}: ${qualidade} (${percentual}%)\n`;
+                    if (dataVolta) {
+                        diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
+                    }
+                    
+                    embarqueProcessado.dataIda = dataIda;
+                    embarqueProcessado.dataVolta = dataVolta;
+                    embarqueProcessado.diasParaIda = diasParaIda;
+                    embarqueProcessado.diasAposVolta = diasAposVolta;
+                    
+                    // LÓGICA CORRIGIDA: Determinar tipo de controle
+                    embarqueProcessado.tipoControle = determinarTipoControleCorrigido(embarqueProcessado);
+                    
+                    // Normalizar campos
+                    embarqueProcessado.nomeCliente = embarque.nomeCliente || embarque.nome_cliente || embarque['Nome do Cliente'] || 'N/A';
+                    embarqueProcessado.cpfCliente = embarque.cpfCliente || embarque.cpf_cliente || embarque.CPF || 'N/A';
+                    embarqueProcessado.vendedor = embarque.vendedor || embarque.Vendedor || 'N/A';
+                    embarqueProcessado.observacoes = embarque.observacoes || embarque.Observações || '';
+                    embarqueProcessado.whatsappCliente = embarque.whatsappCliente || embarque.whats_cliente || embarque['WhatsApp do Cliente'] || '';
+                    
+                    // Status de controles (simulado)
+                    embarqueProcessado.conferenciaFeita = false;
+                    embarqueProcessado.checkinFeito = false;
+                    embarqueProcessado.posVendaFeito = false;
+                    
+                    embarquesProcessados.push(embarqueProcessado);
+                    
+                } catch (error) {
+                    console.error(`❌ Erro ao processar embarque ${index + 1}:`, error);
+                }
             });
             
-            recomendacaoTexto += '\n🔧 CÓDIGO PARA IMPLEMENTAR:\n';
-            recomendacaoTexto += `
-// Buscar data de ida em ordem de prioridade
-for (let campo of camposDataIda) {
-    if (embarque[campo]) {
-        dataIda = parseDate(embarque[campo]);
-        if (dataIda) {
-            console.log(\`📅 Data ida: \${campo} = \${dataIda.toLocaleDateString()}\`);
-            break;
+            console.log(`✅ Processamento concluído: ${embarquesProcessados.length} embarques válidos de ${embarquesOriginais.length} originais`);
+            return embarquesProcessados;
         }
-    }
-}
-
-// Fallback: se não encontrou nenhuma data, usar data de cadastro + X dias
-if (!dataIda && embarque.dataCadastro) {
-    dataIda = parseDate(embarque.dataCadastro);
-    if (dataIda) {
-        dataIda.setDate(dataIda.getDate() + 30); // Simula viagem futura
-        console.log('📅 Fallback: usando data cadastro + 30 dias');
-    }
-}
-`;
+        
+        function parseDate(dateValue) {
+            if (!dateValue) return null;
             
-            recomendacoesDiv.textContent = recomendacaoTexto;
+            try {
+                // Se já é uma data
+                if (dateValue instanceof Date) {
+                    return dateValue;
+                }
+                
+                // String de data
+                if (typeof dateValue === 'string') {
+                    // Tentar formato ISO
+                    let date = new Date(dateValue);
+                    if (!isNaN(date.getTime())) {
+                        return date;
+                    }
+                    
+                    // Tentar formato brasileiro DD/MM/YYYY
+                    const brFormat = dateValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    if (brFormat) {
+                        date = new Date(brFormat[3], brFormat[2] - 1, brFormat[1]);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                    
+                    // Tentar formato americano MM/DD/YYYY
+                    const usFormat = dateValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    if (usFormat) {
+                        date = new Date(usFormat[3], usFormat[1] - 1, usFormat[2]);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Erro ao fazer parse da data:', dateValue, error);
+                return null;
+            }
         }
         
-        function limparLog() {
-            document.getElementById('analysisLog').textContent = '[SISTEMA] Log limpo. Pronto para nova análise.';
-            document.getElementById('recomendacoes').textContent = '[SISTEMA] As recomendações aparecerão após a análise.';
-            atualizarStats('-', '-', '-', '-');
+        function determinarTipoControleCorrigido(embarque) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            console.log(`🔍 Analisando embarque: ${embarque.nomeCliente}`);
+            console.log(`   Data Ida: ${embarque.dataIda?.toLocaleDateString('pt-BR')} | Dias: ${embarque.diasParaIda}`);
+            console.log(`   Data Volta: ${embarque.dataVolta?.toLocaleDateString('pt-BR')} | Dias após: ${embarque.diasAposVolta}`);
+            
+            // LÓGICA CORRIGIDA: mais específica primeiro
+            
+            // Pós-vendas: 2+ dias após retorno (só se tiver data de volta)
+            if (embarque.dataVolta && embarque.diasAposVolta >= 2) {
+                console.log(`   ✅ PÓS-VENDA: ${embarque.diasAposVolta} dias após volta`);
+                return 'posvenda';
+            }
+            
+            // Check-in: 0-2 dias antes do embarque
+            if (embarque.diasParaIda >= 0 && embarque.diasParaIda <= 2) {
+                console.log(`   ✅ CHECK-IN: ${embarque.diasParaIda} dias para embarque`);
+                return 'checkin';
+            }
+            
+            // Conferência: 3-10 dias antes do embarque
+            if (embarque.diasParaIda >= 3 && embarque.diasParaIda <= 10) {
+                console.log(`   ✅ CONFERÊNCIA: ${embarque.diasParaIda} dias para embarque`);
+                return 'conferencia';
+            }
+            
+            console.log(`   ⏸️ FORA DO PERÍODO: dias para ida = ${embarque.diasParaIda}`);
+            return null;
         }
         
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', function() {
-            log('[SISTEMA] Analisador carregado e pronto!');
-            log('[DICA] Comece com "Analisar Estrutura Completa" para mapear todos os campos');
-        });
+        function atualizarEstatisticas() {
+            const stats = {
+                conferencia: 0,
+                checkin: 0,
+                posvenda: 0
+            };
+            
+            dadosEmbarques.forEach(embarque => {
+                if (embarque.tipoControle === 'conferencia' && !embarque.conferenciaFeita) {
+                    stats.conferencia++;
+                }
+                if (embarque.tipoControle === 'checkin' && !embarque.checkinFeito) {
+                    stats.checkin++;
+                }
+                if (embarque.tipoControle === 'posvenda' && !embarque.posVendaFeito) {
+                    stats.posvenda++;
+                }
+            });
+            
+            document.getElementById('stat-conferencia').textContent = stats.conferencia;
+            document.getElementById('stat-checkin').textContent = stats.checkin;
+            document.getElementById('stat-posvenda').textContent = stats.posvenda;
+            
+            console.log('📊 Estatísticas atualizadas:', stats);
+        }
+        
+        function renderizarLista() {
+            const containerId = `lista-${abaAtiva}`;
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            const embarquesFiltrados = filtrarEmbarques();
+            
+            console.log(`🎯 Renderizando aba: ${abaAtiva}`);
+            console.log(`📊 Embarques filtrados: ${embarquesFiltrados.length}`);
+            
+            if (embarquesFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h5>Nenhum embarque encontrado</h5>
+                        <p>Não há embarques ${statusAtivo} para ${abaAtiva} no momento.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = embarquesFiltrados
+                .map(embarque => criarCardEmbarque(embarque))
+                .join('');
+        }
+        
+        function filtrarEmbarques() {
+            let embarques = dadosEmbarques;
+            
+            // Filtrar por tipo de controle
+            embarques = embarques.filter(e => e.tipoControle === abaAtiva);
+            console.log(`🔍 Após filtro tipo (${abaAtiva}):`, embarques.length);
+            
+            // Filtrar por status (pendente/concluído)
+            const statusFiltro = document.getElementById('filtroStatus').value;
+            if (statusFiltro === 'pendentes') {
+                embarques = embarques.filter(e => !isControleConcluido(e));
+            } else if (statusFiltro === 'concluidos') {
+                embarques = embarques.filter(e => isControleConcluido(e));
+            }
+            console.log(`🔍 Após filtro status (${statusFiltro}):`, embarques.length);
+            
+            // Filtrar por vendedor
+            const vendedorFiltro = document.getElementById('filtroVendedor').value;
+            if (vendedorFiltro !== 'todos') {
+                embarques = embarques.filter(e => e.vendedor === vendedorFiltro);
+            }
+            console.log(`🔍 Após filtro vendedor (${vendedorFiltro}):`, embarques.length);
+            
+            // Filtrar por busca
+            const busca = document.getElementById('buscaCliente').value.toLowerCase();
+            if (busca) {
+                embarques = embarques.filter(e => 
+                    e.nomeCliente.toLowerCase().includes(busca) ||
+                    e.cpfCliente.includes(busca)
+                );
+            }
+            console.log(`🔍 Após busca (${busca}):`, embarques.length);
+            
+            return embarques;
+        }
+        
+        function isControleConcluido(embarque) {
+            switch (abaAtiva) {
+                case 'conferencia':
+                    return embarque.conferenciaFeita;
+                case 'checkin':
+                    return embarque.checkinFeito;
+                case 'posvenda':
+                    return embarque.posVendaFeito;
+                default:
+                    return false;
+            }
+        }
+        
+        function criarCardEmbarque(embarque) {
+            const isConcluido = isControleConcluido(embarque);
+            const dataFormatada = embarque.dataIda ? embarque.dataIda.toLocaleDateString('pt-BR') : 'N/A';
+            const dataVoltaFormatada = embarque.dataVolta ? embarque.dataVolta.toLocaleDateString('pt-BR') : '';
+            
+            return `
+                <div class="embarque-card ${abaAtiva} ${isConcluido ? 'concluido' : ''}">
+                    <div class="embarque-info">
+                        <div class="cliente-info">
+                            <h5>${embarque.nomeCliente}</h5>
+                            <p><i class="fas fa-id-card"></i> CPF: ${formatarCPF(embarque.cpfCliente)}</p>
+                            <p><i class="fas fa-user-tie"></i> Vendedor: ${embarque.vendedor}</p>
+                            <p><i class="fas fa-plane"></i> Viagem (${embarque.diasParaIda > 0 ? embarque.diasParaIda + ' dias' : 'Hoje/Passou'})</p>
+                            ${embarque.whatsappCliente ? `<p><i class="fab fa-whatsapp"></i> ${embarque.whatsappCliente}</p>` : ''}
+                        </div>
+                        <div class="data-info">
+                            <div class="data-destaque">${dataFormatada}</div>
+                            <small>${abaAtiva === 'posvenda' ? 'Retorno' : 'Embarque'}</small>
+                            ${dataVoltaFormatada ? `<div style="margin-top: 8px;"><small>Volta: ${dataVoltaFormatada}</small></div>` : ''}
+                            ${getBadgeUrgencia(embarque)}
+                        </div>
+                    </div>
+                    
+                    ${embarque.observacoes ? `<p class="mb-3"><i class="fas fa-comment"></i> ${embarque.observacoes}</p>` : ''}
+                    
+                    <div class="acoes-card">
+                        ${gerarBotoesAcao(embarque, isConcluido)}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function gerarBotoesAcao(embarque, isConcluido) {
+            if (isConcluido) {
+                return `<span class="badge bg-success"><i class="fas fa-check"></i> Concluído</span>`;
+            }
+            
+            switch (abaAtiva) {
+                case 'conferencia':
+                    return `
+                        <button class="btn btn-conferido btn-acao" onclick="marcarConferido('${embarque.id}')">
+                            <i class="fas fa-clipboard-check"></i> Conferido
+                        </button>
+                        <button class="btn btn-outline-info btn-acao" onclick="adicionarObservacao('${embarque.id}')">
+                            <i class="fas fa-comment"></i> Observação
+                        </button>
+                    `;
+                case 'checkin':
+                    return `
+                        <button class="btn btn-checkin btn-acao" onclick="marcarCheckin('${embarque.id}')">
+                            <i class="fas fa-plane-departure"></i> Check-in Feito
+                        </button>
+                        <button class="btn btn-outline-success btn-acao" onclick="enviarCartao('${embarque.id}')">
+                            <i class="fas fa-mobile-alt"></i> Cartão Enviado
+                        </button>
+                    `;
+                case 'posvenda':
+                    return `
+                        <button class="btn btn-posvenda btn-acao" onclick="marcarPosVenda('${embarque.id}')">
+                            <i class="fas fa-phone"></i> Contatado
+                        </button>
+                        <button class="btn btn-outline-primary btn-acao" onclick="agendarFollowup('${embarque.id}')">
+                            <i class="fas fa-calendar"></i> Agendar
+                        </button>
+                    `;
+                default:
+                    return '';
+            }
+        }
+        
+        function getBadgeUrgencia(embarque) {
+            if (abaAtiva === 'conferencia' && embarque.diasParaIda <= 3) {
+                return '<span class="badge badge-urgente">Urgente</span>';
+            }
+            if (abaAtiva === 'checkin' && embarque.diasParaIda <= 1) {
+                return '<span class="badge badge-urgente">Urgente</span>';
+            }
+            if (abaAtiva === 'posvenda' && embarque.diasAposVolta >= 7) {
+                return '<span class="badge badge-atencao">Atrasado</span>';
+            }
+            return '<span class="badge badge-ok">Normal</span>';
+        }
+        
+        // Ações dos botões
+        function marcarConferido(id) {
+            console.log(`✅ Marcando conferência como concluída para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.conferenciaFeita = true;
+                mostrarToast(`✅ Conferência marcada como concluída para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
+            }
+        }
+        
+        function marcarCheckin(id) {
+            console.log(`✅ Marcando check-in como concluído para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.checkinFeito = true;
+                mostrarToast(`✅ Check-in marcado como concluído para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
+            }
+        }
+        
+        function marcarPosVenda(id) {
+            console.log(`✅ Marcando pós-venda como concluída para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.posVendaFeito = true;
+                mostrarToast(`✅ Pós-venda marcada como concluída para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
+            }
+        }
+        
+        function atualizarDebug() {
+            const debugInfo = document.getElementById('debug-info');
+            const hoje = new Date();
+            
+            let debugText = '';
+            debugText += `📅 Data atual: ${hoje.toLocaleDateString('pt-BR')}\n`;
+            debugText += `📊 Total embarques originais: ${dadosOriginais.length}\n`;
+            debugText += `📊 Total embarques processados: ${dadosEmbarques.length}\n\n`;
+            
+            debugText += `🔍 DISTRIBUIÇÃO POR TIPO:\n`;
+            const distribuicao = {
+                conferencia: 0,
+                checkin: 0,
+                posvenda: 0,
+                fora_periodo: 0
+            };
+            
+            dadosEmbarques.forEach(e => {
+                if (e.tipoControle) {
+                    distribuicao[e.tipoControle]++;
+                } else {
+                    distribuicao.fora_periodo++;
+                }
+            });
+            
+            debugText += `• Conferências: ${distribuicao.conferencia}\n`;
+            debugText += `• Check-ins: ${distribuicao.checkin}\n`;
+            debugText += `• Pós-vendas: ${distribuicao.posvenda}\n`;
+            debugText += `• Fora do período: ${distribuicao.fora_periodo}\n\n`;
+            
+            debugText += `📋 PRIMEIROS 5 EMBARQUES PROCESSADOS:\n`;
+            dadosEmbarques.slice(0, 5).forEach((e, i) => {
+                debugText += `${i+1}. ${e.nomeCliente} - ${e.vendedor}\n`;
+                debugText += `   Data ida: ${e.dataIda?.toLocaleDateString('pt-BR') || 'N/A'}\n`;
+                debugText += `   Data volta: ${e.dataVolta?.toLocaleDateString('pt-BR') || 'N/A'}\n`;
+                debugText += `   Dias para ida: ${e.diasParaIda}\n`;
+                debugText += `   Tipo controle: ${e.tipoControle || 'Nenhum'}\n\n`;
+            });
+            
+            if (dadosOriginais.length > 0 && dadosOriginais[0]) {
+                debugText += `🔍 ESTRUTURA DO PRIMEIRO REGISTRO ORIGINAL:\n`;
+                const primeiro = dadosOriginais[0];
+                Object.keys(primeiro).slice(0, 15).forEach(key => {
+                    debugText += `• ${key}: ${primeiro[key]}\n`;
+                });
+                
+                debugText += `\n🔍 CAMPOS DE DATA DISPONÍVEIS NO PRIMEIRO REGISTRO:\n`;
+                const camposDatas = Object.keys(primeiro).filter(key => 
+                    key.toLowerCase().includes('data') || 
+                    key.toLowerCase().includes('date') ||
+                    key.toLowerCase().includes('viagem') ||
+                    key.toLowerCase().includes('ida') ||
+                    key.toLowerCase().includes('volta')
+                );
+                camposDatas.forEach(campo => {
+                    debugText += `• ${campo}: ${primeiro[campo]}\n`;
+                });
+            }
+            
+            debugInfo.textContent = debugText;
+        }
+        
+        // Funções auxiliares
+        function formatarCPF(cpf) {
+            if (!cpf || cpf === 'N/A') return 'N/A';
+            const numerico = cpf.replace(/\D/g, '');
+            if (numerico.length === 11) {
+                return numerico.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            return cpf;
+        }
+        
+        function mostrarLoading() {
+            document.querySelectorAll('.lista-embarques').forEach(lista => {
+                lista.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando embarques...</p>
+                    </div>
+                `;
+            });
+        }
+        
+        function mostrarErro(mensagem) {
+            document.querySelectorAll('.lista-embarques').forEach(lista => {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        <h5>Erro ao carregar dados</h5>
+                        <p>${mensagem}</p>
+                        <button class="btn btn-primary" onclick="carregarEmbarques()">Tentar Novamente</button>
+                    </div>
+                `;
+            });
+        }
+        
+        function mostrarToast(mensagem, tipo = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${tipo === 'success' ? 'success' : tipo === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${mensagem}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.querySelector('.toast-container').appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+        
+        function aplicarFiltros() {
+            renderizarLista();
+        }
+        
+        function abrirAba(aba) {
+            const tabElement = document.querySelector(`[href="#${aba}"]`);
+            if (tabElement) {
+                const tab = new bootstrap.Tab(tabElement);
+                tab.show();
+            }
+        }
+        
+        function mostrarPendentes(tipo) {
+            document.getElementById('filtroStatus').value = 'pendentes';
+            aplicarFiltros();
+        }
+        
+        function mostrarConcluidos(tipo) {
+            document.getElementById('filtroStatus').value = 'concluidos';
+            aplicarFiltros();
+        }
+        
+        function atualizarAutomatico() {
+            console.log('🔄 Atualização automática...');
+            carregarEmbarques();
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Funções de ação (placeholders)
+        function adicionarObservacao(id) {
+            const observacao = prompt('Digite a observação:');
+            if (observacao) {
+                mostrarToast('Observação adicionada (funcionalidade em desenvolvimento)', 'info');
+            }
+        }
+        
+        function enviarCartao(id) {
+            mostrarToast('Cartão de embarque enviado (funcionalidade em desenvolvimento)', 'success');
+        }
+        
+        function agendarFollowup(id) {
+            mostrarToast('Follow-up agendado (funcionalidade em desenvolvimento)', 'info');
+        }
     </script>
 </body>
 </html>
