@@ -297,6 +297,16 @@
             color: #2e7d32;
         }
         
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        
         @media (max-width: 768px) {
             .embarque-info {
                 flex-direction: column;
@@ -388,6 +398,11 @@
                             <i class="fas fa-phone"></i> Pós-vendas
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#debug" data-bs-toggle="pill">
+                            <i class="fas fa-bug"></i> Debug
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
@@ -399,7 +414,6 @@
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Vendedor</label>
                             <select id="filtroVendedor" class="form-select">
-                                <option value="meus">Meus Embarques</option>
                                 <option value="todos">Todos os Embarques</option>
                                 <option value="Alessandro">Alessandro</option>
                                 <option value="Ana Paula">Ana Paula</option>
@@ -408,6 +422,11 @@
                                 <option value="Bia">Bia</option>
                                 <option value="Conceição">Conceição</option>
                                 <option value="Jhully">Jhully</option>
+                                <option value="Carol">Carol</option>
+                                <option value="Caroliny">Caroliny</option>
+                                <option value="Daina">Daina</option>
+                                <option value="Elaine">Elaine</option>
+                                <option value="Ilana">Ilana</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -433,6 +452,17 @@
                 
                 <!-- Tab Content -->
                 <div class="tab-content">
+                    <!-- Debug Tab -->
+                    <div class="tab-pane fade" id="debug">
+                        <h4><i class="fas fa-bug text-info"></i> Informações de Debug</h4>
+                        <div id="debug-info" class="debug-info">
+                            Carregando informações de debug...
+                        </div>
+                        <button class="btn btn-info" onclick="atualizarDebug()">
+                            <i class="fas fa-refresh"></i> Atualizar Debug
+                        </button>
+                    </div>
+                    
                     <!-- Conferência Tab -->
                     <div class="tab-pane fade show active" id="conferencia">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -499,22 +529,20 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
         let dadosEmbarques = [];
-        let vendedorAtual = 'Alessandro'; // Será detectado automaticamente
+        let dadosOriginais = []; // Para debug
+        let vendedorAtual = 'Alessandro';
         let abaAtiva = 'conferencia';
         let statusAtivo = 'pendentes';
         
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard de Embarques carregado');
+            console.log('🚀 Dashboard de Embarques - Versão Corrigida');
             
-            // Configurar eventos
             configurarEventos();
-            
-            // Carregar dados iniciais
             carregarEmbarques();
             
-            // Atualizar automaticamente a cada 30 segundos
-            setInterval(atualizarAutomatico, 30000);
+            // Atualizar automaticamente a cada 2 minutos para debug
+            setInterval(atualizarAutomatico, 120000);
         });
         
         function configurarEventos() {
@@ -523,7 +551,12 @@
                 tab.addEventListener('shown.bs.tab', function(e) {
                     const targetId = e.target.getAttribute('href').substring(1);
                     abaAtiva = targetId;
-                    renderizarLista();
+                    
+                    if (targetId !== 'debug') {
+                        renderizarLista();
+                    } else {
+                        atualizarDebug();
+                    }
                 });
             });
             
@@ -551,7 +584,6 @@
                 });
                 
                 console.log('📡 Response status:', response.status);
-                console.log('📡 Response headers:', response.headers);
                 
                 if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 
@@ -560,21 +592,19 @@
                 
                 if (result.success) {
                     console.log('✅ Sucesso! Dados recebidos:', result.data);
-                    dadosEmbarques = result.data.embarques || [];
-                    console.log('📊 Total de embarques:', dadosEmbarques.length);
+                    dadosOriginais = result.data.embarques || []; // Para debug
+                    console.log('📊 Total de embarques originais:', dadosOriginais.length);
                     
-                    // Mostrar primeiro embarque para debug
-                    if (dadosEmbarques.length > 0) {
-                        console.log('🔍 PRIMEIRO EMBARQUE (estrutura completa):', dadosEmbarques[0]);
-                        console.log('🔍 Campos de data disponíveis:', {
-                            dataIda: dadosEmbarques[0].dataIda,
-                            dataVolta: dadosEmbarques[0].dataVolta,
-                            data_ida: dadosEmbarques[0].data_ida,
-                            data_volta: dadosEmbarques[0].data_volta
-                        });
+                    // Mostrar amostra dos dados
+                    if (dadosOriginais.length > 0) {
+                        console.log('🔍 PRIMEIRA LINHA (estrutura completa):', dadosOriginais[0]);
+                        console.log('🔍 ÚLTIMAS 3 LINHAS:', dadosOriginais.slice(-3));
                     }
                     
-                    processarDados();
+                    // Processar e filtrar dados
+                    dadosEmbarques = processarEmbarques(dadosOriginais);
+                    console.log('📊 Total de embarques processados:', dadosEmbarques.length);
+                    
                     atualizarEstatisticas();
                     renderizarLista();
                 } else {
@@ -586,66 +616,162 @@
                 console.error('❌ Erro completo:', error);
                 mostrarToast('Erro ao carregar dados: ' + error.message, 'error');
                 mostrarErro(error.message);
-                
-                // Mostrar dados de debug no console
-                console.log('🔍 DEBUG - Verificar:');
-                console.log('   1. API_URL está correta?', API_URL);
-                console.log('   2. Google Apps Script está funcionando?');
-                console.log('   3. CORS está configurado?');
-                console.log('   4. Ação "listar_embarques" existe na API?');
             }
         }
         
-        function processarDados() {
+        function processarEmbarques(embarquesOriginais) {
+            console.log('⚙️ Iniciando processamento dos embarques...');
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
-            dadosEmbarques.forEach(embarque => {
-                if (embarque.dataIda) {
-                    const dataIda = new Date(embarque.dataIda);
+            const embarquesProcessados = [];
+            
+            embarquesOriginais.forEach((embarque, index) => {
+                try {
+                    // Processar dados básicos
+                    const embarqueProcessado = {
+                        ...embarque,
+                        id: embarque.id || (index + 1).toString()
+                    };
+                    
+                    // Verificar e processar datas
+                    let dataIda = null;
+                    let dataVolta = null;
+                    
+                    // Tentar diferentes formatos de data
+                    const camposDataIda = ['dataIda', 'data_ida', 'Data Ida'];
+                    const camposDataVolta = ['dataVolta', 'data_volta', 'Data Volta'];
+                    
+                    for (let campo of camposDataIda) {
+                        if (embarque[campo]) {
+                            dataIda = parseDate(embarque[campo]);
+                            if (dataIda) break;
+                        }
+                    }
+                    
+                    for (let campo of camposDataVolta) {
+                        if (embarque[campo]) {
+                            dataVolta = parseDate(embarque[campo]);
+                            if (dataVolta) break;
+                        }
+                    }
+                    
+                    if (!dataIda) {
+                        console.log(`⚠️ Embarque ${index + 1}: Data de ida não encontrada ou inválida`);
+                        return; // Pular este embarque
+                    }
+                    
+                    // Calcular dias
                     const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
-                    embarque.diasParaIda = diasParaIda;
+                    let diasAposVolta = 0;
+                    
+                    if (dataVolta) {
+                        diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
+                    }
+                    
+                    embarqueProcessado.dataIda = dataIda;
+                    embarqueProcessado.dataVolta = dataVolta;
+                    embarqueProcessado.diasParaIda = diasParaIda;
+                    embarqueProcessado.diasAposVolta = diasAposVolta;
+                    
+                    // LÓGICA CORRIGIDA: Determinar tipo de controle
+                    embarqueProcessado.tipoControle = determinarTipoControleCorrigido(embarqueProcessado);
+                    
+                    // Normalizar campos
+                    embarqueProcessado.nomeCliente = embarque.nomeCliente || embarque.nome_cliente || embarque['Nome do Cliente'] || 'N/A';
+                    embarqueProcessado.cpfCliente = embarque.cpfCliente || embarque.cpf_cliente || embarque.CPF || 'N/A';
+                    embarqueProcessado.vendedor = embarque.vendedor || embarque.Vendedor || 'N/A';
+                    embarqueProcessado.observacoes = embarque.observacoes || embarque.Observações || '';
+                    embarqueProcessado.whatsappCliente = embarque.whatsappCliente || embarque.whats_cliente || embarque['WhatsApp do Cliente'] || '';
+                    
+                    // Status de controles (simulado)
+                    embarqueProcessado.conferenciaFeita = false;
+                    embarqueProcessado.checkinFeito = false;
+                    embarqueProcessado.posVendaFeito = false;
+                    
+                    embarquesProcessados.push(embarqueProcessado);
+                    
+                } catch (error) {
+                    console.error(`❌ Erro ao processar embarque ${index + 1}:`, error);
                 }
-                
-                if (embarque.dataVolta) {
-                    const dataVolta = new Date(embarque.dataVolta);
-                    const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
-                    embarque.diasAposVolta = diasAposVolta;
-                }
-                
-                // Determinar tipo de controle necessário
-                embarque.tipoControle = determinarTipoControle(embarque);
             });
+            
+            console.log(`✅ Processamento concluído: ${embarquesProcessados.length} embarques válidos de ${embarquesOriginais.length} originais`);
+            return embarquesProcessados;
         }
         
-        function determinarTipoControle(embarque) {
+        function parseDate(dateValue) {
+            if (!dateValue) return null;
+            
+            try {
+                // Se já é uma data
+                if (dateValue instanceof Date) {
+                    return dateValue;
+                }
+                
+                // String de data
+                if (typeof dateValue === 'string') {
+                    // Tentar formato ISO
+                    let date = new Date(dateValue);
+                    if (!isNaN(date.getTime())) {
+                        return date;
+                    }
+                    
+                    // Tentar formato brasileiro DD/MM/YYYY
+                    const brFormat = dateValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    if (brFormat) {
+                        date = new Date(brFormat[3], brFormat[2] - 1, brFormat[1]);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                    
+                    // Tentar formato americano MM/DD/YYYY
+                    const usFormat = dateValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    if (usFormat) {
+                        date = new Date(usFormat[3], usFormat[1] - 1, usFormat[2]);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Erro ao fazer parse da data:', dateValue, error);
+                return null;
+            }
+        }
+        
+        function determinarTipoControleCorrigido(embarque) {
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
-            // Debug das datas
             console.log(`🔍 Analisando embarque: ${embarque.nomeCliente}`);
-            console.log(`   Data Ida: ${embarque.dataIda} | Dias para ida: ${embarque.diasParaIda}`);
-            console.log(`   Data Volta: ${embarque.dataVolta} | Dias após volta: ${embarque.diasAposVolta}`);
+            console.log(`   Data Ida: ${embarque.dataIda?.toLocaleDateString('pt-BR')} | Dias: ${embarque.diasParaIda}`);
+            console.log(`   Data Volta: ${embarque.dataVolta?.toLocaleDateString('pt-BR')} | Dias após: ${embarque.diasAposVolta}`);
             
-            // Conferência: 10 dias antes do embarque
-            if (embarque.diasParaIda <= 10 && embarque.diasParaIda >= 0) {
-                console.log(`   ✅ CONFERÊNCIA: ${embarque.diasParaIda} dias para embarque`);
-                return 'conferencia';
-            }
+            // LÓGICA CORRIGIDA: mais específica primeiro
             
-            // Check-in: 2 dias antes do embarque  
-            if (embarque.diasParaIda <= 2 && embarque.diasParaIda >= 0) {
-                console.log(`   ✅ CHECK-IN: ${embarque.diasParaIda} dias para embarque`);
-                return 'checkin';
-            }
-            
-            // Pós-vendas: 2 dias após o retorno
-            if (embarque.diasAposVolta >= 2) {
+            // Pós-vendas: 2+ dias após retorno (só se tiver data de volta)
+            if (embarque.dataVolta && embarque.diasAposVolta >= 2) {
                 console.log(`   ✅ PÓS-VENDA: ${embarque.diasAposVolta} dias após volta`);
                 return 'posvenda';
             }
             
-            console.log(`   ⏸️ NENHUM CONTROLE: fora dos períodos`);
+            // Check-in: 0-2 dias antes do embarque
+            if (embarque.diasParaIda >= 0 && embarque.diasParaIda <= 2) {
+                console.log(`   ✅ CHECK-IN: ${embarque.diasParaIda} dias para embarque`);
+                return 'checkin';
+            }
+            
+            // Conferência: 3-10 dias antes do embarque
+            if (embarque.diasParaIda >= 3 && embarque.diasParaIda <= 10) {
+                console.log(`   ✅ CONFERÊNCIA: ${embarque.diasParaIda} dias para embarque`);
+                return 'conferencia';
+            }
+            
+            console.log(`   ⏸️ FORA DO PERÍODO: dias para ida = ${embarque.diasParaIda}`);
             return null;
         }
         
@@ -671,6 +797,8 @@
             document.getElementById('stat-conferencia').textContent = stats.conferencia;
             document.getElementById('stat-checkin').textContent = stats.checkin;
             document.getElementById('stat-posvenda').textContent = stats.posvenda;
+            
+            console.log('📊 Estatísticas atualizadas:', stats);
         }
         
         function renderizarLista() {
@@ -680,6 +808,9 @@
             if (!container) return;
             
             const embarquesFiltrados = filtrarEmbarques();
+            
+            console.log(`🎯 Renderizando aba: ${abaAtiva}`);
+            console.log(`📊 Embarques filtrados: ${embarquesFiltrados.length}`);
             
             if (embarquesFiltrados.length === 0) {
                 container.innerHTML = `
@@ -702,6 +833,7 @@
             
             // Filtrar por tipo de controle
             embarques = embarques.filter(e => e.tipoControle === abaAtiva);
+            console.log(`🔍 Após filtro tipo (${abaAtiva}):`, embarques.length);
             
             // Filtrar por status (pendente/concluído)
             const statusFiltro = document.getElementById('filtroStatus').value;
@@ -710,23 +842,24 @@
             } else if (statusFiltro === 'concluidos') {
                 embarques = embarques.filter(e => isControleConcluido(e));
             }
+            console.log(`🔍 Após filtro status (${statusFiltro}):`, embarques.length);
             
             // Filtrar por vendedor
             const vendedorFiltro = document.getElementById('filtroVendedor').value;
-            if (vendedorFiltro === 'meus') {
-                embarques = embarques.filter(e => e.vendedor === vendedorAtual);
-            } else if (vendedorFiltro !== 'todos') {
+            if (vendedorFiltro !== 'todos') {
                 embarques = embarques.filter(e => e.vendedor === vendedorFiltro);
             }
+            console.log(`🔍 Após filtro vendedor (${vendedorFiltro}):`, embarques.length);
             
             // Filtrar por busca
             const busca = document.getElementById('buscaCliente').value.toLowerCase();
             if (busca) {
                 embarques = embarques.filter(e => 
                     e.nomeCliente.toLowerCase().includes(busca) ||
-                    e.cpf.includes(busca)
+                    e.cpfCliente.includes(busca)
                 );
             }
+            console.log(`🔍 Após busca (${busca}):`, embarques.length);
             
             return embarques;
         }
@@ -746,17 +879,17 @@
         
         function criarCardEmbarque(embarque) {
             const isConcluido = isControleConcluido(embarque);
-            const dataFormatada = formatarData(embarque.dataIda);
-            const dataVoltaFormatada = embarque.dataVolta ? formatarData(embarque.dataVolta) : '';
+            const dataFormatada = embarque.dataIda ? embarque.dataIda.toLocaleDateString('pt-BR') : 'N/A';
+            const dataVoltaFormatada = embarque.dataVolta ? embarque.dataVolta.toLocaleDateString('pt-BR') : '';
             
             return `
                 <div class="embarque-card ${abaAtiva} ${isConcluido ? 'concluido' : ''}">
                     <div class="embarque-info">
                         <div class="cliente-info">
                             <h5>${embarque.nomeCliente}</h5>
-                            <p><i class="fas fa-id-card"></i> CPF: ${formatarCPF(embarque.cpf)}</p>
+                            <p><i class="fas fa-id-card"></i> CPF: ${formatarCPF(embarque.cpfCliente)}</p>
                             <p><i class="fas fa-user-tie"></i> Vendedor: ${embarque.vendedor}</p>
-                            <p><i class="fas fa-plane"></i> ${embarque.tipoServico || 'Aéreo'} - ${embarque.cia || 'N/A'}</p>
+                            <p><i class="fas fa-plane"></i> Viagem (${embarque.diasParaIda > 0 ? embarque.diasParaIda + ' dias' : 'Hoje/Passou'})</p>
                             ${embarque.whatsappCliente ? `<p><i class="fab fa-whatsapp"></i> ${embarque.whatsappCliente}</p>` : ''}
                         </div>
                         <div class="data-info">
@@ -827,57 +960,97 @@
             return '<span class="badge badge-ok">Normal</span>';
         }
         
-        async function marcarConferido(id) {
-            await atualizarControle(id, 'conferencia', 'Conferência realizada');
-        }
-        
-        async function marcarCheckin(id) {
-            await atualizarControle(id, 'checkin', 'Check-in realizado');
-        }
-        
-        async function marcarPosVenda(id) {
-            await atualizarControle(id, 'posvenda', 'Pós-venda realizada');
-        }
-        
-        async function atualizarControle(id, tipo, mensagem) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'atualizar_controle_embarque',
-                        id: id,
-                        tipo: tipo,
-                        timestamp: new Date().toISOString()
-                    })
-                });
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    mostrarToast(mensagem, 'success');
-                    await carregarEmbarques(); // Recarregar dados
-                } else {
-                    throw new Error(result.message || 'Erro ao atualizar');
-                }
-                
-            } catch (error) {
-                console.error('Erro ao atualizar controle:', error);
-                mostrarToast('Erro ao atualizar: ' + error.message, 'error');
+        // Ações dos botões
+        function marcarConferido(id) {
+            console.log(`✅ Marcando conferência como concluída para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.conferenciaFeita = true;
+                mostrarToast(`✅ Conferência marcada como concluída para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
             }
         }
         
-        // Funções auxiliares
-        function formatarData(data) {
-            if (!data) return 'N/A';
-            return new Date(data).toLocaleDateString('pt-BR');
+        function marcarCheckin(id) {
+            console.log(`✅ Marcando check-in como concluído para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.checkinFeito = true;
+                mostrarToast(`✅ Check-in marcado como concluído para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
+            }
         }
         
+        function marcarPosVenda(id) {
+            console.log(`✅ Marcando pós-venda como concluída para embarque ${id}`);
+            const embarque = dadosEmbarques.find(e => e.id === id);
+            if (embarque) {
+                embarque.posVendaFeito = true;
+                mostrarToast(`✅ Pós-venda marcada como concluída para ${embarque.nomeCliente}`, 'success');
+                atualizarEstatisticas();
+                renderizarLista();
+            }
+        }
+        
+        function atualizarDebug() {
+            const debugInfo = document.getElementById('debug-info');
+            const hoje = new Date();
+            
+            let debugText = '';
+            debugText += `📅 Data atual: ${hoje.toLocaleDateString('pt-BR')}\n`;
+            debugText += `📊 Total embarques originais: ${dadosOriginais.length}\n`;
+            debugText += `📊 Total embarques processados: ${dadosEmbarques.length}\n\n`;
+            
+            debugText += `🔍 DISTRIBUIÇÃO POR TIPO:\n`;
+            const distribuicao = {
+                conferencia: 0,
+                checkin: 0,
+                posvenda: 0,
+                fora_periodo: 0
+            };
+            
+            dadosEmbarques.forEach(e => {
+                if (e.tipoControle) {
+                    distribuicao[e.tipoControle]++;
+                } else {
+                    distribuicao.fora_periodo++;
+                }
+            });
+            
+            debugText += `• Conferências: ${distribuicao.conferencia}\n`;
+            debugText += `• Check-ins: ${distribuicao.checkin}\n`;
+            debugText += `• Pós-vendas: ${distribuicao.posvenda}\n`;
+            debugText += `• Fora do período: ${distribuicao.fora_periodo}\n\n`;
+            
+            debugText += `📋 ÚLTIMOS 5 EMBARQUES PROCESSADOS:\n`;
+            dadosEmbarques.slice(-5).forEach((e, i) => {
+                debugText += `${i+1}. ${e.nomeCliente} - ${e.vendedor}\n`;
+                debugText += `   Data: ${e.dataIda?.toLocaleDateString('pt-BR') || 'N/A'}\n`;
+                debugText += `   Dias para ida: ${e.diasParaIda}\n`;
+                debugText += `   Tipo controle: ${e.tipoControle || 'Nenhum'}\n\n`;
+            });
+            
+            if (dadosOriginais.length > 0 && dadosOriginais[0]) {
+                debugText += `🔍 ESTRUTURA DO PRIMEIRO REGISTRO:\n`;
+                const primeiro = dadosOriginais[0];
+                Object.keys(primeiro).slice(0, 10).forEach(key => {
+                    debugText += `• ${key}: ${primeiro[key]}\n`;
+                });
+            }
+            
+            debugInfo.textContent = debugText;
+        }
+        
+        // Funções auxiliares
         function formatarCPF(cpf) {
-            if (!cpf) return 'N/A';
-            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            if (!cpf || cpf === 'N/A') return 'N/A';
+            const numerico = cpf.replace(/\D/g, '');
+            if (numerico.length === 11) {
+                return numerico.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            return cpf;
         }
         
         function mostrarLoading() {
@@ -945,7 +1118,7 @@
         }
         
         function atualizarAutomatico() {
-            console.log('Atualização automática...');
+            console.log('🔄 Atualização automática...');
             carregarEmbarques();
         }
         
@@ -961,7 +1134,7 @@
             };
         }
         
-        // Funções adicionais (placeholder)
+        // Funções de ação (placeholders)
         function adicionarObservacao(id) {
             const observacao = prompt('Digite a observação:');
             if (observacao) {
