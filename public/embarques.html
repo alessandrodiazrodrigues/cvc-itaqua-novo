@@ -752,10 +752,32 @@ Iniciando sistema de debug...
                 `${embarque.diasParaIda} dias para embarque` : 
                 `${Math.abs(embarque.diasParaIda)} dias após embarque`;
             
-            // Informações adicionais
-            const destino = embarque.destino || embarque['Destino'] || 'Não informado';
-            const tipoViagem = embarque.tipoViagem || embarque['Tipo'] || embarque['Tipo de Aéreo'] || 'Nacional';
-            const observacoes = embarque.observacoes || embarque['Observações'] || '';
+            // Informações adicionais - MAPEAMENTO FLEXÍVEL
+            const destino = embarque.destino || 
+                          embarque['Destino'] || 
+                          embarque.DESTINO ||
+                          'Não informado';
+            
+            const tipoViagem = embarque.tipoViagem || 
+                             embarque['Tipo de Pacote'] || 
+                             embarque['Tipo'] || 
+                             embarque['Tipo de Aéreo'] ||
+                             embarque.CIA ||
+                             'Nacional';
+            
+            const observacoes = embarque.observacoes || 
+                              embarque['Observações'] || 
+                              embarque.OBS ||
+                              '';
+            
+            const recibo = embarque.recibo ||
+                         embarque['Recibo'] ||
+                         embarque['Nº do Informe'] ||
+                         '';
+            
+            const seguro = embarque.seguro ||
+                         embarque['SEGURO'] ||
+                         '';
             
             return `
                 <div class="embarque-card ${embarque.tipoControle}">
@@ -767,6 +789,8 @@ Iniciando sistema de debug...
                             <p><i class="fas fa-calendar"></i> ${diasTexto}</p>
                             ${destino !== 'Não informado' ? `<p><i class="fas fa-map-marker-alt"></i> ${destino}</p>` : ''}
                             ${tipoViagem ? `<p><i class="fas fa-plane"></i> ${tipoViagem}</p>` : ''}
+                            ${recibo ? `<p><i class="fas fa-receipt"></i> Recibo: ${recibo}</p>` : ''}
+                            ${seguro ? `<p><i class="fas fa-shield-alt"></i> Seguro: ${seguro}</p>` : ''}
                         </div>
                         <div class="data-info">
                             <div class="data-destaque">${dataFormatada}</div>
