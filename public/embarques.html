@@ -3,300 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 Dashboard Controles de Embarques - CVC Itaqua (CORRIGIDO)</title>
+    <title>🔍 Inspetor de Dados - CVC Embarques</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root {
-            --cvc-azul: #003399;
-            --cvc-amarelo: #FFD700;
-            --cvc-verde: #00A859;
-            --cvc-azul-claro: #4A90E2;
-            --cvc-azul-escuro: #002266;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            margin: 20px auto;
-            max-width: 1400px;
-        }
-        
-        .header-section {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 20px 20px 0 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .alert-fix {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-left: 4px solid #20c997;
-            color: white;
-            font-weight: 600;
-        }
-        
-        .debug-info {
-            background: #000;
-            color: #00ff00;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
+        body { background: #f8f9fa; font-family: 'Courier New', monospace; }
+        .container { max-width: 1200px; margin: 20px auto; }
+        .card { margin-bottom: 20px; }
+        .data-sample { background: #000; color: #00ff00; padding: 15px; border-radius: 5px; font-size: 12px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+        .field-analysis { background: #f1f3f4; padding: 10px; margin: 5px 0; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="main-container">
-            <!-- Header -->
-            <div class="header-section">
-                <div class="text-center">
-                    <h1 class="mb-0">Dashboard Embarques - CORRIGIDO v8.0</h1>
-                    <p class="mb-0">Lógica de processamento otimizada para encontrar TODOS os embarques válidos</p>
-                </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-search"></i> INSPETOR DE DADOS - Análise Detalhada dos Embarques</h4>
             </div>
-            
-            <!-- Alert de Correção -->
-            <div class="alert alert-fix">
-                <i class="fas fa-tools"></i>
-                <strong>CORREÇÃO APLICADA:</strong> 
-                Otimizei a lógica para processar TODOS os 1594 registros e encontrar os embarques das linhas 451-587.
-                O sistema agora deve classificar corretamente check-ins, conferências e pós-vendas.
-            </div>
-            
-            <!-- Debug Info -->
-            <div class="p-4">
-                <h4><i class="fas fa-bug text-info"></i> Processamento Otimizado</h4>
-                <div id="debug-info" class="debug-info">Aguardando processamento dos dados...</div>
-                
-                <button class="btn btn-primary me-2" onclick="testarProcessamento()">
-                    <i class="fas fa-sync"></i> Testar Nova Lógica
+            <div class="card-body">
+                <button class="btn btn-success me-2" onclick="analisarDados()">
+                    <i class="fas fa-microscope"></i> Analisar Estrutura dos Dados
                 </button>
+                <button class="btn btn-info me-2" onclick="analisarLinhasEspecificas()">
+                    <i class="fas fa-crosshairs"></i> Focar Linhas 451-587
+                </button>
+                <button class="btn btn-warning" onclick="analisarCamposDatas()">
+                    <i class="fas fa-calendar"></i> Analisar Campos de Data
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>📊 Resultado da Análise</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultado-analise" class="data-sample">
+Clique em "Analisar Estrutura dos Dados" para começar...
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec';
-        
-        console.log('🚀 Dashboard Embarques v8.0 - LÓGICA CORRIGIDA');
-        
         let dadosOriginais = [];
-        
-        // ================================================================================
-        // 🔧 NOVA LÓGICA DE PROCESSAMENTO - CORRIGIDA
-        // ================================================================================
-        
-        function processarEmbarquesCorrigido(embarquesOriginais) {
-            console.log('⚙️ NOVA LÓGICA: Processando embarques corrigidos...');
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            
-            const embarquesProcessados = [];
-            let stats = {
-                totalOriginais: embarquesOriginais.length,
-                comDataValida: 0,
-                conferencia: 0,
-                checkin: 0,
-                posvenda: 0,
-                ignorados: 0,
-                detalhesIgnorados: {}
-            };
-            
-            embarquesOriginais.forEach((embarque, index) => {
-                try {
-                    // 🎯 PRIORIZAR CAMPO dataIda (mais confiável)
-                    let dataIda = null;
-                    
-                    if (embarque.dataIda) {
-                        dataIda = parseDataOtimizada(embarque.dataIda);
-                    }
-                    
-                    // Se não achou no dataIda, tentar outros campos
-                    if (!dataIda && embarque.dataCadastro) {
-                        dataIda = parseDataOtimizada(embarque.dataCadastro);
-                    }
-                    
-                    if (!dataIda && embarque.timestamp) {
-                        dataIda = parseDataOtimizada(embarque.timestamp);
-                    }
-                    
-                    // Se ainda não achou data válida, ignorar
-                    if (!dataIda) {
-                        stats.ignorados++;
-                        const motivo = embarque.dataIda ? 'data_invalida' : 'sem_data';
-                        stats.detalhesIgnorados[motivo] = (stats.detalhesIgnorados[motivo] || 0) + 1;
-                        return;
-                    }
-                    
-                    // ✅ DATA VÁLIDA ENCONTRADA
-                    stats.comDataValida++;
-                    
-                    const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
-                    
-                    // 🎯 LÓGICA DE CLASSIFICAÇÃO CORRIGIDA:
-                    let tipoControle = null;
-                    
-                    // Check-in: -1 a +2 dias (inclui hoje, ontem, amanhã)
-                    if (diasParaIda >= -1 && diasParaIda <= 2) {
-                        tipoControle = 'checkin';
-                        stats.checkin++;
-                    }
-                    // Conferência: +3 a +30 dias (período estendido)
-                    else if (diasParaIda >= 3 && diasParaIda <= 30) {
-                        tipoControle = 'conferencia';
-                        stats.conferencia++;
-                    }
-                    // Pós-vendas: -30 a -2 dias (voltou há poucos dias)
-                    else if (diasParaIda >= -30 && diasParaIda <= -2) {
-                        // Verificar se é pós-venda (precisa de data de volta)
-                        let dataVolta = parseDataOtimizada(embarque.dataVolta);
-                        if (dataVolta) {
-                            const diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
-                            if (diasAposVolta >= 2 && diasAposVolta <= 30) {
-                                tipoControle = 'posvenda';
-                                stats.posvenda++;
-                            }
-                        }
-                    }
-                    
-                    // Se tem tipo de controle, adicionar à lista
-                    if (tipoControle) {
-                        const embarqueProcessado = {
-                            ...embarque,
-                            id: embarque.id || (index + 1).toString(),
-                            dataIda: dataIda,
-                            diasParaIda: diasParaIda,
-                            tipoControle: tipoControle,
-                            // Normalizar campos
-                            nomeCliente: embarque.nomeCliente || 'N/A',
-                            cpfCliente: embarque.cpfCliente || 'N/A',
-                            vendedor: embarque.vendedor || 'N/A',
-                            observacoes: embarque.observacoes || '',
-                            // Status dos controles
-                            conferenciaFeita: false,
-                            checkinFeito: false,
-                            posVendaFeito: false
-                        };
-                        
-                        embarquesProcessados.push(embarqueProcessado);
-                    } else {
-                        stats.ignorados++;
-                        stats.detalhesIgnorados['fora_periodo'] = (stats.detalhesIgnorados['fora_periodo'] || 0) + 1;
-                    }
-                    
-                } catch (error) {
-                    console.error(`❌ Erro ao processar embarque ${index + 1}:`, error);
-                    stats.ignorados++;
-                    stats.detalhesIgnorados['erro_processamento'] = (stats.detalhesIgnorados['erro_processamento'] || 0) + 1;
-                }
-            });
-            
-            // 🎯 ORDENAR POR PRIORIDADE E DATA
-            embarquesProcessados.sort((a, b) => {
-                // Prioridade: check-in > conferência > pós-venda
-                const prioridade = { checkin: 1, conferencia: 2, posvenda: 3 };
-                
-                if (a.tipoControle !== b.tipoControle) {
-                    return prioridade[a.tipoControle] - prioridade[b.tipoControle];
-                }
-                
-                // Dentro do mesmo tipo, ordenar por data mais próxima
-                return a.dataIda - b.dataIda;
-            });
-            
-            console.log('📊 ESTATÍSTICAS DO PROCESSAMENTO CORRIGIDO:');
-            console.log(`   Total originais: ${stats.totalOriginais}`);
-            console.log(`   Com data válida: ${stats.comDataValida}`);
-            console.log(`   Check-ins: ${stats.checkin}`);
-            console.log(`   Conferências: ${stats.conferencia}`);
-            console.log(`   Pós-vendas: ${stats.posvenda}`);
-            console.log(`   Ignorados: ${stats.ignorados}`);
-            console.log(`   Total processados: ${embarquesProcessados.length}`);
-            console.log(`   Taxa aproveitamento: ${((embarquesProcessados.length / stats.totalOriginais) * 100).toFixed(1)}%`);
-            
-            return { embarques: embarquesProcessados, stats: stats };
-        }
-        
-        function parseDataOtimizada(dateValue) {
-            if (!dateValue) return null;
+
+        async function carregarDados() {
+            if (dadosOriginais.length > 0) return dadosOriginais;
             
             try {
-                // Se já é uma data válida
-                if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
-                    return dateValue;
-                }
-                
-                // String de data
-                if (typeof dateValue === 'string') {
-                    dateValue = dateValue.trim();
-                    
-                    // Rejeitar valores que não são datas
-                    if (dateValue === 'true' || 
-                        dateValue === 'false' || 
-                        dateValue === 'ANTIGO' ||
-                        dateValue.includes('RT - ') ||
-                        dateValue.includes('Check') ||
-                        dateValue.length < 8 ||
-                        !dateValue.match(/\d/)) {
-                        return null;
-                    }
-                    
-                    // Parse ISO primeiro
-                    let date = new Date(dateValue);
-                    if (!isNaN(date.getTime()) && 
-                        date.getFullYear() > 2020 && 
-                        date.getFullYear() < 2030) {
-                        return date;
-                    }
-                    
-                    // Formato brasileiro DD/MM/YYYY
-                    const brMatch = dateValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                    if (brMatch) {
-                        date = new Date(brMatch[3], brMatch[2] - 1, brMatch[1]);
-                        if (!isNaN(date.getTime())) {
-                            return date;
-                        }
-                    }
-                }
-                
-                return null;
-                
-            } catch (error) {
-                return null;
-            }
-        }
-        
-        // ================================================================================
-        // 🧪 FUNÇÃO DE TESTE
-        // ================================================================================
-        
-        async function testarProcessamento() {
-            const debugDiv = document.getElementById('debug-info');
-            debugDiv.textContent = 'Carregando dados para teste...';
-            
-            try {
-                // Carregar dados da API
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 
@@ -306,67 +64,302 @@
                     body: JSON.stringify({ action: 'listar_embarques' })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
                 const result = await response.json();
-                
                 if (result.success) {
                     dadosOriginais = result.data.embarques || [];
-                    console.log(`✅ ${dadosOriginais.length} registros carregados`);
-                    
-                    // Aplicar nova lógica
-                    const resultadoProcessamento = processarEmbarquesCorrigido(dadosOriginais);
-                    
-                    // Mostrar resultados no debug
-                    let debugText = `
-================================================================================
-🎯 RESULTADO DO PROCESSAMENTO CORRIGIDO
-================================================================================
-📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}
-📊 RESUMO:
-• Total registros originais: ${resultadoProcessamento.stats.totalOriginais}
-• Com data válida: ${resultadoProcessamento.stats.comDataValida}
-• Check-ins encontrados: ${resultadoProcessamento.stats.checkin}
-• Conferências encontradas: ${resultadoProcessamento.stats.conferencia}
-• Pós-vendas encontradas: ${resultadoProcessamento.stats.posvenda}
-• Total processados: ${resultadoProcessamento.embarques.length}
-• Taxa de aproveitamento: ${((resultadoProcessamento.embarques.length / resultadoProcessamento.stats.totalOriginais) * 100).toFixed(1)}%
-
-📋 DETALHES DOS IGNORADOS (${resultadoProcessamento.stats.ignorados} total):`;
-                    
-                    Object.entries(resultadoProcessamento.stats.detalhesIgnorados).forEach(([motivo, count]) => {
-                        debugText += `\n• ${motivo}: ${count}`;
-                    });
-                    
-                    debugText += `\n\n🎯 PRIMEIROS 10 CHECK-INS ENCONTRADOS:`;
-                    const checkins = resultadoProcessamento.embarques.filter(e => e.tipoControle === 'checkin').slice(0, 10);
-                    checkins.forEach((embarque, i) => {
-                        debugText += `\n${i+1}. ${embarque.nomeCliente} | ${embarque.dataIda.toLocaleDateString('pt-BR')} | ${embarque.diasParaIda} dias`;
-                    });
-                    
-                    debugText += `\n\n🎯 PRIMEIRAS 10 CONFERÊNCIAS ENCONTRADAS:`;
-                    const conferencias = resultadoProcessamento.embarques.filter(e => e.tipoControle === 'conferencia').slice(0, 10);
-                    conferencias.forEach((embarque, i) => {
-                        debugText += `\n${i+1}. ${embarque.nomeCliente} | ${embarque.dataIda.toLocaleDateString('pt-BR')} | ${embarque.diasParaIda} dias`;
-                    });
-                    
-                    debugDiv.textContent = debugText;
-                    
+                    return dadosOriginais;
                 } else {
-                    throw new Error(result.message || 'Erro da API');
+                    throw new Error(result.message);
                 }
-                
             } catch (error) {
-                console.error('❌ Erro no teste:', error);
-                debugDiv.textContent = `❌ ERRO NO TESTE: ${error.message}`;
+                throw new Error(`Erro ao carregar dados: ${error.message}`);
             }
         }
-        
-        // Auto-executar teste ao carregar
+
+        async function analisarDados() {
+            const resultDiv = document.getElementById('resultado-analise');
+            resultDiv.textContent = 'Carregando dados...';
+            
+            try {
+                const dados = await carregarDados();
+                
+                let analise = `
+================================================================================
+🔍 ANÁLISE COMPLETA DA ESTRUTURA DOS DADOS
+================================================================================
+📊 Total de registros: ${dados.length}
+📅 Análise executada em: ${new Date().toLocaleString('pt-BR')}
+
+🏗️ ESTRUTURA DO PRIMEIRO REGISTRO:
+================================================================================`;
+                
+                if (dados.length > 0) {
+                    const primeiro = dados[0];
+                    Object.keys(primeiro).forEach((campo, index) => {
+                        const valor = primeiro[campo];
+                        const tipo = typeof valor;
+                        const preview = typeof valor === 'string' && valor.length > 50 
+                            ? valor.substring(0, 50) + '...' 
+                            : valor;
+                        
+                        analise += `\n${index + 1:2}. ${campo.padEnd(20)} | ${tipo.padEnd(8)} | ${preview}`;
+                    });
+                }
+                
+                analise += `\n\n📋 ANÁLISE DOS CAMPOS DE DATA (primeiros 10 registros):
+================================================================================`;
+                
+                const camposData = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
+                
+                dados.slice(0, 10).forEach((registro, i) => {
+                    analise += `\n\nREGISTRO ${i + 1} (${registro.nomeCliente || 'N/A'}):`;
+                    camposData.forEach(campo => {
+                        const valor = registro[campo];
+                        const tipo = typeof valor;
+                        const valido = valor ? 'SIM' : 'NÃO';
+                        analise += `\n  ${campo.padEnd(15)} | ${tipo.padEnd(8)} | ${valido.padEnd(3)} | ${valor || 'NULL'}`;
+                    });
+                });
+                
+                analise += `\n\n📈 ESTATÍSTICAS DOS CAMPOS DE DATA:
+================================================================================`;
+                
+                const stats = {};
+                camposData.forEach(campo => {
+                    stats[campo] = {
+                        preenchidos: 0,
+                        vazios: 0,
+                        tipos: {}
+                    };
+                });
+                
+                dados.forEach(registro => {
+                    camposData.forEach(campo => {
+                        const valor = registro[campo];
+                        if (valor && valor !== null && valor !== '') {
+                            stats[campo].preenchidos++;
+                            const tipo = typeof valor;
+                            stats[campo].tipos[tipo] = (stats[campo].tipos[tipo] || 0) + 1;
+                        } else {
+                            stats[campo].vazios++;
+                        }
+                    });
+                });
+                
+                camposData.forEach(campo => {
+                    const stat = stats[campo];
+                    const total = stat.preenchidos + stat.vazios;
+                    const percentPreenchido = ((stat.preenchidos / total) * 100).toFixed(1);
+                    
+                    analise += `\n${campo.padEnd(15)} | Preenchidos: ${stat.preenchidos.toString().padStart(4)} (${percentPreenchido}%) | Vazios: ${stat.vazios}`;
+                    
+                    Object.entries(stat.tipos).forEach(([tipo, count]) => {
+                        analise += `\n${' '.repeat(17)} | ${tipo}: ${count}`;
+                    });
+                });
+                
+                resultDiv.textContent = analise;
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+            }
+        }
+
+        async function analisarLinhasEspecificas() {
+            const resultDiv = document.getElementById('resultado-analise');
+            resultDiv.textContent = 'Analisando linhas 451-587...';
+            
+            try {
+                const dados = await carregarDados();
+                
+                // Como os dados vêm sem número de linha, vamos pegar uma amostra
+                // dos registros no meio da lista (onde supostamente estão os dados válidos)
+                const inicio = Math.max(0, Math.floor(dados.length * 0.3)); // 30% da lista
+                const fim = Math.min(dados.length, Math.floor(dados.length * 0.7)); // 70% da lista
+                const amostra = dados.slice(inicio, fim).slice(0, 50); // Primeiros 50 dessa faixa
+                
+                let analise = `
+================================================================================
+🎯 ANÁLISE DAS LINHAS INTERMEDIÁRIAS (posição ${inicio}-${fim})
+================================================================================
+📊 Amostra analisada: ${amostra.length} registros
+🎯 Buscando dados válidos que podem estar sendo ignorados...
+
+📋 DETALHES DOS REGISTROS:
+================================================================================`;
+                
+                amostra.forEach((registro, i) => {
+                    const posicao = inicio + i + 1;
+                    analise += `\n\n📍 POSIÇÃO ${posicao}:
+Cliente: ${registro.nomeCliente || 'N/A'}
+Vendedor: ${registro.vendedor || 'N/A'}
+CPF: ${registro.cpfCliente || 'N/A'}`;
+                    
+                    // Analisar todos os campos que podem conter datas
+                    const camposDatas = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
+                    camposDatas.forEach(campo => {
+                        const valor = registro[campo];
+                        if (valor) {
+                            // Tentar parsear a data
+                            let dataParsed = null;
+                            try {
+                                if (valor instanceof Date) {
+                                    dataParsed = valor;
+                                } else if (typeof valor === 'string') {
+                                    dataParsed = new Date(valor);
+                                    if (isNaN(dataParsed.getTime())) {
+                                        dataParsed = null;
+                                    }
+                                }
+                            } catch (e) {
+                                dataParsed = null;
+                            }
+                            
+                            const status = dataParsed && !isNaN(dataParsed.getTime()) ? '✅ VÁLIDA' : '❌ INVÁLIDA';
+                            const dataFormatada = dataParsed ? dataParsed.toLocaleDateString('pt-BR') : 'N/A';
+                            
+                            analise += `\n${campo}: ${valor} | ${status} | ${dataFormatada}`;
+                        } else {
+                            analise += `\n${campo}: VAZIO`;
+                        }
+                    });
+                });
+                
+                // Contar quantos têm datas válidas nesta amostra
+                let comDataValida = 0;
+                amostra.forEach(registro => {
+                    const camposDatas = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
+                    const temDataValida = camposDatas.some(campo => {
+                        const valor = registro[campo];
+                        if (valor) {
+                            try {
+                                const data = new Date(valor);
+                                return !isNaN(data.getTime()) && data.getFullYear() > 2020;
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    });
+                    if (temDataValida) comDataValida++;
+                });
+                
+                analise += `\n\n📊 RESUMO DA AMOSTRA:
+================================================================================
+Total analisados: ${amostra.length}
+Com data válida: ${comDataValida}
+Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`;
+                
+                resultDiv.textContent = analise;
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+            }
+        }
+
+        async function analisarCamposDatas() {
+            const resultDiv = document.getElementById('resultado-analise');
+            resultDiv.textContent = 'Analisando padrões de datas...';
+            
+            try {
+                const dados = await carregarDados();
+                
+                let analise = `
+================================================================================
+📅 ANÁLISE DETALHADA DOS CAMPOS DE DATA
+================================================================================
+
+🔍 PADRÕES ENCONTRADOS NOS DADOS:
+================================================================================`;
+                
+                // Analisar padrões de data
+                const padroes = {};
+                const exemplos = {};
+                
+                dados.slice(0, 100).forEach((registro, i) => {
+                    ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'].forEach(campo => {
+                        const valor = registro[campo];
+                        if (valor && typeof valor === 'string') {
+                            // Identificar padrões comuns
+                            let padrao = 'desconhecido';
+                            
+                            if (valor.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+                                padrao = 'ISO_8601';
+                            } else if (valor.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+                                padrao = 'DD/MM/YYYY';
+                            } else if (valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+                                padrao = 'YYYY-MM-DD';
+                            } else if (valor.includes('ANTIGO') || valor.includes('RT -')) {
+                                padrao = 'texto_invalido';
+                            }
+                            
+                            const key = `${campo}_${padrao}`;
+                            padroes[key] = (padroes[key] || 0) + 1;
+                            
+                            if (!exemplos[key] && padroes[key] <= 3) {
+                                exemplos[key] = valor;
+                            }
+                        }
+                    });
+                });
+                
+                Object.entries(padroes).forEach(([key, count]) => {
+                    const exemplo = exemplos[key] || 'N/A';
+                    analise += `\n${key.padEnd(25)} | ${count.toString().padStart(4)} ocorrências | Ex: ${exemplo}`;
+                });
+                
+                // Analisar especificamente registros com datas futuras
+                analise += `\n\n🔍 BUSCANDO DATAS FUTURAS (setembro 2025+):
+================================================================================`;
+                
+                const hoje = new Date();
+                const datasEncontradas = [];
+                
+                dados.forEach((registro, i) => {
+                    ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'].forEach(campo => {
+                        const valor = registro[campo];
+                        if (valor) {
+                            try {
+                                const data = new Date(valor);
+                                if (!isNaN(data.getTime()) && data >= hoje && data.getFullYear() === 2025) {
+                                    datasEncontradas.push({
+                                        indice: i + 1,
+                                        campo: campo,
+                                        data: data,
+                                        valor: valor,
+                                        cliente: registro.nomeCliente
+                                    });
+                                }
+                            } catch (e) {
+                                // Ignorar erros de parse
+                            }
+                        }
+                    });
+                });
+                
+                // Ordenar por data
+                datasEncontradas.sort((a, b) => a.data - b.data);
+                
+                analise += `\nTotal de datas futuras encontradas: ${datasEncontradas.length}`;
+                
+                datasEncontradas.slice(0, 20).forEach((item, i) => {
+                    analise += `\n${i + 1:2}. Pos ${item.indice} | ${item.campo} | ${item.data.toLocaleDateString('pt-BR')} | ${item.cliente}`;
+                });
+                
+                if (datasEncontradas.length > 20) {
+                    analise += `\n... e mais ${datasEncontradas.length - 20} registros`;
+                }
+                
+                resultDiv.textContent = analise;
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+            }
+        }
+
+        // Auto-executar análise básica ao carregar
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(testarProcessamento, 1000);
+            setTimeout(analisarDados, 1000);
         });
     </script>
 </body>
