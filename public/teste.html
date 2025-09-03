@@ -209,14 +209,14 @@
         function log(mensagem) {
             const logElement = document.getElementById('analysisLog');
             const timestamp = new Date().toLocaleTimeString();
-            logElement.textContent += `\n[${timestamp}] ${mensagem}`;
+            logElement.textContent += '\n[' + timestamp + '] ' + mensagem;
             logElement.scrollTop = logElement.scrollHeight;
         }
         
         function mostrarStatus(mensagem, tipo = 'loading') {
             const statusElement = document.getElementById('status');
             statusElement.textContent = mensagem;
-            statusElement.className = `status ${tipo}`;
+            statusElement.className = 'status ' + tipo;
             statusElement.style.display = 'block';
             
             if (tipo === 'success' || tipo === 'error') {
@@ -253,14 +253,14 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
                     dadosOriginais = result.data.embarques || [];
-                    log(`✅ ${dadosOriginais.length} registros carregados com sucesso`);
+                    log('✅ ' + dadosOriginais.length + ' registros carregados com sucesso');
                     mostrarStatus('✅ Dados carregados com sucesso!', 'success');
                     return dadosOriginais;
                 } else {
@@ -268,8 +268,8 @@
                 }
                 
             } catch (error) {
-                log(`❌ ERRO ao carregar dados: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
+                log('❌ ERRO ao carregar dados: ' + error.message);
+                mostrarStatus('❌ Erro: ' + error.message, 'error');
                 throw error;
             }
         }
@@ -279,7 +279,7 @@
                 const dados = await carregarDados();
                 
                 log('\n🔍 ========== ANÁLISE DE ESTRUTURA COMPLETA ==========');
-                log(`📊 Analisando ${dados.length} registros...`);
+                log('📊 Analisando ' + dados.length + ' registros...');
                 
                 // Mapear todos os campos únicos
                 const todosOsCampos = new Set();
@@ -308,16 +308,17 @@
                     });
                 });
                 
-                log(`\n📋 CAMPOS ENCONTRADOS (${todosOsCampos.size} únicos):`);
+                log('\n📋 CAMPOS ENCONTRADOS (' + todosOsCampos.size + ' únicos):');
                 log('==========================================');
                 
                 Array.from(todosOsCampos).sort().forEach((campo, index) => {
                     const tipos = tipoCampos[campo] ? Array.from(tipoCampos[campo]).join(', ') : 'vazio';
                     const exemplos = valorExemplos[campo] ? valorExemplos[campo].join(' | ') : 'N/A';
                     
-                    log(`${index + 1:2d}. ${campo}`);
-                    log(`    Tipos: ${tipos}`);
-                    log(`    Exemplos: ${exemplos.substring(0, 100)}${exemplos.length > 100 ? '...' : ''}`);
+                    const numeroFormatado = (index + 1).toString().padStart(2, ' ');
+                    log(numeroFormatado + '. ' + campo);
+                    log('    Tipos: ' + tipos);
+                    log('    Exemplos: ' + exemplos.substring(0, 100) + (exemplos.length > 100 ? '...' : ''));
                     log('');
                 });
                 
@@ -331,8 +332,8 @@
                 mostrarStatus('✅ Análise de estrutura concluída!', 'success');
                 
             } catch (error) {
-                log(`❌ ERRO na análise: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
+                log('❌ ERRO na análise: ' + error.message);
+                mostrarStatus('❌ Erro: ' + error.message, 'error');
             }
         }
         
@@ -341,7 +342,7 @@
                 const dados = await carregarDados();
                 
                 log('\n📅 ========== ANÁLISE DE CAMPOS DE DATA ==========');
-                log(`🔍 Procurando campos de data em ${dados.length} registros...`);
+                log('🔍 Procurando campos de data em ' + dados.length + ' registros...');
                 
                 const camposPossiveis = new Set();
                 const padroesDatas = {};
@@ -388,8 +389,10 @@
                     });
                 });
                 
-                log(`\n🎯 CAMPOS DE DATA IDENTIFICADOS (${camposPossiveis.size}):`);
+                log('\n🎯 CAMPOS DE DATA IDENTIFICADOS (' + camposPossiveis.size + '):');
                 log('================================================');
+                
+                let ultimoContadorValores = 0;
                 
                 Array.from(camposPossiveis).sort().forEach((campo, index) => {
                     // Contar quantos registros têm valor neste campo
@@ -408,14 +411,17 @@
                     const percentual = ((contadorValores / dados.length) * 100).toFixed(1);
                     const padroes = padroesDatas[campo] ? Array.from(padroesDatas[campo]).join(', ') : 'Formato não reconhecido';
                     
-                    log(`${index + 1:2d}. ${campo}`);
-                    log(`    Preenchidos: ${contadorValores}/${dados.length} (${percentual}%)`);
-                    log(`    Formatos: ${padroes}`);
-                    log(`    Exemplos: ${exemplosValores.join(' | ')}`);
+                    const numeroFormatado = (index + 1).toString().padStart(2, ' ');
+                    log(numeroFormatado + '. ' + campo);
+                    log('    Preenchidos: ' + contadorValores + '/' + dados.length + ' (' + percentual + '%)');
+                    log('    Formatos: ' + padroes);
+                    log('    Exemplos: ' + exemplosValores.join(' | '));
                     log('');
+                    
+                    ultimoContadorValores = Math.max(ultimoContadorValores, contadorValores);
                 });
                 
-                atualizarStats(dados.length, analiseResultados.campos?.length || 0, camposPossiveis.size, contadorValores);
+                atualizarStats(dados.length, analiseResultados.campos?.length || 0, camposPossiveis.size, ultimoContadorValores);
                 
                 mostrarStatus('✅ Análise de datas concluída!', 'success');
                 
@@ -423,8 +429,8 @@
                 gerarRecomendacoes(camposPossiveis, padroesDatas, dados);
                 
             } catch (error) {
-                log(`❌ ERRO na análise de datas: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
+                log('❌ ERRO na análise de datas: ' + error.message);
+                mostrarStatus('❌ Erro: ' + error.message, 'error');
             }
         }
         
@@ -436,13 +442,13 @@
                 log('📦 Mostrando primeiros 5 registros completos...\n');
                 
                 dados.slice(0, 5).forEach((item, index) => {
-                    log(`--- REGISTRO ${index + 1} ---`);
+                    log('--- REGISTRO ' + (index + 1) + ' ---');
                     Object.keys(item).sort().forEach(campo => {
                         const valor = item[campo];
                         const valorStr = typeof valor === 'string' && valor.length > 50 
                             ? valor.substring(0, 50) + '...' 
                             : String(valor);
-                        log(`  ${campo}: ${valorStr}`);
+                        log('  ' + campo + ': ' + valorStr);
                     });
                     log('');
                 });
@@ -450,8 +456,8 @@
                 mostrarStatus('✅ Análise de amostras concluída!', 'success');
                 
             } catch (error) {
-                log(`❌ ERRO na análise de amostras: ${error.message}`);
-                mostrarStatus(`❌ Erro: ${error.message}`, 'error');
+                log('❌ ERRO na análise de amostras: ' + error.message);
+                mostrarStatus('❌ Erro: ' + error.message, 'error');
             }
         }
         
@@ -481,11 +487,12 @@
             recomendacaoTexto += '🎯 MAPEAMENTO RECOMENDADO PARA DASHBOARD:\n\n';
             
             recomendacaoTexto += 'const camposDataIda = [\n';
-            [...candidatosIda, ...candidatosCadastro].forEach(campo => {
+            const todosIdaCandidatos = [...candidatosIda, ...candidatosCadastro];
+            todosIdaCandidatos.forEach(campo => {
                 // Contar preenchidos
                 const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
                 const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
-                recomendacaoTexto += `    '${campo}',  // ${preenchidos} registros (${percentual}%)\n`;
+                recomendacaoTexto += '    \'' + campo + '\',  // ' + preenchidos + ' registros (' + percentual + '%)\n';
             });
             recomendacaoTexto += '];\n\n';
             
@@ -493,7 +500,7 @@
             candidatosVolta.forEach(campo => {
                 const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
                 const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
-                recomendacaoTexto += `    '${campo}',  // ${preenchidos} registros (${percentual}%)\n`;
+                recomendacaoTexto += '    \'' + campo + '\',  // ' + preenchidos + ' registros (' + percentual + '%)\n';
             });
             recomendacaoTexto += '];\n\n';
             
@@ -503,12 +510,12 @@
                 const preenchidos = dados.filter(item => item[campo] && item[campo] !== '').length;
                 const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
                 const qualidade = percentual > 50 ? '✅ ALTA' : percentual > 20 ? '⚠️ MÉDIA' : '❌ BAIXA';
-                recomendacaoTexto += `  ${campo}: ${qualidade} (${percentual}%)\n`;
+                recomendacaoTexto += '  ' + campo + ': ' + qualidade + ' (' + percentual + '%)\n';
             });
             
             recomendacaoTexto += '\n🔧 CÓDIGO PARA IMPLEMENTAR:\n';
-            recomendacaoTexto += `
-// Buscar data de ida em ordem de prioridade
+            recomendacaoTexto += 
+`// Buscar data de ida em ordem de prioridade
 for (let campo of camposDataIda) {
     if (embarque[campo]) {
         dataIda = parseDate(embarque[campo]);
@@ -526,8 +533,7 @@ if (!dataIda && embarque.dataCadastro) {
         dataIda.setDate(dataIda.getDate() + 30); // Simula viagem futura
         console.log('📅 Fallback: usando data cadastro + 30 dias');
     }
-}
-`;
+}`;
             
             recomendacoesDiv.textContent = recomendacaoTexto;
         }
