@@ -776,22 +776,26 @@
                         diasAposVolta = Math.ceil((hoje - dataVolta) / (1000 * 60 * 60 * 24));
                     }
                     
-                    // Determinar tipo de controle
+                    // 🎯 LÓGICA DE CONTROLES AJUSTADA:
                     let tipoControle = null;
                     
-                    // LÓGICA DE CONTROLES:
-                    // Pós-vendas: 2+ dias após volta (se tiver data volta)
-                    if (dataVolta && diasAposVolta >= 2) {
+                    // Pós-vendas: 2-30 dias após volta (se tiver data volta)
+                    if (dataVolta && diasAposVolta >= 2 && diasAposVolta <= 30) {
                         tipoControle = 'posvenda';
                         estatisticas.posvenda++;
                     }
-                    // Check-in: 0-2 dias antes da ida
-                    else if (diasParaIda >= 0 && diasParaIda <= 2) {
+                    // Check-in: 0-2 dias antes da ida (incluindo hoje e amanhã)
+                    else if (diasParaIda >= -1 && diasParaIda <= 2) {
                         tipoControle = 'checkin';
                         estatisticas.checkin++;
                     }
-                    // Conferência: 3-10 dias antes da ida
-                    else if (diasParaIda >= 3 && diasParaIda <= 10) {
+                    // Conferência: 3-30 dias antes da ida (período ampliado)
+                    else if (diasParaIda >= 3 && diasParaIda <= 30) {
+                        tipoControle = 'conferencia';
+                        estatisticas.conferencia++;
+                    }
+                    // INCLUIR EMBARQUES RECENTES PASSADOS como conferência (últimos 14 dias)
+                    else if (diasParaIda >= -14 && diasParaIda < 0) {
                         tipoControle = 'conferencia';
                         estatisticas.conferencia++;
                     }
