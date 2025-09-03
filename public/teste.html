@@ -2,71 +2,123 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>🔍 Diagnóstico de Datas - Embarques</title>
+    <title>🔬 Análise Profunda dos Dados</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        .btn { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 6px; margin: 8px; cursor: pointer; font-size: 14px; }
-        .btn:hover { background: #0056b3; transform: translateY(-1px); }
-        .btn-success { background: #28a745; }
-        .btn-danger { background: #dc3545; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        .result { background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
-        .success { border-left-color: #28a745; background: #d4edda; }
-        .error { border-left-color: #dc3545; background: #f8d7da; }
-        .info { background: #d1ecf1; border-left-color: #17a2b8; }
-        .date-analysis { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .sample-box { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        body { font-family: 'Courier New', monospace; margin: 20px; background: #1a1a1a; color: #00ff00; }
+        .container { max-width: 1200px; margin: 0 auto; background: #000; padding: 20px; border-radius: 10px; border: 2px solid #00ff00; }
+        h1 { text-align: center; color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #333; background: #111; }
+        .btn { background: #006600; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer; }
+        .btn:hover { background: #008800; }
+        .output { background: #000; color: #00ff00; padding: 15px; border: 1px solid #00ff00; font-size: 12px; line-height: 1.4; max-height: 500px; overflow-y: auto; white-space: pre-wrap; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa44; }
+        .success { color: #44ff44; }
+        .info { color: #4488ff; }
+        .critical { background: #330000; border: 2px solid #ff0000; color: #ff4444; padding: 10px; margin: 10px 0; }
+        .table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        .table th, .table td { border: 1px solid #333; padding: 8px; text-align: left; }
+        .table th { background: #222; color: #00ff00; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Diagnóstico de Datas - Sistema Embarques</h1>
-        <p>Ferramenta para analisar especificamente os formatos de data da planilha</p>
+        <h1>🔬 ANÁLISE PROFUNDA DOS DADOS - DIAGNÓSTICO COMPLETO</h1>
         
-        <div class="sample-box">
-            <h3>🎯 OBJETIVO:</h3>
-            <p>Descobrir o formato exato das datas que vêm da planilha para corrigir o dashboard</p>
+        <div class="critical">
+            <h3>⚠️ PROBLEMA IDENTIFICADO:</h3>
+            <p>Dashboard processando apenas 1/1594 registros (0.06%). Necessária análise profunda para identificar causas.</p>
         </div>
         
-        <div style="text-align: center; margin: 20px 0;">
-            <button class="btn btn-success" onclick="analisarDatas()">📅 Analisar Datas</button>
-            <button class="btn btn-warning" onclick="testarFormatos()">🔧 Testar Formatos</button>
-            <button class="btn btn-danger" onclick="limpar()">🧹 Limpar</button>
+        <div class="section">
+            <h3>🎯 ANÁLISES DISPONÍVEIS:</h3>
+            <button class="btn" onclick="analiseCompleta()">📊 Análise Estrutural Completa</button>
+            <button class="btn" onclick="analiseCamposVazios()">🕳️ Análise Campos Vazios</button>
+            <button class="btn" onclick="analiseValidacao()">✅ Teste Validação Atual</button>
+            <button class="btn" onclick="analiseAmostras()">🔍 Análise Amostras Detalhada</button>
+            <button class="btn" onclick="proposta()">💡 Gerar Proposta de Solução</button>
+            <button class="btn" onclick="limpar()">🧹 Limpar</button>
         </div>
         
-        <div id="resultado" class="result" style="display: none;">
-            Aguardando análise...
+        <div class="section">
+            <h3>📋 RESULTADO DA ANÁLISE:</h3>
+            <div id="output" class="output">
+Aguardando início da análise...
+
+Execute as análises na ordem para diagnóstico completo:
+1. 📊 Análise Estrutural Completa
+2. 🕳️ Análise Campos Vazios  
+3. ✅ Teste Validação Atual
+4. 🔍 Análise Amostras Detalhada
+5. 💡 Gerar Proposta de Solução
+            </div>
         </div>
         
-        <div class="date-analysis">
-            <h4>📋 Formatos de Data Esperados:</h4>
-            <ul>
-                <li><strong>DD/MM/YYYY:</strong> 03/09/2025 (brasileiro)</li>
-                <li><strong>DD/MM/YY:</strong> 03/09/25 (brasileiro curto)</li>
-                <li><strong>YYYY-MM-DD:</strong> 2025-09-03 (ISO)</li>
-                <li><strong>MM/DD/YYYY:</strong> 09/03/2025 (americano)</li>
-            </ul>
+        <div class="section">
+            <h3>📈 ESTATÍSTICAS EM TEMPO REAL:</h3>
+            <table class="table">
+                <tr>
+                    <th>Métrica</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>Registros Carregados</td>
+                    <td id="stat-total">-</td>
+                    <td id="stat-total-status">Aguardando</td>
+                </tr>
+                <tr>
+                    <td>Registros Válidos</td>
+                    <td id="stat-validos">-</td>
+                    <td id="stat-validos-status">Aguardando</td>
+                </tr>
+                <tr>
+                    <td>Taxa de Aproveitamento</td>
+                    <td id="stat-taxa">-</td>
+                    <td id="stat-taxa-status">Aguardando</td>
+                </tr>
+                <tr>
+                    <td>Campos com Dados</td>
+                    <td id="stat-campos">-</td>
+                    <td id="stat-campos-status">Aguardando</td>
+                </tr>
+            </table>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
-        function log(mensagem) {
-            const resultado = document.getElementById('resultado');
-            resultado.style.display = 'block';
-            resultado.textContent += mensagem + '\n';
-            resultado.scrollTop = resultado.scrollHeight;
+        let dadosOriginais = [];
+        let analiseResultados = {};
+        
+        function log(mensagem, tipo = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefixo = {
+                'error': '[ERROR]',
+                'warning': '[WARN]',
+                'success': '[OK]',
+                'info': '[INFO]'
+            }[tipo];
+            
+            output.innerHTML += `<span class="${tipo}">[${timestamp}] ${prefixo} ${mensagem}</span>\n`;
+            output.scrollTop = output.scrollHeight;
         }
         
-        async function analisarDatas() {
-            log('🔍 INICIANDO ANÁLISE DE DATAS');
-            log('=====================================');
+        function updateStat(metrica, valor, status) {
+            document.getElementById(`stat-${metrica}`).textContent = valor;
+            document.getElementById(`stat-${metrica}-status`).textContent = status;
+        }
+        
+        async function carregarDados() {
+            if (dadosOriginais.length > 0) {
+                log('Usando dados já carregados em cache', 'info');
+                return dadosOriginais;
+            }
             
             try {
-                log('📡 Carregando dados da API...');
+                log('Carregando dados da API...', 'info');
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -78,147 +130,322 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    const dados = result.data.embarques || [];
-                    log(`✅ ${dados.length} registros carregados\n`);
-                    
-                    // ANÁLISE ESPECÍFICA DE DATAS
-                    analisarCamposDatas(dados);
-                    
+                    dadosOriginais = result.data.embarques || [];
+                    log(`${dadosOriginais.length} registros carregados com sucesso`, 'success');
+                    updateStat('total', dadosOriginais.length, 'Carregado');
+                    return dadosOriginais;
                 } else {
                     throw new Error(result.message || 'Erro da API');
                 }
                 
             } catch (error) {
-                log(`❌ ERRO: ${error.message}`);
+                log(`Erro ao carregar dados: ${error.message}`, 'error');
+                updateStat('total', '0', 'Erro');
+                throw error;
             }
         }
         
-        function analisarCamposDatas(dados) {
-            log('📅 ANÁLISE DETALHADA DE CAMPOS DE DATA');
-            log('=====================================\n');
+        async function analiseCompleta() {
+            log('='.repeat(60), 'info');
+            log('INICIANDO ANÁLISE ESTRUTURAL COMPLETA', 'info');
+            log('='.repeat(60), 'info');
             
-            const camposDatas = ['dataIda', 'dataCadastro', 'timestamp', 'dataVolta'];
-            
-            camposDatas.forEach(campo => {
-                log(`🔍 CAMPO: ${campo}`);
-                log('-'.repeat(30));
+            try {
+                const dados = await carregarDados();
                 
-                let exemplos = [];
-                let tipos = new Set();
-                let formatos = new Set();
-                let validos = 0;
-                let total = 0;
+                log(`Analisando estrutura de ${dados.length} registros...`, 'info');
+                
+                // Mapear todos os campos únicos
+                const todosCampos = new Set();
+                const tipoPorCampo = {};
+                const exemploPorCampo = {};
+                const contadorPorCampo = {};
                 
                 dados.forEach((registro, index) => {
-                    const valor = registro[campo];
-                    if (valor !== null && valor !== undefined && valor !== '') {
-                        total++;
-                        tipos.add(typeof valor);
+                    Object.keys(registro).forEach(campo => {
+                        todosCampos.add(campo);
                         
-                        // Coletar exemplos (máximo 10)
-                        if (exemplos.length < 10) {
-                            exemplos.push(valor);
+                        if (!tipoPorCampo[campo]) {
+                            tipoPorCampo[campo] = new Set();
+                            exemploPorCampo[campo] = [];
+                            contadorPorCampo[campo] = 0;
                         }
                         
-                        // Detectar formato
-                        if (typeof valor === 'string') {
-                            if (valor.includes('T') && valor.includes('Z')) {
-                                formatos.add('ISO DateTime (YYYY-MM-DDTHH:mm:ss.sssZ)');
-                            } else if (valor.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-                                formatos.add('DD/MM/YYYY');
-                            } else if (valor.match(/^\d{2}\/\d{2}\/\d{2}$/)) {
-                                formatos.add('DD/MM/YY');
-                            } else if (valor.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                formatos.add('YYYY-MM-DD');
-                            } else {
-                                formatos.add('Outro formato');
-                            }
+                        const valor = registro[campo];
+                        if (valor !== null && valor !== undefined && valor !== '') {
+                            contadorPorCampo[campo]++;
+                            tipoPorCampo[campo].add(typeof valor);
                             
-                            // Testar se pode ser convertido em data
-                            try {
-                                const data = new Date(valor);
-                                if (!isNaN(data.getTime())) {
-                                    validos++;
-                                }
-                            } catch (e) {
-                                // Ignorar erros
+                            if (exemploPorCampo[campo].length < 5) {
+                                exemploPorCampo[campo].push(valor);
                             }
                         }
-                    }
+                    });
                 });
                 
-                const percentual = dados.length > 0 ? ((total / dados.length) * 100).toFixed(1) : 0;
-                const percentualValidos = total > 0 ? ((validos / total) * 100).toFixed(1) : 0;
+                log(`\nCampos encontrados: ${todosCampos.size}`, 'success');
+                updateStat('campos', todosCampos.size, 'Mapeado');
                 
-                log(`Registros preenchidos: ${total}/${dados.length} (${percentual}%)`);
-                log(`Datas válidas: ${validos}/${total} (${percentualValidos}%)`);
-                log(`Tipos encontrados: ${Array.from(tipos).join(', ')}`);
-                log(`Formatos detectados: ${Array.from(formatos).join(', ')}`);
-                log(`Exemplos:`);
-                exemplos.forEach((exemplo, i) => {
-                    log(`  ${i+1}. "${exemplo}" (${typeof exemplo})`);
+                log('\nDETALHES POR CAMPO:', 'info');
+                log('-'.repeat(50), 'info');
+                
+                Array.from(todosCampos).sort().forEach((campo, index) => {
+                    const preenchidos = contadorPorCampo[campo] || 0;
+                    const percentual = ((preenchidos / dados.length) * 100).toFixed(1);
+                    const tipos = tipoPorCampo[campo] ? Array.from(tipoPorCampo[campo]).join(', ') : 'vazio';
+                    const exemplos = exemploPorCampo[campo] ? exemploPorCampo[campo].slice(0, 3).join(' | ') : 'N/A';
+                    
+                    const qualidade = percentual > 50 ? 'ALTA' : percentual > 10 ? 'MÉDIA' : 'BAIXA';
+                    
+                    log(`${(index + 1).toString().padStart(2, '0')}. ${campo}`, 'info');
+                    log(`    Preenchimento: ${preenchidos}/${dados.length} (${percentual}%) - ${qualidade}`, 
+                        qualidade === 'ALTA' ? 'success' : qualidade === 'MÉDIA' ? 'warning' : 'error');
+                    log(`    Tipos: ${tipos}`, 'info');
+                    log(`    Exemplos: ${exemplos}`, 'info');
+                    log('', 'info');
                 });
-                log('');
-            });
+                
+                analiseResultados.estrutural = { todosCampos, tipoPorCampo, exemploPorCampo, contadorPorCampo };
+                
+            } catch (error) {
+                log(`Erro na análise: ${error.message}`, 'error');
+            }
         }
         
-        function testarFormatos() {
-            log('🔧 TESTE DE CONVERSÃO DE FORMATOS');
-            log('==================================\n');
+        async function analiseCamposVazios() {
+            log('='.repeat(60), 'info');
+            log('ANÁLISE DE CAMPOS VAZIOS / PROBLEMÁTICOS', 'info');
+            log('='.repeat(60), 'info');
             
-            const exemplos = [
-                '03/09/2025',
-                '03/09/25',  
-                '2025-09-03',
-                '2025-09-03T10:00:00.000Z',
-                '09/03/2025',
-                '20250903',
-                'true',
-                'false',
-                'ANTIGO'
-            ];
-            
-            exemplos.forEach(exemplo => {
-                log(`Testando: "${exemplo}"`);
+            try {
+                const dados = await carregarDados();
                 
-                try {
-                    // Método 1: Parse direto
-                    let data1 = new Date(exemplo);
-                    let valida1 = !isNaN(data1.getTime());
-                    log(`  Direct parse: ${valida1 ? '✅ ' + data1.toLocaleDateString('pt-BR') : '❌ Inválido'}`);
-                    
-                    // Método 2: Se é DD/MM/YYYY
-                    if (exemplo.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-                        const [dia, mes, ano] = exemplo.split('/');
-                        const data2 = new Date(`${ano}-${mes}-${dia}`);
-                        log(`  DD/MM/YYYY: ${!isNaN(data2.getTime()) ? '✅ ' + data2.toLocaleDateString('pt-BR') : '❌ Inválido'}`);
-                    }
-                    
-                    // Método 3: Se é DD/MM/YY
-                    if (exemplo.match(/^\d{2}\/\d{2}\/\d{2}$/)) {
-                        const [dia, mes, anoShort] = exemplo.split('/');
-                        const ano = parseInt(anoShort) > 50 ? '19' + anoShort : '20' + anoShort;
-                        const data3 = new Date(`${ano}-${mes}-${dia}`);
-                        log(`  DD/MM/YY: ${!isNaN(data3.getTime()) ? '✅ ' + data3.toLocaleDateString('pt-BR') : '❌ Inválido'}`);
-                    }
-                    
-                } catch (error) {
-                    log(`  ❌ Erro: ${error.message}`);
+                if (!analiseResultados.estrutural) {
+                    log('Execute primeiro a Análise Estrutural Completa', 'warning');
+                    return;
                 }
                 
-                log('');
-            });
+                const { contadorPorCampo } = analiseResultados.estrutural;
+                
+                // Separar campos por qualidade
+                const camposAlta = [];
+                const camposMedia = [];
+                const camposBaixa = [];
+                const camposVazios = [];
+                
+                Object.keys(contadorPorCampo).forEach(campo => {
+                    const preenchidos = contadorPorCampo[campo];
+                    const percentual = (preenchidos / dados.length) * 100;
+                    
+                    if (preenchidos === 0) {
+                        camposVazios.push(campo);
+                    } else if (percentual > 50) {
+                        camposAlta.push({ campo, preenchidos, percentual });
+                    } else if (percentual > 10) {
+                        camposMedia.push({ campo, preenchidos, percentual });
+                    } else {
+                        camposBaixa.push({ campo, preenchidos, percentual });
+                    }
+                });
+                
+                log('CAMPOS DE ALTA QUALIDADE (>50%):', 'success');
+                camposAlta.forEach(item => {
+                    log(`  ✅ ${item.campo}: ${item.preenchidos} registros (${item.percentual.toFixed(1)}%)`, 'success');
+                });
+                
+                log('\nCAMPOS DE MÉDIA QUALIDADE (10-50%):', 'warning');
+                camposMedia.forEach(item => {
+                    log(`  ⚠️ ${item.campo}: ${item.preenchidos} registros (${item.percentual.toFixed(1)}%)`, 'warning');
+                });
+                
+                log('\nCAMPOS DE BAIXA QUALIDADE (<10%):', 'error');
+                camposBaixa.forEach(item => {
+                    log(`  ❌ ${item.campo}: ${item.preenchidos} registros (${item.percentual.toFixed(1)}%)`, 'error');
+                });
+                
+                log('\nCAMPOS COMPLETAMENTE VAZIOS:', 'error');
+                camposVazios.forEach(campo => {
+                    log(`  💀 ${campo}: 0 registros`, 'error');
+                });
+                
+                analiseResultados.qualidade = { camposAlta, camposMedia, camposBaixa, camposVazios };
+                
+            } catch (error) {
+                log(`Erro na análise: ${error.message}`, 'error');
+            }
+        }
+        
+        async function analiseValidacao() {
+            log('='.repeat(60), 'info');
+            log('TESTE DA VALIDAÇÃO ATUAL DO DASHBOARD', 'info');
+            log('='.repeat(60), 'info');
+            
+            try {
+                const dados = await carregarDados();
+                
+                log('Aplicando mesma validação do dashboard...', 'info');
+                
+                let aprovados = 0;
+                let rejeitados = 0;
+                let motivosRejeicao = {};
+                
+                dados.forEach((registro, index) => {
+                    const nomeCliente = registro.nomeCliente || '';
+                    const cpfCliente = registro.cpfCliente || '';
+                    const vendedor = registro.vendedor || '';
+                    
+                    let rejeitado = false;
+                    let motivo = '';
+                    
+                    // Simular validação do dashboard
+                    if (!registro || typeof registro !== 'object') {
+                        rejeitado = true;
+                        motivo = 'Estrutura inválida';
+                    } else if (!nomeCliente || typeof nomeCliente !== 'string' || nomeCliente.length < 2) {
+                        rejeitado = true;
+                        motivo = 'Nome inválido';
+                    } else if (!cpfCliente || typeof cpfCliente !== 'string' || cpfCliente.length < 3) {
+                        rejeitado = true;
+                        motivo = 'CPF inválido';
+                    } else if (!vendedor || typeof vendedor !== 'string' || vendedor.length < 2) {
+                        rejeitado = true;
+                        motivo = 'Vendedor inválido';
+                    } else {
+                        const nomeUpper = nomeCliente.toUpperCase();
+                        if (nomeUpper === '6220' || nomeUpper === 'TESTE' || nomeUpper === 'SISTEMA' || nomeUpper === 'AAAAAAAAA') {
+                            rejeitado = true;
+                            motivo = 'Nome é código de teste';
+                        }
+                    }
+                    
+                    if (rejeitado) {
+                        rejeitados++;
+                        motivosRejeicao[motivo] = (motivosRejeicao[motivo] || 0) + 1;
+                    } else {
+                        aprovados++;
+                        
+                        // Log dos primeiros 10 aprovados
+                        if (aprovados <= 10) {
+                            log(`✅ APROVADO ${aprovados}: "${nomeCliente}" | CPF: "${cpfCliente}" | Vendedor: "${vendedor}"`, 'success');
+                        }
+                    }
+                });
+                
+                const taxa = ((aprovados / dados.length) * 100).toFixed(2);
+                
+                log(`\nRESULTADO DA VALIDAÇÃO:`, 'info');
+                log(`Aprovados: ${aprovados}/${dados.length} (${taxa}%)`, aprovados > 0 ? 'success' : 'error');
+                log(`Rejeitados: ${rejeitados}/${dados.length}`, 'warning');
+                
+                log(`\nMOTIVOS DE REJEIÇÃO:`, 'warning');
+                Object.keys(motivosRejeicao).forEach(motivo => {
+                    log(`  ${motivo}: ${motivosRejeicao[motivo]} casos`, 'warning');
+                });
+                
+                updateStat('validos', aprovados, aprovados > 100 ? 'Bom' : aprovados > 10 ? 'Baixo' : 'Crítico');
+                updateStat('taxa', `${taxa}%`, taxa > 10 ? 'Aceitável' : 'Problemático');
+                
+                analiseResultados.validacao = { aprovados, rejeitados, motivosRejeicao, taxa };
+                
+            } catch (error) {
+                log(`Erro na validação: ${error.message}`, 'error');
+            }
+        }
+        
+        async function analiseAmostras() {
+            log('='.repeat(60), 'info');
+            log('ANÁLISE DETALHADA DE AMOSTRAS', 'info');
+            log('='.repeat(60), 'info');
+            
+            try {
+                const dados = await carregarDados();
+                
+                log('Analisando primeiros 20 registros em detalhes:', 'info');
+                
+                dados.slice(0, 20).forEach((registro, index) => {
+                    log(`\n--- REGISTRO ${index + 1} (ID: ${registro.id || 'N/A'}) ---`, 'info');
+                    
+                    Object.keys(registro).sort().forEach(campo => {
+                        const valor = registro[campo];
+                        const tipo = typeof valor;
+                        const valorStr = valor === null ? 'null' : 
+                                       valor === undefined ? 'undefined' :
+                                       valor === '' ? 'string vazia' :
+                                       String(valor).length > 50 ? String(valor).substring(0, 50) + '...' : 
+                                       String(valor);
+                        
+                        log(`  ${campo}: "${valorStr}" (${tipo})`, 'info');
+                    });
+                });
+                
+            } catch (error) {
+                log(`Erro na análise de amostras: ${error.message}`, 'error');
+            }
+        }
+        
+        function proposta() {
+            log('='.repeat(60), 'info');
+            log('PROPOSTA DE SOLUÇÃO BASEADA NA ANÁLISE', 'info');
+            log('='.repeat(60), 'info');
+            
+            if (!analiseResultados.validacao) {
+                log('Execute todas as análises anteriores primeiro', 'warning');
+                return;
+            }
+            
+            const { aprovados, motivosRejeicao } = analiseResultados.validacao;
+            
+            log('DIAGNÓSTICO:', 'info');
+            if (aprovados < 10) {
+                log('❌ PROBLEMA CRÍTICO: Menos de 10 registros aprovados', 'error');
+                log('   Causa provável: Validação excessivamente restritiva', 'error');
+            } else if (aprovados < 100) {
+                log('⚠️ PROBLEMA MODERADO: Poucos registros aprovados', 'warning');
+                log('   Causa provável: Dados de baixa qualidade', 'warning');
+            } else {
+                log('✅ VALIDAÇÃO OK: Registros suficientes aprovados', 'success');
+            }
+            
+            log('\nSOLUÇÕES RECOMENDADAS:', 'info');
+            log('1. AJUSTAR VALIDAÇÃO:', 'success');
+            log('   - Reduzir critérios mínimos (CPF: 3→1 char, Nome: 2→1 char)', 'info');
+            log('   - Remover filtros de códigos de teste desnecessários', 'info');
+            log('   - Aceitar mais variações de dados', 'info');
+            
+            log('\n2. TRATAMENTO DE DATAS:', 'success');
+            log('   - Implementar fallback robusto para 98% dos registros sem data', 'info');
+            log('   - Usar algoritmo de distribuição temporal inteligente', 'info');
+            log('   - Considerar data de cadastro como base quando disponível', 'info');
+            
+            log('\n3. CÓDIGO DE IMPLEMENTAÇÃO:', 'success');
+            log('```javascript', 'info');
+            log('function validacaoUltraPermissiva(registro) {', 'info');
+            log('    // Aceitar qualquer coisa minimamente estruturada', 'info');
+            log('    return registro &&', 'info');
+            log('           registro.nomeCliente && registro.nomeCliente.length > 0 &&', 'info');
+            log('           registro.cpfCliente && registro.cpfCliente.length > 0 &&', 'info');
+            log('           registro.vendedor && registro.vendedor.length > 0;', 'info');
+            log('}', 'info');
+            log('```', 'info');
+            
+            log('\n4. RESULTADOS ESPERADOS:', 'success');
+            log(`   - Taxa de aproveitamento: 70-90% (atual: ${analiseResultados.validacao.taxa}%)`, 'info');
+            log('   - Embarques distribuídos entre as 3 categorias', 'info');
+            log('   - Sistema funcional para demonstração', 'info');
         }
         
         function limpar() {
-            document.getElementById('resultado').textContent = '';
-            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('output').innerHTML = 'Log limpo. Execute as análises novamente.\n';
+            updateStat('total', '-', 'Aguardando');
+            updateStat('validos', '-', 'Aguardando');
+            updateStat('taxa', '-', 'Aguardando');
+            updateStat('campos', '-', 'Aguardando');
         }
     </script>
 </body>
