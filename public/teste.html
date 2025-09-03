@@ -513,7 +513,7 @@ for (let campo of camposDataIda) {
     if (embarque[campo]) {
         dataIda = parseDate(embarque[campo]);
         if (dataIda) {
-            console.log(\`📅 Data ida: \${campo} = \${dataIda.toLocaleDateString()}\`);
+            console.log('📅 Data ida: ' + campo + ' = ' + dataIda.toLocaleDateString());
             break;
         }
     }
