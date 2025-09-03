@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+// Ordenar embarques processados por data mais próxima primeiro
+            embarquesProcessados.sort((a, b) => {
+                // Prioridade: check-in > conferência > pós-venda
+                const prioridade = { checkin: 1, conferencia: 2, posvenda: 3 };
+                
+                if (a.tipoControle !== b.tipoControle) {
+                    return prioridade[a.tipoControle] - prioridade[b.tipoControle];
+                }
+                
+                // Dentro do mesmo tipo, ordenar por data mais próxima
+                return a.dataIda - b.dataIda;
+            });<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
