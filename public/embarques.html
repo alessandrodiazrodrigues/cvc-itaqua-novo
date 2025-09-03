@@ -72,7 +72,7 @@ Clique em "Analisar Estrutura dos Dados" para começar...
                     throw new Error(result.message);
                 }
             } catch (error) {
-                throw new Error(`Erro ao carregar dados: ${error.message}`);
+                throw new Error('Erro ao carregar dados: ' + error.message);
             }
         }
 
@@ -83,124 +83,99 @@ Clique em "Analisar Estrutura dos Dados" para começar...
             try {
                 const dados = await carregarDados();
                 
-                let analise = `
-================================================================================
-🔍 ANÁLISE COMPLETA DA ESTRUTURA DOS DADOS
-================================================================================
-📊 Total de registros: ${dados.length}
-📅 Análise executada em: ${new Date().toLocaleString('pt-BR')}
-
-🏗️ ESTRUTURA DO PRIMEIRO REGISTRO:
-================================================================================`;
+                let analise = '\n================================================================================\n';
+                analise += '🔍 ANÁLISE COMPLETA DA ESTRUTURA DOS DADOS\n';
+                analise += '================================================================================\n';
+                analise += '📊 Total de registros: ' + dados.length + '\n';
+                analise += '📅 Análise executada em: ' + new Date().toLocaleString('pt-BR') + '\n';
+                
+                analise += '\n🏗️ ESTRUTURA DO PRIMEIRO REGISTRO:\n';
+                analise += '================================================================================\n';
                 
                 if (dados.length > 0) {
                     const primeiro = dados[0];
-                    Object.keys(primeiro).forEach((campo, index) => {
+                    const campos = Object.keys(primeiro);
+                    
+                    campos.forEach((campo, index) => {
                         const valor = primeiro[campo];
                         const tipo = typeof valor;
-                        const preview = typeof valor === 'string' && valor.length > 50 
-                            ? valor.substring(0, 50) + '...' 
-                            : valor;
+                        let preview = valor;
                         
-                        analise += `\n${index + 1:2}. ${campo.padEnd(20)} | ${tipo.padEnd(8)} | ${preview}`;
+                        if (typeof valor === 'string' && valor.length > 50) {
+                            preview = valor.substring(0, 50) + '...';
+                        }
+                        
+                        const num = (index + 1).toString().padStart(2, ' ');
+                        const campoFormatado = campo.padEnd(20, ' ');
+                        const tipoFormatado = tipo.padEnd(8, ' ');
+                        
+                        analise += num + '. ' + campoFormatado + ' | ' + tipoFormatado + ' | ' + preview + '\n';
                     });
                 }
                 
-                analise += `\n\n📋 ANÁLISE DOS CAMPOS DE DATA (primeiros 10 registros):
-================================================================================`;
+                analise += '\n📋 ANÁLISE DOS CAMPOS DE DATA (primeiros 10 registros):\n';
+                analise += '================================================================================\n';
                 
                 const camposData = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
                 
                 dados.slice(0, 10).forEach((registro, i) => {
-                    analise += `\n\nREGISTRO ${i + 1} (${registro.nomeCliente || 'N/A'}):`;
+                    analise += '\nREGISTRO ' + (i + 1) + ' (' + (registro.nomeCliente || 'N/A') + '):\n';
+                    
                     camposData.forEach(campo => {
                         const valor = registro[campo];
                         const tipo = typeof valor;
                         const valido = valor ? 'SIM' : 'NÃO';
-                        analise += `\n  ${campo.padEnd(15)} | ${tipo.padEnd(8)} | ${valido.padEnd(3)} | ${valor || 'NULL'}`;
-                    });
-                });
-                
-                analise += `\n\n📈 ESTATÍSTICAS DOS CAMPOS DE DATA:
-================================================================================`;
-                
-                const stats = {};
-                camposData.forEach(campo => {
-                    stats[campo] = {
-                        preenchidos: 0,
-                        vazios: 0,
-                        tipos: {}
-                    };
-                });
-                
-                dados.forEach(registro => {
-                    camposData.forEach(campo => {
-                        const valor = registro[campo];
-                        if (valor && valor !== null && valor !== '') {
-                            stats[campo].preenchidos++;
-                            const tipo = typeof valor;
-                            stats[campo].tipos[tipo] = (stats[campo].tipos[tipo] || 0) + 1;
-                        } else {
-                            stats[campo].vazios++;
-                        }
-                    });
-                });
-                
-                camposData.forEach(campo => {
-                    const stat = stats[campo];
-                    const total = stat.preenchidos + stat.vazios;
-                    const percentPreenchido = ((stat.preenchidos / total) * 100).toFixed(1);
-                    
-                    analise += `\n${campo.padEnd(15)} | Preenchidos: ${stat.preenchidos.toString().padStart(4)} (${percentPreenchido}%) | Vazios: ${stat.vazios}`;
-                    
-                    Object.entries(stat.tipos).forEach(([tipo, count]) => {
-                        analise += `\n${' '.repeat(17)} | ${tipo}: ${count}`;
+                        const campoFormatado = campo.padEnd(15, ' ');
+                        const tipoFormatado = tipo.padEnd(8, ' ');
+                        const validoFormatado = valido.padEnd(3, ' ');
+                        
+                        analise += '  ' + campoFormatado + ' | ' + tipoFormatado + ' | ' + validoFormatado + ' | ' + (valor || 'NULL') + '\n';
                     });
                 });
                 
                 resultDiv.textContent = analise;
                 
             } catch (error) {
-                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+                resultDiv.textContent = '❌ ERRO: ' + error.message;
             }
         }
 
         async function analisarLinhasEspecificas() {
             const resultDiv = document.getElementById('resultado-analise');
-            resultDiv.textContent = 'Analisando linhas 451-587...';
+            resultDiv.textContent = 'Analisando linhas intermediárias...';
             
             try {
                 const dados = await carregarDados();
                 
-                // Como os dados vêm sem número de linha, vamos pegar uma amostra
-                // dos registros no meio da lista (onde supostamente estão os dados válidos)
-                const inicio = Math.max(0, Math.floor(dados.length * 0.3)); // 30% da lista
-                const fim = Math.min(dados.length, Math.floor(dados.length * 0.7)); // 70% da lista
-                const amostra = dados.slice(inicio, fim).slice(0, 50); // Primeiros 50 dessa faixa
+                // Pegar uma amostra dos registros no meio da lista
+                const inicio = Math.max(0, Math.floor(dados.length * 0.3));
+                const fim = Math.min(dados.length, Math.floor(dados.length * 0.7));
+                const amostra = dados.slice(inicio, fim).slice(0, 50);
                 
-                let analise = `
-================================================================================
-🎯 ANÁLISE DAS LINHAS INTERMEDIÁRIAS (posição ${inicio}-${fim})
-================================================================================
-📊 Amostra analisada: ${amostra.length} registros
-🎯 Buscando dados válidos que podem estar sendo ignorados...
-
-📋 DETALHES DOS REGISTROS:
-================================================================================`;
+                let analise = '\n================================================================================\n';
+                analise += '🎯 ANÁLISE DAS LINHAS INTERMEDIÁRIAS (posição ' + inicio + '-' + fim + ')\n';
+                analise += '================================================================================\n';
+                analise += '📊 Amostra analisada: ' + amostra.length + ' registros\n';
+                analise += '🎯 Buscando dados válidos que podem estar sendo ignorados...\n';
+                
+                analise += '\n📋 DETALHES DOS REGISTROS:\n';
+                analise += '================================================================================\n';
+                
+                let comDataValida = 0;
                 
                 amostra.forEach((registro, i) => {
                     const posicao = inicio + i + 1;
-                    analise += `\n\n📍 POSIÇÃO ${posicao}:
-Cliente: ${registro.nomeCliente || 'N/A'}
-Vendedor: ${registro.vendedor || 'N/A'}
-CPF: ${registro.cpfCliente || 'N/A'}`;
+                    analise += '\n📍 POSIÇÃO ' + posicao + ':\n';
+                    analise += 'Cliente: ' + (registro.nomeCliente || 'N/A') + '\n';
+                    analise += 'Vendedor: ' + (registro.vendedor || 'N/A') + '\n';
+                    analise += 'CPF: ' + (registro.cpfCliente || 'N/A') + '\n';
                     
-                    // Analisar todos os campos que podem conter datas
                     const camposDatas = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
+                    let temDataValida = false;
+                    
                     camposDatas.forEach(campo => {
                         const valor = registro[campo];
                         if (valor) {
-                            // Tentar parsear a data
                             let dataParsed = null;
                             try {
                                 if (valor instanceof Date) {
@@ -218,42 +193,31 @@ CPF: ${registro.cpfCliente || 'N/A'}`;
                             const status = dataParsed && !isNaN(dataParsed.getTime()) ? '✅ VÁLIDA' : '❌ INVÁLIDA';
                             const dataFormatada = dataParsed ? dataParsed.toLocaleDateString('pt-BR') : 'N/A';
                             
-                            analise += `\n${campo}: ${valor} | ${status} | ${dataFormatada}`;
-                        } else {
-                            analise += `\n${campo}: VAZIO`;
-                        }
-                    });
-                });
-                
-                // Contar quantos têm datas válidas nesta amostra
-                let comDataValida = 0;
-                amostra.forEach(registro => {
-                    const camposDatas = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
-                    const temDataValida = camposDatas.some(campo => {
-                        const valor = registro[campo];
-                        if (valor) {
-                            try {
-                                const data = new Date(valor);
-                                return !isNaN(data.getTime()) && data.getFullYear() > 2020;
-                            } catch (e) {
-                                return false;
+                            if (dataParsed && !isNaN(dataParsed.getTime())) {
+                                temDataValida = true;
                             }
+                            
+                            analise += campo + ': ' + valor + ' | ' + status + ' | ' + dataFormatada + '\n';
+                        } else {
+                            analise += campo + ': VAZIO\n';
                         }
-                        return false;
                     });
-                    if (temDataValida) comDataValida++;
+                    
+                    if (temDataValida) {
+                        comDataValida++;
+                    }
                 });
                 
-                analise += `\n\n📊 RESUMO DA AMOSTRA:
-================================================================================
-Total analisados: ${amostra.length}
-Com data válida: ${comDataValida}
-Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`;
+                analise += '\n📊 RESUMO DA AMOSTRA:\n';
+                analise += '================================================================================\n';
+                analise += 'Total analisados: ' + amostra.length + '\n';
+                analise += 'Com data válida: ' + comDataValida + '\n';
+                analise += 'Taxa de aproveitamento: ' + ((comDataValida / amostra.length) * 100).toFixed(1) + '%\n';
                 
                 resultDiv.textContent = analise;
                 
             } catch (error) {
-                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+                resultDiv.textContent = '❌ ERRO: ' + error.message;
             }
         }
 
@@ -264,59 +228,21 @@ Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`
             try {
                 const dados = await carregarDados();
                 
-                let analise = `
-================================================================================
-📅 ANÁLISE DETALHADA DOS CAMPOS DE DATA
-================================================================================
-
-🔍 PADRÕES ENCONTRADOS NOS DADOS:
-================================================================================`;
+                let analise = '\n================================================================================\n';
+                analise += '📅 ANÁLISE DETALHADA DOS CAMPOS DE DATA\n';
+                analise += '================================================================================\n';
                 
-                // Analisar padrões de data
-                const padroes = {};
-                const exemplos = {};
-                
-                dados.slice(0, 100).forEach((registro, i) => {
-                    ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'].forEach(campo => {
-                        const valor = registro[campo];
-                        if (valor && typeof valor === 'string') {
-                            // Identificar padrões comuns
-                            let padrao = 'desconhecido';
-                            
-                            if (valor.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
-                                padrao = 'ISO_8601';
-                            } else if (valor.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-                                padrao = 'DD/MM/YYYY';
-                            } else if (valor.match(/^\d{4}-\d{2}-\d{2}/)) {
-                                padrao = 'YYYY-MM-DD';
-                            } else if (valor.includes('ANTIGO') || valor.includes('RT -')) {
-                                padrao = 'texto_invalido';
-                            }
-                            
-                            const key = `${campo}_${padrao}`;
-                            padroes[key] = (padroes[key] || 0) + 1;
-                            
-                            if (!exemplos[key] && padroes[key] <= 3) {
-                                exemplos[key] = valor;
-                            }
-                        }
-                    });
-                });
-                
-                Object.entries(padroes).forEach(([key, count]) => {
-                    const exemplo = exemplos[key] || 'N/A';
-                    analise += `\n${key.padEnd(25)} | ${count.toString().padStart(4)} ocorrências | Ex: ${exemplo}`;
-                });
-                
-                // Analisar especificamente registros com datas futuras
-                analise += `\n\n🔍 BUSCANDO DATAS FUTURAS (setembro 2025+):
-================================================================================`;
+                // Buscar especificamente datas futuras
+                analise += '\n🔍 BUSCANDO DATAS FUTURAS (setembro 2025+):\n';
+                analise += '================================================================================\n';
                 
                 const hoje = new Date();
                 const datasEncontradas = [];
                 
                 dados.forEach((registro, i) => {
-                    ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'].forEach(campo => {
+                    const camposDatas = ['dataIda', 'dataVolta', 'dataCadastro', 'timestamp'];
+                    
+                    camposDatas.forEach(campo => {
                         const valor = registro[campo];
                         if (valor) {
                             try {
@@ -327,7 +253,8 @@ Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`
                                         campo: campo,
                                         data: data,
                                         valor: valor,
-                                        cliente: registro.nomeCliente
+                                        cliente: registro.nomeCliente || 'N/A',
+                                        vendedor: registro.vendedor || 'N/A'
                                     });
                                 }
                             } catch (e) {
@@ -340,20 +267,37 @@ Taxa de aproveitamento: ${((comDataValida / amostra.length) * 100).toFixed(1)}%`
                 // Ordenar por data
                 datasEncontradas.sort((a, b) => a.data - b.data);
                 
-                analise += `\nTotal de datas futuras encontradas: ${datasEncontradas.length}`;
+                analise += 'Total de datas futuras encontradas: ' + datasEncontradas.length + '\n\n';
                 
-                datasEncontradas.slice(0, 20).forEach((item, i) => {
-                    analise += `\n${(i + 1).toString().padStart(2)}. Pos ${item.indice} | ${item.campo} | ${item.data.toLocaleDateString('pt-BR')} | ${item.cliente}`;
+                datasEncontradas.slice(0, 30).forEach((item, i) => {
+                    const num = (i + 1).toString().padStart(2, ' ');
+                    const pos = item.indice.toString().padStart(4, ' ');
+                    const dataStr = item.data.toLocaleDateString('pt-BR');
+                    
+                    analise += num + '. Pos ' + pos + ' | ' + item.campo + ' | ' + dataStr + ' | ' + item.cliente + ' | ' + item.vendedor + '\n';
                 });
                 
-                if (datasEncontradas.length > 20) {
-                    analise += `\n... e mais ${datasEncontradas.length - 20} registros`;
+                if (datasEncontradas.length > 30) {
+                    analise += '... e mais ' + (datasEncontradas.length - 30) + ' registros\n';
                 }
+                
+                // Contar por mês
+                const porMes = {};
+                datasEncontradas.forEach(item => {
+                    const mesAno = item.data.getFullYear() + '-' + String(item.data.getMonth() + 1).padStart(2, '0');
+                    porMes[mesAno] = (porMes[mesAno] || 0) + 1;
+                });
+                
+                analise += '\n📅 DISTRIBUIÇÃO POR MÊS:\n';
+                analise += '================================================================================\n';
+                Object.entries(porMes).forEach(([mes, count]) => {
+                    analise += mes + ': ' + count + ' registros\n';
+                });
                 
                 resultDiv.textContent = analise;
                 
             } catch (error) {
-                resultDiv.textContent = `❌ ERRO: ${error.message}`;
+                resultDiv.textContent = '❌ ERRO: ' + error.message;
             }
         }
 
