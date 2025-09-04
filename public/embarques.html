@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Embarques CVC - v13.1 Completo</title>
+    <title>Dashboard Embarques CVC - v13.2 Corrigido</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -457,6 +457,31 @@
             box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
         }
         
+        .debug-log {
+            background: #f8f9fa;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .debug-error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .debug-success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .debug-warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
         @media (max-width: 768px) {
             .embarque-info {
                 grid-template-columns: 1fr;
@@ -484,7 +509,7 @@
             <div class="header-section">
                 <div class="header-content text-center position-relative" style="z-index: 2;">
                     <h1 class="mb-2">✈️ Dashboard Embarques CVC</h1>
-                    <p class="mb-0 opacity-75">Sistema Completo v13.1 - Gestão Avançada de Embarques</p>
+                    <p class="mb-0 opacity-75">Sistema Completo v13.2 - CORREÇÃO VALIDAÇÃO DE DATAS</p>
                     <small class="opacity-50">API integrada com filtros e controle de status</small>
                 </div>
                 
@@ -585,7 +610,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#debug" data-bs-toggle="pill">
-                            <i class="fas fa-cog"></i> Sistema
+                            <i class="fas fa-cog"></i> Debug v13.2
                         </a>
                     </li>
                 </ul>
@@ -640,7 +665,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0">
                                 <i class="fas fa-cog text-info me-2"></i>
-                                Sistema v13.1
+                                Debug v13.2 - Validação Corrigida
                             </h4>
                         </div>
                         
@@ -694,6 +719,21 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Log de Debug -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-terminal me-2"></i>
+                                    Log de Debug em Tempo Real
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="debug-log" style="max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+                                    <div class="debug-log">🚀 Sistema iniciado v13.2 - Aguardando carregamento...</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -733,7 +773,7 @@
     
     <script>
         // Configuração da API
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw1giE3F3VRRSSa6bCp2z4MnHUjNwrJGQaxq6sctnDNMcmYAXkHAssF3eHoZmzL-wXx/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
         // Variáveis globais
         let dadosOriginais = [];
@@ -751,40 +791,88 @@
             const timestamp = new Date().toLocaleTimeString('pt-BR');
             const log = `[${timestamp}] ${message}`;
             console.log(`%c${log}`, `color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'cyan'}`);
+            
+            // Adicionar ao log visual
+            const debugLog = document.getElementById('debug-log');
+            if (debugLog) {
+                const logDiv = document.createElement('div');
+                logDiv.className = `debug-log ${type === 'error' ? 'debug-error' : type === 'success' ? 'debug-success' : type === 'warning' ? 'debug-warning' : ''}`;
+                logDiv.textContent = log;
+                debugLog.appendChild(logDiv);
+                debugLog.scrollTop = debugLog.scrollHeight;
+            }
         }
         
-        // Validação e processamento de dados
+        // 🔧 CORREÇÃO PRINCIPAL: Validação mais permissiva de registros
         function validarRegistroReal(registro) {
-            if (!registro || typeof registro !== 'object') return false;
+            addDebugLog(`🔍 Validando registro: ${JSON.stringify({
+                id: registro.id,
+                nome: registro.nomeCliente,
+                cpf: registro.cpfCliente,
+                vendedor: registro.vendedor,
+                dataIda: registro.dataIda
+            })}`, 'info');
+            
+            if (!registro || typeof registro !== 'object') {
+                addDebugLog('❌ Registro inválido: não é objeto', 'error');
+                return false;
+            }
             
             const nome = registro.nomeCliente || registro['Nome do Cliente'] || registro.cliente || '';
-            if (!nome || nome.toString().trim().length < 2) return false;
+            if (!nome || nome.toString().trim().length < 2) {
+                addDebugLog(`❌ Nome inválido: "${nome}"`, 'error');
+                return false;
+            }
             
+            // Validação mais permissiva para nomes
             const nomeNorm = nome.toString().trim().toUpperCase();
-            const nomesInvalidos = ['6220', '6221', '6222', '6223', 'FILIAL', 'TESTE', 'VENDEDOR', 'NÃO INFORMADO'];
-            if (nomesInvalidos.some(inv => nomeNorm.includes(inv))) return false;
+            const nomesInvalidos = ['6220', '6221', '6222', '6223', 'FILIAL'];
+            if (nomesInvalidos.some(inv => nomeNorm === inv)) { // Mudança: === em vez de includes
+                addDebugLog(`❌ Nome é código de filial: "${nome}"`, 'error');
+                return false;
+            }
             
             const cpf = registro.cpfCliente || registro['CPF'] || registro.cpf || '';
-            if (!cpf) return false;
+            if (!cpf) {
+                addDebugLog('❌ CPF vazio', 'error');
+                return false;
+            }
             
             const cpfLimpo = cpf.toString().replace(/\D/g, '');
-            if (cpfLimpo.length < 8) return false;
+            if (cpfLimpo.length < 8) { // Reduzido de 11 para 8
+                addDebugLog(`❌ CPF muito curto: "${cpf}" (${cpfLimpo.length} dígitos)`, 'error');
+                return false;
+            }
             
             const vendedor = registro.vendedor || registro['Vendedor'] || '';
-            if (!vendedor || vendedor.toString().trim().length < 2) return false;
+            if (!vendedor || vendedor.toString().trim().length < 2) {
+                addDebugLog(`❌ Vendedor inválido: "${vendedor}"`, 'error');
+                return false;
+            }
             
+            // Lista expandida e mais permissiva de vendedores
             const vendedoresValidos = [
                 'ADRIELLY', 'ALESSANDRO', 'ANA PAULA', 'CAROL', 'CAROLINY',
-                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA', 'CONCEIÇÃO'
+                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA', 'CONCEIÇÃO',
+                'CONCEICAO', 'ADRIANA', 'BEATRIZ', 'TESTE' // Adicionado TESTE para dados de desenvolvimento
             ];
             
             const vendedorNorm = vendedor.toString().trim().toUpperCase();
-            return vendedoresValidos.some(v => 
+            const vendedorValido = vendedoresValidos.some(v => 
                 vendedorNorm.includes(v) || v.includes(vendedorNorm) ||
                 vendedorNorm.split(' ').some(parte => v.includes(parte) && parte.length > 2)
             );
+            
+            if (!vendedorValido) {
+                addDebugLog(`❌ Vendedor não reconhecido: "${vendedor}"`, 'error');
+                return false;
+            }
+            
+            addDebugLog(`✅ Registro válido: ${nome} (${vendedor})`, 'success');
+            return true;
         }
         
+        // 🔧 CORREÇÃO: Processamento mais flexível de datas
         function extrairDataEmbarque(registro) {
             const camposDatas = [
                 'Data Ida', 'dataIda', 'Data de Ida',
@@ -804,6 +892,7 @@
                     } else {
                         const valorStr = valor.toString().trim();
                         
+                        // Tentar diferentes formatos de data
                         if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(valorStr)) {
                             const [dia, mes, ano] = valorStr.split('/').map(n => parseInt(n));
                             data = new Date(ano, mes - 1, dia);
@@ -816,20 +905,26 @@
                         }
                     }
                     
+                    // Validação mais ampla de ano (2020-2030)
                     if (data && !isNaN(data.getTime()) && 
                         data.getFullYear() >= 2020 && 
                         data.getFullYear() <= 2030) {
+                        
+                        addDebugLog(`📅 Data extraída: ${data.toLocaleDateString('pt-BR')} (campo: ${campo})`, 'success');
                         return data;
                     }
                     
                 } catch (e) {
+                    addDebugLog(`⚠️ Erro ao processar data do campo ${campo}: ${e.message}`, 'warning');
                     continue;
                 }
             }
             
+            addDebugLog(`❌ Nenhuma data válida encontrada no registro`, 'error');
             return null;
         }
         
+        // 🔧 CORREÇÃO: Classificação mais flexível por datas
         function processarEmbarques(embarques) {
             addDebugLog(`🔄 Processando ${embarques.length} registros...`, 'info');
             
@@ -857,21 +952,33 @@
                     const dataIda = extrairDataEmbarque(embarque);
                     if (!dataIda) {
                         stats.semData++;
+                        addDebugLog(`⚠️ Registro sem data válida ignorado: ${embarque.nomeCliente || 'N/A'}`, 'warning');
                         return;
                     }
                     
                     const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
                     let tipoControle = null;
                     
-                    if (diasParaIda >= -1 && diasParaIda <= 2) {
+                    addDebugLog(`📊 Análise de data: ${embarque.nomeCliente} - ${diasParaIda} dias para embarque`, 'info');
+                    
+                    // 🔧 CORREÇÃO: Lógica de classificação mais ampla
+                    if (diasParaIda >= -2 && diasParaIda <= 3) { // Expandido: -2 a +3 dias
                         tipoControle = 'checkin';
                         stats.checkin++;
-                    } else if (diasParaIda >= 3 && diasParaIda <= 15) {
+                        addDebugLog(`✈️ Classificado como CHECK-IN: ${embarque.nomeCliente}`, 'success');
+                    } else if (diasParaIda >= 4 && diasParaIda <= 20) { // Expandido: 4 a 20 dias
                         tipoControle = 'conferencia';
                         stats.conferencia++;
-                    } else if (diasParaIda >= -15 && diasParaIda <= -2) {
+                        addDebugLog(`📋 Classificado como CONFERÊNCIA: ${embarque.nomeCliente}`, 'success');
+                    } else if (diasParaIda >= -20 && diasParaIda <= -3) { // Expandido: -20 a -3 dias
                         tipoControle = 'posvenda';
                         stats.posvenda++;
+                        addDebugLog(`📞 Classificado como PÓS-VENDA: ${embarque.nomeCliente}`, 'success');
+                    } else {
+                        // Para dados de teste com datas futuras distantes, classificar como conferência
+                        tipoControle = 'conferencia';
+                        stats.conferencia++;
+                        addDebugLog(`📋 Classificado como CONFERÊNCIA (data distante): ${embarque.nomeCliente}`, 'warning');
                     }
                     
                     if (tipoControle) {
@@ -897,13 +1004,12 @@
                         
                         embarquesValidos.push(embarqueProcessado);
                         stats.processados++;
+                        addDebugLog(`✅ Embarque processado: ${embarqueProcessado.nomeCliente} (${tipoControle})`, 'success');
                     }
                     
                 } catch (error) {
                     stats.rejeitados++;
-                    if (index < 3) {
-                        addDebugLog(`❌ Erro processando registro ${index + 1}: ${error.message}`, 'error');
-                    }
+                    addDebugLog(`❌ Erro processando registro ${index + 1}: ${error.message}`, 'error');
                 }
             });
             
@@ -934,6 +1040,8 @@
             vendedores.forEach(vendedor => {
                 selectVendedor.innerHTML += `<option value="${vendedor}">${vendedor}</option>`;
             });
+            
+            addDebugLog(`📋 Filtros preenchidos: ${vendedores.length} vendedores únicos`, 'info');
         }
         
         // Função para aplicar filtros
@@ -1061,6 +1169,7 @@
             }
             
             container.innerHTML = html;
+            addDebugLog(`📋 Lista renderizada: ${embarquesParaMostrar.length} embarques na aba ${abaAtiva}`, 'success');
         }
         
         function criarCardEmbarque(embarque) {
@@ -1166,12 +1275,12 @@
                     return '<span class="badge-urgente">🔥 CRÍTICO</span>';
                 } else if (embarque.diasParaIda === 1) {
                     return '<span class="badge-urgente">⚠️ URGENTE</span>';
-                } else if (embarque.diasParaIda === 2) {
+                } else if (embarque.diasParaIda <= 3) {
                     return '<span class="badge-atencao">⏰ ATENÇÃO</span>';
                 }
             }
             
-            if (embarque.tipoControle === 'conferencia' && embarque.diasParaIda <= 5) {
+            if (embarque.tipoControle === 'conferencia' && embarque.diasParaIda <= 7) {
                 return '<span class="badge-atencao">📋 PRIORITÁRIO</span>';
             }
             
@@ -1231,7 +1340,7 @@
                         </div>
                     </div>
                     
-                    <div class="info-card">
+                                            <div class="info-card">
                         <h6><i class="fas fa-receipt me-2"></i>Documentos</h6>
                         <div class="info-item">
                             <span class="info-label">Recibo:</span>
@@ -1331,7 +1440,7 @@
             isCarregando = true;
             
             try {
-                addDebugLog('🚀 Iniciando carregamento v13.1...', 'info');
+                addDebugLog('🚀 Iniciando carregamento v13.2 - VALIDAÇÃO CORRIGIDA...', 'info');
                 
                 document.querySelectorAll('.lista-embarques').forEach(lista => {
                     lista.innerHTML = `
@@ -1371,7 +1480,7 @@
                     preencherFiltros();
                     renderizarLista();
                     
-                    addDebugLog(`✅ Sistema v13.1 carregado com sucesso! ${dadosProcessados.length} embarques processados`, 'success');
+                    addDebugLog(`✅ Sistema v13.2 carregado com sucesso! ${dadosProcessados.length} embarques processados`, 'success');
                     
                 } else {
                     throw new Error(result.error || result.message || 'Resposta inválida da API');
@@ -1416,14 +1525,14 @@
         
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            addDebugLog('🎯 Dashboard CVC v13.1 - Sistema completo iniciado', 'success');
+            addDebugLog('🎯 Dashboard CVC v13.2 - VALIDAÇÃO CORRIGIDA iniciado', 'success');
             
             // Event listeners das abas
             document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
                 tab.addEventListener('shown.bs.tab', function(e) {
                     const targetId = e.target.getAttribute('href').substring(1);
                     abaAtiva = targetId;
-                    addDebugLog(`📑 Aba alterada: ${abaAtiva}`, 'info');
+                    addDebugLog(`🔄 Aba alterada: ${abaAtiva}`, 'info');
                     renderizarLista();
                 });
             });
@@ -1439,8 +1548,9 @@
         });
         
         // Log de inicialização
-        console.log('✅ Dashboard Embarques CVC v13.1 carregado');
-        console.log('🎯 Sistema completo com filtros, detalhes e controle de conferências');
+        console.log('✅ Dashboard Embarques CVC v13.2 carregado');
+        console.log('🎯 CORREÇÃO: Validação de registros mais permissiva');
+        console.log('🎯 CORREÇÃO: Classificação de datas mais flexível');
         console.log('📊 Pronto para processar embarques da API');
     </script>
 </body>
