@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Embarques FUNCIONANDO v12.0</title>
+    <title>Dashboard Embarques CVC - v13.0 Otimizado</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,10 +14,11 @@
             --cvc-amarelo: #FFD700;
             --cvc-verde: #00A859;
             --cvc-azul-claro: #4A90E2;
+            --cvc-gradiente: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
         }
         
         body {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
+            background: var(--cvc-gradiente);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -25,17 +26,17 @@
         .main-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
             margin: 20px auto;
             max-width: 1400px;
+            overflow: hidden;
         }
         
         .header-section {
-            background: linear-gradient(135deg, var(--cvc-azul) 0%, #002266 100%);
+            background: var(--cvc-gradiente);
             color: white;
             padding: 30px;
-            border-radius: 20px 20px 0 0;
             position: relative;
             overflow: hidden;
         }
@@ -43,156 +44,278 @@
         .header-section::before {
             content: '';
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
             background: var(--cvc-amarelo);
             border-radius: 50%;
             opacity: 0.1;
-            transform: translate(50%, -50%);
+        }
+        
+        .header-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 200px;
+            height: 200px;
+            background: var(--cvc-verde);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
         
         .stats-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
+            padding: 25px;
+            margin-top: 25px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .stat-card {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
-            margin: 0 10px;
-            transition: all 0.3s ease;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .stat-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         .stat-card i {
-            font-size: 2rem;
+            font-size: 2.2rem;
             margin-bottom: 10px;
             color: var(--cvc-amarelo);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         .stat-card .numero {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 2.8rem;
+            font-weight: 900;
             color: var(--cvc-amarelo);
             line-height: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            margin-top: 5px;
         }
         
         .nav-pills {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 0;
-            border-radius: 0;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-bottom: 3px solid var(--cvc-azul);
         }
         
         .nav-pills .nav-link {
-            border-radius: 12px;
-            margin: 0 5px;
+            border-radius: 15px;
+            margin: 0 8px;
             font-weight: 600;
             color: var(--cvc-azul);
             transition: all 0.3s ease;
-            padding: 12px 20px;
+            padding: 15px 25px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+        
+        .nav-pills .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-color: var(--cvc-azul-claro);
         }
         
         .nav-pills .nav-link.active {
             background: var(--cvc-azul);
             color: white;
+            box-shadow: 0 5px 20px rgba(0, 51, 153, 0.4);
+        }
+        
+        .nav-pills .nav-link i {
+            margin-right: 8px;
         }
         
         .content-section {
             padding: 30px;
+            min-height: 400px;
         }
         
         .embarque-card {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border-left: 4px solid var(--cvc-azul);
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         
         .embarque-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateX(5px) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
-        .embarque-card.checkin { border-left-color: #2196F3; }
-        .embarque-card.conferencia { border-left-color: #FF9800; }
-        .embarque-card.posvenda { border-left-color: #4CAF50; }
+        .embarque-card.checkin { 
+            border-left-color: #2196F3; 
+            background: linear-gradient(135deg, white 95%, rgba(33, 150, 243, 0.05));
+        }
+        .embarque-card.conferencia { 
+            border-left-color: #FF9800; 
+            background: linear-gradient(135deg, white 95%, rgba(255, 152, 0, 0.05));
+        }
+        .embarque-card.posvenda { 
+            border-left-color: #4CAF50; 
+            background: linear-gradient(135deg, white 95%, rgba(76, 175, 80, 0.05));
+        }
         
         .embarque-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: start;
+            margin-bottom: 20px;
         }
         
         .cliente-info h5 {
-            margin: 0 0 5px 0;
+            margin: 0 0 15px 0;
             color: var(--cvc-azul);
             font-weight: 700;
+            font-size: 1.3rem;
+        }
+        
+        .cliente-info p {
+            margin: 8px 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cliente-info i {
+            width: 18px;
+            color: var(--cvc-azul-claro);
         }
         
         .data-info {
-            text-align: right;
             background: rgba(0, 51, 153, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            min-width: 150px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 160px;
+            border: 2px solid rgba(0, 51, 153, 0.2);
         }
         
         .data-destaque {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: var(--cvc-azul);
+            margin-bottom: 5px;
+        }
+        
+        .data-info small {
+            color: #6c757d;
+            font-weight: 500;
         }
         
         .btn-acao {
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
             transition: all 0.3s ease;
-            padding: 8px 16px;
-            font-size: 0.9rem;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-acao:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-acao::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        .btn-acao:hover::before {
+            width: 300px;
+            height: 300px;
         }
         
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
+            padding: 80px 20px;
+            color: #6c757d;
         }
         
         .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #ddd;
+            font-size: 5rem;
+            margin-bottom: 25px;
+            color: #dee2e6;
+        }
+        
+        .empty-state h5 {
+            color: var(--cvc-azul);
+            margin-bottom: 15px;
         }
         
         .debug-panel {
-            background: #1e1e1e;
-            color: #00ff00;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: #00ff88;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.9rem;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             white-space: pre-wrap;
-            line-height: 1.4;
+            line-height: 1.5;
+            border: 2px solid #333;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .debug-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .debug-panel::-webkit-scrollbar-track {
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+        
+        .debug-panel::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
         }
         
         .debug-panel .error { color: #ff4444; }
@@ -201,27 +324,117 @@
         .debug-panel .info { color: #44aaff; }
         
         .badge-urgente {
-            background: #ffebee;
-            color: #c62828;
-            padding: 4px 12px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
         }
         
         .badge-atencao {
-            background: #fff8e1;
-            color: #f57f17;
-            padding: 4px 12px;
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #000;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(255, 193, 7, 0.3);
         }
         
         .badge-ok {
-            background: #e8f5e8;
-            color: #2e7d32;
-            padding: 4px 12px;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(0, 51, 153, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--cvc-azul);
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .card-stats {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card-stats:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn-reload {
+            background: var(--cvc-gradiente);
+            border: none;
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 51, 153, 0.3);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .embarque-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .data-info {
+                margin: 0 auto;
+            }
+            
+            .stats-container .row > div {
+                margin-bottom: 15px;
+            }
+            
+            .nav-pills .nav-link {
+                margin: 5px 0;
+                padding: 12px 15px;
+            }
         }
     </style>
 </head>
@@ -230,37 +443,38 @@
         <div class="main-container">
             <!-- Header -->
             <div class="header-section">
-                <div class="text-center position-relative">
-                    <h1 class="mb-0">Dashboard Embarques FUNCIONANDO v12.0</h1>
-                    <p class="mb-0">Validação baseada na estrutura real da planilha - 1595 embarques</p>
+                <div class="header-content text-center">
+                    <h1 class="mb-2">✈️ Dashboard Embarques CVC</h1>
+                    <p class="mb-0 opacity-75">Sistema Otimizado v13.0 - Gestão Inteligente de Embarques</p>
+                    <small class="opacity-50">Baseado na estrutura real da planilha EMBARQUES</small>
                 </div>
                 
                 <!-- Estatísticas -->
                 <div class="stats-container">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="stat-card" onclick="abrirAba('conferencia')">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-card" onclick="abrirAba('conferencia')" data-bs-toggle="tooltip" title="Embarques que precisam de conferência (3-15 dias antes)">
                                 <i class="fas fa-clipboard-check"></i>
                                 <span class="numero" id="stat-conferencia">-</span>
                                 <span class="label">Conferências</span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-card" onclick="abrirAba('checkin')">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-card" onclick="abrirAba('checkin')" data-bs-toggle="tooltip" title="Embarques para check-in (até 2 dias antes)">
                                 <i class="fas fa-plane-departure"></i>
                                 <span class="numero" id="stat-checkin">-</span>
                                 <span class="label">Check-ins</span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-card" onclick="abrirAba('posvenda')">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-card" onclick="abrirAba('posvenda')" data-bs-toggle="tooltip" title="Pós-vendas para contato (após embarque)">
                                 <i class="fas fa-phone"></i>
                                 <span class="numero" id="stat-posvenda">-</span>
                                 <span class="label">Pós-vendas</span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-card" onclick="abrirAba('debug')">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-card" onclick="abrirAba('debug')" data-bs-toggle="tooltip" title="Total de embarques processados">
                                 <i class="fas fa-database"></i>
                                 <span class="numero" id="stat-total">-</span>
                                 <span class="label">Total</span>
@@ -290,7 +504,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#debug" data-bs-toggle="pill">
-                            <i class="fas fa-bug"></i> Debug
+                            <i class="fas fa-cog"></i> Sistema
                         </a>
                     </li>
                 </ul>
@@ -301,96 +515,118 @@
                 <div class="tab-content">
                     <!-- Conferência Tab -->
                     <div class="tab-pane fade show active" id="conferencia">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4><i class="fas fa-clipboard-check text-warning"></i> Conferências (3-15 dias antes)</h4>
-                            <span class="badge bg-warning text-dark" id="badge-conferencia">0</span>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">
+                                <i class="fas fa-clipboard-check text-warning me-2"></i>
+                                Conferências Pendentes
+                            </h4>
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2" id="badge-conferencia">0</span>
                         </div>
                         <div id="lista-conferencia" class="lista-embarques">
-                            <div class="text-center p-4">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <p>Carregando embarques...</p>
+                            <div class="text-center p-5">
+                                <div class="loading-spinner"></div>
+                                <span>Carregando embarques...</span>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Check-in Tab -->
                     <div class="tab-pane fade" id="checkin">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4><i class="fas fa-plane-departure text-primary"></i> Check-ins (até 2 dias antes)</h4>
-                            <span class="badge bg-primary" id="badge-checkin">0</span>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">
+                                <i class="fas fa-plane-departure text-primary me-2"></i>
+                                Check-ins Urgentes
+                            </h4>
+                            <span class="badge bg-primary fs-6 px-3 py-2" id="badge-checkin">0</span>
                         </div>
                         <div id="lista-checkin" class="lista-embarques"></div>
                     </div>
                     
                     <!-- Pós-vendas Tab -->
                     <div class="tab-pane fade" id="posvenda">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4><i class="fas fa-phone text-success"></i> Pós-vendas (após embarque)</h4>
-                            <span class="badge bg-success" id="badge-posvenda">0</span>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">
+                                <i class="fas fa-phone text-success me-2"></i>
+                                Pós-vendas Pendentes
+                            </h4>
+                            <span class="badge bg-success fs-6 px-3 py-2" id="badge-posvenda">0</span>
                         </div>
                         <div id="lista-posvenda" class="lista-embarques"></div>
                     </div>
                     
                     <!-- Debug Tab -->
                     <div class="tab-pane fade" id="debug">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4><i class="fas fa-bug text-info"></i> Debug v12.0 - Validação Real</h4>
-                            <button class="btn btn-primary" onclick="recarregarDados()">
-                                <i class="fas fa-sync"></i> Recarregar
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">
+                                <i class="fas fa-cog text-info me-2"></i>
+                                Sistema v13.0
+                            </h4>
+                            <button class="btn btn-reload" onclick="recarregarDados()">
+                                <i class="fas fa-sync me-2"></i> Recarregar Dados
                             </button>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-12">
-                                <div id="debug-info" class="debug-panel">Sistema v12.0 - Baseado na análise real da planilha EMBARQUES
-Aguardando carregamento...</div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card card-stats">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-primary">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Estatísticas de Processamento
+                                        </h6>
+                                        <div id="stats-processamento">
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Registros da API:</span>
+                                                <strong class="text-primary" id="total-carregados">-</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Processados:</span>
+                                                <strong class="text-success" id="total-processados">-</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Taxa de Sucesso:</span>
+                                                <strong class="text-info" id="taxa-aproveitamento">-</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card card-stats">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-success">
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            Distribuição por Categoria
+                                        </h6>
+                                        <div id="stats-classificacao">
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Conferências:</span>
+                                                <span class="badge bg-warning text-dark" id="debug-conferencia">0</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Check-ins:</span>
+                                                <span class="badge bg-primary" id="debug-checkin">0</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center py-1">
+                                                <span class="text-muted">Pós-vendas:</span>
+                                                <span class="badge bg-success" id="debug-posvenda">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="mt-3">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="card-title">Estatísticas de Processamento</h6>
-                                            <div id="stats-processamento">
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Registros API:</span>
-                                                    <strong id="total-carregados">-</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Processados:</span>
-                                                    <strong id="total-processados">-</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Taxa sucesso:</span>
-                                                    <strong id="taxa-aproveitamento">-</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="card-title">Classificação</h6>
-                                            <div id="stats-classificacao">
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Conferências:</span>
-                                                    <span class="badge bg-warning" id="debug-conferencia">0</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Check-ins:</span>
-                                                    <span class="badge bg-primary" id="debug-checkin">0</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Pós-vendas:</span>
-                                                    <span class="badge bg-success" id="debug-posvenda">0</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-terminal me-2"></i>
+                                    Log do Sistema
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="debug-info" class="debug-panel">Sistema v13.0 - Dashboard Embarques CVC Otimizado
+Aguardando inicialização...</div>
                             </div>
                         </div>
                     </div>
@@ -403,10 +639,10 @@ Aguardando carregamento...</div>
     
     <script>
         // ================================================================================
-        // Dashboard Embarques v12.0 - VALIDAÇÃO BASEADA NA ESTRUTURA REAL
+        // Dashboard Embarques CVC v13.0 - VERSÃO OTIMIZADA
         // ================================================================================
         
-        console.log('Dashboard Embarques v12.0 - Validação baseada na análise real da planilha');
+        console.log('🚀 Dashboard Embarques CVC v13.0 - Versão Otimizada');
         
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
@@ -414,9 +650,10 @@ Aguardando carregamento...</div>
         let dadosProcessados = [];
         let abaAtiva = 'conferencia';
         let debugLog = [];
+        let isCarregando = false;
         
         // ================================================================================
-        // VALIDAÇÃO BASEADA NA ESTRUTURA REAL DA PLANILHA
+        // SISTEMA DE DEBUG OTIMIZADO
         // ================================================================================
         
         function addDebugLog(message, type = 'info') {
@@ -437,89 +674,55 @@ Aguardando carregamento...</div>
                 debugDiv.scrollTop = debugDiv.scrollHeight;
             }
             
-            console.log(`%c${log}`, `color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'blue'}`);
+            console.log(`%c${log}`, `color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'cyan'}`);
         }
         
-        // VALIDAÇÃO BASEADA NOS DADOS REAIS DA PLANILHA
-        function isRegistroValidoReal(registro) {
-            if (!registro || typeof registro !== 'object') {
-                return false;
-            }
+        // ================================================================================
+        // VALIDAÇÃO E PROCESSAMENTO DE DADOS
+        // ================================================================================
+        
+        function validarRegistroReal(registro) {
+            if (!registro || typeof registro !== 'object') return false;
             
-            // BASEADO NA ANÁLISE: Campos essenciais que realmente existem na planilha
+            // Nome do cliente - flexível para diferentes formatos
+            const nome = registro.nomeCliente || registro['Nome do Cliente'] || registro.cliente || '';
+            if (!nome || nome.toString().trim().length < 2) return false;
             
-            // 1. NOME DO CLIENTE - Múltiplas variações identificadas
-            const nomeCliente = registro.nomeCliente || 
-                               registro['Nome do Cliente'] || 
-                               registro.cliente || 
-                               '';
+            const nomeNorm = nome.toString().trim().toUpperCase();
+            const nomesInvalidos = ['6220', '6221', '6222', '6223', 'FILIAL', 'TESTE', 'VENDEDOR', 'NÃO INFORMADO'];
+            if (nomesInvalidos.some(inv => nomeNorm.includes(inv))) return false;
             
-            if (!nomeCliente || typeof nomeCliente !== 'string' || nomeCliente.trim().length < 2) {
-                return false;
-            }
+            // CPF - mais flexível
+            const cpf = registro.cpfCliente || registro['CPF'] || registro.cpf || '';
+            if (!cpf) return false;
             
-            // Filtrar registros com códigos de loja no lugar do nome
-            const nomeNorm = nomeCliente.toString().trim().toUpperCase();
-            if (['6220', '6221', '6222', '6223', 'FILIAL', 'TESTE', 'VENDEDOR'].includes(nomeNorm)) {
-                return false;
-            }
+            const cpfLimpo = cpf.toString().replace(/\D/g, '');
+            if (cpfLimpo.length < 8) return false;
             
-            // 2. CPF - Com validação flexível baseada na estrutura real
-            const cpf = registro.cpfCliente || 
-                       registro['CPF'] ||
-                       registro.cpf ||
-                       '';
+            // Vendedor - validação otimizada
+            const vendedor = registro.vendedor || registro['Vendedor'] || '';
+            if (!vendedor || vendedor.toString().trim().length < 2) return false;
             
-            if (!cpf) {
-                return false;
-            }
-            
-            // CPF mais flexível - aceitar formato xxx.xxx.xxx-xx ou números
-            const cpfStr = cpf.toString().replace(/\D/g, '');
-            if (cpfStr.length < 8) { // Mínimo 8 dígitos para ser válido
-                return false;
-            }
-            
-            // 3. VENDEDOR - Baseado nos nomes reais identificados
-            const vendedor = registro.vendedor || 
-                            registro['Vendedor'] ||
-                            '';
-            
-            if (!vendedor || typeof vendedor !== 'string' || vendedor.trim().length < 2) {
-                return false;
-            }
-            
-            // Validar se é um vendedor real (baseado na análise)
             const vendedoresValidos = [
                 'ADRIELLY', 'ALESSANDRO', 'ANA PAULA', 'CAROL', 'CAROLINY',
-                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA'
+                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA', 'CONCEIÇÃO'
             ];
             
             const vendedorNorm = vendedor.toString().trim().toUpperCase();
-            const isVendedorValido = vendedoresValidos.some(v => 
-                vendedorNorm.includes(v) || v.includes(vendedorNorm)
+            return vendedoresValidos.some(v => 
+                vendedorNorm.includes(v) || v.includes(vendedorNorm) ||
+                vendedorNorm.split(' ').some(parte => v.includes(parte) && parte.length > 2)
             );
-            
-            if (!isVendedorValido) {
-                return false;
-            }
-            
-            return true;
         }
         
-        // EXTRAÇÃO DE DATA BASEADA NA ESTRUTURA REAL
-        function extrairDataValidaReal(registro) {
-            // BASEADO NA ANÁLISE: 4 campos de data identificados com 99.2% de datas válidas
-            const camposPrioritarios = [
-                'Data Ida',           // Campo principal identificado
-                'dataIda', 
-                'Data Volta',
-                'dataVolta',
-                'dataCadastro',
-                'timestamp'
+        function extrairDataEmbarque(registro) {
+            const camposDatas = [
+                'Data Ida', 'dataIda', 'Data de Ida',
+                'Data Volta', 'dataVolta', 'Data de Volta',
+                'dataCadastro', 'timestamp'
             ];
             
-            for (const campo of camposPrioritarios) {
+            for (const campo of camposDatas) {
                 const valor = registro[campo];
                 if (!valor) continue;
                 
@@ -528,31 +731,25 @@ Aguardando carregamento...</div>
                     
                     if (valor instanceof Date) {
                         data = valor;
-                    } else if (typeof valor === 'string') {
+                    } else {
                         const valorStr = valor.toString().trim();
                         
-                        // Formato brasileiro dd/mm/yyyy (mais comum na planilha)
-                        if (valorStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-                            const partes = valorStr.split('/');
-                            if (partes.length >= 3) {
-                                let [dia, mes, ano] = partes;
-                                if (ano.length === 2) {
-                                    ano = parseInt(ano) > 50 ? '19' + ano : '20' + ano;
-                                }
-                                data = new Date(`${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`);
-                            }
+                        // Formato brasileiro: dd/mm/yyyy
+                        if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(valorStr)) {
+                            const [dia, mes, ano] = valorStr.split('/').map(n => parseInt(n));
+                            data = new Date(ano, mes - 1, dia);
                         }
-                        // Formato ISO yyyy-mm-dd
-                        else if (valorStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+                        // Formato ISO: yyyy-mm-dd
+                        else if (/^\d{4}-\d{2}-\d{2}/.test(valorStr)) {
                             data = new Date(valorStr);
                         }
-                        // Tentar parse direto
+                        // Outros formatos
                         else {
                             data = new Date(valorStr);
                         }
                     }
                     
-                    // Validar data extraída
+                    // Validar data
                     if (data && !isNaN(data.getTime()) && 
                         data.getFullYear() >= 2020 && 
                         data.getFullYear() <= 2030) {
@@ -567,15 +764,13 @@ Aguardando carregamento...</div>
             return null;
         }
         
-        // PROCESSAMENTO OTIMIZADO PARA A ESTRUTURA REAL
-        function processarEmbarquesReal(embarques) {
-            addDebugLog(`Iniciando processamento baseado na estrutura real...`, 'info');
-            addDebugLog(`Total de registros da API: ${embarques.length}`, 'info');
+        function processarEmbarques(embarques) {
+            addDebugLog(`🔄 Processando ${embarques.length} registros...`, 'info');
             
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
             
-            const embarquesProcessados = [];
+            const embarquesValidos = [];
             let stats = {
                 total: 0,
                 conferencia: 0,
@@ -583,97 +778,66 @@ Aguardando carregamento...</div>
                 posvenda: 0,
                 processados: 0,
                 rejeitados: 0,
-                semData: 0,
-                semVendedor: 0,
-                semNome: 0
+                semData: 0
             };
             
             embarques.forEach((embarque, index) => {
                 try {
-                    // Debug apenas dos primeiros 10 registros para não poluir
-                    const showDebug = index < 10;
-                    
-                    // Validar com critérios baseados na estrutura real
-                    if (!isRegistroValidoReal(embarque)) {
-                        if (showDebug) {
-                            addDebugLog(`Registro ${index + 1} rejeitado: não atende critérios básicos`, 'warning');
-                        }
+                    if (!validarRegistroReal(embarque)) {
                         stats.rejeitados++;
                         return;
                     }
                     
-                    // Extrair data usando os campos reais da planilha
-                    const dataIda = extrairDataValidaReal(embarque);
+                    const dataIda = extrairDataEmbarque(embarque);
                     if (!dataIda) {
-                        if (showDebug) {
-                            addDebugLog(`Registro ${index + 1} rejeitado: sem data válida`, 'warning');
-                        }
                         stats.semData++;
                         return;
                     }
                     
-                    // Calcular diferença de dias
                     const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
-                    
-                    // CLASSIFICAÇÃO CORRIGIDA
                     let tipoControle = null;
                     
-                    // Check-in: até 2 dias antes do embarque ou até 1 dia após
+                    // Classificação otimizada
                     if (diasParaIda >= -1 && diasParaIda <= 2) {
                         tipoControle = 'checkin';
                         stats.checkin++;
-                    }
-                    // Conferência: de 3 a 15 dias antes do embarque
-                    else if (diasParaIda >= 3 && diasParaIda <= 15) {
+                    } else if (diasParaIda >= 3 && diasParaIda <= 15) {
                         tipoControle = 'conferencia';
                         stats.conferencia++;
-                    }
-                    // Pós-venda: de 2 a 15 dias após o embarque
-                    else if (diasParaIda >= -15 && diasParaIda <= -2) {
+                    } else if (diasParaIda >= -15 && diasParaIda <= -2) {
                         tipoControle = 'posvenda';
                         stats.posvenda++;
                     }
                     
                     if (tipoControle) {
-                        // Padronizar campos com base na estrutura real
                         const embarqueProcessado = {
                             ...embarque,
-                            
-                            // Campos padronizados
-                            id: embarque.id || `${index + 1}`,
-                            nomeCliente: embarque.nomeCliente || embarque['Nome do Cliente'] || '',
-                            cpfCliente: embarque.cpfCliente || embarque['CPF'] || '',
-                            vendedor: embarque.vendedor || embarque['Vendedor'] || '',
-                            destino: embarque.destino || embarque['Destino'] || 'A definir',
+                            id: embarque.id || `emb_${index + 1}`,
+                            nomeCliente: (embarque.nomeCliente || embarque['Nome do Cliente'] || '').toString().trim(),
+                            cpfCliente: (embarque.cpfCliente || embarque['CPF'] || '').toString().trim(),
+                            vendedor: (embarque.vendedor || embarque['Vendedor'] || '').toString().trim(),
+                            destino: embarque.destino || embarque['Destino'] || 'Destino não informado',
                             tipoViagem: embarque['Tipo de Pacote'] || embarque.tipoViagem || 'Nacional',
                             observacoes: embarque['Observações'] || embarque.observacoes || '',
-                            
-                            // Dados de processamento
                             dataIda: dataIda,
                             diasParaIda: diasParaIda,
                             tipoControle: tipoControle
                         };
                         
-                        embarquesProcessados.push(embarqueProcessado);
+                        embarquesValidos.push(embarqueProcessado);
                         stats.processados++;
-                        
-                        if (showDebug) {
-                            addDebugLog(`✅ Registro ${index + 1} processado: ${embarqueProcessado.nomeCliente} (${tipoControle})`, 'success');
-                        }
                     }
                     
                 } catch (error) {
                     stats.rejeitados++;
-                    if (index < 5) {
-                        addDebugLog(`❌ Erro no registro ${index + 1}: ${error.message}`, 'error');
+                    if (index < 3) {
+                        addDebugLog(`❌ Erro processando registro ${index + 1}: ${error.message}`, 'error');
                     }
                 }
             });
             
-            stats.total = stats.processados;
-            
-            // Ordenar por prioridade
-            embarquesProcessados.sort((a, b) => {
+            // Ordenar por prioridade e data
+            embarquesValidos.sort((a, b) => {
                 const prioridade = { checkin: 1, conferencia: 2, posvenda: 3 };
                 if (a.tipoControle !== b.tipoControle) {
                     return prioridade[a.tipoControle] - prioridade[b.tipoControle];
@@ -681,12 +845,13 @@ Aguardando carregamento...</div>
                 return a.dataIda - b.dataIda;
             });
             
-            const taxa = embarques.length > 0 ? (stats.processados / embarques.length * 100).toFixed(1) : '0';
+            stats.total = stats.processados;
+            const taxa = embarques.length > 0 ? ((stats.processados / embarques.length) * 100).toFixed(1) : 0;
             
-            addDebugLog(`✅ Processamento concluído: ${stats.processados}/${embarques.length} registros (${taxa}%)`, 'success');
-            addDebugLog(`📊 Distribuição: Conferências: ${stats.conferencia}, Check-ins: ${stats.checkin}, Pós-vendas: ${stats.posvenda}`, 'success');
+            addDebugLog(`✅ Processamento concluído: ${stats.processados}/${embarques.length} (${taxa}%)`, 'success');
+            addDebugLog(`📊 Distribuição: Check-ins: ${stats.checkin}, Conferências: ${stats.conferencia}, Pós-vendas: ${stats.posvenda}`, 'success');
             
-            return { embarques: embarquesProcessados, stats: stats };
+            return { embarques: embarquesValidos, stats: stats };
         }
         
         // ================================================================================
@@ -694,33 +859,47 @@ Aguardando carregamento...</div>
         // ================================================================================
         
         function atualizarEstatisticas(stats) {
-            document.getElementById('stat-conferencia').textContent = stats.conferencia;
-            document.getElementById('stat-checkin').textContent = stats.checkin;
-            document.getElementById('stat-posvenda').textContent = stats.posvenda;
-            document.getElementById('stat-total').textContent = stats.total;
+            const elementos = {
+                'stat-conferencia': stats.conferencia,
+                'stat-checkin': stats.checkin,
+                'stat-posvenda': stats.posvenda,
+                'stat-total': stats.total,
+                'badge-conferencia': stats.conferencia,
+                'badge-checkin': stats.checkin,
+                'badge-posvenda': stats.posvenda,
+                'debug-conferencia': stats.conferencia,
+                'debug-checkin': stats.checkin,
+                'debug-posvenda': stats.posvenda,
+                'total-carregados': stats.total + stats.rejeitados + stats.semData,
+                'total-processados': stats.total
+            };
             
-            document.getElementById('badge-conferencia').textContent = stats.conferencia;
-            document.getElementById('badge-checkin').textContent = stats.checkin;
-            document.getElementById('badge-posvenda').textContent = stats.posvenda;
-            
-            document.getElementById('debug-conferencia').textContent = stats.conferencia;
-            document.getElementById('debug-checkin').textContent = stats.checkin;
-            document.getElementById('debug-posvenda').textContent = stats.posvenda;
-            
-            document.getElementById('total-carregados').textContent = stats.total + stats.rejeitados + stats.semData;
-            document.getElementById('total-processados').textContent = stats.total;
+            Object.entries(elementos).forEach(([id, valor]) => {
+                const elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.textContent = valor;
+                    
+                    // Animação de atualização
+                    elemento.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        elemento.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            });
             
             const totalOriginal = stats.total + stats.rejeitados + stats.semData;
             const taxa = totalOriginal > 0 ? ((stats.total / totalOriginal) * 100).toFixed(1) : 0;
-            document.getElementById('taxa-aproveitamento').textContent = `${taxa}%`;
+            const taxaElemento = document.getElementById('taxa-aproveitamento');
+            if (taxaElemento) {
+                taxaElemento.textContent = `${taxa}%`;
+                taxaElemento.className = taxa >= 70 ? 'text-success' : taxa >= 50 ? 'text-warning' : 'text-danger';
+            }
         }
         
         function renderizarLista() {
             if (abaAtiva === 'debug') return;
             
-            const containerId = `lista-${abaAtiva}`;
-            const container = document.getElementById(containerId);
-            
+            const container = document.getElementById(`lista-${abaAtiva}`);
             if (!container) return;
             
             const embarquesFiltrados = dadosProcessados.filter(e => e.tipoControle === abaAtiva);
@@ -728,27 +907,28 @@ Aguardando carregamento...</div>
             if (embarquesFiltrados.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-clipboard-check"></i>
+                        <i class="fas fa-${getIconeAba(abaAtiva)}"></i>
                         <h5>Nenhum embarque para ${abaAtiva}</h5>
-                        <p>Total processados: ${dadosProcessados.length}</p>
-                        <small>Sistema v12.0 baseado na estrutura real da planilha</small>
+                        <p class="text-muted">Total processados: ${dadosProcessados.length} embarques</p>
+                        <small class="text-secondary">Sistema v13.0 otimizado</small>
                     </div>
                 `;
                 return;
             }
             
-            const embarquesParaMostrar = embarquesFiltrados.slice(0, 50);
-            const temMais = embarquesFiltrados.length > 50;
+            const limite = 30; // Limite otimizado
+            const embarquesParaMostrar = embarquesFiltrados.slice(0, limite);
+            const temMais = embarquesFiltrados.length > limite;
             
-            let html = embarquesParaMostrar
-                .map(embarque => criarCardEmbarque(embarque))
-                .join('');
+            let html = embarquesParaMostrar.map(embarque => criarCardEmbarque(embarque)).join('');
             
             if (temMais) {
                 html += `
-                    <div class="text-center mt-4 p-4">
+                    <div class="text-center mt-4">
                         <div class="alert alert-info">
-                            <strong>Mostrando 50 de ${embarquesFiltrados.length} embarques</strong>
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Mostrando ${limite} de ${embarquesFiltrados.length} embarques</strong>
+                            <br><small>Os mais prioritários são exibidos primeiro</small>
                         </div>
                     </div>
                 `;
@@ -758,68 +938,106 @@ Aguardando carregamento...</div>
         }
         
         function criarCardEmbarque(embarque) {
-            const dataFormatada = embarque.dataIda.toLocaleDateString('pt-BR');
-            const diasTexto = embarque.diasParaIda >= 0 ? 
-                `${embarque.diasParaIda} dias para embarque` : 
-                `${Math.abs(embarque.diasParaIda)} dias após embarque`;
+            const dataFormatada = embarque.dataIda.toLocaleDateString('pt-BR', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
             
+            const diasTexto = embarque.diasParaIda >= 0 ? 
+                `${embarque.diasParaIda} dia${embarque.diasParaIda !== 1 ? 's' : ''} para embarque` : 
+                `${Math.abs(embarque.diasParaIda)} dia${Math.abs(embarque.diasParaIda) !== 1 ? 's' : ''} após embarque`;
+            
+            const urgencia = getBadgeUrgencia(embarque);
             const destino = embarque.destino || 'Destino não informado';
             const tipoViagem = embarque.tipoViagem || 'Nacional';
-            const observacoes = embarque.observacoes || '';
             
             return `
-                <div class="embarque-card ${embarque.tipoControle}">
+                <div class="embarque-card ${embarque.tipoControle}" data-id="${embarque.id}">
                     <div class="embarque-info">
                         <div class="cliente-info">
                             <h5>${embarque.nomeCliente}</h5>
-                            <p><i class="fas fa-id-card"></i> CPF: ${embarque.cpfCliente}</p>
-                            <p><i class="fas fa-user-tie"></i> Vendedor: ${embarque.vendedor}</p>
-                            <p><i class="fas fa-calendar"></i> ${diasTexto}</p>
+                            <p><i class="fas fa-id-card"></i> ${formatarCPF(embarque.cpfCliente)}</p>
+                            <p><i class="fas fa-user-tie"></i> ${embarque.vendedor}</p>
+                            <p><i class="fas fa-calendar-alt"></i> ${diasTexto}</p>
                             <p><i class="fas fa-map-marker-alt"></i> ${destino}</p>
                             ${tipoViagem !== 'Nacional' ? `<p><i class="fas fa-plane"></i> ${tipoViagem}</p>` : ''}
+                            ${embarque.whatsappCliente ? `<p><i class="fab fa-whatsapp"></i> ${embarque.whatsappCliente}</p>` : ''}
                         </div>
                         <div class="data-info">
                             <div class="data-destaque">${dataFormatada}</div>
-                            <small>Embarque</small>
-                            ${getBadgeUrgencia(embarque)}
+                            <small>Data de Embarque</small>
+                            ${urgencia}
                         </div>
                     </div>
                     
-                    ${observacoes ? `
+                    ${embarque.observacoes ? `
                         <div class="mb-3">
-                            <small><i class="fas fa-comment"></i> ${observacoes.substring(0, 100)}${observacoes.length > 100 ? '...' : ''}</small>
+                            <div class="alert alert-light py-2 px-3 mb-0">
+                                <small><i class="fas fa-sticky-note me-2"></i>${embarque.observacoes.substring(0, 150)}${embarque.observacoes.length > 150 ? '...' : ''}</small>
+                            </div>
                         </div>
                     ` : ''}
                     
-                    <div class="d-flex gap-2 align-items-center">
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
                         ${gerarBotoesAcao(embarque)}
-                        <span class="badge bg-secondary">ID: ${embarque.id}</span>
+                        <span class="badge bg-light text-dark ms-auto">ID: ${embarque.id}</span>
                     </div>
                 </div>
             `;
         }
         
+        function formatarCPF(cpf) {
+            if (!cpf) return 'N/A';
+            const limpo = cpf.toString().replace(/\D/g, '');
+            if (limpo.length === 11) {
+                return limpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            return cpf.toString();
+        }
+        
+        function getIconeAba(aba) {
+            const icones = {
+                'conferencia': 'clipboard-check',
+                'checkin': 'plane-departure',
+                'posvenda': 'phone'
+            };
+            return icones[aba] || 'list';
+        }
+        
         function gerarBotoesAcao(embarque) {
             const botoes = {
-                'conferencia': `<button class="btn btn-warning btn-acao" onclick="marcarConferido('${embarque.id}')"><i class="fas fa-clipboard-check"></i> Conferir</button>`,
-                'checkin': `<button class="btn btn-primary btn-acao" onclick="marcarCheckin('${embarque.id}')"><i class="fas fa-plane-departure"></i> Check-in</button>`,
-                'posvenda': `<button class="btn btn-success btn-acao" onclick="marcarPosVenda('${embarque.id}')"><i class="fas fa-phone"></i> Pós-venda</button>`
+                'conferencia': `<button class="btn btn-warning btn-acao" onclick="marcarAcao('${embarque.id}', 'conferido')">
+                    <i class="fas fa-clipboard-check me-1"></i> Conferir
+                </button>`,
+                'checkin': `<button class="btn btn-primary btn-acao" onclick="marcarAcao('${embarque.id}', 'checkin')">
+                    <i class="fas fa-plane-departure me-1"></i> Check-in
+                </button>`,
+                'posvenda': `<button class="btn btn-success btn-acao" onclick="marcarAcao('${embarque.id}', 'posvenda')">
+                    <i class="fas fa-phone me-1"></i> Contatar
+                </button>`
             };
             
             return botoes[embarque.tipoControle] || '';
         }
         
         function getBadgeUrgencia(embarque) {
-            if (embarque.tipoControle === 'checkin' && embarque.diasParaIda <= 1) {
-                return '<span class="badge badge-urgente">URGENTE</span>';
+            if (embarque.tipoControle === 'checkin') {
+                if (embarque.diasParaIda <= 0) {
+                    return '<span class="badge-urgente">🔥 CRÍTICO</span>';
+                } else if (embarque.diasParaIda === 1) {
+                    return '<span class="badge-urgente">⚠️ URGENTE</span>';
+                } else if (embarque.diasParaIda === 2) {
+                    return '<span class="badge-atencao">⏰ ATENÇÃO</span>';
+                }
             }
-            if (embarque.tipoControle === 'checkin' && embarque.diasParaIda === 2) {
-                return '<span class="badge badge-atencao">ATENÇÃO</span>';
-            }
+            
             if (embarque.tipoControle === 'conferencia' && embarque.diasParaIda <= 5) {
-                return '<span class="badge badge-atencao">PRIORITÁRIO</span>';
+                return '<span class="badge-atencao">📋 PRIORITÁRIO</span>';
             }
-            return '<span class="badge badge-ok">NORMAL</span>';
+            
+            return '<span class="badge-ok">✅ NORMAL</span>';
         }
         
         // ================================================================================
@@ -827,11 +1045,29 @@ Aguardando carregamento...</div>
         // ================================================================================
         
         async function carregarEmbarques() {
+            if (isCarregando) {
+                addDebugLog('⏳ Carregamento já em andamento...', 'warning');
+                return;
+            }
+            
+            isCarregando = true;
+            
             try {
-                addDebugLog('📥 Carregando dados da API...', 'info');
+                addDebugLog('🚀 Iniciando carregamento v13.0...', 'info');
                 
-                document.getElementById('debug-info').innerHTML = 'Sistema v12.0 baseado na estrutura real da planilha EMBARQUES\nCarregando dados...\n';
+                // Limpar debug anterior
+                document.getElementById('debug-info').innerHTML = 'Sistema v13.0 - Dashboard Embarques CVC Otimizado\nCarregando dados da API...\n';
                 debugLog = [];
+                
+                // Mostrar loading nas listas
+                document.querySelectorAll('.lista-embarques').forEach(lista => {
+                    lista.innerHTML = `
+                        <div class="text-center p-5">
+                            <div class="loading-spinner"></div>
+                            <span class="ms-2">Carregando embarques...</span>
+                        </div>
+                    `;
+                });
                 
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -839,7 +1075,8 @@ Aguardando carregamento...</div>
                         'Content-Type': 'text/plain;charset=utf-8',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ action: 'listar_embarques' })
+                    body: JSON.stringify({ action: 'listar_embarques' }),
+                    signal: AbortSignal.timeout(30000) // Timeout de 30s
                 });
                 
                 if (!response.ok) {
@@ -847,64 +1084,100 @@ Aguardando carregamento...</div>
                 }
                 
                 const result = await response.json();
-                addDebugLog(`📡 Resposta da API: Status ${response.status}`, 'success');
+                addDebugLog(`📡 API Response: Status ${response.status}`, 'success');
                 
-                if (result.success) {
-                    dadosOriginais = result.data.embarques || [];
-                    addDebugLog(`📊 ${dadosOriginais.length} registros carregados da API`, 'success');
+                if (result.success && result.data && result.data.embarques) {
+                    dadosOriginais = result.data.embarques;
+                    addDebugLog(`📊 ${dadosOriginais.length} registros recebidos da API`, 'success');
                     
-                    const resultadoProcessamento = processarEmbarquesReal(dadosOriginais);
+                    // Processar dados
+                    const resultadoProcessamento = processarEmbarques(dadosOriginais);
                     dadosProcessados = resultadoProcessamento.embarques;
                     
+                    // Atualizar interface
                     atualizarEstatisticas(resultadoProcessamento.stats);
                     renderizarLista();
                     
-                    addDebugLog(`🎯 Sistema v12.0 FUNCIONANDO! ${dadosProcessados.length} embarques processados`, 'success');
+                    // Inicializar tooltips
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                    
+                    addDebugLog(`✅ Sistema v13.0 carregado com sucesso! ${dadosProcessados.length} embarques processados`, 'success');
                     
                 } else {
-                    throw new Error(result.error || result.message || 'Erro da API');
+                    throw new Error(result.error || result.message || 'Resposta inválida da API');
                 }
                 
             } catch (error) {
-                addDebugLog(`❌ Erro: ${error.message}`, 'error');
+                addDebugLog(`❌ Erro no carregamento: ${error.message}`, 'error');
                 
+                // Mostrar erro nas listas
                 document.querySelectorAll('.lista-embarques').forEach(lista => {
                     lista.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-exclamation-triangle text-danger"></i>
-                            <h5>Erro ao carregar dados</h5>
-                            <p>${error.message}</p>
-                            <button class="btn btn-primary mt-2" onclick="recarregarDados()">
-                                <i class="fas fa-sync"></i> Tentar Novamente
+                            <h5 class="text-danger">Erro ao Carregar Dados</h5>
+                            <p class="text-muted">${error.message}</p>
+                            <button class="btn btn-reload" onclick="recarregarDados()">
+                                <i class="fas fa-sync me-2"></i> Tentar Novamente
                             </button>
                         </div>
                     `;
                 });
+                
+                // Resetar estatísticas
+                const statsVazias = { conferencia: 0, checkin: 0, posvenda: 0, total: 0, rejeitados: 0, semData: 0 };
+                atualizarEstatisticas(statsVazias);
+                
+            } finally {
+                isCarregando = false;
             }
         }
         
         // Funções de ação
-        function marcarConferido(id) {
+        function marcarAcao(id, acao) {
             const embarque = dadosProcessados.find(e => e.id === id);
-            if (embarque) {
-                addDebugLog(`✅ Conferência: ${embarque.nomeCliente}`, 'success');
-                renderizarLista();
-            }
-        }
-        
-        function marcarCheckin(id) {
-            const embarque = dadosProcessados.find(e => e.id === id);
-            if (embarque) {
-                addDebugLog(`✈️ Check-in: ${embarque.nomeCliente}`, 'success');
-                renderizarLista();
-            }
-        }
-        
-        function marcarPosVenda(id) {
-            const embarque = dadosProcessados.find(e => e.id === id);
-            if (embarque) {
-                addDebugLog(`📞 Pós-venda: ${embarque.nomeCliente}`, 'success');
-                renderizarLista();
+            if (!embarque) return;
+            
+            const acoes = {
+                'conferido': '✅ Conferência realizada',
+                'checkin': '✈️ Check-in realizado',
+                'posvenda': '📞 Contato pós-venda realizado'
+            };
+            
+            addDebugLog(`${acoes[acao]}: ${embarque.nomeCliente}`, 'success');
+            
+            // Remover card com animação
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = 'translateX(100%)';
+                card.style.opacity = '0.5';
+                
+                setTimeout(() => {
+                    // Remover do array
+                    const index = dadosProcessados.findIndex(e => e.id === id);
+                    if (index !== -1) {
+                        dadosProcessados.splice(index, 1);
+                    }
+                    
+                    // Re-renderizar
+                    renderizarLista();
+                    
+                    // Atualizar estatísticas
+                    const stats = {
+                        total: dadosProcessados.length,
+                        conferencia: dadosProcessados.filter(e => e.tipoControle === 'conferencia').length,
+                        checkin: dadosProcessados.filter(e => e.tipoControle === 'checkin').length,
+                        posvenda: dadosProcessados.filter(e => e.tipoControle === 'posvenda').length,
+                        rejeitados: 0,
+                        semData: 0
+                    };
+                    atualizarEstatisticas(stats);
+                    
+                }, 300);
             }
         }
         
@@ -917,7 +1190,7 @@ Aguardando carregamento...</div>
         }
         
         function recarregarDados() {
-            addDebugLog('🔄 Recarregamento solicitado...', 'info');
+            addDebugLog('🔄 Recarregamento solicitado pelo usuário...', 'info');
             carregarEmbarques();
         }
         
@@ -926,23 +1199,28 @@ Aguardando carregamento...</div>
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            addDebugLog('🚀 Dashboard v12.0 iniciado - Validação baseada na estrutura real', 'success');
+            addDebugLog('🎯 Dashboard CVC v13.0 - Sistema otimizado iniciado', 'success');
             
+            // Event listeners das abas
             document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
                 tab.addEventListener('shown.bs.tab', function(e) {
                     const targetId = e.target.getAttribute('href').substring(1);
                     abaAtiva = targetId;
-                    addDebugLog(`📄 Aba: ${abaAtiva}`, 'info');
+                    addDebugLog(`📑 Aba alterada: ${abaAtiva}`, 'info');
                     renderizarLista();
                 });
             });
             
-            setTimeout(carregarEmbarques, 500);
+            // Carregar dados após inicialização
+            setTimeout(() => {
+                carregarEmbarques();
+            }, 1000);
         });
         
-        console.log('✅ Dashboard Embarques v12.0 carregado');
-        console.log('📊 Validação baseada na análise real da planilha (87.5% compatibilidade)');
-        console.log('🎯 Pronto para processar 1595 embarques');
+        // Log de inicialização
+        console.log('✅ Dashboard Embarques CVC v13.0 carregado');
+        console.log('🎯 Sistema otimizado com validação inteligente de dados');
+        console.log('📊 Pronto para processar embarques da API');
     </script>
 </body>
 </html>
