@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📈 Sistema de Vendas - CVC Itaqua</title>
+    <title>📈 Sistema de Vendas - CVC Itaqua v8.0</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -507,6 +507,10 @@
                 grid-template-columns: 1fr;
             }
             
+            .stat-card {
+                margin: 10px 0;
+            }
+            
             .main-container {
                 margin: 10px;
                 border-radius: 15px;
@@ -530,11 +534,14 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
+                                <i class="fas fa-shopping-cart"></i> Sistema de Vendas v8.0
                             </h1>
                             <p class="header-subtitle">
-                                Formulário para cadastro de vendas completas - CVC Itaquaquecetuba
+                                Controle Granular por Voo Individual - CVC Itaquaquecetuba
                             </p>
+                            <small class="opacity-75">
+                                ⭐ CONCEITO: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -581,11 +588,13 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label for="nInforme" class="form-label">
-                                    <i class="fas fa-hashtag"></i> Nº do Informe
+                                    <i class="fas fa-hashtag"></i> Nº do Informe (Agrupador)
                                 </label>
-                                <input type="number" class="form-control" id="nInforme" name="nInforme" 
-                                       placeholder="Deixe em branco para gerar automático">
-                                <small class="text-muted">Será gerado automaticamente se vazio</small>
+                                <input type="text" class="form-control" id="nInforme" name="nInforme" 
+                                       placeholder="Ex: CVC-001 (automático se vazio)">
+                                <small class="text-muted">
+                                    ⭐ Todos os voos da mesma viagem compartilham este número
+                                </small>
                             </div>
                             
                             <div class="col-md-4">
@@ -610,13 +619,17 @@
                                 </label>
                                 <select class="form-select" id="vendedor" name="vendedor" required>
                                     <option value="">Selecione...</option>
-                                    <option value="Alessandro">Alessandro</option>
-                                    <option value="Ana Paula">Ana Paula</option>
-                                    <option value="Adriana">Adriana</option>
-                                    <option value="Adrielly">Adrielly</option>
-                                    <option value="Bia">Bia</option>
-                                    <option value="Conceição">Conceição</option>
-                                    <option value="Jhully">Jhully</option>
+                                    <option value="ADRIELLY">ADRIELLY</option>
+                                    <option value="ALESSANDRO">ALESSANDRO</option>
+                                    <option value="ANA PAULA">ANA PAULA</option>
+                                    <option value="CAROL">CAROL</option>
+                                    <option value="CAROLINY">CAROLINY</option>
+                                    <option value="JHULY">JHULY</option>
+                                    <option value="DAINA">DAINA</option>
+                                    <option value="ELAINE">ELAINE</option>
+                                    <option value="ILANA">ILANA</option>
+                                    <option value="BIA">BIA</option>
+                                    <option value="CONCEIÇÃO">CONCEIÇÃO</option>
                                 </select>
                             </div>
                         </div>
@@ -632,7 +645,7 @@
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" name="pacote" value="Internacional" id="pacoteInternacional">
-                                    <label for="pacoteInternacional">🌍 Internacional</label>
+                                    <label for="pacoteInternacional">🌎 Internacional</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" name="pacote" value="Marítimo" id="pacoteMaritimo">
@@ -674,7 +687,13 @@
 
                     <!-- Recibos e Serviços -->
                     <div class="form-section">
-                        <h4><i class="fas fa-receipt"></i> Recibos e Serviços</h4>
+                        <h4><i class="fas fa-receipt"></i> Recibos e Serviços (Múltiplos Voos)</h4>
+                        
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Conceito v8.0:</strong> Cada recibo pode gerar múltiplos voos individuais baseado no tipo (OW/RT/MT).
+                            Todos serão agrupados pelo mesmo Nº do Informe.
+                        </div>
                         
                         <div id="recibosContainer">
                             <!-- Recibos serão adicionados dinamicamente aqui -->
@@ -682,7 +701,7 @@
                         
                         <div class="text-center mt-3">
                             <button type="button" class="btn btn-success" id="btnAdicionarRecibo">
-                                <i class="fas fa-plus-circle"></i> Adicionar Recibo
+                                <i class="fas fa-plus-circle"></i> Adicionar Recibo/Serviço
                             </button>
                             <button type="button" id="btnRemoverRecibo" class="btn btn-danger ms-2" style="display: none;">
                                 <i class="fas fa-minus-circle"></i> Remover Último
@@ -696,22 +715,22 @@
                         
                         <div class="radio-group">
                             <div class="radio-item">
-                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado">
+                                <input type="radio" name="seguro" value="Recusado" id="seguroRecusado">
                                 <label for="seguroRecusado">❌ Oferecido e RECUSADO</label>
                             </div>
                             <div class="radio-item">
-                                <input type="radio" name="seguro" value="nao_oferecido" id="seguroNaoOferecido">
-                                <label for="seguroNaoOferecido">⚠️ Não Ofertou</label>
+                                <input type="radio" name="seguro" value="Não Oferecido" id="seguroNaoOferecido">
+                                <label for="seguroNaoOferecido">⚠️ Não Oferecido</label>
                             </div>
                             <div class="radio-item">
-                                <input type="radio" name="seguro" value="comprou" id="seguroComprou">
+                                <input type="radio" name="seguro" value="Comprou" id="seguroComprou">
                                 <label for="seguroComprou">✅ COMPROU</label>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i> Cadastrar Venda Completa
+                        <i class="fas fa-save"></i> Processar Venda Completa (Voos Individuais v8.0)
                     </button>
                 </form>
             </div>
@@ -727,16 +746,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Sistema de Vendas CVC v6.3 - COMPATÍVEL COM SISTEMA MASTER');
+        console.log('🚀 Sistema de Vendas CVC v8.0 - CONTROLE GRANULAR POR VOO INDIVIDUAL');
         
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES - COMPATÍVEL COM SISTEMA MASTER v6.3
+        // 🔧 CONFIGURAÇÕES - URL ATUALIZADA PARA v8.0
         // ================================================================================
         
+        // ⚠️ IMPORTANTE: Substitua pela sua URL atual do Google Apps Script v8.0
         const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
-        console.log('✅ Configurações carregadas');
+        console.log('✅ Configurações v8.0 carregadas');
         console.log('🔗 API URL:', API_URL);
+        console.log('⭐ CONCEITO: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
         
         const COMPANHIAS_AEREAS = [
             'LATAM', 'AZUL', 'GOL', 'VOEPASS',
@@ -765,14 +786,14 @@
         let conexaoOnline = false;
 
         // ================================================================================
-        // 🚀 INICIALIZAÇÃO ROBUSTA
+        // 🚀 INICIALIZAÇÃO ROBUSTA v8.0
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM carregado! Iniciando sistema...');
-            console.log('🚀 Sistema de Vendas CVC v6.3 - COMPATÍVEL COM SISTEMA MASTER');
-            console.log('✅ Compatível com aba EMBARQUES');
-            console.log('✅ Sistema completo de recibos mantido');
+            console.log('🚀 DOM carregado! Iniciando sistema v8.0...');
+            console.log('🚀 Sistema de Vendas CVC v8.0 - CONTROLE GRANULAR POR VOO INDIVIDUAL');
+            console.log('✅ Compatível com aba EMBARQUES (39 colunas)');
+            console.log('✅ Sistema completo de voos múltiplos mantido');
             
             // Verificar dependências essenciais
             if (typeof bootstrap === 'undefined') {
@@ -824,7 +845,7 @@
             // Verificar conexão
             verificarConexao();
             
-            console.log('🎉 Sistema totalmente carregado!');
+            console.log('🎉 Sistema v8.0 totalmente carregado!');
         });
 
         // ================================================================================
@@ -871,7 +892,7 @@
             statusDiv.style.display = 'block';
             
             try {
-                console.log('🔍 Verificando conexão com API...');
+                console.log('🔍 Verificando conexão com API v8.0...');
                 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
@@ -888,8 +909,8 @@
                     if (data.success) {
                         conexaoOnline = true;
                         statusDiv.className = 'status-conexao online';
-                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema Online';
-                        console.log('✅ Conexão OK:', data.cors_status || data.message);
+                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema v8.0 Online';
+                        console.log('✅ Conexão OK v8.0:', data.conceito_fundamental || data.message);
                         
                         // Esconder após 3 segundos
                         setTimeout(() => {
@@ -913,7 +934,7 @@
                     console.log('⏱️ Timeout na conexão');
                     mostrarAlerta('⏱️ Timeout na conexão. Verifique sua internet.', 'error');
                 } else {
-                    mostrarAlerta('❌ Problema de conexão com o servidor. Verifique se o Google Apps Script foi reimplantado.', 'error');
+                    mostrarAlerta('❌ Problema de conexão com o servidor. Verifique se o Google Apps Script v8.0 foi reimplantado.', 'error');
                 }
                 
                 // Manter visível se houver erro
@@ -924,7 +945,7 @@
         }
 
         // ================================================================================
-        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO MANTIDO
+        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO MANTIDO v8.0
         // ================================================================================
 
         function adicionarRecibo() {
@@ -949,7 +970,7 @@
                 reciboDiv.innerHTML = `
                     <div class="recibo-header">
                         <div class="recibo-number">
-                            <i class="fas fa-receipt"></i> Recibo ${contadorRecibos}
+                            <i class="fas fa-receipt"></i> Recibo/Serviço ${contadorRecibos}
                         </div>
                         <button type="button" class="btn-remove-recibo" data-recibo="${contadorRecibos}">
                             <i class="fas fa-trash"></i> Remover
@@ -992,14 +1013,14 @@
                         
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Data Ida
+                                <i class="fas fa-calendar-alt"></i> Data Ida/Início
                             </label>
                             <input type="date" class="form-control" name="dataIda[]" required>
                         </div>
                         
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-calendar-check"></i> Data Volta
+                                <i class="fas fa-calendar-check"></i> Data Volta/Fim
                             </label>
                             <input type="date" class="form-control" name="dataVolta[]">
                         </div>
@@ -1007,7 +1028,12 @@
 
                     <!-- CAMPOS EXTRAS PARA AÉREO -->
                     <div class="extra-fields" id="extras-${contadorRecibos}">
-                        <h5 class="mb-3"><i class="fas fa-plane"></i> Detalhes Aéreos</h5>
+                        <h5 class="mb-3"><i class="fas fa-plane"></i> Detalhes Aéreos (v8.0 - Controle Granular)</h5>
+                        
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Novo Sistema v8.0:</strong> Cada voo será processado individualmente na aba EMBARQUES
+                        </div>
                         
                         <div class="row g-3">
                             <div class="col-md-4">
@@ -1071,10 +1097,14 @@
 
                         <!-- DATAS MULTI TRECHO -->
                         <div class="multi-datas" id="multi-${contadorRecibos}">
-                            <h6><i class="fas fa-calendar-plus"></i> Datas Intermediárias</h6>
+                            <h6><i class="fas fa-calendar-plus"></i> Datas Intermediárias (Trechos)</h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>v8.0:</strong> Cada data criará um voo individual na planilha
+                            </div>
                             <div class="datas-extras" id="datas-extras-${contadorRecibos}"></div>
                             <button type="button" class="btn btn-sm btn-primary" data-action="adicionar-data" data-recibo="${contadorRecibos}">
-                                <i class="fas fa-plus"></i> Adicionar Data
+                                <i class="fas fa-plus"></i> Adicionar Data/Trecho
                             </button>
                             <button type="button" class="btn btn-sm btn-secondary ms-2" data-action="remover-data" data-recibo="${contadorRecibos}">
                                 <i class="fas fa-minus"></i> Remover Data
@@ -1247,7 +1277,7 @@
         }
 
         // ================================================================================
-        // 🎭 MÁSCARAS E FORMATAÇÃO
+        // 🔍 MÁSCARAS E FORMATAÇÃO
         // ================================================================================
 
         function configurarMascaras() {
@@ -1341,13 +1371,13 @@
         }
 
         // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM ABA EMBARQUES - SISTEMA MASTER v6.3
+        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA v8.0
         // ================================================================================
 
         async function enviarVendaCompleta(e) {
             e.preventDefault();
             
-            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA...');
+            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA v8.0...');
             
             const submitBtn = e.target.querySelector('.btn-submit');
             const textoOriginal = submitBtn.innerHTML;
@@ -1361,7 +1391,7 @@
                 
                 // Mostrar loading
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando venda...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Processando voos individuais v8.0...';
                 
                 // Coletar dados do formulário
                 const dadosVenda = coletarDadosFormulario(e.target);
@@ -1373,23 +1403,19 @@
                     throw new Error(validacao.erros.join('\n'));
                 }
                 
-                // ✅ CONVERTER PARA FORMATO EMBARQUES
-                const dadosEmbarque = converterParaEmbarques(dadosVenda);
-                console.log('🔄 Dados convertidos para EMBARQUES:', dadosEmbarque);
-                
-                // Preparar payload para aba EMBARQUES - COMPATÍVEL COM SISTEMA MASTER v6.3
+                // Preparar payload para v8.0 - usando nova action
                 const payload = {
-                    action: 'cadastrar_embarque',
-                    dados: dadosEmbarque
+                    action: 'cadastrar_venda_completa',
+                    dados: dadosVenda
                 };
                 
-                console.log('📤 PAYLOAD final para API:', payload);
+                console.log('📤 PAYLOAD final para API v8.0:', payload);
                 
-                // Enviar para Google Apps Script
+                // Enviar para Google Apps Script v8.0
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // ✅ CORS CORRIGIDO
+                        'Content-Type': 'text/plain;charset=utf-8',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload)
@@ -1402,18 +1428,18 @@
                 }
                 
                 const result = await response.json();
-                console.log('📊 RESPOSTA da API:', result);
+                console.log('📊 RESPOSTA da API v8.0:', result);
                 
                 if (result.success) {
-                    mostrarAlerta('✅ Venda cadastrada com sucesso na aba EMBARQUES!', 'success');
-                    console.log('✅ SUCESSO! Venda processada:', result.data);
+                    mostrarAlerta(`✅ Venda processada com sucesso!\n${result.data.total_voos} voo(s) individual(is) cadastrado(s) na aba EMBARQUES`, 'success');
+                    console.log('✅ SUCESSO! Venda processada v8.0:', result.data);
                     limparFormulario();
                 } else {
                     throw new Error(result.error || result.message || 'Erro desconhecido');
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao enviar venda:', error);
+                console.error('❌ Erro ao enviar venda v8.0:', error);
                 
                 let mensagemErro = error.message;
                 
@@ -1421,11 +1447,11 @@
                 if (error.message.includes('Failed to fetch') || error.message.includes('AbortError')) {
                     mensagemErro = '🌐 Erro de conexão. Verifique:\n' +
                                   '• Sua conexão com a internet\n' +
-                                  '• Se o Google Apps Script foi reimplantado\n' +
+                                  '• Se o Google Apps Script v8.0 foi reimplantado\n' +
                                   '• Tente novamente em alguns segundos';
                 } else if (error.message.includes('CORS')) {
                     mensagemErro = '⚙️ Erro de configuração CORS.\n' +
-                                  'Verifique se o Google Apps Script foi implantado corretamente.';
+                                  'Verifique se o Google Apps Script v8.0 foi implantado corretamente.';
                 }
                 
                 mostrarAlerta('❌ Erro ao cadastrar venda:\n' + mensagemErro, 'error');
@@ -1434,75 +1460,6 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = textoOriginal;
             }
-        }
-
-        // ================================================================================
-        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES - COMPATÍVEL COM SISTEMA MASTER v6.3
-        // ================================================================================
-
-        function converterParaEmbarques(dadosVenda) {
-            // Pegar dados do primeiro recibo (principal)
-            const primeiroTipo = dadosVenda.tipo && dadosVenda.tipo[0] ? dadosVenda.tipo[0] : 'Nacional';
-            const primeiraDataIda = dadosVenda.dataIda && dadosVenda.dataIda[0] ? dadosVenda.dataIda[0] : '';
-            const primeiraDataVolta = dadosVenda.dataVolta && dadosVenda.dataVolta[0] ? dadosVenda.dataVolta[0] : '';
-            
-            // Determinar tipo de viagem
-            let tipoViagem = 'Nacional';
-            if (dadosVenda.pacotes && dadosVenda.pacotes.includes('Internacional')) {
-                tipoViagem = 'Internacional';
-            } else if (dadosVenda.pacotes && dadosVenda.pacotes.includes('Marítimo')) {
-                tipoViagem = 'Marítimo';
-            }
-            
-            // Juntar informações de múltiplos recibos nas observações
-            let observacoesCompletas = `Filial: ${dadosVenda.filial || 'N/A'}. `;
-            observacoesCompletas += `WhatsApp: ${dadosVenda.whatsappCliente || 'N/A'}. `;
-            observacoesCompletas += `Informe: ${dadosVenda.nInforme || 'Auto'}. `;
-            
-            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
-                observacoesCompletas += `Pacotes: ${dadosVenda.pacotes.join(', ')}. `;
-            }
-            
-            // Adicionar informações dos recibos
-            if (dadosVenda.tipo && dadosVenda.tipo.length > 0) {
-                observacoesCompletas += `Serviços: `;
-                dadosVenda.tipo.forEach((tipo, index) => {
-                    observacoesCompletas += `${index + 1}) ${tipo}`;
-                    if (dadosVenda.recibo && dadosVenda.recibo[index]) {
-                        observacoesCompletas += ` (Recibo: ${dadosVenda.recibo[index]})`;
-                    }
-                    if (dadosVenda.observacoes && dadosVenda.observacoes[index]) {
-                        observacoesCompletas += ` - ${dadosVenda.observacoes[index]}`;
-                    }
-                    observacoesCompletas += '; ';
-                });
-            }
-            
-            // Determinar seguro
-            let seguroFinal = 'Não';
-            if (dadosVenda.seguro === 'comprou') {
-                seguroFinal = 'Sim';
-            } else if (dadosVenda.seguro === 'recusado') {
-                seguroFinal = 'Recusado';
-            } else if (dadosVenda.seguro === 'nao_oferecido') {
-                seguroFinal = 'Não Oferecido';
-            }
-            
-            // Criar objeto no formato exato da aba EMBARQUES - COMPATÍVEL COM SISTEMA MASTER v6.3
-            return {
-                cpfCliente: dadosVenda.cpfCliente,
-                nomeCliente: dadosVenda.nomeCliente,
-                vendedor: dadosVenda.vendedor,
-                tipoViagem: tipoViagem,
-                destino: 'A definir', // Pode ser melhorado futuramente
-                dataIda: primeiraDataIda,
-                dataVolta: primeiraDataVolta,
-                vooIda: dadosVenda.cia && dadosVenda.cia[0] ? dadosVenda.cia[0] : '',
-                vooVolta: '',
-                bagagem: dadosVenda.temBagagem && dadosVenda.temBagagem.includes('true') ? 'Incluída' : '',
-                seguro: seguroFinal,
-                observacoes: observacoesCompletas.trim()
-            };
         }
 
         function coletarDadosFormulario(form) {
@@ -1528,9 +1485,20 @@
                 });
                 dados.pacotes = pacotes;
                 
-                // Adicionar timestamp
+                // Coletar datas extras
+                const datasExtras = [];
+                document.querySelectorAll('input[name="datasExtras[]"]').forEach(input => {
+                    if (input.value) {
+                        datasExtras.push(input.value);
+                    }
+                });
+                dados.datasExtras = datasExtras;
+                
+                // Adicionar timestamp e dados v8.0
                 dados.timestamp = new Date().toISOString();
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
+                dados.versaoSistema = 'v8.0';
+                dados.conceito = '1_LINHA_1_VOO_ESPECIFICO';
                 
                 return dados;
             } catch (error) {
@@ -1542,7 +1510,8 @@
         function validarDadosVenda(dados) {
             const erros = [];
             
-            // Validações obrigatórias (filial é automática agora)
+            // Validações obrigatórias
+            if (!dados.filial) erros.push('Selecione a filial');
             if (!dados.vendedor) erros.push('Selecione o vendedor');
             if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
             if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
@@ -1589,16 +1558,6 @@
                     obs ? obs.trim().replace(/[<>]/g, '') : ''
                 );
             }
-            
-            console.log('✅ Validação concluída:', {
-                valido: erros.length === 0,
-                erros: erros,
-                dadosProcessados: {
-                    filial: dados.filial,
-                    vendedor: dados.vendedor,
-                    pacotes: dados.pacotes
-                }
-            });
             
             return {
                 valido: erros.length === 0,
@@ -1661,7 +1620,7 @@
                     item.classList.remove('selected');
                 });
                 
-                console.log('🧹 Formulário limpo');
+                console.log('🧹 Formulário limpo v8.0');
             } catch (error) {
                 console.error('Erro ao limpar formulário:', error);
             }
@@ -1704,10 +1663,27 @@
             }, 8000);
         }
         
-        console.log('✅ Script de vendas com sistema completo de recibos carregado!');
-        console.log('🔗 Integração com aba EMBARQUES configurada!');
-        console.log('📋 Sistema de múltiplos recibos mantido!');
-        console.log('🚀 Compatível com Sistema Master v6.3!');
+        // ================================================================================
+        // 📋 LOGS E INFORMAÇÕES FINAIS v8.0
+        // ================================================================================
+        
+        console.log('✅ Script de vendas v8.0 com sistema completo de recibos carregado!');
+        console.log('🔗 Integração com Sistema Master v8.0 - CONTROLE GRANULAR POR VOO');
+        console.log('📋 Sistema de múltiplos recibos/serviços mantido!');
+        console.log('⭐ CONCEITO FUNDAMENTAL: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
+        console.log('📊 Aba de destino: EMBARQUES (39 colunas expandidas)');
+        console.log('🎯 Action utilizada: cadastrar_venda_completa');
+        console.log('');
+        console.log('🚀 FUNCIONALIDADES v8.0:');
+        console.log('   • Múltiplos recibos/serviços por venda');
+        console.log('   • Análise automática de tipo de voo (OW/RT/MT)');
+        console.log('   • Geração de múltiplas linhas (1 por voo)');
+        console.log('   • Agrupamento por Nº do Informe');
+        console.log('   • Campos expandidos para SAC e Situação');
+        console.log('   • Validação aprimorada de dados');
+        console.log('   • Integração completa com dashboard embarques.html');
+        console.log('');
+        console.log('⚠️ IMPORTANTE: Atualize a URL da API para sua implementação v8.0!');
     </script>
 </body>
 </html>
