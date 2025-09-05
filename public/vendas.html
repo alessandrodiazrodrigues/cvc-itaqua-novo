@@ -800,21 +800,34 @@
             
             // Botão adicionar recibo
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
+            console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
+            
             if (btnAdicionar) {
-                btnAdicionar.addEventListener('click', function() {
+                // Remover listeners antigos
+                btnAdicionar.replaceWith(btnAdicionar.cloneNode(true));
+                const btnAdicionarNovo = document.getElementById('btnAdicionarRecibo');
+                
+                btnAdicionarNovo.addEventListener('click', function(e) {
+                    e.preventDefault();
                     console.log('🖱️ Clique no botão adicionar detectado!');
                     adicionarRecibo();
                 });
+                console.log('✅ Event listener adicionado ao botão');
+            } else {
+                console.error('❌ Botão adicionar não encontrado!');
             }
             
             // Botão remover último recibo
             const btnRemover = document.getElementById('btnRemoverRecibo');
             if (btnRemover) {
-                btnRemover.addEventListener('click', function() {
+                btnRemover.addEventListener('click', function(e) {
+                    e.preventDefault();
                     console.log('🖱️ Clique no botão remover detectado!');
                     removerUltimoRecibo();
                 });
             }
+            
+            console.log('✅ Eventos dos botões configurados');
         }
 
         // ================================================================================
@@ -1540,3 +1553,23 @@
             alerta.className = `alert-custom ${classe}`;
             alerta.innerHTML = `
                 <i class="fas fa-${icone}"></i>
+                <span>${mensagem.replace(/\n/g, '<br>')}</span>
+                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            document.body.appendChild(alerta);
+            
+            // Auto remover após 8 segundos
+            setTimeout(() => {
+                if (alerta.parentElement) {
+                    alerta.remove();
+                }
+            }, 8000);
+        }
+        
+        console.log('✅ Sistema de Vendas CVC v8.01 carregado!');
+        console.log('🔗 Integração com Sistema Master v8.0 configurada!');
+        console.log('📋 Sistema de múltiplos recibos com controle granular por voo!');
+    </script>
+</body>
+</html>
