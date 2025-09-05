@@ -1112,6 +1112,33 @@
                         </div>
                     </div>
 
+                    <!-- VALOR DO RECIBO/SERVIÇO -->
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-dollar-sign"></i> Valor do Recibo/Serviço
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="text" class="form-control valor-input" name="valor[]" 
+                                       placeholder="0,00" required>
+                            </div>
+                            <small class="text-muted">Campo obrigatório para o sistema v8.0</small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-plus"></i> Status do Pagamento
+                            </label>
+                            <select class="form-select" name="statusPagamento[]">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="Parcelado">Parcelado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="mt-3">
                         <label class="form-label">
                             <i class="fas fa-comment-dots"></i> Observações
@@ -1522,13 +1549,29 @@
                 erros.push('CPF inválido');
             }
             
-            // Validar recibos
+            // Validar recibos e valores
             if (!dados.tipo || dados.tipo.length === 0 || !dados.tipo[0]) {
                 erros.push('Adicione pelo menos um recibo com tipo de serviço');
             }
             
             if (!dados.dataIda || dados.dataIda.length === 0 || !dados.dataIda[0]) {
                 erros.push('Informe a data de ida do primeiro recibo');
+            }
+            
+            // Validar valores dos recibos
+            if (!dados.valor || dados.valor.length === 0) {
+                erros.push('Informe o valor de pelo menos um recibo');
+            } else {
+                dados.valor.forEach((valor, index) => {
+                    if (!valor || valor === '0,00' || valor === '') {
+                        erros.push(`Informe o valor do recibo ${index + 1}`);
+                    }
+                });
+            }
+            
+            // Validar valor total
+            if (!dados.valorTotal || dados.valorTotal <= 0) {
+                erros.push('O valor total da venda deve ser maior que zero');
             }
             
             // Validar datas (ida não pode ser no passado, volta deve ser posterior à ida)
