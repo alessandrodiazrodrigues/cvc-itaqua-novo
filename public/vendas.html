@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Sistema de Vendas CVC v8.01 - Operacional</title>
+    <title>📈 Sistema de Vendas - CVC Itaqua v8.01</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -88,52 +88,6 @@
             font-size: 1.1rem;
         }
         
-        /* ESTATÍSTICAS */
-        .stats-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-card {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .stat-card i {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            color: var(--cvc-amarelo);
-        }
-        
-        .stat-card h6 {
-            margin: 5px 0;
-            font-weight: 600;
-        }
-        
-        .stat-card span {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--cvc-amarelo);
-        }
-        
-        .stat-card small {
-            display: block;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-        
         /* NAVEGAÇÃO */
         .nav-pills {
             background: #f8f9fa;
@@ -215,6 +169,10 @@
         .form-control:focus, .form-select:focus {
             border-color: var(--cvc-azul);
             box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
+        }
+        
+        .required {
+            color: #dc3545;
         }
         
         /* RADIO E CHECKBOX CUSTOM */
@@ -412,20 +370,6 @@
             box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
         }
         
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
-        }
-        
         .btn-submit {
             background: linear-gradient(135deg, var(--cvc-verde) 0%, #007C42 100%);
             color: white;
@@ -539,21 +483,6 @@
             background: #dc3545;
         }
         
-        /* VERSÃO BADGE */
-        .version-badge {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 51, 153, 0.9);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        
         /* RESPONSIVO */
         @media (max-width: 768px) {
             .header-title { 
@@ -568,10 +497,6 @@
                 grid-template-columns: 1fr;
             }
             
-            .stat-card {
-                margin: 10px 0;
-            }
-            
             .main-container {
                 margin: 10px;
                 border-radius: 15px;
@@ -584,10 +509,6 @@
     </style>
 </head>
 <body>
-    <div class="version-badge">
-        🚀 Sistema v8.01 - Operacional
-    </div>
-    
     <div class="container-fluid">
         <div class="main-container">
             <!-- Header com Logo CVC -->
@@ -599,49 +520,11 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas v8.01
+                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
                             </h1>
                             <p class="header-subtitle">
-                                Sistema Operacional - Integração Completa com Master v8.0
+                                Sistema de Vendas v8.01 - Integrado com Sistema Master v8.0
                             </p>
-                        </div>
-                    </div>
-                    
-                    <!-- ESTATÍSTICAS DO SISTEMA -->
-                    <div class="stats-container">
-                        <div class="row g-2">
-                            <div class="col-md-3 col-6">
-                                <div class="stat-card">
-                                    <i class="fas fa-plane"></i>
-                                    <h6>Voos Individuais</h6>
-                                    <span id="stat-voos">314</span>
-                                    <small>Controle Granular</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6">
-                                <div class="stat-card">
-                                    <i class="fas fa-database"></i>
-                                    <h6>Orbiuns Integrados</h6>
-                                    <span id="stat-orbiuns">144</span>
-                                    <small>Via CPF Automático</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6">
-                                <div class="stat-card">
-                                    <i class="fas fa-link"></i>
-                                    <h6>Ligações Match</h6>
-                                    <span id="stat-match">67%</span>
-                                    <small>Taxa de Sucesso</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6">
-                                <div class="stat-card">
-                                    <i class="fas fa-check-circle"></i>
-                                    <h6>Sistema Status</h6>
-                                    <span id="stat-status">PROD</span>
-                                    <small>39 Colunas Ativas</small>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -692,51 +575,41 @@
                                 </label>
                                 <input type="text" class="form-control" id="nInforme" name="nInforme" 
                                        placeholder="Deixe em branco para gerar automático">
-                                <small class="text-muted">AGRUPADOR PRINCIPAL - Será gerado automaticamente se vazio</small>
+                                <small class="text-muted">Será gerado automaticamente se vazio</small>
                             </div>
                             
                             <div class="col-md-4">
                                 <label class="form-label">
-                                    <i class="fas fa-building"></i> Filial
+                                    <i class="fas fa-building"></i> Filial <span class="required">*</span>
                                 </label>
                                 <div class="radio-group">
                                     <div class="radio-item">
-                                        <input type="radio" name="filial" value="6220" id="filial6220" required>
+                                        <input type="radio" name="filial" value="6220" id="filial6220" required checked>
                                         <label for="filial6220">6220 - Itaquaquecetuba</label>
-                                    </div>
-                                    <div class="radio-item">
-                                        <input type="radio" name="filial" value="6223" id="filial6223">
-                                        <label for="filial6223">6223</label>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="vendedor" class="form-label">
-                                    <i class="fas fa-user-tie"></i> Vendedor
+                                    <i class="fas fa-user-tie"></i> Vendedor <span class="required">*</span>
                                 </label>
                                 <select class="form-select" id="vendedor" name="vendedor" required>
                                     <option value="">Selecione...</option>
-                                    <option value="ADRIELLY">Adrielly</option>
-                                    <option value="ALESSANDRO">Alessandro</option>
-                                    <option value="ANA PAULA">Ana Paula</option>
-                                    <option value="CAROL">Carol</option>
-                                    <option value="CAROLINY">Caroliny</option>
-                                    <option value="JHULY">Jhuly</option>
-                                    <option value="DAINA">Daina</option>
-                                    <option value="ELAINE">Elaine</option>
-                                    <option value="ILANA">Ilana</option>
-                                    <option value="BIA">Bia</option>
-                                    <option value="CONCEIÇÃO">Conceição</option>
-                                    <option value="ADRIANA">Adriana</option>
-                                    <option value="BEATRIZ">Beatriz</option>
+                                    <option value="Alessandro">Alessandro</option>
+                                    <option value="Ana Paula">Ana Paula</option>
+                                    <option value="Adriana">Adriana</option>
+                                    <option value="Adrielly">Adrielly</option>
+                                    <option value="Bia">Bia</option>
+                                    <option value="Conceição">Conceição</option>
+                                    <option value="Jhully">Jhully</option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="mt-3">
                             <label class="form-label">
-                                <i class="fas fa-box"></i> Tipo de Pacote
+                                <i class="fas fa-box"></i> Tipo de Pacote <span class="required">*</span>
                             </label>
                             <div class="checkbox-group">
                                 <div class="checkbox-item">
@@ -745,7 +618,7 @@
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" name="pacote" value="Internacional" id="pacoteInternacional">
-                                    <label for="pacoteInternacional">🌎 Internacional</label>
+                                    <label for="pacoteInternacional">🌍 Internacional</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" name="pacote" value="Marítimo" id="pacoteMaritimo">
@@ -762,37 +635,32 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label for="cpfCliente" class="form-label">
-                                    <i class="fas fa-id-card"></i> CPF
+                                    <i class="fas fa-id-card"></i> CPF <span class="required">*</span>
                                 </label>
                                 <input type="text" class="form-control" id="cpfCliente" name="cpfCliente" 
                                        required placeholder="000.000.000-00" maxlength="14">
-                                <small class="text-muted">Usado para integração automática com Orbiuns</small>
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="nomeCliente" class="form-label">
-                                    <i class="fas fa-signature"></i> Nome Completo
+                                    <i class="fas fa-signature"></i> Nome Completo <span class="required">*</span>
                                 </label>
                                 <input type="text" class="form-control" id="nomeCliente" name="nomeCliente" required>
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="whatsappCliente" class="form-label">
-                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                    <i class="fab fa-whatsapp"></i> WhatsApp <span class="required">*</span>
                                 </label>
                                 <input type="text" class="form-control" id="whatsappCliente" name="whatsappCliente" 
-                                       placeholder="(11) 99999-9999" maxlength="15">
+                                       required placeholder="(11) 99999-9999" maxlength="15">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recibos e Serviços - CONTROLE GRANULAR POR VOO -->
+                    <!-- Recibos e Serviços -->
                     <div class="form-section">
                         <h4><i class="fas fa-receipt"></i> Recibos e Serviços</h4>
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>SISTEMA v8.0:</strong> 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL
-                        </div>
                         
                         <div id="recibosContainer">
                             <!-- Recibos serão adicionados dinamicamente aqui -->
@@ -802,7 +670,7 @@
                             <button type="button" class="btn btn-success" id="btnAdicionarRecibo">
                                 <i class="fas fa-plus-circle"></i> Adicionar Recibo
                             </button>
-                            <button type="button" id="btnRemoverRecibo" class="btn btn-danger ms-2" style="display: none;">
+                            <button type="button" id="btnRemoverRecibo" class="btn btn-secondary ms-2" style="display: none;">
                                 <i class="fas fa-minus-circle"></i> Remover Último
                             </button>
                         </div>
@@ -814,7 +682,7 @@
                         
                         <div class="radio-group">
                             <div class="radio-item">
-                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado">
+                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado" required>
                                 <label for="seguroRecusado">❌ Oferecido e RECUSADO</label>
                             </div>
                             <div class="radio-item">
@@ -829,7 +697,7 @@
                     </div>
 
                     <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i> Cadastrar Venda Completa v8.01
+                        <i class="fas fa-save"></i> Cadastrar Venda Completa
                     </button>
                 </form>
             </div>
@@ -845,18 +713,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Sistema de Vendas CVC v8.01 - CONTROLE GRANULAR POR VOO INDIVIDUAL');
+        console.log('🚀 Sistema de Vendas CVC v8.01 - Integrado com Sistema Master v8.0');
         
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES v8.01 - URL MASTER v8.0
+        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0
         // ================================================================================
         
-        // ⚠️ ALTERE ESTA URL PARA SUA NOVA IMPLANTAÇÃO
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec';
         
-        console.log('✅ Configurações v8.01 carregadas');
-        console.log('🔗 API URL Master v8.0:', API_URL);
-        console.log('🎯 CONCEITO: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
+        console.log('✅ Configurações carregadas');
+        console.log('🔗 API URL:', API_URL);
         
         const COMPANHIAS_AEREAS = [
             'LATAM', 'AZUL', 'GOL', 'VOEPASS',
@@ -881,75 +747,43 @@
             'Seguro', 'Cruzeiro', 'SVA e Outros', 'Locação'
         ];
 
-        // TIPOS DE AÉREO v8.0 - CONTROLE GRANULAR
-        const TIPOS_AEREO = [
-            'OW',        // One Way - Só Ida
-            'RT_IDA',    // Round Trip - Ida
-            'RT_VOLTA',  // Round Trip - Volta  
-            'MT_IDA',    // Multi Trecho - Ida
-            'MT_TRECHO', // Multi Trecho - Trecho intermediário
-            'MT_VOLTA'   // Multi Trecho - Volta
-        ];
-
         let contadorRecibos = 0;
         let conexaoOnline = false;
 
         // ================================================================================
-        // 🚀 INICIALIZAÇÃO ROBUSTA v8.01
+        // 🚀 INICIALIZAÇÃO
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 DOM carregado! Iniciando sistema v8.01...');
-            console.log('🚀 Sistema de Vendas CVC v8.01 - CONTROLE GRANULAR POR VOO');
-            console.log('✅ Compatível com Master v8.0 - 39 colunas ativas');
-            console.log('✅ Sistema completo de recibos com controle granular mantido');
             
-            // Verificar dependências essenciais
-            if (typeof bootstrap === 'undefined') {
-                console.warn('⚠️ Bootstrap não carregado completamente');
-            }
-            
-            // Verificar se elementos existem
+            // Verificar elementos essenciais
             const form = document.getElementById('formVendaCompleta');
             const container = document.getElementById('recibosContainer');
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
             
-            console.log('🔍 Verificação de elementos:');
-            console.log('   - Formulário:', !!form);
-            console.log('   - Container recibos:', !!container);
-            console.log('   - Botão adicionar:', !!btnAdicionar);
-            
             if (!form || !container || !btnAdicionar) {
                 console.error('❌ Elementos essenciais não encontrados!');
-                mostrarAlerta('❌ Erro na inicialização do sistema v8.01', 'error');
+                mostrarAlerta('❌ Erro na inicialização do sistema', 'error');
                 return;
             }
             
-            // Máscaras
+            // Configurar máscaras
             configurarMascaras();
             
-            // Radio/Checkbox visual
+            // Configurar radio/checkbox visual
             configurarRadioCheckbox();
             
             // Configurar eventos dos botões
             configurarEventos();
             
-            // Adicionar primeiro recibo com verificação
-            console.log('📋 Adicionando primeiro recibo automaticamente...');
+            // Adicionar primeiro recibo
             setTimeout(() => {
-                try {
-                    adicionarRecibo();
-                } catch (error) {
-                    console.error('Erro ao adicionar primeiro recibo:', error);
-                    mostrarAlerta('❌ Erro ao inicializar formulário', 'error');
-                }
+                adicionarRecibo();
             }, 100);
             
             // Configurar envio do formulário
-            if (form) {
-                form.addEventListener('submit', enviarVendaCompleta);
-                console.log('✅ Event listener do formulário configurado');
-            }
+            form.addEventListener('submit', enviarVendaCompleta);
             
             // Verificar conexão
             verificarConexao();
@@ -966,16 +800,11 @@
             
             // Botão adicionar recibo
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
-            console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
-            
             if (btnAdicionar) {
                 btnAdicionar.addEventListener('click', function() {
                     console.log('🖱️ Clique no botão adicionar detectado!');
                     adicionarRecibo();
                 });
-                console.log('✅ Event listener adicionado ao botão');
-            } else {
-                console.error('❌ Botão adicionar não encontrado!');
             }
             
             // Botão remover último recibo
@@ -986,8 +815,6 @@
                     removerUltimoRecibo();
                 });
             }
-            
-            console.log('✅ Eventos dos botões configurados');
         }
 
         // ================================================================================
@@ -1001,10 +828,10 @@
             statusDiv.style.display = 'block';
             
             try {
-                console.log('🔍 Verificando conexão com Master v8.0...');
+                console.log('🔍 Verificando conexão com API...');
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
                 
                 const response = await fetch(API_URL, {
                     method: 'GET',
@@ -1018,18 +845,9 @@
                     if (data.success) {
                         conexaoOnline = true;
                         statusDiv.className = 'status-conexao online';
-                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Master v8.0 Online';
-                        console.log('✅ Conexão OK com Master v8.0:', data.message);
-                        console.log('🎯 Conceito:', data.conceito_fundamental);
+                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema Online v8.0';
+                        console.log('✅ Conexão OK:', data.message);
                         
-                        // Atualizar estatísticas se disponíveis
-                        if (data.estatisticas_atuais) {
-                            document.getElementById('stat-voos').textContent = data.estatisticas_atuais.total_registros;
-                            document.getElementById('stat-orbiuns').textContent = data.estatisticas_atuais.orbiuns_disponiveis;
-                            document.getElementById('stat-match').textContent = data.estatisticas_atuais.taxa_match_potencial;
-                        }
-                        
-                        // Esconder após 3 segundos
                         setTimeout(() => {
                             statusDiv.style.display = 'none';
                         }, 3000);
@@ -1046,15 +864,8 @@
                 statusTexto.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conexão falhou';
                 
                 console.error('❌ Erro de conexão:', error.message);
+                mostrarAlerta('❌ Problema de conexão com o servidor.', 'error');
                 
-                if (error.name === 'AbortError') {
-                    console.log('⏱️ Timeout na conexão');
-                    mostrarAlerta('⏱️ Timeout na conexão. Verifique sua internet.', 'error');
-                } else {
-                    mostrarAlerta('❌ Problema de conexão com Master v8.0. Verifique se foi reimplantado.', 'error');
-                }
-                
-                // Manter visível se houver erro
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
                 }, 10000);
@@ -1062,11 +873,11 @@
         }
 
         // ================================================================================
-        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO GRANULAR v8.01
+        // 🧾 GERENCIAMENTO DE RECIBOS
         // ================================================================================
 
         function adicionarRecibo() {
-            console.log('🧾 Função adicionarRecibo chamada v8.01!');
+            console.log('🧾 Função adicionarRecibo chamada!');
             
             try {
                 contadorRecibos++;
@@ -1078,8 +889,6 @@
                     return;
                 }
                 
-                console.log('✅ Container encontrado, criando recibo...');
-                
                 const reciboDiv = document.createElement('div');
                 reciboDiv.className = 'recibo-container';
                 reciboDiv.id = `recibo-${contadorRecibos}`;
@@ -1087,24 +896,19 @@
                 reciboDiv.innerHTML = `
                     <div class="recibo-header">
                         <div class="recibo-number">
-                            <i class="fas fa-receipt"></i> Recibo ${contadorRecibos} - VOO INDIVIDUAL
+                            <i class="fas fa-receipt"></i> Recibo ${contadorRecibos}
                         </div>
                         <button type="button" class="btn-remove-recibo" data-recibo="${contadorRecibos}">
                             <i class="fas fa-trash"></i> Remover
                         </button>
                     </div>
 
-                    <div class="alert alert-warning mb-3">
-                        <i class="fas fa-star me-2"></i>
-                        <strong>CONCEITO v8.0:</strong> Cada recibo representa 1 VOO ESPECÍFICO que será processado individualmente
-                    </div>
-
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-hashtag"></i> Nº do Recibo
+                                <i class="fas fa-hashtag"></i> Nº do Recibo <span class="required">*</span>
                             </label>
-                            <input type="text" class="form-control" name="recibo[]" placeholder="Apenas números">
+                            <input type="text" class="form-control" name="recibo[]" placeholder="Apenas números" required>
                         </div>
                         
                         <div class="col-md-4">
@@ -1125,7 +929,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-tag"></i> Tipo de Serviço
+                                <i class="fas fa-tag"></i> Tipo de Serviço <span class="required">*</span>
                             </label>
                             <select class="form-select" name="tipo[]" data-recibo="${contadorRecibos}" required>
                                 <option value="">Selecione...</option>
@@ -1135,32 +939,22 @@
                         
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Data do Voo
+                                <i class="fas fa-calendar-alt"></i> Data Ida <span class="required">*</span>
                             </label>
                             <input type="date" class="form-control" name="dataIda[]" required>
-                            <small class="text-muted">Data específica deste voo individual</small>
                         </div>
                         
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-plane"></i> Tipo de Aéreo v8.0
+                                <i class="fas fa-calendar-check"></i> Data Volta
                             </label>
-                            <select class="form-select" name="tipoAereo[]" data-recibo="${contadorRecibos}">
-                                <option value="">Selecione...</option>
-                                <option value="OW">OW - One Way (Só Ida)</option>
-                                <option value="RT_IDA">RT_IDA - Round Trip Ida</option>
-                                <option value="RT_VOLTA">RT_VOLTA - Round Trip Volta</option>
-                                <option value="MT_IDA">MT_IDA - Multi Trecho Ida</option>
-                                <option value="MT_TRECHO">MT_TRECHO - Multi Trecho Intermediário</option>
-                                <option value="MT_VOLTA">MT_VOLTA - Multi Trecho Volta</option>
-                            </select>
-                            <small class="text-muted">Controle granular por voo específico</small>
+                            <input type="date" class="form-control" name="dataVolta[]">
                         </div>
                     </div>
 
                     <!-- CAMPOS EXTRAS PARA AÉREO -->
                     <div class="extra-fields" id="extras-${contadorRecibos}">
-                        <h5 class="mb-3"><i class="fas fa-plane"></i> Detalhes Aéreos v8.0</h5>
+                        <h5 class="mb-3"><i class="fas fa-plane"></i> Detalhes Aéreos</h5>
                         
                         <div class="row g-3">
                             <div class="col-md-4">
@@ -1240,39 +1034,7 @@
                             <i class="fas fa-comment-dots"></i> Observações
                         </label>
                         <textarea class="form-control" name="observacoes[]" rows="2" 
-                                  placeholder="Informações adicionais sobre este voo específico..."></textarea>
-                    </div>
-
-                    <!-- CAMPOS NOVOS v8.0 -->
-                    <div class="row g-3 mt-2">
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-headset"></i> SAC
-                            </label>
-                            <select class="form-select" name="sac[]">
-                                <option value="">Selecione...</option>
-                                <option value="Não">Não</option>
-                                <option value="Pendente">Pendente</option>
-                                <option value="Resolvido">Resolvido</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-hashtag"></i> Número SAC
-                            </label>
-                            <input type="text" class="form-control" name="numeroSAC[]" placeholder="Ex: SAC123456">
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label">
-                                <i class="fas fa-toggle-on"></i> Situação
-                            </label>
-                            <select class="form-select" name="situacao[]">
-                                <option value="Ativo">Ativo</option>
-                                <option value="Cancelado">Cancelado</option>
-                            </select>
-                        </div>
+                                  placeholder="Informações adicionais sobre este recibo..."></textarea>
                     </div>
                 `;
                 
@@ -1283,7 +1045,7 @@
                 
                 atualizarBotaoRemover();
                 
-                console.log(`✅ Recibo ${contadorRecibos} adicionado com controle granular v8.0`);
+                console.log(`✅ Recibo ${contadorRecibos} adicionado`);
             } catch (error) {
                 console.error('Erro ao adicionar recibo:', error);
                 mostrarAlerta('❌ Erro ao adicionar recibo: ' + error.message, 'error');
@@ -1339,12 +1101,6 @@
             try {
                 const recibo = document.getElementById(`recibo-${numero}`);
                 if (recibo) {
-                    // Remover todos os event listeners antes de deletar
-                    const elementos = recibo.querySelectorAll('button, select, input');
-                    elementos.forEach(el => {
-                        el.replaceWith(el.cloneNode(true)); // Remove todos os listeners
-                    });
-                    
                     recibo.remove();
                     console.log(`🗑️ Recibo ${numero} removido`);
                 }
@@ -1375,7 +1131,7 @@
         }
 
         // ================================================================================
-        // 🔄 CAMPOS DINÂMICOS
+        // 📄 CAMPOS DINÂMICOS
         // ================================================================================
 
         function toggleExtras(selectElement, reciboId) {
@@ -1393,7 +1149,7 @@
                 bagagemDiv.style.display = isAereo ? 'grid' : 'none';
             }
             
-            console.log(`🔄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
+            console.log(`📄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
         }
 
         function toggleMulti(selectElement, reciboId) {
@@ -1404,7 +1160,7 @@
                 multiDiv.style.display = isMulti ? 'block' : 'none';
             }
             
-            console.log(`🔄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
+            console.log(`📄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
         }
 
         function adicionarData(reciboId) {
@@ -1526,7 +1282,7 @@
         }
 
         // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM MASTER v8.0
+        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0
         // ================================================================================
 
         async function enviarVendaCompleta(e) {
@@ -1538,19 +1294,19 @@
             const textoOriginal = submitBtn.innerHTML;
             
             try {
-                // Verificar se tem conexão
+                // Verificar conexão
                 if (!conexaoOnline) {
-                    mostrarAlerta('❌ Sem conexão com Master v8.0. Verifique sua internet.', 'error');
+                    mostrarAlerta('❌ Sem conexão com o servidor. Verifique sua internet.', 'error');
                     return;
                 }
                 
                 // Mostrar loading
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando para Master v8.0...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando venda...';
                 
                 // Coletar dados do formulário
                 const dadosVenda = coletarDadosFormulario(e.target);
-                console.log('📋 Dados da venda coletados v8.01:', dadosVenda);
+                console.log('📋 Dados da venda coletados:', dadosVenda);
                 
                 // Validar dados
                 const validacao = validarDadosVenda(dadosVenda);
@@ -1558,25 +1314,19 @@
                     throw new Error(validacao.erros.join('\n'));
                 }
                 
-                // ✅ CONVERTER PARA FORMATO MASTER v8.0 - CONTROLE GRANULAR
-                const dadosProcessados = processarDadosParaMaster(dadosVenda);
-                console.log('🔄 Dados processados para Master v8.0:', dadosProcessados);
-                
-                // Preparar payload para Master v8.0
+                // Preparar payload para Sistema Master v8.0
                 const payload = {
-                    action: 'cadastrar_venda_completa', // Endpoint específico do Master v8.0
-                    dados: dadosProcessados,
-                    versao: 'v8.01',
-                    conceito: '1_LINHA_1_VOO_ESPECIFICO'
+                    action: 'cadastrar_venda_completa',
+                    dados: dadosVenda
                 };
                 
-                console.log('📤 PAYLOAD final para Master v8.0:', payload);
+                console.log('📤 PAYLOAD final para API v8.0:', payload);
                 
-                // Enviar para Google Apps Script Master v8.0
+                // Enviar para Google Apps Script
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // ✅ CORS CORRIGIDO
+                        'Content-Type': 'text/plain;charset=utf-8',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload)
@@ -1589,17 +1339,11 @@
                 }
                 
                 const result = await response.json();
-                console.log('📊 RESPOSTA do Master v8.0:', result);
+                console.log('📊 RESPOSTA da API:', result);
                 
                 if (result.success) {
-                    mostrarAlerta('✅ Venda cadastrada com sucesso no Master v8.0!', 'success');
+                    mostrarAlerta('✅ Venda cadastrada com sucesso no Sistema Master v8.0!', 'success');
                     console.log('✅ SUCESSO! Venda processada:', result.data);
-                    
-                    // Mostrar detalhes do processamento
-                    if (result.data && result.data.total_voos) {
-                        mostrarAlerta(`🎯 ${result.data.total_voos} voo(s) individual(is) processado(s) com controle granular!`, 'info');
-                    }
-                    
                     limparFormulario();
                 } else {
                     throw new Error(result.error || result.message || 'Erro desconhecido');
@@ -1610,15 +1354,10 @@
                 
                 let mensagemErro = error.message;
                 
-                // Tratar erros específicos
                 if (error.message.includes('Failed to fetch') || error.message.includes('AbortError')) {
-                    mensagemErro = '🌐 Erro de conexão. Verifique:\n' +
-                                  '• Sua conexão com a internet\n' +
-                                  '• Se o Master v8.0 foi reimplantado\n' +
-                                  '• Tente novamente em alguns segundos';
+                    mensagemErro = '🌐 Erro de conexão. Verifique sua internet e tente novamente.';
                 } else if (error.message.includes('CORS')) {
-                    mensagemErro = '⚙️ Erro de configuração CORS.\n' +
-                                  'Verifique se o Master v8.0 foi implantado corretamente.';
+                    mensagemErro = '⚙️ Erro de configuração CORS. Verifique se o Google Apps Script foi implantado corretamente.';
                 }
                 
                 mostrarAlerta('❌ Erro ao cadastrar venda:\n' + mensagemErro, 'error');
@@ -1626,122 +1365,6 @@
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = textoOriginal;
-            }
-        }
-
-        // ================================================================================
-        // 🔄 PROCESSAMENTO DE DADOS PARA MASTER v8.0
-        // ================================================================================
-
-        function processarDadosParaMaster(dadosVenda) {
-            try {
-                console.log('🔄 Processando dados para Master v8.0 - Controle Granular...');
-                
-                // Gerar número do informe único (AGRUPADOR PRINCIPAL)
-                const numeroInforme = dadosVenda.nInforme || `CVC-${Date.now()}`;
-                
-                // Analisar e gerar voos individuais
-                const voosGerados = analisarEGerarVoos(dadosVenda, numeroInforme);
-                console.log(`🎯 ${voosGerados.length} voo(s) individual(is) será(ão) cadastrado(s)`);
-                
-                return {
-                    // Dados básicos do cliente
-                    cpfCliente: dadosVenda.cpfCliente,
-                    nomeCliente: dadosVenda.nomeCliente,
-                    vendedor: dadosVenda.vendedor,
-                    whatsappCliente: dadosVenda.whatsappCliente || '',
-                    filial: dadosVenda.filial || '6220',
-                    
-                    // Tipo de viagem
-                    tipoViagem: dadosVenda.pacotes ? dadosVenda.pacotes[0] : 'Nacional',
-                    
-                    // Seguro
-                    seguro: dadosVenda.seguro || '',
-                    
-                    // Número do informe (AGRUPADOR)
-                    numeroInforme: numeroInforme,
-                    
-                    // Voos individuais processados
-                    voos: voosGerados,
-                    
-                    // Metadados v8.01
-                    versaoSistema: 'v8.01',
-                    tipoSistema: 'OPERACIONAL_GRANULAR',
-                    timestamp: new Date().toISOString(),
-                    dataRegistro: new Date().toLocaleDateString('pt-BR'),
-                    conceito: '1_LINHA_1_VOO_ESPECIFICO_1_CHECKIN_INDIVIDUAL'
-                };
-            } catch (error) {
-                console.error('❌ Erro ao processar dados:', error);
-                throw new Error('Erro no processamento dos dados: ' + error.message);
-            }
-        }
-
-        function analisarEGerarVoos(dadosVenda, numeroInforme) {
-            const voos = [];
-            
-            try {
-                // Processar cada recibo como um voo individual
-                if (dadosVenda.recibo && dadosVenda.recibo.length > 0) {
-                    for (let i = 0; i < dadosVenda.recibo.length; i++) {
-                        const voo = {
-                            // AGRUPADOR PRINCIPAL
-                            numeroInforme: numeroInforme,
-                            
-                            // Dados específicos do voo
-                            recibo: dadosVenda.recibo[i] || '',
-                            numeroPedido: dadosVenda.pedido ? dadosVenda.pedido[i] : '',
-                            reserva: dadosVenda.reserva ? dadosVenda.reserva[i] : '',
-                            tipo: dadosVenda.tipo ? dadosVenda.tipo[i] : '',
-                            
-                            // DATA DO VOO ESPECÍFICO
-                            dataIda: dadosVenda.dataIda ? dadosVenda.dataIda[i] : '',
-                            
-                            // TIPO DE AÉREO GRANULAR v8.0
-                            tipoAereo: dadosVenda.tipoAereo ? dadosVenda.tipoAereo[i] : 'OW',
-                            
-                            // Detalhes aéreos
-                            cia: dadosVenda.cia ? dadosVenda.cia[i] : '',
-                            locGds: dadosVenda.locGds ? dadosVenda.locGds[i] : '',
-                            locCia: dadosVenda.locCia ? dadosVenda.locCia[i] : '',
-                            
-                            // Serviços adicionais
-                            temBagagem: dadosVenda.temBagagem ? dadosVenda.temBagagem[i] : 'false',
-                            temAssento: dadosVenda.temAssento ? dadosVenda.temAssento[i] : 'false',
-                            multiTrecho: dadosVenda.multiTrecho ? dadosVenda.multiTrecho[i] : 'Não',
-                            
-                            // Observações específicas
-                            observacoes: dadosVenda.observacoes ? dadosVenda.observacoes[i] : '',
-                            
-                            // NOVOS CAMPOS v8.0
-                            sac: dadosVenda.sac ? dadosVenda.sac[i] : '',
-                            numeroSAC: dadosVenda.numeroSAC ? dadosVenda.numeroSAC[i] : '',
-                            situacao: dadosVenda.situacao ? dadosVenda.situacao[i] : 'Ativo',
-                            
-                            // Metadados do voo
-                            indiceVoo: i + 1,
-                            totalVoos: dadosVenda.recibo.length
-                        };
-                        
-                        voos.push(voo);
-                    }
-                } else {
-                    // Se não há recibos, criar um voo básico
-                    voos.push({
-                        numeroInforme: numeroInforme,
-                        dataIda: dadosVenda.dataIda || '',
-                        tipoAereo: 'OW',
-                        situacao: 'Ativo',
-                        indiceVoo: 1,
-                        totalVoos: 1
-                    });
-                }
-                
-                console.log(`🎯 ${voos.length} voo(s) individual(is) gerado(s) para Master v8.0`);
-                return voos;
-            } catch (error) {
-                console.error('❌ Erro ao gerar voos:', error);
-                throw new Error('Erro na geração dos voos individuais');
             }
         }
 
@@ -1768,20 +1391,9 @@
                 });
                 dados.pacotes = pacotes;
                 
-                // Coletar datas extras
-                const datasExtras = [];
-                document.querySelectorAll('input[name="datasExtras[]"]').forEach(input => {
-                    if (input.value) {
-                        datasExtras.push(input.value);
-                    }
-                });
-                dados.datasExtras = datasExtras;
-                
-                // Adicionar timestamp e dados v8.01
+                // Adicionar timestamp
                 dados.timestamp = new Date().toISOString();
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
-                dados.versaoSistema = 'v8.01';
-                dados.tipoSistema = 'OPERACIONAL_GRANULAR';
                 
                 return dados;
             } catch (error) {
@@ -1798,7 +1410,9 @@
             if (!dados.vendedor) erros.push('Selecione o vendedor');
             if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
             if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
+            if (!dados.whatsappCliente) erros.push('WhatsApp do cliente é obrigatório');
             if (!dados.seguro) erros.push('Informe a situação do seguro');
+            if (!dados.pacotes || dados.pacotes.length === 0) erros.push('Selecione pelo menos um tipo de pacote');
             
             // Validar CPF
             if (dados.cpfCliente && !validarCPF(dados.cpfCliente)) {
@@ -1814,7 +1428,11 @@
                 erros.push('Informe a data de ida do primeiro recibo');
             }
             
-            // Validar datas (ida não pode ser no passado, volta deve ser posterior à ida)
+            if (!dados.recibo || dados.recibo.length === 0 || !dados.recibo[0]) {
+                erros.push('Número do recibo é obrigatório');
+            }
+            
+            // Validar datas
             if (dados.dataIda && dados.dataIda[0]) {
                 const dataIda = new Date(dados.dataIda[0]);
                 const hoje = new Date();
@@ -1823,16 +1441,13 @@
                 if (dataIda < hoje) {
                     erros.push('Data de ida não pode ser no passado');
                 }
-            }
-            
-            // Sanitizar dados de texto
-            if (dados.nomeCliente) {
-                dados.nomeCliente = dados.nomeCliente.trim().replace(/[<>]/g, '');
-            }
-            if (dados.observacoes) {
-                dados.observacoes = dados.observacoes.map(obs => 
-                    obs ? obs.trim().replace(/[<>]/g, '') : ''
-                );
+                
+                if (dados.dataVolta && dados.dataVolta[0]) {
+                    const dataVolta = new Date(dados.dataVolta[0]);
+                    if (dataVolta <= dataIda) {
+                        erros.push('Data de volta deve ser posterior à data de ida');
+                    }
+                }
             }
             
             return {
@@ -1896,7 +1511,7 @@
                     item.classList.remove('selected');
                 });
                 
-                console.log('🧹 Formulário limpo v8.01');
+                console.log('🧹 Formulário limpo');
             } catch (error) {
                 console.error('Erro ao limpar formulário:', error);
             }
@@ -1925,62 +1540,3 @@
             alerta.className = `alert-custom ${classe}`;
             alerta.innerHTML = `
                 <i class="fas fa-${icone}"></i>
-                <span>${mensagem.replace(/\n/g, '<br>')}</span>
-                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
-            `;
-            
-            document.body.appendChild(alerta);
-            
-            // Auto remover após 8 segundos
-            setTimeout(() => {
-                if (alerta.parentElement) {
-                    alerta.remove();
-                }
-            }, 8000);
-        }
-        
-        // ================================================================================
-        // 🧪 FUNÇÕES DE TESTE v8.01
-        // ================================================================================
-        
-        function testarConexaoMaster() {
-            console.log('🧪 Testando conexão com Master v8.0...');
-            verificarConexao();
-        }
-        
-        function testarFormulario() {
-            console.log('🧪 Testando funcionalidades do formulário...');
-            
-            // Testar adição de recibo
-            try {
-                adicionarRecibo();
-                console.log('✅ Teste de adição de recibo: OK');
-            } catch (error) {
-                console.error('❌ Teste de adição de recibo: FALHOU', error);
-            }
-            
-            // Testar máscaras
-            const cpfInput = document.getElementById('cpfCliente');
-            if (cpfInput) {
-                cpfInput.value = '12345678901';
-                cpfInput.dispatchEvent(new Event('input'));
-                console.log('✅ Teste de máscara CPF: OK');
-            }
-            
-            mostrarAlerta('🧪 Testes concluídos! Verifique o console para detalhes.', 'info');
-        }
-        
-        console.log('✅ Sistema de Vendas CVC v8.01 carregado com sucesso!');
-        console.log('🔗 Integração completa com Master v8.0 configurada!');
-        console.log('📋 Sistema de múltiplos recibos com controle granular mantido!');
-        console.log('🎯 CONCEITO FUNDAMENTAL: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
-        console.log('');
-        console.log('🧪 FUNÇÕES DE TESTE DISPONÍVEIS:');
-        console.log('   • testarConexaoMaster() - Testa conexão com Master v8.0');
-        console.log('   • testarFormulario() - Testa funcionalidades do formulário');
-        console.log('');
-        console.log('⚠️ IMPORTANTE: Altere a constante API_URL para sua nova implantação!');
-        console.log('🚀 Sistema v8.01 - OPERACIONAL E COMPLETO!');
-    </script>
-</body>
-</html>
