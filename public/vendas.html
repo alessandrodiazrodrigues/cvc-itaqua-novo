@@ -1356,7 +1356,7 @@
                 
                 if (result.success) {
                     mostrarAlerta('✅ Venda cadastrada com sucesso no Sistema Master v8.0!', 'success');
-                    console.log('✅ SUCESSO! Venda processada:', result.data);
+                    console.log('✅ SUCESSO! Embarque processado:', result.data);
                     limparFormulario();
                 } else {
                     throw new Error(result.error || result.message || 'Erro desconhecido');
