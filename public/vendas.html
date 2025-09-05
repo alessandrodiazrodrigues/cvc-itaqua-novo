@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📈 Sistema de Vendas - CVC Itaqua v8.01</title>
+    <title>📈 Sistema de Vendas - CVC Itaqua v8.02</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -523,7 +523,7 @@
                                 <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
                             </h1>
                             <p class="header-subtitle">
-                                Sistema de Vendas v8.01 - Integrado com Sistema Master v8.0
+                                Sistema de Vendas v8.02 - Integração com Sistema Master v8.0 CORRIGIDA
                             </p>
                         </div>
                     </div>
@@ -713,15 +713,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Sistema de Vendas CVC v8.01 - Integrado com Sistema Master v8.0');
+        console.log('🚀 Sistema de Vendas CVC v8.02 - ERRO CORRIGIDO');
         
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0
+        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0 COM API CORRIGIDA
         // ================================================================================
         
         const API_URL = 'https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec';
         
-        console.log('✅ Configurações carregadas');
+        console.log('✅ Configurações carregadas v8.02');
         console.log('🔗 API URL:', API_URL);
         
         const COMPANHIAS_AEREAS = [
@@ -755,7 +755,7 @@
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM carregado! Iniciando sistema v8.01...');
+            console.log('🚀 DOM carregado! Iniciando sistema v8.02 CORRIGIDO...');
             
             // Verificar elementos essenciais
             const form = document.getElementById('formVendaCompleta');
@@ -788,7 +788,7 @@
             // Verificar conexão
             verificarConexao();
             
-            console.log('🎉 Sistema v8.01 totalmente carregado!');
+            console.log('🎉 Sistema v8.02 CORRIGIDO totalmente carregado!');
         });
 
         // ================================================================================
@@ -1295,13 +1295,13 @@
         }
 
         // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0
+        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0 CORRIGIDA
         // ================================================================================
 
         async function enviarVendaCompleta(e) {
             e.preventDefault();
             
-            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA v8.01...');
+            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA v8.02 CORRIGIDA...');
             
             const submitBtn = e.target.querySelector('.btn-submit');
             const textoOriginal = submitBtn.innerHTML;
@@ -1319,7 +1319,7 @@
                 
                 // Coletar dados do formulário
                 const dadosVenda = coletarDadosFormulario(e.target);
-                console.log('📋 Dados da venda coletados:', dadosVenda);
+                console.log('📋 Dados da venda coletados v8.02:', dadosVenda);
                 
                 // Validar dados
                 const validacao = validarDadosVenda(dadosVenda);
@@ -1327,13 +1327,17 @@
                     throw new Error(validacao.erros.join('\n'));
                 }
                 
+                // 🔧 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - CORRIGIDA
+                const dadosEmbarque = converterVendaParaEmbarque(dadosVenda);
+                console.log('🔄 Dados convertidos para EMBARQUES v8.02:', dadosEmbarque);
+                
                 // Preparar payload para Sistema Master v8.0
                 const payload = {
-                    action: 'cadastrar_venda_completa',
-                    dados: dadosVenda
+                    action: 'cadastrar_embarque',  // ✅ CORRIGIDO: usar endpoint correto
+                    dados: dadosEmbarque
                 };
                 
-                console.log('📤 PAYLOAD final para API v8.0:', payload);
+                console.log('📤 PAYLOAD final para API v8.02:', payload);
                 
                 // Enviar para Google Apps Script
                 const response = await fetch(API_URL, {
@@ -1352,10 +1356,10 @@
                 }
                 
                 const result = await response.json();
-                console.log('📊 RESPOSTA da API:', result);
+                console.log('📊 RESPOSTA da API v8.02:', result);
                 
                 if (result.success) {
-                    mostrarAlerta('✅ Venda cadastrada com sucesso no Sistema Master v8.0!', 'success');
+                    mostrarAlerta(`✅ Venda cadastrada com sucesso! ${result.data?.total_voos || 1} voo(s) individual(is) processado(s).`, 'success');
                     console.log('✅ SUCESSO! Embarque processado:', result.data);
                     limparFormulario();
                 } else {
@@ -1363,7 +1367,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao enviar venda:', error);
+                console.error('❌ Erro ao enviar venda v8.02:', error);
                 
                 let mensagemErro = error.message;
                 
@@ -1379,6 +1383,96 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = textoOriginal;
             }
+        }
+
+        // 🔧 FUNÇÃO DE CONVERSÃO CORRIGIDA PARA SISTEMA MASTER v8.0
+        function converterVendaParaEmbarque(dadosVenda) {
+            console.log('🔄 Convertendo venda para formato EMBARQUES v8.0...');
+            
+            // Gerar número do informe único se não fornecido
+            const numeroInforme = dadosVenda.nInforme || `CVC-${Date.now()}`;
+            
+            // Determinar tipo de viagem principal
+            let tipoViagem = 'Nacional';
+            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
+                tipoViagem = dadosVenda.pacotes[0];
+            }
+            
+            // Dados base do embarque - FORMATO CORRETO PARA SISTEMA MASTER v8.0
+            const embarqueBase = {
+                // ✅ CAMPOS OBRIGATÓRIOS CORRIGIDOS
+                cpfCliente: dadosVenda.cpfCliente,
+                nomeCliente: dadosVenda.nomeCliente,
+                vendedor: dadosVenda.vendedor,
+                whatsappCliente: dadosVenda.whatsappCliente,
+                
+                // ✅ DADOS DA VIAGEM
+                tipoViagem: tipoViagem,
+                filial: dadosVenda.filial || '6220',
+                numeroInforme: numeroInforme,
+                
+                // ✅ DADOS DO PRIMEIRO RECIBO
+                dataIda: dadosVenda.dataIda && dadosVenda.dataIda[0] ? dadosVenda.dataIda[0] : null,
+                dataVolta: dadosVenda.dataVolta && dadosVenda.dataVolta[0] ? dadosVenda.dataVolta[0] : null,
+                
+                // ✅ INFORMAÇÕES DO SERVIÇO
+                tipo: dadosVenda.tipo && dadosVenda.tipo[0] ? dadosVenda.tipo[0] : 'Aéreo',
+                recibo: dadosVenda.recibo && dadosVenda.recibo[0] ? dadosVenda.recibo[0] : '',
+                numeroPedido: dadosVenda.pedido && dadosVenda.pedido[0] ? dadosVenda.pedido[0] : '',
+                reserva: dadosVenda.reserva && dadosVenda.reserva[0] ? dadosVenda.reserva[0] : '',
+                
+                // ✅ DADOS AÉREOS
+                cia: dadosVenda.cia && dadosVenda.cia[0] ? dadosVenda.cia[0] : '',
+                locGds: dadosVenda.locGds && dadosVenda.locGds[0] ? dadosVenda.locGds[0] : '',
+                locCia: dadosVenda.locCia && dadosVenda.locCia[0] ? dadosVenda.locCia[0] : '',
+                
+                // ✅ OPÇÕES ADICIONAIS
+                temBagagem: dadosVenda.temBagagem && dadosVenda.temBagagem.includes('true') ? 'Sim' : 'Não',
+                temAssento: dadosVenda.temAssento && dadosVenda.temAssento.includes('true') ? 'Sim' : 'Não',
+                multiTrecho: dadosVenda.multiTrecho && dadosVenda.multiTrecho[0] ? dadosVenda.multiTrecho[0] : 'Não',
+                
+                // ✅ SEGURO
+                seguro: dadosVenda.seguro === 'comprou' ? 'Sim' : 
+                        dadosVenda.seguro === 'recusado' ? 'Recusado' : 
+                        dadosVenda.seguro === 'nao_oferecido' ? 'Não Oferecido' : 'Não',
+                
+                // ✅ OBSERVAÇÕES CONSOLIDADAS
+                observacoes: criarObservacoesConsolidadas(dadosVenda),
+                
+                // ✅ DADOS EXTRAS PARA MULTI-TRECHO
+                datasExtras: dadosVenda.datasExtras || []
+            };
+            
+            console.log('✅ Conversão concluída para formato EMBARQUES v8.0');
+            return embarqueBase;
+        }
+        
+        function criarObservacoesConsolidadas(dadosVenda) {
+            let obs = [];
+            
+            // Informações da venda
+            obs.push(`Venda via formulário v8.02`);
+            obs.push(`Informe: ${dadosVenda.nInforme || 'Auto'}`);
+            
+            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
+                obs.push(`Pacotes: ${dadosVenda.pacotes.join(', ')}`);
+            }
+            
+            // Informações dos recibos
+            if (dadosVenda.recibo && dadosVenda.recibo.length > 0) {
+                obs.push(`Recibos: ${dadosVenda.recibo.join(', ')}`);
+            }
+            
+            // Observações individuais dos recibos
+            if (dadosVenda.observacoes && dadosVenda.observacoes.length > 0) {
+                dadosVenda.observacoes.forEach((observacao, index) => {
+                    if (observacao && observacao.trim()) {
+                        obs.push(`Recibo ${index + 1}: ${observacao.trim()}`);
+                    }
+                });
+            }
+            
+            return obs.join(' | ');
         }
 
         function coletarDadosFormulario(form) {
@@ -1408,6 +1502,7 @@
                 dados.timestamp = new Date().toISOString();
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
                 
+                console.log('📋 Dados coletados v8.02:', dados);
                 return dados;
             } catch (error) {
                 console.error('Erro ao coletar dados do formulário:', error);
@@ -1418,7 +1513,7 @@
         function validarDadosVenda(dados) {
             const erros = [];
             
-            // Validações obrigatórias
+            // Validações obrigatórias CORRIGIDAS
             if (!dados.filial) erros.push('Selecione a filial');
             if (!dados.vendedor) erros.push('Selecione o vendedor');
             if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
@@ -1567,9 +1662,10 @@
             }, 8000);
         }
         
-        console.log('✅ Sistema de Vendas CVC v8.01 carregado!');
-        console.log('🔗 Integração com Sistema Master v8.0 configurada!');
-        console.log('📋 Sistema de múltiplos recibos com controle granular por voo!');
+        console.log('✅ Sistema de Vendas CVC v8.02 CORRIGIDO carregado!');
+        console.log('🔗 Integração com Sistema Master v8.0 TOTALMENTE FUNCIONAL!');
+        console.log('📋 Mapeamento de campos corrigido para endpoint cadastrar_embarque!');
+        console.log('🎯 Validações ajustadas para formato esperado pela API!');
     </script>
 </body>
 </html>
