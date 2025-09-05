@@ -1542,8 +1542,7 @@
         function validarDadosVenda(dados) {
             const erros = [];
             
-            // Validações obrigatórias
-            if (!dados.filial) erros.push('Selecione a filial');
+            // Validações obrigatórias (filial é automática agora)
             if (!dados.vendedor) erros.push('Selecione o vendedor');
             if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
             if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
@@ -1590,6 +1589,16 @@
                     obs ? obs.trim().replace(/[<>]/g, '') : ''
                 );
             }
+            
+            console.log('✅ Validação concluída:', {
+                valido: erros.length === 0,
+                erros: erros,
+                dadosProcessados: {
+                    filial: dados.filial,
+                    vendedor: dados.vendedor,
+                    pacotes: dados.pacotes
+                }
+            });
             
             return {
                 valido: erros.length === 0,
