@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 Sistema de Vendas - CVC Itaqua v8.02 CORRIGIDO</title>
+    <title>🔧 Sistema de Vendas - CVC Itaqua v8.02 FINAL</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -533,7 +533,7 @@
                                 <i class="fas fa-shopping-cart"></i> Sistema de Vendas v8.02
                             </h1>
                             <p class="header-subtitle">
-                                🔧 ERRO CORRIGIDO - Formulário para cadastro de vendas completas
+                                🔧 FINAL - Configuração centralizada + Array de observações corrigido
                             </p>
                         </div>
                     </div>
@@ -607,13 +607,7 @@
                                 </label>
                                 <select class="form-select" id="vendedor" name="vendedor" required>
                                     <option value="">Selecione...</option>
-                                    <option value="Alessandro">Alessandro</option>
-                                    <option value="Ana Paula">Ana Paula</option>
-                                    <option value="Adriana">Adriana</option>
-                                    <option value="Adrielly">Adrielly</option>
-                                    <option value="Bia">Bia</option>
-                                    <option value="Conceição">Conceição</option>
-                                    <option value="Jhully">Jhully</option>
+                                    <!-- Será preenchido via config.js -->
                                 </select>
                             </div>
                         </div>
@@ -723,41 +717,26 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- ✅ CONFIGURAÇÃO CENTRAL - ÚNICO ARQUIVO PARA ALTERAR URL -->
+    <script src="config.js"></script>
+    
     <script>
-        console.log('🔧 Sistema de Vendas CVC v8.02 - ERRO CORRIGIDO');
+        console.log('🔧 Sistema de Vendas CVC v8.02 - COM CONFIG CENTRALIZADO');
         
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0
+        // 🔧 CONFIGURAÇÕES - VINDAS DO CONFIG.JS
         // ================================================================================
         
-        // ✅ URL ATUALIZADA v8.02:
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyiEUD0CXKx_NVMQDskZeFegMY7khGh2h26iqECFR623oSl5joJ6RSdKz-qQs69Hi_DEA/exec';
-        
-        console.log('✅ Configurações carregadas');
+        // ✅ URL vem do config.js - NUNCA mais alterar aqui!
+        const API_URL = getApiUrl();
+        console.log('✅ Configuração carregada via config.js');
         console.log('🔗 API URL:', API_URL);
+        console.log('🎯 Conceito: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
         
-        const COMPANHIAS_AEREAS = [
-            'LATAM', 'AZUL', 'GOL', 'VOEPASS',
-            '──────────────',
-            'CRUZEIRO MSC', 'CRUZEIRO COSTA', 'CRUZEIRO TEMÁTICO', 'CRUZEIRO NCL', 
-            'CRUZEIRO DISNEY', 'CRUZEIROS OUTROS',
-            '──────────────',
-            'Aerolíneas Argentinas', 'Aeroméxico', 'Air Canada', 'Air China', 
-            'Air Europa', 'Air France', 'American Airlines', 'Arajet', 'Avianca',
-            'Boliviana de Aviación (BoA)', 'British Airways', 'Copa Airlines',
-            'Delta Air Lines', 'Emirates', 'Ethiopian Airlines', 'Flybondi',
-            'Iberia', 'ITA Airways', 'JetSmart', 'KLM', 'Lufthansa',
-            'Qatar Airways', 'Royal Air Maroc', 'Sky Airline', 
-            'Swiss International Air Lines', 'TAAG Linhas Aéreas de Angola',
-            'TAP Air Portugal', 'Turkish Airlines', 'United Airlines',
-            'OUTRAS CIAS'
-        ];
-
-        const TIPOS_SERVICO = [
-            'Aéreo', 'Aéreo Facial', 'Hotel', 'A+H', 'A+H+S',
-            'Passeios', 'Traslados', 'Traslados + Passeios', 'Ingressos',
-            'Seguro', 'Cruzeiro', 'SVA e Outros', 'Locação'
-        ];
+        // ✅ Listas vindas do config.js
+        const COMPANHIAS_AEREAS = CVC_CONFIG.COMPANHIAS_AEREAS;
+        const TIPOS_SERVICO = CVC_CONFIG.TIPOS_SERVICO;
+        const VENDEDORES = CVC_CONFIG.VENDEDORES;
 
         let contadorRecibos = 0;
         let conexaoOnline = false;
@@ -768,13 +747,20 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 DOM carregado! Iniciando sistema v8.02...');
-            console.log('🔧 Sistema de Vendas CVC v8.02 - ERRO CORRIGIDO');
-            console.log('✅ Compatível com Sistema Master v8.0');
-            console.log('✅ Integração com aba EMBARQUES - 39 colunas');
+            console.log('🔧 Sistema de Vendas CVC v8.02 - CONFIGURAÇÃO CENTRALIZADA');
+            console.log('✅ Integração com Sistema Master v8.0');
+            console.log('✅ Array de observações corrigido');
             
             // Verificar dependências essenciais
             if (typeof bootstrap === 'undefined') {
                 console.warn('⚠️ Bootstrap não carregado completamente');
+            }
+            
+            // Verificar se config.js foi carregado
+            if (typeof CVC_CONFIG === 'undefined') {
+                console.error('❌ config.js não foi carregado! Verifique se o arquivo existe e está acessível.');
+                mostrarAlerta('❌ Erro na configuração: config.js não encontrado', 'error');
+                return;
             }
             
             // Verificar se elementos existem
@@ -793,6 +779,9 @@
                 return;
             }
             
+            // Preencher select de vendedores
+            preencherSelectVendedores();
+            
             // Máscaras
             configurarMascaras();
             
@@ -802,7 +791,7 @@
             // Configurar eventos dos botões
             configurarEventos();
             
-            // Adicionar primeiro recibo com verificação
+            // Adicionar primeiro recibo
             console.log('📋 Adicionando primeiro recibo automaticamente...');
             setTimeout(() => {
                 try {
@@ -826,6 +815,22 @@
         });
 
         // ================================================================================
+        // 🔧 PREENCHIMENTO DE SELECTS VIA CONFIG.JS
+        // ================================================================================
+
+        function preencherSelectVendedores() {
+            const selectVendedor = document.getElementById('vendedor');
+            if (!selectVendedor) return;
+            
+            selectVendedor.innerHTML = '<option value="">Selecione...</option>';
+            VENDEDORES.forEach(vendedor => {
+                selectVendedor.innerHTML += `<option value="${vendedor}">${vendedor}</option>`;
+            });
+            
+            console.log('✅ Select de vendedores preenchido via config.js');
+        }
+
+        // ================================================================================
         // 🎯 CONFIGURAR EVENTOS DOS BOTÕES
         // ================================================================================
 
@@ -834,8 +839,6 @@
             
             // Botão adicionar recibo
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
-            console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
-            
             if (btnAdicionar) {
                 btnAdicionar.addEventListener('click', function() {
                     console.log('🖱️ Clique no botão adicionar detectado!');
@@ -922,7 +925,7 @@
         }
 
         // ================================================================================
-        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO MANTIDO
+        // 🧾 GERENCIAMENTO DE RECIBOS
         // ================================================================================
 
         function adicionarRecibo() {
@@ -1152,12 +1155,6 @@
             try {
                 const recibo = document.getElementById(`recibo-${numero}`);
                 if (recibo) {
-                    // Remover todos os event listeners antes de deletar
-                    const elementos = recibo.querySelectorAll('button, select, input');
-                    elementos.forEach(el => {
-                        el.replaceWith(el.cloneNode(true)); // Remove todos os listeners
-                    });
-                    
                     recibo.remove();
                     console.log(`🗑️ Recibo ${numero} removido`);
                 }
@@ -1188,7 +1185,7 @@
         }
 
         // ================================================================================
-        // 🔄 CAMPOS DINÂMICOS
+        // 📄 CAMPOS DINÂMICOS
         // ================================================================================
 
         function toggleExtras(selectElement, reciboId) {
@@ -1206,7 +1203,7 @@
                 bagagemDiv.style.display = isAereo ? 'grid' : 'none';
             }
             
-            console.log(`🔄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
+            console.log(`📄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
         }
 
         function toggleMulti(selectElement, reciboId) {
@@ -1217,7 +1214,7 @@
                 multiDiv.style.display = isMulti ? 'block' : 'none';
             }
             
-            console.log(`🔄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
+            console.log(`📄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
         }
 
         function adicionarData(reciboId) {
@@ -1245,7 +1242,7 @@
         }
 
         // ================================================================================
-        // 🔍 MÁSCARAS E FORMATAÇÃO
+        // 🎨 MÁSCARAS E FORMATAÇÃO
         // ================================================================================
 
         function configurarMascaras() {
@@ -1339,7 +1336,7 @@
         }
 
         // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0 CORRIGIDA
+        // 📤 ENVIO DO FORMULÁRIO - CORRIGIDO v8.02
         // ================================================================================
 
         async function enviarVendaCompleta(e) {
@@ -1374,7 +1371,7 @@
                 // 🎯 PREPARAR PARA SISTEMA MASTER v8.0 - CORRIGIDO
                 console.log('🎯 Preparando dados para Sistema Master v8.0...');
                 const dadosEmbarque = converterVendaParaEmbarques(dadosVenda);
-                console.log('🔄 Dados convertidos para EMBARQUES v8.0:', dadosEmbarque);
+                console.log('📄 Dados convertidos para EMBARQUES v8.0:', dadosEmbarque);
                 
                 // ✅ PAYLOAD CORRIGIDO para Sistema Master v8.0
                 const payload = {
@@ -1436,13 +1433,13 @@
         }
 
         // ================================================================================
-        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - CORRIGIDA
+        // 📄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - ARRAY CORRIGIDO
         // ================================================================================
 
         function converterVendaParaEmbarques(dadosVenda) {
-            console.log('🔄 Convertendo venda para formato EMBARQUES v8.0...');
+            console.log('📄 Convertendo venda para formato EMBARQUES v8.0...');
             
-            // ✅ ESTRUTURA CORRIGIDA - sem campos obrigatórios inexistentes
+            // ✅ ESTRUTURA CORRIGIDA - campo observacoes como ARRAY
             const dadosEmbarque = {
                 // ⭐ DADOS ESSENCIAIS PARA CONTROLE GRANULAR
                 cpfCliente: dadosVenda.cpfCliente,
@@ -1477,16 +1474,16 @@
                 multiTrecho: dadosVenda.multiTrecho?.[0] || 'Não',
                 seguro: converterSeguro(dadosVenda.seguro),
                 
-                // 📝 OBSERVAÇÕES CONSOLIDADAS
-                // CÓDIGO CORRIGIDO
-observacoes: dadosVenda.observacoes || [],
+                // 🔧 CORREÇÃO PRINCIPAL: observacoes como ARRAY (não string!)
+                observacoes: dadosVenda.observacoes || [], // ← CORRIGIDO!
                 
-                // 🔢 CONTROLE DE MÚLTIPLOS RECIBOS
+                // 📢 CONTROLE DE MÚLTIPLOS RECIBOS
                 numeroInforme: dadosVenda.nInforme || `VENDA-${Date.now()}`,
                 datasExtras: dadosVenda.datasExtras || []
             };
             
             console.log('✅ Conversão concluída para Sistema Master v8.0');
+            console.log('🔧 Observações enviadas como ARRAY:', dadosEmbarque.observacoes);
             return dadosEmbarque;
         }
 
@@ -1497,46 +1494,6 @@ observacoes: dadosVenda.observacoes || [],
                 'nao_oferecido': 'Não Oferecido'
             };
             return mapeamento[seguroOriginal] || 'Não informado';
-        }
-
-        function consolidarObservacoes(dadosVenda) {
-            let obs = [];
-            
-            // Adicionar informações da filial e vendedor
-            obs.push(`Sistema de Vendas v8.02 - ${dadosVenda.vendedor} - Filial ${dadosVenda.filial}`);
-            
-            // Adicionar tipos de pacote
-            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
-                obs.push(`Pacotes: ${dadosVenda.pacotes.join(', ')}`);
-            }
-            
-            // Consolidar observações de recibos
-            if (dadosVenda.observacoes && dadosVenda.observacoes.length > 0) {
-                dadosVenda.observacoes.forEach((observacao, index) => {
-                    if (observacao && observacao.trim()) {
-                        obs.push(`Recibo ${index + 1}: ${observacao.trim()}`);
-                    }
-                });
-            }
-            
-            // Adicionar informações de múltiplos recibos se houver
-            if (dadosVenda.tipo && dadosVenda.tipo.length > 1) {
-                obs.push(`MÚLTIPLOS RECIBOS (${dadosVenda.tipo.length} serviços)`);
-                dadosVenda.tipo.forEach((tipo, index) => {
-                    if (tipo) {
-                        let infoRecibo = `${index + 1}. ${tipo}`;
-                        if (dadosVenda.recibo && dadosVenda.recibo[index]) {
-                            infoRecibo += ` - Recibo: ${dadosVenda.recibo[index]}`;
-                        }
-                        if (dadosVenda.dataIda && dadosVenda.dataIda[index]) {
-                            infoRecibo += ` - Data: ${dadosVenda.dataIda[index]}`;
-                        }
-                        obs.push(infoRecibo);
-                    }
-                });
-            }
-            
-            return obs.join(' | ');
         }
 
         function coletarDadosFormulario(form) {
@@ -1588,6 +1545,8 @@ observacoes: dadosVenda.observacoes || [],
                 // Adicionar timestamp
                 dados.timestamp = new Date().toISOString();
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
+                
+                console.log('✅ Dados coletados com observações como array:', dados.observacoes);
                 
                 return dados;
             } catch (error) {
@@ -1642,7 +1601,7 @@ observacoes: dadosVenda.observacoes || [],
             if (dados.nomeCliente) {
                 dados.nomeCliente = dados.nomeCliente.trim().replace(/[<>]/g, '');
             }
-            if (dados.observacoes) {
+            if (dados.observacoes && Array.isArray(dados.observacoes)) {
                 dados.observacoes = dados.observacoes.map(obs => 
                     obs ? obs.trim().replace(/[<>]/g, '') : ''
                 );
@@ -1744,12 +1703,12 @@ observacoes: dadosVenda.observacoes || [],
             
             document.body.appendChild(alerta);
             
-            // Auto remover após tempo configurado
+            // Auto remover após tempo configurado do config.js
             setTimeout(() => {
                 if (alerta.parentElement) {
                     alerta.remove();
                 }
-            }, (CONFIG && CONFIG.UI && CONFIG.UI.auto_hide_alerts) ? CONFIG.UI.auto_hide_alerts : 8000);
+            }, CVC_CONFIG.UI?.auto_hide_alerts || 8000);
         }
         
         // ================================================================================
@@ -1766,7 +1725,7 @@ observacoes: dadosVenda.observacoes || [],
         console.log('   ✅ Conversão automática para aba EMBARQUES');
         console.log('   ✅ Controle granular por voo individual');
         console.log('   ✅ Integração com 39 colunas da planilha');
-        console.log('   ✅ Validação corrigida de dados');
+        console.log('   ✅ Array de observações CORRIGIDO');
         console.log('   ✅ CORS corrigido para API');
         console.log('   ✅ Configuração centralizada em config.js');
         console.log('🚀 Sistema v8.02 pronto para produção!');
