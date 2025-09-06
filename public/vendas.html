@@ -1478,7 +1478,8 @@
                 seguro: converterSeguro(dadosVenda.seguro),
                 
                 // 📝 OBSERVAÇÕES CONSOLIDADAS
-                observacoes: consolidarObservacoes(dadosVenda),
+                // CÓDIGO CORRIGIDO
+observacoes: dadosVenda.observacoes || [],
                 
                 // 🔢 CONTROLE DE MÚLTIPLOS RECIBOS
                 numeroInforme: dadosVenda.nInforme || `VENDA-${Date.now()}`,
