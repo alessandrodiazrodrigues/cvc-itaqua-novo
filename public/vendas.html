@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📈 Sistema de Vendas - CVC Itaqua v8.02</title>
+    <title>📈 Sistema de Vendas - CVC Itaqua v8.01</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -169,10 +169,6 @@
         .form-control:focus, .form-select:focus {
             border-color: var(--cvc-azul);
             box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
-        }
-        
-        .required {
-            color: #dc3545;
         }
         
         /* RADIO E CHECKBOX CUSTOM */
@@ -370,6 +366,20 @@
             box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
         }
         
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
+        }
+        
         .btn-submit {
             background: linear-gradient(135deg, var(--cvc-verde) 0%, #007C42 100%);
             color: white;
@@ -520,10 +530,10 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-shopping-cart"></i> Cadastro de Vendas
+                                <i class="fas fa-shopping-cart"></i> Sistema de Vendas v8.01
                             </h1>
                             <p class="header-subtitle">
-                                Sistema de Vendas v8.02 - Integração com Sistema Master v8.0 CORRIGIDA
+                                Formulário para cadastro de vendas completas - Integrado ao Sistema Master v8.0
                             </p>
                         </div>
                     </div>
@@ -580,19 +590,23 @@
                             
                             <div class="col-md-4">
                                 <label class="form-label">
-                                    <i class="fas fa-building"></i> Filial <span class="required">*</span>
+                                    <i class="fas fa-building"></i> Filial
                                 </label>
                                 <div class="radio-group">
                                     <div class="radio-item">
-                                        <input type="radio" name="filial" value="6220" id="filial6220" required checked>
+                                        <input type="radio" name="filial" value="6220" id="filial6220" required>
                                         <label for="filial6220">6220 - Itaquaquecetuba</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input type="radio" name="filial" value="6223" id="filial6223">
+                                        <label for="filial6223">6223</label>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="vendedor" class="form-label">
-                                    <i class="fas fa-user-tie"></i> Vendedor <span class="required">*</span>
+                                    <i class="fas fa-user-tie"></i> Vendedor
                                 </label>
                                 <select class="form-select" id="vendedor" name="vendedor" required>
                                     <option value="">Selecione...</option>
@@ -609,7 +623,7 @@
                         
                         <div class="mt-3">
                             <label class="form-label">
-                                <i class="fas fa-box"></i> Tipo de Pacote <span class="required">*</span>
+                                <i class="fas fa-box"></i> Tipo de Pacote
                             </label>
                             <div class="checkbox-group">
                                 <div class="checkbox-item">
@@ -635,7 +649,7 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label for="cpfCliente" class="form-label">
-                                    <i class="fas fa-id-card"></i> CPF <span class="required">*</span>
+                                    <i class="fas fa-id-card"></i> CPF
                                 </label>
                                 <input type="text" class="form-control" id="cpfCliente" name="cpfCliente" 
                                        required placeholder="000.000.000-00" maxlength="14">
@@ -643,17 +657,17 @@
                             
                             <div class="col-md-4">
                                 <label for="nomeCliente" class="form-label">
-                                    <i class="fas fa-signature"></i> Nome Completo <span class="required">*</span>
+                                    <i class="fas fa-signature"></i> Nome Completo
                                 </label>
                                 <input type="text" class="form-control" id="nomeCliente" name="nomeCliente" required>
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="whatsappCliente" class="form-label">
-                                    <i class="fab fa-whatsapp"></i> WhatsApp <span class="required">*</span>
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
                                 </label>
                                 <input type="text" class="form-control" id="whatsappCliente" name="whatsappCliente" 
-                                       required placeholder="(11) 99999-9999" maxlength="15">
+                                       placeholder="(11) 99999-9999" maxlength="15">
                             </div>
                         </div>
                     </div>
@@ -670,7 +684,7 @@
                             <button type="button" class="btn btn-success" id="btnAdicionarRecibo">
                                 <i class="fas fa-plus-circle"></i> Adicionar Recibo
                             </button>
-                            <button type="button" id="btnRemoverRecibo" class="btn btn-secondary ms-2" style="display: none;">
+                            <button type="button" id="btnRemoverRecibo" class="btn btn-danger ms-2" style="display: none;">
                                 <i class="fas fa-minus-circle"></i> Remover Último
                             </button>
                         </div>
@@ -682,7 +696,7 @@
                         
                         <div class="radio-group">
                             <div class="radio-item">
-                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado" required>
+                                <input type="radio" name="seguro" value="recusado" id="seguroRecusado">
                                 <label for="seguroRecusado">❌ Oferecido e RECUSADO</label>
                             </div>
                             <div class="radio-item">
@@ -713,15 +727,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Sistema de Vendas CVC v8.02 - ERRO CORRIGIDO');
+        console.log('🚀 Sistema de Vendas CVC v8.01 - CONTROLE GRANULAR POR VOO');
         
         // ================================================================================
-        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0 COM API CORRIGIDA
+        // 🔧 CONFIGURAÇÕES - SISTEMA MASTER v8.0
         // ================================================================================
         
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyAwCvYevic73muFTSoYWkJS9YxdmwmboSaJuxRRG0Cf3uJr54yQfHnvOrPn1ufM5YMFw/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxwckeJGdXdbtidZ3GV7DD3nkgbI8j33Kgh3p8-AIcu9VEjGsWXE4EZhHbEKBM6IuSEoQ/exec';
         
-        console.log('✅ Configurações carregadas v8.02');
+        console.log('✅ Configurações carregadas');
         console.log('🔗 API URL:', API_URL);
         
         const COMPANHIAS_AEREAS = [
@@ -751,16 +765,29 @@
         let conexaoOnline = false;
 
         // ================================================================================
-        // 🚀 INICIALIZAÇÃO
+        // 🚀 INICIALIZAÇÃO ROBUSTA
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM carregado! Iniciando sistema v8.02 CORRIGIDO...');
+            console.log('🚀 DOM carregado! Iniciando sistema v8.01...');
+            console.log('🚀 Sistema de Vendas CVC v8.01 - CONTROLE GRANULAR POR VOO');
+            console.log('✅ Compatível com Sistema Master v8.0');
+            console.log('✅ Integração com aba EMBARQUES - 39 colunas');
             
-            // Verificar elementos essenciais
+            // Verificar dependências essenciais
+            if (typeof bootstrap === 'undefined') {
+                console.warn('⚠️ Bootstrap não carregado completamente');
+            }
+            
+            // Verificar se elementos existem
             const form = document.getElementById('formVendaCompleta');
             const container = document.getElementById('recibosContainer');
             const btnAdicionar = document.getElementById('btnAdicionarRecibo');
+            
+            console.log('🔍 Verificação de elementos:');
+            console.log('   - Formulário:', !!form);
+            console.log('   - Container recibos:', !!container);
+            console.log('   - Botão adicionar:', !!btnAdicionar);
             
             if (!form || !container || !btnAdicionar) {
                 console.error('❌ Elementos essenciais não encontrados!');
@@ -768,27 +795,36 @@
                 return;
             }
             
-            // Configurar máscaras
+            // Máscaras
             configurarMascaras();
             
-            // Configurar radio/checkbox visual
+            // Radio/Checkbox visual
             configurarRadioCheckbox();
             
             // Configurar eventos dos botões
             configurarEventos();
             
-            // Adicionar primeiro recibo
+            // Adicionar primeiro recibo com verificação
+            console.log('📋 Adicionando primeiro recibo automaticamente...');
             setTimeout(() => {
-                adicionarRecibo();
+                try {
+                    adicionarRecibo();
+                } catch (error) {
+                    console.error('Erro ao adicionar primeiro recibo:', error);
+                    mostrarAlerta('❌ Erro ao inicializar formulário', 'error');
+                }
             }, 100);
             
             // Configurar envio do formulário
-            form.addEventListener('submit', enviarVendaCompleta);
+            if (form) {
+                form.addEventListener('submit', enviarVendaCompleta);
+                console.log('✅ Event listener do formulário configurado');
+            }
             
             // Verificar conexão
             verificarConexao();
             
-            console.log('🎉 Sistema v8.02 CORRIGIDO totalmente carregado!');
+            console.log('🎉 Sistema v8.01 totalmente carregado!');
         });
 
         // ================================================================================
@@ -803,12 +839,7 @@
             console.log('🔍 Botão adicionar encontrado:', !!btnAdicionar);
             
             if (btnAdicionar) {
-                // Remover listeners antigos
-                btnAdicionar.replaceWith(btnAdicionar.cloneNode(true));
-                const btnAdicionarNovo = document.getElementById('btnAdicionarRecibo');
-                
-                btnAdicionarNovo.addEventListener('click', function(e) {
-                    e.preventDefault();
+                btnAdicionar.addEventListener('click', function() {
                     console.log('🖱️ Clique no botão adicionar detectado!');
                     adicionarRecibo();
                 });
@@ -820,8 +851,7 @@
             // Botão remover último recibo
             const btnRemover = document.getElementById('btnRemoverRecibo');
             if (btnRemover) {
-                btnRemover.addEventListener('click', function(e) {
-                    e.preventDefault();
+                btnRemover.addEventListener('click', function() {
                     console.log('🖱️ Clique no botão remover detectado!');
                     removerUltimoRecibo();
                 });
@@ -841,10 +871,10 @@
             statusDiv.style.display = 'block';
             
             try {
-                console.log('🔍 Verificando conexão com API...');
+                console.log('🔍 Verificando conexão com API v8.0...');
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
                 
                 const response = await fetch(API_URL, {
                     method: 'GET',
@@ -858,9 +888,10 @@
                     if (data.success) {
                         conexaoOnline = true;
                         statusDiv.className = 'status-conexao online';
-                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema Online v8.0';
-                        console.log('✅ Conexão OK:', data.message);
+                        statusTexto.innerHTML = '<i class="fas fa-check-circle"></i> Sistema v8.0 Online';
+                        console.log('✅ Conexão OK v8.0:', data.message || 'Sistema Master funcionando');
                         
+                        // Esconder após 3 segundos
                         setTimeout(() => {
                             statusDiv.style.display = 'none';
                         }, 3000);
@@ -877,8 +908,15 @@
                 statusTexto.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conexão falhou';
                 
                 console.error('❌ Erro de conexão:', error.message);
-                mostrarAlerta('❌ Problema de conexão com o servidor.', 'error');
                 
+                if (error.name === 'AbortError') {
+                    console.log('⏱️ Timeout na conexão');
+                    mostrarAlerta('⏱️ Timeout na conexão. Verifique sua internet.', 'error');
+                } else {
+                    mostrarAlerta('❌ Problema de conexão com o servidor. Verifique se o Google Apps Script foi reimplantado.', 'error');
+                }
+                
+                // Manter visível se houver erro
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
                 }, 10000);
@@ -886,7 +924,7 @@
         }
 
         // ================================================================================
-        // 🧾 GERENCIAMENTO DE RECIBOS
+        // 🧾 GERENCIAMENTO DE RECIBOS - SISTEMA COMPLETO MANTIDO
         // ================================================================================
 
         function adicionarRecibo() {
@@ -901,6 +939,8 @@
                     console.error('❌ Container de recibos não encontrado!');
                     return;
                 }
+                
+                console.log('✅ Container encontrado, criando recibo...');
                 
                 const reciboDiv = document.createElement('div');
                 reciboDiv.className = 'recibo-container';
@@ -919,9 +959,9 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-hashtag"></i> Nº do Recibo <span class="required">*</span>
+                                <i class="fas fa-hashtag"></i> Nº do Recibo
                             </label>
-                            <input type="text" class="form-control" name="recibo[]" placeholder="Apenas números" required>
+                            <input type="text" class="form-control" name="recibo[]" placeholder="Apenas números">
                         </div>
                         
                         <div class="col-md-4">
@@ -942,7 +982,7 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-tag"></i> Tipo de Serviço <span class="required">*</span>
+                                <i class="fas fa-tag"></i> Tipo de Serviço
                             </label>
                             <select class="form-select" name="tipo[]" data-recibo="${contadorRecibos}" required>
                                 <option value="">Selecione...</option>
@@ -952,7 +992,7 @@
                         
                         <div class="col-md-4">
                             <label class="form-label">
-                                <i class="fas fa-calendar-alt"></i> Data Ida <span class="required">*</span>
+                                <i class="fas fa-calendar-alt"></i> Data Ida
                             </label>
                             <input type="date" class="form-control" name="dataIda[]" required>
                         </div>
@@ -1114,6 +1154,12 @@
             try {
                 const recibo = document.getElementById(`recibo-${numero}`);
                 if (recibo) {
+                    // Remover todos os event listeners antes de deletar
+                    const elementos = recibo.querySelectorAll('button, select, input');
+                    elementos.forEach(el => {
+                        el.replaceWith(el.cloneNode(true)); // Remove todos os listeners
+                    });
+                    
                     recibo.remove();
                     console.log(`🗑️ Recibo ${numero} removido`);
                 }
@@ -1295,19 +1341,19 @@
         }
 
         // ================================================================================
-        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0 CORRIGIDA
+        // 📤 ENVIO DO FORMULÁRIO - INTEGRAÇÃO COM SISTEMA MASTER v8.0
         // ================================================================================
 
         async function enviarVendaCompleta(e) {
             e.preventDefault();
             
-            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA v8.02 CORRIGIDA...');
+            console.log('📤 INICIANDO ENVIO DA VENDA COMPLETA v8.01...');
             
             const submitBtn = e.target.querySelector('.btn-submit');
             const textoOriginal = submitBtn.innerHTML;
             
             try {
-                // Verificar conexão
+                // Verificar se tem conexão
                 if (!conexaoOnline) {
                     mostrarAlerta('❌ Sem conexão com o servidor. Verifique sua internet.', 'error');
                     return;
@@ -1315,11 +1361,11 @@
                 
                 // Mostrar loading
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="loading-spinner"></span> Enviando venda...';
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> Processando venda...';
                 
                 // Coletar dados do formulário
                 const dadosVenda = coletarDadosFormulario(e.target);
-                console.log('📋 Dados da venda coletados v8.02:', dadosVenda);
+                console.log('📋 Dados da venda coletados:', dadosVenda);
                 
                 // Validar dados
                 const validacao = validarDadosVenda(dadosVenda);
@@ -1327,23 +1373,24 @@
                     throw new Error(validacao.erros.join('\n'));
                 }
                 
-                // 🔧 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - CORRIGIDA
-                const dadosEmbarque = converterVendaParaEmbarque(dadosVenda);
-                console.log('🔄 Dados convertidos para EMBARQUES v8.02:', dadosEmbarque);
+                // 🎯 PREPARAR PARA SISTEMA MASTER v8.0 - CONTROLE GRANULAR POR VOO
+                console.log('🎯 Convertendo venda para EMBARQUES v8.0...');
+                const dadosEmbarque = converterVendaParaEmbarques(dadosVenda);
+                console.log('🔄 Dados convertidos para EMBARQUES v8.0:', dadosEmbarque);
                 
                 // Preparar payload para Sistema Master v8.0
                 const payload = {
-                    action: 'cadastrar_embarque',  // ✅ CORRIGIDO: usar endpoint correto
+                    action: 'cadastrar_embarque',
                     dados: dadosEmbarque
                 };
                 
-                console.log('📤 PAYLOAD final para API v8.02:', payload);
+                console.log('📤 PAYLOAD final para Sistema Master v8.0:', payload);
                 
                 // Enviar para Google Apps Script
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Content-Type': 'text/plain;charset=utf-8', // ✅ CORS CORRIGIDO
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload)
@@ -1356,25 +1403,30 @@
                 }
                 
                 const result = await response.json();
-                console.log('📊 RESPOSTA da API v8.02:', result);
+                console.log('📊 RESPOSTA da API v8.0:', result);
                 
                 if (result.success) {
-                    mostrarAlerta(`✅ Venda cadastrada com sucesso! ${result.data?.total_voos || 1} voo(s) individual(is) processado(s).`, 'success');
-                    console.log('✅ SUCESSO! Embarque processado:', result.data);
+                    mostrarAlerta(`✅ Venda cadastrada com sucesso! ${result.data?.total_voos || 1} voo(s) individual(is) criado(s) na aba EMBARQUES`, 'success');
+                    console.log('✅ SUCESSO! Venda processada v8.0:', result.data);
                     limparFormulario();
                 } else {
                     throw new Error(result.error || result.message || 'Erro desconhecido');
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao enviar venda v8.02:', error);
+                console.error('❌ Erro ao enviar venda:', error);
                 
                 let mensagemErro = error.message;
                 
+                // Tratar erros específicos
                 if (error.message.includes('Failed to fetch') || error.message.includes('AbortError')) {
-                    mensagemErro = '🌐 Erro de conexão. Verifique sua internet e tente novamente.';
+                    mensagemErro = '🌐 Erro de conexão. Verifique:\n' +
+                                  '• Sua conexão com a internet\n' +
+                                  '• Se o Google Apps Script foi reimplantado\n' +
+                                  '• Tente novamente em alguns segundos';
                 } else if (error.message.includes('CORS')) {
-                    mensagemErro = '⚙️ Erro de configuração CORS. Verifique se o Google Apps Script foi implantado corretamente.';
+                    mensagemErro = '⚙️ Erro de configuração CORS.\n' +
+                                  'Verifique se o Google Apps Script foi implantado corretamente.';
                 }
                 
                 mostrarAlerta('❌ Erro ao cadastrar venda:\n' + mensagemErro, 'error');
@@ -1385,89 +1437,102 @@
             }
         }
 
-        // 🔧 FUNÇÃO DE CONVERSÃO CORRIGIDA PARA SISTEMA MASTER v8.0
-        function converterVendaParaEmbarque(dadosVenda) {
+        // ================================================================================
+        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - CONTROLE GRANULAR POR VOO
+        // ================================================================================
+
+        function converterVendaParaEmbarques(dadosVenda) {
             console.log('🔄 Convertendo venda para formato EMBARQUES v8.0...');
             
-            // Gerar número do informe único se não fornecido
-            const numeroInforme = dadosVenda.nInforme || `CVC-${Date.now()}`;
-            
-            // Determinar tipo de viagem principal
-            let tipoViagem = 'Nacional';
-            if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
-                tipoViagem = dadosVenda.pacotes[0];
-            }
-            
-            // Dados base do embarque - FORMATO CORRETO PARA SISTEMA MASTER v8.0
-            const embarqueBase = {
-                // ✅ CAMPOS OBRIGATÓRIOS CORRIGIDOS
+            // Estrutura compatível com Sistema Master v8.0
+            const dadosEmbarque = {
+                // ⭐ DADOS ESSENCIAIS PARA CONTROLE GRANULAR
                 cpfCliente: dadosVenda.cpfCliente,
                 nomeCliente: dadosVenda.nomeCliente,
                 vendedor: dadosVenda.vendedor,
-                whatsappCliente: dadosVenda.whatsappCliente,
-                
-                // ✅ DADOS DA VIAGEM
-                tipoViagem: tipoViagem,
                 filial: dadosVenda.filial || '6220',
-                numeroInforme: numeroInforme,
                 
-                // ✅ DADOS DO PRIMEIRO RECIBO
-                dataIda: dadosVenda.dataIda && dadosVenda.dataIda[0] ? dadosVenda.dataIda[0] : null,
-                dataVolta: dadosVenda.dataVolta && dadosVenda.dataVolta[0] ? dadosVenda.dataVolta[0] : null,
+                // 🎯 TIPO DE VIAGEM E PACOTE
+                tipoViagem: dadosVenda.pacotes?.[0] || 'Nacional',
                 
-                // ✅ INFORMAÇÕES DO SERVIÇO
-                tipo: dadosVenda.tipo && dadosVenda.tipo[0] ? dadosVenda.tipo[0] : 'Aéreo',
-                recibo: dadosVenda.recibo && dadosVenda.recibo[0] ? dadosVenda.recibo[0] : '',
-                numeroPedido: dadosVenda.pedido && dadosVenda.pedido[0] ? dadosVenda.pedido[0] : '',
-                reserva: dadosVenda.reserva && dadosVenda.reserva[0] ? dadosVenda.reserva[0] : '',
+                // ✈️ INFORMAÇÕES DE VOO (primeiro recibo como base)
+                dataIda: dadosVenda.dataIda?.[0] || '',
+                dataVolta: dadosVenda.dataVolta?.[0] || '',
                 
-                // ✅ DADOS AÉREOS
-                cia: dadosVenda.cia && dadosVenda.cia[0] ? dadosVenda.cia[0] : '',
-                locGds: dadosVenda.locGds && dadosVenda.locGds[0] ? dadosVenda.locGds[0] : '',
-                locCia: dadosVenda.locCia && dadosVenda.locCia[0] ? dadosVenda.locCia[0] : '',
+                // 📞 CONTATO
+                whatsappCliente: dadosVenda.whatsappCliente || '',
                 
-                // ✅ OPÇÕES ADICIONAIS
-                temBagagem: dadosVenda.temBagagem && dadosVenda.temBagagem.includes('true') ? 'Sim' : 'Não',
-                temAssento: dadosVenda.temAssento && dadosVenda.temAssento.includes('true') ? 'Sim' : 'Não',
-                multiTrecho: dadosVenda.multiTrecho && dadosVenda.multiTrecho[0] ? dadosVenda.multiTrecho[0] : 'Não',
+                // 🧾 DOCUMENTOS (primeiro recibo)
+                recibo: dadosVenda.recibo?.[0] || '',
+                numeroPedido: dadosVenda.pedido?.[0] || '',
+                reserva: dadosVenda.reserva?.[0] || '',
                 
-                // ✅ SEGURO
-                seguro: dadosVenda.seguro === 'comprou' ? 'Sim' : 
-                        dadosVenda.seguro === 'recusado' ? 'Recusado' : 
-                        dadosVenda.seguro === 'nao_oferecido' ? 'Não Oferecido' : 'Não',
+                // 🏷️ SERVIÇOS
+                tipo: dadosVenda.tipo?.[0] || '',
+                cia: dadosVenda.cia?.[0] || '',
+                locGds: dadosVenda.locGds?.[0] || '',
+                locCia: dadosVenda.locCia?.[0] || '',
                 
-                // ✅ OBSERVAÇÕES CONSOLIDADAS
-                observacoes: criarObservacoesConsolidadas(dadosVenda),
+                // ✅ OPCIONAIS
+                temBagagem: dadosVenda.temBagagem?.includes('true') ? 'Sim' : 'Não',
+                temAssento: dadosVenda.temAssento?.includes('true') ? 'Sim' : 'Não',
+                multiTrecho: dadosVenda.multiTrecho?.[0] || 'Não',
+                seguro: converterSeguro(dadosVenda.seguro),
                 
-                // ✅ DADOS EXTRAS PARA MULTI-TRECHO
+                // 📝 OBSERVAÇÕES CONSOLIDADAS
+                observacoes: consolidarObservacoes(dadosVenda),
+                
+                // 🔢 CONTROLE DE MÚLTIPLOS RECIBOS
+                numeroInforme: dadosVenda.nInforme || `CVC-${Date.now()}`,
                 datasExtras: dadosVenda.datasExtras || []
             };
             
-            console.log('✅ Conversão concluída para formato EMBARQUES v8.0');
-            return embarqueBase;
+            console.log('✅ Conversão concluída para Sistema Master v8.0');
+            return dadosEmbarque;
         }
-        
-        function criarObservacoesConsolidadas(dadosVenda) {
+
+        function converterSeguro(seguroOriginal) {
+            const mapeamento = {
+                'comprou': 'Sim',
+                'recusado': 'Recusado',
+                'nao_oferecido': 'Não Oferecido'
+            };
+            return mapeamento[seguroOriginal] || 'Não informado';
+        }
+
+        function consolidarObservacoes(dadosVenda) {
             let obs = [];
             
-            // Informações da venda
-            obs.push(`Venda via formulário v8.02`);
-            obs.push(`Informe: ${dadosVenda.nInforme || 'Auto'}`);
+            // Adicionar informações da filial e vendedor
+            obs.push(`Sistema de Vendas v8.01 - ${dadosVenda.vendedor} - Filial ${dadosVenda.filial}`);
             
+            // Adicionar tipos de pacote
             if (dadosVenda.pacotes && dadosVenda.pacotes.length > 0) {
                 obs.push(`Pacotes: ${dadosVenda.pacotes.join(', ')}`);
             }
             
-            // Informações dos recibos
-            if (dadosVenda.recibo && dadosVenda.recibo.length > 0) {
-                obs.push(`Recibos: ${dadosVenda.recibo.join(', ')}`);
-            }
-            
-            // Observações individuais dos recibos
+            // Consolidar observações de recibos
             if (dadosVenda.observacoes && dadosVenda.observacoes.length > 0) {
                 dadosVenda.observacoes.forEach((observacao, index) => {
                     if (observacao && observacao.trim()) {
                         obs.push(`Recibo ${index + 1}: ${observacao.trim()}`);
+                    }
+                });
+            }
+            
+            // Adicionar informações de múltiplos recibos se houver
+            if (dadosVenda.tipo && dadosVenda.tipo.length > 1) {
+                obs.push(`MÚLTIPLOS RECIBOS (${dadosVenda.tipo.length} serviços)`);
+                dadosVenda.tipo.forEach((tipo, index) => {
+                    if (tipo) {
+                        let infoRecibo = `${index + 1}. ${tipo}`;
+                        if (dadosVenda.recibo && dadosVenda.recibo[index]) {
+                            infoRecibo += ` - Recibo: ${dadosVenda.recibo[index]}`;
+                        }
+                        if (dadosVenda.dataIda && dadosVenda.dataIda[index]) {
+                            infoRecibo += ` - Data: ${dadosVenda.dataIda[index]}`;
+                        }
+                        obs.push(infoRecibo);
                     }
                 });
             }
@@ -1498,11 +1563,33 @@
                 });
                 dados.pacotes = pacotes;
                 
+                // Processar campos de bagagem e assento (checkboxes especiais)
+                const temBagagem = [];
+                const temAssento = [];
+                
+                document.querySelectorAll('input[name="temBagagem[]"]:checked').forEach(cb => {
+                    temBagagem.push(cb.value);
+                });
+                document.querySelectorAll('input[name="temAssento[]"]:checked').forEach(cb => {
+                    temAssento.push(cb.value);
+                });
+                
+                dados.temBagagem = temBagagem;
+                dados.temAssento = temAssento;
+                
+                // Coletar datas extras de multi trecho
+                const datasExtras = [];
+                document.querySelectorAll('input[name="datasExtras[]"]').forEach(input => {
+                    if (input.value) {
+                        datasExtras.push(input.value);
+                    }
+                });
+                dados.datasExtras = datasExtras;
+                
                 // Adicionar timestamp
                 dados.timestamp = new Date().toISOString();
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
                 
-                console.log('📋 Dados coletados v8.02:', dados);
                 return dados;
             } catch (error) {
                 console.error('Erro ao coletar dados do formulário:', error);
@@ -1513,14 +1600,12 @@
         function validarDadosVenda(dados) {
             const erros = [];
             
-            // Validações obrigatórias CORRIGIDAS
+            // Validações obrigatórias
             if (!dados.filial) erros.push('Selecione a filial');
             if (!dados.vendedor) erros.push('Selecione o vendedor');
             if (!dados.cpfCliente) erros.push('CPF do cliente é obrigatório');
             if (!dados.nomeCliente) erros.push('Nome do cliente é obrigatório');
-            if (!dados.whatsappCliente) erros.push('WhatsApp do cliente é obrigatório');
             if (!dados.seguro) erros.push('Informe a situação do seguro');
-            if (!dados.pacotes || dados.pacotes.length === 0) erros.push('Selecione pelo menos um tipo de pacote');
             
             // Validar CPF
             if (dados.cpfCliente && !validarCPF(dados.cpfCliente)) {
@@ -1536,11 +1621,7 @@
                 erros.push('Informe a data de ida do primeiro recibo');
             }
             
-            if (!dados.recibo || dados.recibo.length === 0 || !dados.recibo[0]) {
-                erros.push('Número do recibo é obrigatório');
-            }
-            
-            // Validar datas
+            // Validar datas (ida não pode ser no passado, volta deve ser posterior à ida)
             if (dados.dataIda && dados.dataIda[0]) {
                 const dataIda = new Date(dados.dataIda[0]);
                 const hoje = new Date();
@@ -1556,6 +1637,16 @@
                         erros.push('Data de volta deve ser posterior à data de ida');
                     }
                 }
+            }
+            
+            // Sanitizar dados de texto
+            if (dados.nomeCliente) {
+                dados.nomeCliente = dados.nomeCliente.trim().replace(/[<>]/g, '');
+            }
+            if (dados.observacoes) {
+                dados.observacoes = dados.observacoes.map(obs => 
+                    obs ? obs.trim().replace(/[<>]/g, '') : ''
+                );
             }
             
             return {
@@ -1662,10 +1753,22 @@
             }, 8000);
         }
         
-        console.log('✅ Sistema de Vendas CVC v8.02 CORRIGIDO carregado!');
-        console.log('🔗 Integração com Sistema Master v8.0 TOTALMENTE FUNCIONAL!');
-        console.log('📋 Mapeamento de campos corrigido para endpoint cadastrar_embarque!');
-        console.log('🎯 Validações ajustadas para formato esperado pela API!');
+        // ================================================================================
+        // 📝 LOGS E INFORMAÇÕES FINAIS v8.01
+        // ================================================================================
+        
+        console.log('✅ Sistema de Vendas CVC v8.01 carregado com sucesso!');
+        console.log('🔗 Integração completa com Sistema Master v8.0');
+        console.log('🎯 Conceito: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
+        console.log('📊 Funcionalidades:');
+        console.log('   ✅ Formulário completo de vendas');
+        console.log('   ✅ Sistema de múltiplos recibos');
+        console.log('   ✅ Conversão automática para aba EMBARQUES');
+        console.log('   ✅ Controle granular por voo individual');
+        console.log('   ✅ Integração com 39 colunas da planilha');
+        console.log('   ✅ Validação completa de dados');
+        console.log('   ✅ CORS corrigido para API');
+        console.log('🚀 Sistema pronto para produção!');
     </script>
 </body>
 </html>
