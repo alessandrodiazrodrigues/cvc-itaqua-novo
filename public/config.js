@@ -6,10 +6,10 @@
 
 const CVC_CONFIG = {
     // ✅ URL PRINCIPAL - ALTERAR APENAS AQUI quando reimplantar
-    API_URL: 'https://script.google.com/macros/s/AKfycbxIg4sCVYLbdrQydzKWZDU7Fpf9TvJveFGPhdJNFSLk9DcoQNDR9xTDPoibXcwbDMcXqQ/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbwbxRyr11nevMEv2uVdszrOsG5vz5cbDhO3XO1m-TDandok3g3eLANqpy_zVvyyg3r2Dw/exec',
     
     // 📊 INFORMAÇÕES DO SISTEMA
-    VERSION: '8.02',
+    VERSION: '8.021',
     SYSTEM_NAME: 'CVC Itaqua - Sistema Master',
     LAST_UPDATE: '2025-09-06',
     ENVIRONMENT: 'production',
