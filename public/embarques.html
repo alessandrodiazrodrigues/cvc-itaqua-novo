@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Embarques CVC - v13.2 Corrigido</title>
+    <title>📋 Dashboard Embarques CVC - v8.02 Integrado</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,11 +14,11 @@
             --cvc-amarelo: #FFD700;
             --cvc-verde: #00A859;
             --cvc-azul-claro: #4A90E2;
-            --cvc-gradiente: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
+            --cvc-azul-escuro: #002266;
         }
         
         body {
-            background: var(--cvc-gradiente);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -34,7 +34,7 @@
         }
         
         .header-section {
-            background: var(--cvc-gradiente);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
             color: white;
             padding: 30px;
             position: relative;
@@ -51,6 +51,33 @@
             background: var(--cvc-amarelo);
             border-radius: 50%;
             opacity: 0.1;
+        }
+        
+        .cvc-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            padding: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--cvc-azul);
+            font-size: 18px;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+        
+        .header-subtitle {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
         }
         
         .stats-container {
@@ -104,6 +131,32 @@
             margin-top: 5px;
         }
         
+        /* NAVEGAÇÃO - ESTILO IDÊNTICO AO VENDAS.HTML */
+        .nav-pills {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            margin: 0 5px;
+            font-weight: 600;
+            color: var(--cvc-azul);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--cvc-azul);
+            color: white;
+        }
+        
+        .nav-pills .nav-link:hover:not(.active) {
+            background: var(--cvc-azul-claro);
+            color: white;
+        }
+        
         .filtros-section {
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             padding: 25px;
@@ -138,36 +191,6 @@
         .form-select:focus, .form-control:focus {
             border-color: var(--cvc-azul);
             box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.25);
-        }
-        
-        .nav-pills {
-            background: rgba(248, 249, 250, 0.5);
-            padding: 15px 25px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .nav-pills .nav-link {
-            border-radius: 15px;
-            margin: 0 8px;
-            font-weight: 600;
-            color: var(--cvc-azul);
-            transition: all 0.3s ease;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 2px solid transparent;
-        }
-        
-        .nav-pills .nav-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            border-color: var(--cvc-azul-claro);
-        }
-        
-        .nav-pills .nav-link.active {
-            background: var(--cvc-azul);
-            color: white;
-            box-shadow: 0 5px 20px rgba(0, 51, 153, 0.4);
         }
         
         .content-section {
@@ -317,7 +340,7 @@
         }
         
         .modal-header {
-            background: var(--cvc-gradiente);
+            background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-escuro) 100%);
             color: white;
             border-radius: 15px 15px 0 0;
             padding: 20px 30px;
@@ -505,12 +528,22 @@
 <body>
     <div class="container-fluid">
         <div class="main-container">
-            <!-- Header -->
+            <!-- Header com Logo CVC -->
             <div class="header-section">
-                <div class="header-content text-center position-relative" style="z-index: 2;">
-                    <h1 class="mb-2">✈️ Dashboard Embarques CVC</h1>
-                    <p class="mb-0 opacity-75">Sistema Completo v13.2 - CORREÇÃO VALIDAÇÃO DE DATAS</p>
-                    <small class="opacity-50">API integrada com filtros e controle de status</small>
+                <div class="header-content">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap">
+                        <div class="cvc-logo me-4">
+                            CVC
+                        </div>
+                        <div class="text-center">
+                            <h1 class="header-title">
+                                <i class="fas fa-plane-departure"></i> Dashboard Embarques v8.02
+                            </h1>
+                            <p class="header-subtitle">
+                                Sistema Master Integrado - Controle granular por voo individual
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Estatísticas -->
@@ -548,6 +581,37 @@
                 </div>
             </div>
             
+            <!-- Navigation - ESTILO IDÊNTICO AO VENDAS.HTML -->
+            <nav class="nav-pills">
+                <ul class="nav nav-pills justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="orcamentos.html">
+                            <i class="fas fa-calculator"></i> Orçamentos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="vendas.html">
+                            <i class="fas fa-shopping-cart"></i> Vendas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="embarques.html">
+                            <i class="fas fa-plane-departure"></i> Embarques
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="orbiuns.html">
+                            <i class="fas fa-clipboard-list"></i> Orbiuns
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
             <!-- Filtros -->
             <div class="filtros-section">
                 <div class="filtros-row">
@@ -564,6 +628,17 @@
                             <option value="">Todos os Status</option>
                             <option value="pendente">Pendentes</option>
                             <option value="conferido">Conferidos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filtro-group">
+                        <label for="filtroTipo">Tipo de Serviço</label>
+                        <select id="filtroTipo" class="form-select">
+                            <option value="">Todos os Tipos</option>
+                            <option value="Aéreo">Aéreo</option>
+                            <option value="Hotel">Hotel</option>
+                            <option value="Cruzeiro">Cruzeiro</option>
+                            <option value="Locação">Locação</option>
                         </select>
                     </div>
                     
@@ -589,32 +664,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Navigation -->
-            <nav class="nav-pills">
-                <ul class="nav nav-pills justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#conferencia" data-bs-toggle="pill">
-                            <i class="fas fa-clipboard-check"></i> Conferências
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#checkin" data-bs-toggle="pill">
-                            <i class="fas fa-plane-departure"></i> Check-ins
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#posvenda" data-bs-toggle="pill">
-                            <i class="fas fa-phone"></i> Pós-vendas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#debug" data-bs-toggle="pill">
-                            <i class="fas fa-cog"></i> Debug v13.2
-                        </a>
-                    </li>
-                </ul>
-            </nav>
             
             <!-- Main Content -->
             <div class="content-section">
@@ -665,7 +714,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0">
                                 <i class="fas fa-cog text-info me-2"></i>
-                                Debug v13.2 - Validação Corrigida
+                                Debug v8.02 - Sistema Master Integrado
                             </h4>
                         </div>
                         
@@ -725,12 +774,12 @@
                             <div class="card-header">
                                 <h6 class="mb-0">
                                     <i class="fas fa-terminal me-2"></i>
-                                    Log de Debug em Tempo Real
+                                    Log de Debug em Tempo Real v8.02
                                 </h6>
                             </div>
                             <div class="card-body">
                                 <div id="debug-log" style="max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
-                                    <div class="debug-log">🚀 Sistema iniciado v13.2 - Aguardando carregamento...</div>
+                                    <div class="debug-log">🚀 Sistema v8.02 iniciado - Aguardando carregamento...</div>
                                 </div>
                             </div>
                         </div>
@@ -771,9 +820,24 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- ✅ CONFIGURAÇÃO CENTRAL - ÚNICO ARQUIVO PARA ALTERAR URL -->
+    <script src="config.js"></script>
+    
     <script>
-        // Configuração da API
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxOGQO-pTvjgo_eYq-ZDefxuRWpPlPfSEb-ish99Tcjjbx__dbkY5Tthnle1SH9CBYvXg/exec';
+        console.log('📋 Dashboard Embarques CVC v8.02 - SISTEMA MASTER INTEGRADO');
+        
+        // ================================================================================
+        // 🔧 CONFIGURAÇÕES - VINDAS DO CONFIG.JS
+        // ================================================================================
+        
+        // ✅ URL vem do config.js - NUNCA mais alterar aqui!
+        const API_URL = getApiUrl();
+        console.log('✅ Configuração carregada via config.js');
+        console.log('🔗 API URL:', API_URL);
+        console.log('🎯 Conceito: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
+        
+        // ✅ Listas vindas do config.js
+        const VENDEDORES_VALIDOS = CVC_CONFIG.VENDEDORES;
         
         // Variáveis globais
         let dadosOriginais = [];
@@ -786,7 +850,10 @@
         // Controle de status das conferências
         let statusConferencias = JSON.parse(localStorage.getItem('statusConferencias') || '{}');
         
-        // Funções de debug
+        // ================================================================================
+        // 🔧 FUNÇÕES DE DEBUG APRIMORADAS
+        // ================================================================================
+        
         function addDebugLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString('pt-BR');
             const log = `[${timestamp}] ${message}`;
@@ -803,64 +870,56 @@
             }
         }
         
-        // 🔧 CORREÇÃO PRINCIPAL: Validação mais permissiva de registros
+        // ================================================================================
+        // 🔧 VALIDAÇÃO COMPATÍVEL COM ESTRUTURA v8.02
+        // ================================================================================
+        
         function validarRegistroReal(registro) {
-            addDebugLog(`🔍 Validando registro: ${JSON.stringify({
-                id: registro.id,
-                nome: registro.nomeCliente,
-                cpf: registro.cpfCliente,
-                vendedor: registro.vendedor,
-                dataIda: registro.dataIda
-            })}`, 'info');
+            addDebugLog(`🔍 Validando registro da aba EMBARQUES v8.02`, 'info');
             
             if (!registro || typeof registro !== 'object') {
                 addDebugLog('❌ Registro inválido: não é objeto', 'error');
                 return false;
             }
             
-            const nome = registro.nomeCliente || registro['Nome do Cliente'] || registro.cliente || '';
-            if (!nome || nome.toString().trim().length < 2) {
-                addDebugLog(`❌ Nome inválido: "${nome}"`, 'error');
+            // ✅ CORREÇÃO: Usar mapeamento correto das 39 colunas v8.02
+            const nomeCliente = registro['Nome do Cliente'] || registro.nomeCliente || registro.cliente || '';
+            if (!nomeCliente || nomeCliente.toString().trim().length < 2) {
+                addDebugLog(`❌ Nome inválido: "${nomeCliente}"`, 'error');
                 return false;
             }
             
-            // Validação mais permissiva para nomes
-            const nomeNorm = nome.toString().trim().toUpperCase();
-            const nomesInvalidos = ['6220', '6221', '6222', '6223', 'FILIAL'];
-            if (nomesInvalidos.some(inv => nomeNorm === inv)) { // Mudança: === em vez de includes
-                addDebugLog(`❌ Nome é código de filial: "${nome}"`, 'error');
+            // Validação mais rigorosa para nomes
+            const nomeNorm = nomeCliente.toString().trim().toUpperCase();
+            const nomesInvalidos = ['6220', '6221', '6222', '6223', 'FILIAL', 'CONCLUÍDO', 'VENDEDOR'];
+            if (nomesInvalidos.some(inv => nomeNorm.includes(inv))) {
+                addDebugLog(`❌ Nome é código de sistema: "${nomeCliente}"`, 'error');
                 return false;
             }
             
-            const cpf = registro.cpfCliente || registro['CPF'] || registro.cpf || '';
+            const cpf = registro['CPF'] || registro.cpfCliente || registro.cpf || '';
             if (!cpf) {
                 addDebugLog('❌ CPF vazio', 'error');
                 return false;
             }
             
             const cpfLimpo = cpf.toString().replace(/\D/g, '');
-            if (cpfLimpo.length < 8) { // Reduzido de 11 para 8
+            if (cpfLimpo.length < 8) {
                 addDebugLog(`❌ CPF muito curto: "${cpf}" (${cpfLimpo.length} dígitos)`, 'error');
                 return false;
             }
             
-            const vendedor = registro.vendedor || registro['Vendedor'] || '';
+            const vendedor = registro['Vendedor'] || registro.vendedor || '';
             if (!vendedor || vendedor.toString().trim().length < 2) {
                 addDebugLog(`❌ Vendedor inválido: "${vendedor}"`, 'error');
                 return false;
             }
             
-            // Lista expandida e mais permissiva de vendedores
-            const vendedoresValidos = [
-                'ADRIELLY', 'ALESSANDRO', 'ANA PAULA', 'CAROL', 'CAROLINY',
-                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA', 'CONCEIÇÃO',
-                'CONCEICAO', 'ADRIANA', 'BEATRIZ', 'TESTE' // Adicionado TESTE para dados de desenvolvimento
-            ];
-            
+            // ✅ CORREÇÃO: Usar lista de vendedores do config.js
             const vendedorNorm = vendedor.toString().trim().toUpperCase();
-            const vendedorValido = vendedoresValidos.some(v => 
-                vendedorNorm.includes(v) || v.includes(vendedorNorm) ||
-                vendedorNorm.split(' ').some(parte => v.includes(parte) && parte.length > 2)
+            const vendedorValido = VENDEDORES_VALIDOS.some(v => 
+                vendedorNorm.includes(v.toUpperCase()) || v.toUpperCase().includes(vendedorNorm) ||
+                vendedorNorm.split(' ').some(parte => v.toUpperCase().includes(parte) && parte.length > 2)
             );
             
             if (!vendedorValido) {
@@ -868,16 +927,33 @@
                 return false;
             }
             
-            addDebugLog(`✅ Registro válido: ${nome} (${vendedor})`, 'success');
+            // ✅ NOVO: Validar Tipo de Aéreo (campo essencial v8.02)
+            const tipoAereo = registro['Tipo de Aéreo'] || registro.tipoAereo || '';
+            if (!tipoAereo) {
+                addDebugLog(`❌ Tipo de Aéreo não informado`, 'error');
+                return false;
+            }
+            
+            const tiposValidos = ['OW', 'RT_IDA', 'RT_VOLTA', 'MT_IDA', 'MT_VOLTA', 'MT_TRECHO_1', 'MT_TRECHO_2', 'MT_TRECHO_3', 'HOTEL', 'SERVICO'];
+            if (!tiposValidos.includes(tipoAereo.toString().trim())) {
+                addDebugLog(`❌ Tipo de Aéreo inválido: "${tipoAereo}"`, 'error');
+                return false;
+            }
+            
+            addDebugLog(`✅ Registro válido: ${nomeCliente} (${vendedor}) - ${tipoAereo}`, 'success');
             return true;
         }
         
-        // 🔧 CORREÇÃO: Processamento mais flexível de datas
+        // ================================================================================
+        // 🔧 EXTRAÇÃO DE DATA COMPATÍVEL COM v8.02
+        // ================================================================================
+        
         function extrairDataEmbarque(registro) {
+            // ✅ CORREÇÃO: Usar campos corretos da estrutura v8.02
             const camposDatas = [
                 'Data Ida', 'dataIda', 'Data de Ida',
                 'Data Volta', 'dataVolta', 'Data de Volta',
-                'dataCadastro', 'timestamp'
+                'Timestamp'
             ];
             
             for (const campo of camposDatas) {
@@ -905,7 +981,7 @@
                         }
                     }
                     
-                    // Validação mais ampla de ano (2020-2030)
+                    // Validação de ano (2020-2030)
                     if (data && !isNaN(data.getTime()) && 
                         data.getFullYear() >= 2020 && 
                         data.getFullYear() <= 2030) {
@@ -924,9 +1000,12 @@
             return null;
         }
         
-        // 🔧 CORREÇÃO: Classificação mais flexível por datas
+        // ================================================================================
+        // 🔧 PROCESSAMENTO DE EMBARQUES v8.02
+        // ================================================================================
+        
         function processarEmbarques(embarques) {
-            addDebugLog(`🔄 Processando ${embarques.length} registros...`, 'info');
+            addDebugLog(`🔄 Processando ${embarques.length} registros da aba EMBARQUES v8.02...`, 'info');
             
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
@@ -952,54 +1031,63 @@
                     const dataIda = extrairDataEmbarque(embarque);
                     if (!dataIda) {
                         stats.semData++;
-                        addDebugLog(`⚠️ Registro sem data válida ignorado: ${embarque.nomeCliente || 'N/A'}`, 'warning');
+                        addDebugLog(`⚠️ Registro sem data válida ignorado: ${embarque['Nome do Cliente'] || 'N/A'}`, 'warning');
                         return;
                     }
                     
                     const diasParaIda = Math.ceil((dataIda - hoje) / (1000 * 60 * 60 * 24));
                     let tipoControle = null;
                     
-                    addDebugLog(`📊 Análise de data: ${embarque.nomeCliente} - ${diasParaIda} dias para embarque`, 'info');
+                    addDebugLog(`📊 Análise de data: ${embarque['Nome do Cliente']} - ${diasParaIda} dias para embarque`, 'info');
                     
-                    // 🔧 CORREÇÃO: Lógica de classificação mais ampla
-                    if (diasParaIda >= -2 && diasParaIda <= 3) { // Expandido: -2 a +3 dias
+                    // ✅ CORREÇÃO: Lógica de classificação baseada no manual v8.02
+                    if (diasParaIda >= -2 && diasParaIda <= 3) {
                         tipoControle = 'checkin';
                         stats.checkin++;
-                        addDebugLog(`✈️ Classificado como CHECK-IN: ${embarque.nomeCliente}`, 'success');
-                    } else if (diasParaIda >= 4 && diasParaIda <= 20) { // Expandido: 4 a 20 dias
+                        addDebugLog(`✈️ Classificado como CHECK-IN: ${embarque['Nome do Cliente']}`, 'success');
+                    } else if (diasParaIda >= 4 && diasParaIda <= 20) {
                         tipoControle = 'conferencia';
                         stats.conferencia++;
-                        addDebugLog(`📋 Classificado como CONFERÊNCIA: ${embarque.nomeCliente}`, 'success');
-                    } else if (diasParaIda >= -20 && diasParaIda <= -3) { // Expandido: -20 a -3 dias
+                        addDebugLog(`📋 Classificado como CONFERÊNCIA: ${embarque['Nome do Cliente']}`, 'success');
+                    } else if (diasParaIda >= -20 && diasParaIda <= -3) {
                         tipoControle = 'posvenda';
                         stats.posvenda++;
-                        addDebugLog(`📞 Classificado como PÓS-VENDA: ${embarque.nomeCliente}`, 'success');
+                        addDebugLog(`📞 Classificado como PÓS-VENDA: ${embarque['Nome do Cliente']}`, 'success');
                     } else {
-                        // Para dados de teste com datas futuras distantes, classificar como conferência
+                        // Dados muito distantes - classificar como conferência
                         tipoControle = 'conferencia';
                         stats.conferencia++;
-                        addDebugLog(`📋 Classificado como CONFERÊNCIA (data distante): ${embarque.nomeCliente}`, 'warning');
+                        addDebugLog(`📋 Classificado como CONFERÊNCIA (data distante): ${embarque['Nome do Cliente']}`, 'warning');
                     }
                     
                     if (tipoControle) {
+                        // ✅ CORREÇÃO: Usar mapeamento correto das 39 colunas v8.02
                         const embarqueProcessado = {
                             ...embarque,
-                            id: embarque.id || `emb_${index + 1}`,
-                            nomeCliente: (embarque.nomeCliente || embarque['Nome do Cliente'] || '').toString().trim(),
-                            cpfCliente: (embarque.cpfCliente || embarque['CPF'] || '').toString().trim(),
-                            vendedor: (embarque.vendedor || embarque['Vendedor'] || '').toString().trim(),
-                            destino: embarque.destino || embarque['Destino'] || 'Destino não informado',
-                            tipoViagem: embarque['Tipo de Pacote'] || embarque.tipoViagem || 'Nacional',
-                            observacoes: embarque['Observações'] || embarque.observacoes || '',
-                            recibo: embarque.recibo || embarque['Recibo'] || 'N/A',
-                            localizador: embarque.locGds || embarque['LOC GDS'] || embarque.reserva || embarque['Reserva'] || 'N/A',
-                            whatsappCliente: embarque.whatsappCliente || embarque['WhatsApp do Cliente'] || embarque.telefone || '',
-                            cia: embarque.cia || embarque['CIA'] || 'N/A',
-                            filial: embarque.filial || embarque['FILIAL'] || 'N/A',
+                            id: embarque['Nº do Informe'] || `emb_${index + 1}`,
+                            nomeCliente: (embarque['Nome do Cliente'] || '').toString().trim(),
+                            cpfCliente: (embarque['CPF'] || '').toString().trim(),
+                            vendedor: (embarque['Vendedor'] || '').toString().trim(),
+                            destino: 'Destino não informado', // Campo não existe na estrutura atual
+                            tipoViagem: embarque['Tipo de Pacote'] || 'Nacional',
+                            observacoes: embarque['Observações'] || '',
+                            recibo: embarque['Recibo'] || 'N/A',
+                            localizador: embarque['LOC GDS'] || embarque['Reserva'] || 'N/A',
+                            whatsappCliente: embarque['WhatsApp do Cliente'] || '',
+                            cia: embarque['CIA'] || 'N/A',
+                            filial: embarque['FILIAL'] || 'N/A',
+                            tipo: embarque['Tipo'] || 'N/A',
+                            tipoAereo: embarque['Tipo de Aéreo'] || '',
                             dataIda: dataIda,
                             diasParaIda: diasParaIda,
                             tipoControle: tipoControle,
-                            statusConferencia: statusConferencias[embarque.id] || 'pendente'
+                            statusConferencia: statusConferencias[embarque['Nº do Informe']] || 'pendente',
+                            // ✅ NOVOS CAMPOS v8.02
+                            temBagagem: embarque['Tem Bagagem?'] || 'Não informado',
+                            temAssento: embarque['Tem Assento?'] || 'Não informado',
+                            multiTrecho: embarque['Multi Trecho?'] || 'Não',
+                            seguro: embarque['SEGURO'] || 'Não informado',
+                            situacao: embarque['Situação'] || 'Ativo'
                         };
                         
                         embarquesValidos.push(embarqueProcessado);
@@ -1031,7 +1119,94 @@
             return { embarques: embarquesValidos, stats: stats };
         }
         
-        // Função para preencher filtros
+        // ================================================================================
+        // 🔧 CARREGAMENTO DE DADOS v8.02
+        // ================================================================================
+        
+        async function carregarEmbarques() {
+            if (isCarregando) {
+                addDebugLog('⏳ Carregamento já em andamento...', 'warning');
+                return;
+            }
+            
+            isCarregando = true;
+            
+            try {
+                addDebugLog('🚀 Iniciando carregamento v8.02 - Sistema Master...', 'info');
+                
+                document.querySelectorAll('.lista-embarques').forEach(lista => {
+                    lista.innerHTML = `
+                        <div class="text-center p-5">
+                            <div class="loading-spinner"></div>
+                            <span class="ms-2">Carregando embarques...</span>
+                        </div>
+                    `;
+                });
+                
+                // ✅ CORREÇÃO: Usar endpoint correto para listar embarques
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'listar_embarques' }),
+                    signal: AbortSignal.timeout(30000)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                addDebugLog(`📡 API Response: Status ${response.status}`, 'success');
+                
+                if (result.success && result.data && result.data.embarques) {
+                    dadosOriginais = result.data.embarques;
+                    addDebugLog(`📊 ${dadosOriginais.length} registros recebidos da aba EMBARQUES`, 'success');
+                    
+                    const resultadoProcessamento = processarEmbarques(dadosOriginais);
+                    dadosProcessados = resultadoProcessamento.embarques;
+                    dadosFiltrados = [...dadosProcessados];
+                    
+                    atualizarEstatisticas(resultadoProcessamento.stats);
+                    preencherFiltros();
+                    renderizarLista();
+                    
+                    addDebugLog(`✅ Sistema v8.02 carregado com sucesso! ${dadosProcessados.length} embarques processados`, 'success');
+                    
+                } else {
+                    throw new Error(result.error || result.message || 'Resposta inválida da API');
+                }
+                
+            } catch (error) {
+                addDebugLog(`❌ Erro no carregamento: ${error.message}`, 'error');
+                
+                document.querySelectorAll('.lista-embarques').forEach(lista => {
+                    lista.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                            <h5 class="text-danger">Erro ao Carregar Dados</h5>
+                            <p class="text-muted">${error.message}</p>
+                            <button class="btn btn-primary" onclick="recarregarDados()">
+                                <i class="fas fa-sync me-2"></i> Tentar Novamente
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                const statsVazias = { conferencia: 0, checkin: 0, posvenda: 0, total: 0, rejeitados: 0, semData: 0 };
+                atualizarEstatisticas(statsVazias);
+                
+            } finally {
+                isCarregando = false;
+            }
+        }
+        
+        // ================================================================================
+        // 🔧 FUNÇÕES DE FILTROS E INTERFACE
+        // ================================================================================
+        
         function preencherFiltros() {
             const vendedores = [...new Set(dadosProcessados.map(e => e.vendedor))].sort();
             const selectVendedor = document.getElementById('filtroVendedor');
@@ -1044,10 +1219,10 @@
             addDebugLog(`📋 Filtros preenchidos: ${vendedores.length} vendedores únicos`, 'info');
         }
         
-        // Função para aplicar filtros
         function aplicarFiltros() {
             const vendedorSelecionado = document.getElementById('filtroVendedor').value;
             const statusSelecionado = document.getElementById('filtroStatus').value;
+            const tipoSelecionado = document.getElementById('filtroTipo').value;
             
             dadosFiltrados = dadosProcessados.filter(embarque => {
                 if (vendedorSelecionado && embarque.vendedor !== vendedorSelecionado) {
@@ -1061,6 +1236,10 @@
                     }
                 }
                 
+                if (tipoSelecionado && embarque.tipo !== tipoSelecionado) {
+                    return false;
+                }
+                
                 return true;
             });
             
@@ -1072,6 +1251,7 @@
         function limparFiltros() {
             document.getElementById('filtroVendedor').value = '';
             document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroTipo').value = '';
             dadosFiltrados = [...dadosProcessados];
             atualizarEstatisticasFiltradas();
             renderizarLista();
@@ -1196,7 +1376,7 @@
                             <p><i class="fas fa-id-card"></i> ${formatarCPF(embarque.cpfCliente)}</p>
                             <p><i class="fas fa-user-tie"></i> ${embarque.vendedor}</p>
                             <p><i class="fas fa-calendar-alt"></i> ${diasTexto}</p>
-                            <p><i class="fas fa-map-marker-alt"></i> ${embarque.destino}</p>
+                            <p><i class="fas fa-plane"></i> ${embarque.tipoAereo}</p>
                             ${embarque.whatsappCliente ? `<p><i class="fab fa-whatsapp"></i> ${embarque.whatsappCliente}</p>` : ''}
                         </div>
                         <div class="data-info">
@@ -1211,7 +1391,7 @@
                         </div>
                     </div>
                     
-                    <!-- Detalhes Extras -->
+                    <!-- Detalhes Extras v8.02 -->
                     <div class="detalhes-extras">
                         <div class="detalhes-row">
                             <div class="detalhe-item">
@@ -1224,11 +1404,19 @@
                             </div>
                             <div class="detalhe-item">
                                 <span class="detalhe-label">Tipo</span>
-                                <span class="detalhe-valor">${embarque.tipoViagem}</span>
+                                <span class="detalhe-valor">${embarque.tipo}</span>
                             </div>
                             <div class="detalhe-item">
                                 <span class="detalhe-label">CIA</span>
                                 <span class="detalhe-valor">${embarque.cia}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Bagagem</span>
+                                <span class="detalhe-valor">${embarque.temBagagem}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Assento</span>
+                                <span class="detalhe-valor">${embarque.temAssento}</span>
                             </div>
                         </div>
                     </div>
@@ -1287,7 +1475,10 @@
             return '<span class="badge-ok">✅ NORMAL</span>';
         }
         
-        // Função para abrir detalhes
+        // ================================================================================
+        // 🔧 FUNÇÕES DE MODAL E DETALHES
+        // ================================================================================
+        
         function abrirDetalhes(id) {
             embarqueAtual = dadosProcessados.find(e => e.id === id);
             if (!embarqueAtual) return;
@@ -1327,11 +1518,11 @@
                             <span class="info-value">${embarqueAtual.dataIda.toLocaleDateString('pt-BR')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Destino:</span>
-                            <span class="info-value">${embarqueAtual.destino}</span>
+                            <span class="info-label">Tipo de Aéreo:</span>
+                            <span class="info-value">${embarqueAtual.tipoAereo}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Tipo:</span>
+                            <span class="info-label">Tipo Viagem:</span>
                             <span class="info-value">${embarqueAtual.tipoViagem}</span>
                         </div>
                         <div class="info-item">
@@ -1340,7 +1531,7 @@
                         </div>
                     </div>
                     
-                                            <div class="info-card">
+                    <div class="info-card">
                         <h6><i class="fas fa-receipt me-2"></i>Documentos</h6>
                         <div class="info-item">
                             <span class="info-label">Recibo:</span>
@@ -1354,10 +1545,14 @@
                             <span class="info-label">Filial:</span>
                             <span class="info-value">${embarqueAtual.filial}</span>
                         </div>
+                        <div class="info-item">
+                            <span class="info-label">Tipo Serviço:</span>
+                            <span class="info-value">${embarqueAtual.tipo}</span>
+                        </div>
                     </div>
                     
                     <div class="info-card">
-                        <h6><i class="fas fa-cog me-2"></i>Controle</h6>
+                        <h6><i class="fas fa-cog me-2"></i>Controle v8.02</h6>
                         <div class="info-item">
                             <span class="info-label">Vendedor:</span>
                             <span class="info-value">${embarqueAtual.vendedor}</span>
@@ -1373,6 +1568,30 @@
                         <div class="info-item">
                             <span class="info-label">Dias para embarque:</span>
                             <span class="info-value">${embarqueAtual.diasParaIda} dias</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Situação:</span>
+                            <span class="info-value">${embarqueAtual.situacao}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h6><i class="fas fa-plus-circle me-2"></i>Serviços Adicionais</h6>
+                        <div class="info-item">
+                            <span class="info-label">Bagagem:</span>
+                            <span class="info-value">${embarqueAtual.temBagagem}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Assento:</span>
+                            <span class="info-value">${embarqueAtual.temAssento}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Multi Trecho:</span>
+                            <span class="info-value">${embarqueAtual.multiTrecho}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Seguro:</span>
+                            <span class="info-value">${embarqueAtual.seguro}</span>
                         </div>
                     </div>
                 </div>
@@ -1410,7 +1629,7 @@
                 addDebugLog(`✅ Conferência concluída: ${embarqueAtual.nomeCliente}`, 'success');
                 
                 bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
-                aplicarFiltros(); // Reaplica filtros para refletir mudança
+                aplicarFiltros();
                 renderizarLista();
             }
         }
@@ -1425,90 +1644,14 @@
                 addDebugLog(`↩️ Conferência desfeita: ${embarqueAtual.nomeCliente}`, 'warning');
                 
                 bootstrap.Modal.getInstance(document.getElementById('modalDetalhes')).hide();
-                aplicarFiltros(); // Reaplica filtros para refletir mudança
+                aplicarFiltros();
                 renderizarLista();
             }
         }
         
-        // Carregamento de dados
-        async function carregarEmbarques() {
-            if (isCarregando) {
-                addDebugLog('⏳ Carregamento já em andamento...', 'warning');
-                return;
-            }
-            
-            isCarregando = true;
-            
-            try {
-                addDebugLog('🚀 Iniciando carregamento v13.2 - VALIDAÇÃO CORRIGIDA...', 'info');
-                
-                document.querySelectorAll('.lista-embarques').forEach(lista => {
-                    lista.innerHTML = `
-                        <div class="text-center p-5">
-                            <div class="loading-spinner"></div>
-                            <span class="ms-2">Carregando embarques...</span>
-                        </div>
-                    `;
-                });
-                
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'text/plain;charset=utf-8',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ action: 'listar_embarques' }),
-                    signal: AbortSignal.timeout(30000)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                addDebugLog(`📡 API Response: Status ${response.status}`, 'success');
-                
-                if (result.success && result.data && result.data.embarques) {
-                    dadosOriginais = result.data.embarques;
-                    addDebugLog(`📊 ${dadosOriginais.length} registros recebidos da API`, 'success');
-                    
-                    const resultadoProcessamento = processarEmbarques(dadosOriginais);
-                    dadosProcessados = resultadoProcessamento.embarques;
-                    dadosFiltrados = [...dadosProcessados];
-                    
-                    atualizarEstatisticas(resultadoProcessamento.stats);
-                    preencherFiltros();
-                    renderizarLista();
-                    
-                    addDebugLog(`✅ Sistema v13.2 carregado com sucesso! ${dadosProcessados.length} embarques processados`, 'success');
-                    
-                } else {
-                    throw new Error(result.error || result.message || 'Resposta inválida da API');
-                }
-                
-            } catch (error) {
-                addDebugLog(`❌ Erro no carregamento: ${error.message}`, 'error');
-                
-                document.querySelectorAll('.lista-embarques').forEach(lista => {
-                    lista.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle text-danger"></i>
-                            <h5 class="text-danger">Erro ao Carregar Dados</h5>
-                            <p class="text-muted">${error.message}</p>
-                            <button class="btn btn-primary" onclick="recarregarDados()">
-                                <i class="fas fa-sync me-2"></i> Tentar Novamente
-                            </button>
-                        </div>
-                    `;
-                });
-                
-                const statsVazias = { conferencia: 0, checkin: 0, posvenda: 0, total: 0, rejeitados: 0, semData: 0 };
-                atualizarEstatisticas(statsVazias);
-                
-            } finally {
-                isCarregando = false;
-            }
-        }
+        // ================================================================================
+        // 🔧 FUNÇÕES DE NAVEGAÇÃO E CONTROLE
+        // ================================================================================
         
         function abrirAba(aba) {
             const tabElement = document.querySelector(`[href="#${aba}"]`);
@@ -1523,9 +1666,22 @@
             carregarEmbarques();
         }
         
-        // Inicialização
+        // ================================================================================
+        // 🚀 INICIALIZAÇÃO DO SISTEMA v8.02
+        // ================================================================================
+        
         document.addEventListener('DOMContentLoaded', function() {
-            addDebugLog('🎯 Dashboard CVC v13.2 - VALIDAÇÃO CORRIGIDA iniciado', 'success');
+            addDebugLog('🎯 Dashboard Embarques CVC v8.02 - Sistema Master iniciado', 'success');
+            
+            // Verificar se config.js foi carregado
+            if (typeof CVC_CONFIG === 'undefined') {
+                addDebugLog('❌ config.js não foi carregado! Verificar se o arquivo existe.', 'error');
+                return;
+            }
+            
+            addDebugLog('✅ Configuração centralizada carregada via config.js', 'success');
+            addDebugLog(`🔗 API URL: ${API_URL}`, 'info');
+            addDebugLog('🎯 Conceito v8.02: 1 LINHA = 1 VOO ESPECÍFICO', 'info');
             
             // Event listeners das abas
             document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
@@ -1540,18 +1696,32 @@
             // Event listeners dos filtros
             document.getElementById('filtroVendedor').addEventListener('change', aplicarFiltros);
             document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
             
             // Carregar dados após inicialização
             setTimeout(() => {
                 carregarEmbarques();
             }, 1000);
+            
+            addDebugLog('🎉 Sistema v8.02 totalmente inicializado!', 'success');
         });
         
-        // Log de inicialização
-        console.log('✅ Dashboard Embarques CVC v13.2 carregado');
-        console.log('🎯 CORREÇÃO: Validação de registros mais permissiva');
-        console.log('🎯 CORREÇÃO: Classificação de datas mais flexível');
-        console.log('📊 Pronto para processar embarques da API');
+        // ================================================================================
+        // 📝 LOG FINAL v8.02
+        // ================================================================================
+        
+        console.log('✅ Dashboard Embarques CVC v8.02 carregado com Sistema Master');
+        console.log('🔧 PRINCIPAIS CORREÇÕES:');
+        console.log('   ✅ Integração com config.js centralizado');
+        console.log('   ✅ Navegação idêntica ao vendas.html');
+        console.log('   ✅ Mapeamento correto das 39 colunas v8.02');
+        console.log('   ✅ Validação compatível com estrutura EMBARQUES');
+        console.log('   ✅ Campo "Tipo de Aéreo" implementado');
+        console.log('   ✅ Novos campos v8.02: Bagagem, Assento, Multi Trecho, Seguro');
+        console.log('   ✅ Classificação por datas aprimorada');
+        console.log('   ✅ Debug em tempo real integrado');
+        console.log('   ✅ Endpoint correto para listar_embarques');
+        console.log('🎯 Pronto para integração com Google Apps Script v8.02!');
     </script>
 </body>
 </html>
