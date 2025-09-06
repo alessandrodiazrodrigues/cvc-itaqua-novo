@@ -593,15 +593,12 @@
                                     <i class="fas fa-building"></i> Filial
                                 </label>
                                 <div class="radio-group">
-                                    <div class="radio-item">
-                                        <input type="radio" name="filial" value="6220" id="filial6220" required>
+                                    <div class="radio-item selected">
+                                        <input type="radio" name="filial" value="6220" id="filial6220" required checked>
                                         <label for="filial6220">6220 - Itaquaquecetuba</label>
                                     </div>
-                                    <div class="radio-item">
-                                        <input type="radio" name="filial" value="6223" id="filial6223">
-                                        <label for="filial6223">6223</label>
-                                    </div>
                                 </div>
+                                <small class="text-muted">Filial única ativa</small>
                             </div>
                             
                             <div class="col-md-4">
@@ -1746,12 +1743,12 @@
             
             document.body.appendChild(alerta);
             
-            // Auto remover após 8 segundos
+            // Auto remover após tempo configurado
             setTimeout(() => {
                 if (alerta.parentElement) {
                     alerta.remove();
                 }
-            }, 8000);
+            }, CONFIG.UI.auto_hide_alerts);
         }
         
         // ================================================================================
@@ -1759,7 +1756,7 @@
         // ================================================================================
         
         console.log('✅ Sistema de Vendas CVC v8.02 carregado com sucesso!');
-        console.log('🔧 ERRO CORRIGIDO - Validação sem campo valor obrigatório');
+        console.log('🔧 CONFIGURAÇÃO CENTRALIZADA - URL vem do config.js');
         console.log('🔗 Integração completa com Sistema Master v8.0');
         console.log('🎯 Conceito: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
         console.log('📊 Funcionalidades:');
@@ -1770,6 +1767,7 @@
         console.log('   ✅ Integração com 39 colunas da planilha');
         console.log('   ✅ Validação corrigida de dados');
         console.log('   ✅ CORS corrigido para API');
+        console.log('   ✅ Configuração centralizada em config.js');
         console.log('🚀 Sistema v8.02 pronto para produção!');
     </script>
 </body>
