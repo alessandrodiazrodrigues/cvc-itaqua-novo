@@ -119,6 +119,54 @@
             padding: 30px;
         }
         
+        /* BOTÃO DE TESTE */
+        .test-section {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid var(--cvc-amarelo);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .test-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cvc-amarelo), #f39c12, var(--cvc-amarelo));
+        }
+        
+        .btn-test {
+            background: linear-gradient(135deg, var(--cvc-amarelo) 0%, #f39c12 100%);
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-test:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+            color: #222;
+        }
+        
+        .test-scenario {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+        
         /* FORMULÁRIO */
         .form-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -533,7 +581,7 @@
                                 <i class="fas fa-shopping-cart"></i> Sistema de Vendas v8.02
                             </h1>
                             <p class="header-subtitle">
-                                🔧 FINAL - Configuração centralizada + Array de observações corrigido
+                                🔧 FINAL - Configuração centralizada + Simulação completa integrada
                             </p>
                         </div>
                     </div>
@@ -573,6 +621,22 @@
             
             <!-- Main Content -->
             <div class="content-section">
+                <!-- SEÇÃO DE TESTE -->
+                <div class="test-section">
+                    <h4><i class="fas fa-flask"></i> Modo Teste v8.02</h4>
+                    <p class="mb-3">Preenche automaticamente um cenário completo de teste com múltiplos recibos</p>
+                    <button type="button" class="btn-test" onclick="preencherTesteCompleto()">
+                        <i class="fas fa-magic"></i> Preencher Teste Automático v8.02
+                    </button>
+                    <div class="test-scenario">
+                        <strong>Cenário de Teste:</strong><br>
+                        ✈️ <strong>Multi Trecho:</strong> SP → Miami → Roma → Paris → SP (4 voos com bagagem/assento)<br>
+                        ✈️ <strong>Aéreo Simples:</strong> Nacional (sem bagagem/assento)<br>
+                        🏨 <strong>Hotel:</strong> Reserva de 10 dias<br>
+                        🛡️ <strong>Seguro:</strong> COMPRADO
+                    </div>
+                </div>
+
                 <form id="formVendaCompleta">
                     <!-- Informações Gerais -->
                     <div class="form-section">
@@ -721,258 +785,7 @@
     <script src="config.js"></script>
     
     <script>
-        console.log('🔧 Sistema de Vendas CVC v8.02 - COM CONFIG CENTRALIZADO');
-
-<!-- 🧪 ADICIONAR ESTE BLOCO NO vendas.html - LOGO APÓS A SEÇÃO "Seguro Viagem" -->
-
-<!-- BOTÃO DE TESTE AUTOMÁTICO -->
-<div class="form-section" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 4px solid #f39c12;">
-    <h4><i class="fas fa-flask"></i> Modo Teste - Desenvolvimento</h4>
-    
-    <div class="text-center">
-        <button type="button" class="btn btn-warning btn-lg" id="btnTesteAutomatico">
-            <i class="fas fa-magic"></i> Preencher Teste Automático
-        </button>
-        <p class="mt-2 text-muted">
-            <small>
-                <i class="fas fa-info-circle"></i> 
-                Preenche automaticamente: Aéreo MT + Hotel + todas as informações
-            </small>
-        </p>
-    </div>
-</div>
-
-<script>
-// 🧪 FUNÇÃO DE TESTE AUTOMÁTICO - ADICIONAR NO FINAL DO vendas.html
-document.addEventListener('DOMContentLoaded', function() {
-    const btnTeste = document.getElementById('btnTesteAutomatico');
-    
-    if (btnTeste) {
-        btnTeste.addEventListener('click', function() {
-            console.log('🧪 Iniciando preenchimento automático...');
-            preencherTesteAutomatico();
-        });
-    }
-});
-
-function preencherTesteAutomatico() {
-    try {
-        // 🧹 Limpar formulário primeiro
-        const form = document.getElementById('formVendaCompleta');
-        if (form) form.reset();
-        
-        // Limpar recibos
-        const container = document.getElementById('recibosContainer');
-        if (container) {
-            container.innerHTML = '';
-            contadorRecibos = 0;
-        }
-        
-        // 📋 DADOS DO CLIENTE
-        document.getElementById('cpfCliente').value = '123.456.789-00';
-        document.getElementById('nomeCliente').value = 'João Silva Teste';
-        document.getElementById('whatsappCliente').value = '(11) 99999-9999';
-        document.getElementById('vendedor').value = 'Alessandro';
-        
-        // 📦 TIPO DE PACOTE
-        const pacoteInternacional = document.getElementById('pacoteInternacional');
-        if (pacoteInternacional) {
-            pacoteInternacional.checked = true;
-            pacoteInternacional.closest('.checkbox-item').classList.add('selected');
-        }
-        
-        // 🛡️ SEGURO
-        const seguroRecusado = document.getElementById('seguroRecusado');
-        if (seguroRecusado) {
-            seguroRecusado.checked = true;
-            seguroRecusado.closest('.radio-item').classList.add('selected');
-        }
-        
-        // 🧾 ADICIONAR RECIBO 1 (AÉREO MT)
-        setTimeout(() => {
-            adicionarRecibo();
-            
-            setTimeout(() => {
-                preencherReciboAereo();
-                
-                // 🧾 ADICIONAR RECIBO 2 (HOTEL)
-                setTimeout(() => {
-                    adicionarRecibo();
-                    
-                    setTimeout(() => {
-                        preencherReciboHotel();
-                        
-                        mostrarAlerta('🧪 Formulário preenchido automaticamente! Dados de teste carregados.', 'success');
-                        console.log('✅ Preenchimento automático concluído!');
-                    }, 300);
-                }, 300);
-            }, 300);
-        }, 300);
-        
-    } catch (error) {
-        console.error('❌ Erro no preenchimento automático:', error);
-        mostrarAlerta('❌ Erro no preenchimento automático: ' + error.message, 'error');
-    }
-}
-
-function preencherReciboAereo() {
-    console.log('🧪 Preenchendo recibo aéreo...');
-    
-    // Recibo 1 - campos básicos
-    const inputs1 = document.querySelectorAll('#recibo-1 input, #recibo-1 select, #recibo-1 textarea');
-    
-    const dadosAereo = {
-        'recibo[]': 'T123456789',
-        'pedido[]': 'PED001',
-        'reserva[]': 'RES001',
-        'tipo[]': 'Aéreo',
-        'dataIda[]': '2025-12-15',
-        'dataVolta[]': '2025-12-25',
-        'cia[]': 'LATAM',
-        'locGds[]': 'ABC123',
-        'locCia[]': 'LA456',
-        'multiTrecho[]': 'Sim',
-        'observacoes[]': 'Teste automático - recibo aéreo MT'
-    };
-    
-    inputs1.forEach(input => {
-        const name = input.name;
-        if (dadosAereo[name]) {
-            input.value = dadosAereo[name];
-            
-            // Trigger events para campos especiais
-            if (name === 'tipo[]') {
-                input.dispatchEvent(new Event('change'));
-            }
-            if (name === 'multiTrecho[]') {
-                input.dispatchEvent(new Event('change'));
-            }
-        }
-    });
-    
-    // Marcar checkboxes de bagagem e assento
-    setTimeout(() => {
-        const bagagem1 = document.querySelector('#recibo-1 input[name="temBagagem[]"][value="true"]');
-        const assento1 = document.querySelector('#recibo-1 input[name="temAssento[]"][value="true"]');
-        
-        if (bagagem1) {
-            bagagem1.checked = true;
-            bagagem1.closest('.checkbox-item').classList.add('selected');
-        }
-        if (assento1) {
-            assento1.checked = true;
-            assento1.closest('.checkbox-item').classList.add('selected');
-        }
-        
-        // Adicionar data extra para multi trecho
-        const btnAdicionarData = document.querySelector('#recibo-1 [data-action="adicionar-data"]');
-        if (btnAdicionarData) {
-            btnAdicionarData.click();
-            
-            setTimeout(() => {
-                const dataExtra = document.querySelector('#recibo-1 input[name="datasExtras[]"]');
-                if (dataExtra) {
-                    dataExtra.value = '2025-12-20';
-                }
-            }, 100);
-        }
-    }, 200);
-}
-
-function preencherReciboAereoSimples() {
-    console.log('🧪 Preenchendo recibo aéreo simples (1 voo sem bagagem)...');
-    
-    // Recibo 2 - campos básicos
-    const inputs2 = document.querySelectorAll('#recibo-2 input, #recibo-2 select, #recibo-2 textarea');
-    
-    const dadosAereoSimples = {
-        'recibo[]': 'T987654321',
-        'pedido[]': 'PED002',
-        'reserva[]': 'RES002', 
-        'tipo[]': 'Aéreo',
-        'dataIda[]': '2026-01-15',
-        'dataVolta[]': '', // Só ida
-        'cia[]': 'AZUL',
-        'locGds[]': 'AZU456',
-        'locCia[]': 'AD789',
-        'multiTrecho[]': 'Não',
-        'observacoes[]': 'Voo simples só ida - sem bagagem nem assento'
-    };
-    
-    inputs2.forEach(input => {
-        const name = input.name;
-        if (dadosAereoSimples[name]) {
-            input.value = dadosAereoSimples[name];
-            
-            // Trigger events
-            if (name === 'tipo[]') {
-                input.dispatchEvent(new Event('change'));
-            }
-        }
-    });
-    
-    // NÃO marcar bagagem nem assento (deixar desmarcados)
-    console.log('🧪 Recibo 2: SEM bagagem e SEM assento marcados');
-}
-
-function preencherReciboHotel() {
-    console.log('🧪 Preenchendo recibo hotel...');
-    
-    // Recibo 3 - campos básicos
-    const inputs3 = document.querySelectorAll('#recibo-3 input, #recibo-3 select, #recibo-3 textarea');
-    
-    const dadosHotel = {
-        'recibo[]': 'H555666777',
-        'pedido[]': 'PED003',
-        'reserva[]': 'RES003',
-        'tipo[]': 'Hotel',
-        'dataIda[]': '2025-12-10',
-        'dataVolta[]': '2025-12-30',
-        'observacoes[]': 'Hotel 5 estrelas - Copacabana Palace'
-    };
-    
-    inputs3.forEach(input => {
-        const name = input.name;
-        if (dadosHotel[name]) {
-            input.value = dadosHotel[name];
-            
-            // Trigger events
-            if (name === 'tipo[]') {
-                input.dispatchEvent(new Event('change'));
-            }
-        }
-    });
-}
-
-function preencherReciboSeguro() {
-    console.log('🧪 Preenchendo recibo seguro...');
-    
-    // Recibo 4 - campos básicos
-    const inputs4 = document.querySelectorAll('#recibo-4 input, #recibo-4 select, #recibo-4 textarea');
-    
-    const dadosSeguro = {
-        'recibo[]': 'S111222333',
-        'pedido[]': 'PED004',
-        'reserva[]': 'RES004',
-        'tipo[]': 'Seguro',
-        'dataIda[]': '2025-12-10',
-        'dataVolta[]': '2025-12-30',
-        'observacoes[]': 'Seguro viagem internacional - cobertura completa'
-    };
-    
-    inputs4.forEach(input => {
-        const name = input.name;
-        if (dadosSeguro[name]) {
-            input.value = dadosSeguro[name];
-            
-            // Trigger events
-            if (name === 'tipo[]') {
-                input.dispatchEvent(new Event('change'));
-            }
-        }
-    });
-}
-</script>
+        console.log('🔧 Sistema de Vendas CVC v8.02 FINAL - COM SIMULAÇÃO COMPLETA');
         
         // ================================================================================
         // 🔧 CONFIGURAÇÕES - VINDAS DO CONFIG.JS
@@ -993,14 +806,252 @@ function preencherReciboSeguro() {
         let conexaoOnline = false;
 
         // ================================================================================
+        // 🧪 SIMULAÇÃO COMPLETA v8.02 - CENÁRIO DETALHADO
+        // ================================================================================
+        
+        function preencherTesteCompleto() {
+            console.log('🧪 INICIANDO SIMULAÇÃO COMPLETA v8.02...');
+            console.log('📋 Cenário: Multi Trecho + Aéreo + Hotel + Seguro');
+            
+            try {
+                // 1. DADOS GERAIS DO CLIENTE
+                preencherDadosCliente();
+                
+                // 2. AGUARDAR DOM CARREGAR
+                setTimeout(() => {
+                    // 3. ADICIONAR RECIBOS NECESSÁRIOS (3 total)
+                    adicionarRecibosParaTeste();
+                    
+                    // 4. AGUARDAR CRIAÇÃO DOS RECIBOS
+                    setTimeout(() => {
+                        // 5. PREENCHER CADA RECIBO
+                        preencherRecibo1_MultiTrecho();
+                        preencherRecibo2_AereoSimples();
+                        preencherRecibo3_Hotel();
+                        
+                        // 6. CONFIGURAR SEGURO
+                        preencherSeguro();
+                        
+                        mostrarAlerta('🧪 TESTE COMPLETO PREENCHIDO!\n\n' +
+                                    '✈️ Recibo 1: Multi Trecho (4 voos SP-Miami-Roma-Paris-SP)\n' +
+                                    '✈️ Recibo 2: Aéreo simples (sem bagagem/assento)\n' +
+                                    '🏨 Recibo 3: Hotel\n' +
+                                    '🛡️ Seguro: COMPRADO', 'success');
+                        
+                    }, 300);
+                }, 100);
+                
+            } catch (error) {
+                console.error('❌ Erro na simulação:', error);
+                mostrarAlerta('❌ Erro ao preencher teste: ' + error.message, 'error');
+            }
+        }
+
+        // ================================================================================
+        // 🧑‍💼 DADOS DO CLIENTE
+        // ================================================================================
+        function preencherDadosCliente() {
+            console.log('👤 Preenchendo dados do cliente...');
+            
+            document.getElementById('cpfCliente').value = '123.456.789-00';
+            document.getElementById('nomeCliente').value = 'Maria Santos Silva';
+            document.getElementById('whatsappCliente').value = '(11) 99888-7766';
+            document.getElementById('vendedor').value = 'Ana Paula';
+            
+            // Marcar filial
+            const filial = document.querySelector('input[value="6220"]');
+            if (filial) {
+                filial.checked = true;
+                filial.closest('.radio-item').classList.add('selected');
+            }
+            
+            // Marcar tipo de pacote
+            const internacional = document.querySelector('input[value="Internacional"]');
+            if (internacional) {
+                internacional.checked = true;
+                internacional.closest('.checkbox-item').classList.add('selected');
+            }
+        }
+
+        // ================================================================================
+        // 🧾 GERENCIAMENTO DE RECIBOS PARA TESTE
+        // ================================================================================
+        function adicionarRecibosParaTeste() {
+            console.log('🧾 Adicionando recibos para teste...');
+            
+            // Garantir que temos pelo menos 3 recibos
+            const recibosExistentes = document.querySelectorAll('.recibo-container').length;
+            const recibosNecessarios = 3 - recibosExistentes;
+            
+            for (let i = 0; i < recibosNecessarios; i++) {
+                adicionarRecibo();
+            }
+        }
+
+        function preencherRecibo1_MultiTrecho() {
+            console.log('✈️ Preenchendo Recibo 1 - Multi Trecho...');
+            
+            const recibo1 = document.querySelector('#recibo-1');
+            if (!recibo1) return;
+            
+            // Campos básicos
+            const inputs = {
+                'input[name="recibo[]"]': 'MT789123456',
+                'input[name="pedido[]"]': 'PED-MT-001',
+                'input[name="reserva[]"]': 'RES-MT-789',
+                'input[name="dataIda[]"]': '2025-12-10',
+                'input[name="dataVolta[]"]': '2025-12-30',
+                'textarea[name="observacoes[]"]': 'Multi Trecho Internacional: SP-Miami-Roma-Paris-SP (4 voos com conexões)'
+            };
+            
+            Object.entries(inputs).forEach(([selector, value]) => {
+                const element = recibo1.querySelector(selector);
+                if (element) element.value = value;
+            });
+            
+            // Selects especiais
+            const tipoSelect = recibo1.querySelector('select[name="tipo[]"]');
+            if (tipoSelect) {
+                tipoSelect.value = 'Aéreo';
+                tipoSelect.dispatchEvent(new Event('change'));
+                
+                setTimeout(() => {
+                    const ciaSelect = recibo1.querySelector('select[name="cia[]"]');
+                    if (ciaSelect) ciaSelect.value = 'LATAM';
+                    
+                    const locGds = recibo1.querySelector('input[name="locGds[]"]');
+                    if (locGds) locGds.value = 'LAT789MT';
+                    
+                    const locCia = recibo1.querySelector('input[name="locCia[]"]');
+                    if (locCia) locCia.value = 'LA456MT';
+                    
+                    // Multi trecho
+                    const multiSelect = recibo1.querySelector('select[name="multiTrecho[]"]');
+                    if (multiSelect) {
+                        multiSelect.value = 'Sim';
+                        multiSelect.dispatchEvent(new Event('change'));
+                        
+                        setTimeout(() => {
+                            // Adicionar datas extras (trechos intermediários)
+                            adicionarDataExtra(1, '2025-12-15'); // Miami
+                            adicionarDataExtra(1, '2025-12-20'); // Roma
+                            adicionarDataExtra(1, '2025-12-25'); // Paris
+                        }, 100);
+                    }
+                    
+                    // Marcar bagagem e assento
+                    const bagagem = recibo1.querySelector('input[name="temBagagem[]"][value="true"]');
+                    const assento = recibo1.querySelector('input[name="temAssento[]"][value="true"]');
+                    
+                    if (bagagem) {
+                        bagagem.checked = true;
+                        bagagem.closest('.checkbox-item').classList.add('selected');
+                    }
+                    if (assento) {
+                        assento.checked = true;
+                        assento.closest('.checkbox-item').classList.add('selected');
+                    }
+                }, 200);
+            }
+        }
+
+        function preencherRecibo2_AereoSimples() {
+            console.log('✈️ Preenchendo Recibo 2 - Aéreo Simples...');
+            
+            const recibo2 = document.querySelector('#recibo-2');
+            if (!recibo2) return;
+            
+            // Campos básicos
+            const inputs = {
+                'input[name="recibo[]"]': 'AS123456789',
+                'input[name="pedido[]"]': 'PED-AS-002',
+                'input[name="reserva[]"]': 'RES-AS-123',
+                'input[name="dataIda[]"]': '2025-11-15',
+                'textarea[name="observacoes[]"]': 'Voo doméstico simples - São Paulo para Rio de Janeiro'
+            };
+            
+            Object.entries(inputs).forEach(([selector, value]) => {
+                const element = recibo2.querySelector(selector);
+                if (element) element.value = value;
+            });
+            
+            // Tipo aéreo
+            const tipoSelect = recibo2.querySelector('select[name="tipo[]"]');
+            if (tipoSelect) {
+                tipoSelect.value = 'Aéreo';
+                tipoSelect.dispatchEvent(new Event('change'));
+                
+                setTimeout(() => {
+                    const ciaSelect = recibo2.querySelector('select[name="cia[]"]');
+                    if (ciaSelect) ciaSelect.value = 'GOL';
+                    
+                    // NÃO marcar bagagem nem assento (conforme solicitado)
+                    console.log('✈️ Recibo 2: SEM bagagem e SEM assento (conforme solicitado)');
+                }, 100);
+            }
+        }
+
+        function preencherRecibo3_Hotel() {
+            console.log('🏨 Preenchendo Recibo 3 - Hotel...');
+            
+            const recibo3 = document.querySelector('#recibo-3');
+            if (!recibo3) return;
+            
+            // Campos básicos
+            const inputs = {
+                'input[name="recibo[]"]': 'HT987654321',
+                'input[name="pedido[]"]': 'PED-HT-003',
+                'input[name="reserva[]"]': 'RES-HT-456',
+                'input[name="dataIda[]"]': '2025-12-10',
+                'input[name="dataVolta[]"]': '2025-12-20',
+                'textarea[name="observacoes[]"]': 'Hotel 5 estrelas em Miami - 10 diárias com café da manhã incluso'
+            };
+            
+            Object.entries(inputs).forEach(([selector, value]) => {
+                const element = recibo3.querySelector(selector);
+                if (element) element.value = value;
+            });
+            
+            // Tipo hotel
+            const tipoSelect = recibo3.querySelector('select[name="tipo[]"]');
+            if (tipoSelect) {
+                tipoSelect.value = 'Hotel';
+            }
+        }
+
+        function preencherSeguro() {
+            console.log('🛡️ Configurando seguro como COMPRADO...');
+            
+            const seguroComprou = document.querySelector('input[value="comprou"]');
+            if (seguroComprou) {
+                seguroComprou.checked = true;
+                seguroComprou.closest('.radio-item').classList.add('selected');
+            }
+        }
+
+        function adicionarDataExtra(reciboId, data) {
+            const container = document.getElementById(`datas-extras-${reciboId}`);
+            if (!container) return;
+            
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.name = 'datasExtras[]';
+            input.className = 'form-control';
+            input.value = data;
+            
+            container.appendChild(input);
+            console.log(`📅 Data extra adicionada ao recibo ${reciboId}: ${data}`);
+        }
+
+        // ================================================================================
         // 🚀 INICIALIZAÇÃO ROBUSTA
         // ================================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 DOM carregado! Iniciando sistema v8.02...');
-            console.log('🔧 Sistema de Vendas CVC v8.02 - CONFIGURAÇÃO CENTRALIZADA');
+            console.log('🔧 Sistema de Vendas CVC v8.02 FINAL - CONFIGURAÇÃO CENTRALIZADA');
             console.log('✅ Integração com Sistema Master v8.0');
-            console.log('✅ Array de observações corrigido');
+            console.log('🧪 Simulação completa integrada');
             
             // Verificar dependências essenciais
             if (typeof bootstrap === 'undefined') {
@@ -1062,7 +1113,7 @@ function preencherReciboSeguro() {
             // Verificar conexão
             verificarConexao();
             
-            console.log('🎉 Sistema v8.02 totalmente carregado!');
+            console.log('🎉 Sistema v8.02 FINAL totalmente carregado com simulação!');
         });
 
         // ================================================================================
@@ -1269,7 +1320,7 @@ function preencherReciboSeguro() {
                                 <select class="form-select" name="cia[]">
                                     <option value="">Selecione...</option>
                                     ${COMPANHIAS_AEREAS.map(cia => 
-                                        cia.startsWith('──') ? 
+                                        cia.startsWith('───') ? 
                                         `<option disabled>${cia}</option>` : 
                                         `<option value="${cia}">${cia}</option>`
                                     ).join('')}
@@ -1436,7 +1487,7 @@ function preencherReciboSeguro() {
         }
 
         // ================================================================================
-        // 📄 CAMPOS DINÂMICOS
+        // 🔄 CAMPOS DINÂMICOS
         // ================================================================================
 
         function toggleExtras(selectElement, reciboId) {
@@ -1454,7 +1505,7 @@ function preencherReciboSeguro() {
                 bagagemDiv.style.display = isAereo ? 'grid' : 'none';
             }
             
-            console.log(`📄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
+            console.log(`🔄 Tipo: ${selectElement.value} | Aéreo: ${isAereo}`);
         }
 
         function toggleMulti(selectElement, reciboId) {
@@ -1465,7 +1516,7 @@ function preencherReciboSeguro() {
                 multiDiv.style.display = isMulti ? 'block' : 'none';
             }
             
-            console.log(`📄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
+            console.log(`🔄 Multi trecho ${isMulti ? 'ATIVADO' : 'DESATIVADO'}`);
         }
 
         function adicionarData(reciboId) {
@@ -1622,7 +1673,7 @@ function preencherReciboSeguro() {
                 // 🎯 PREPARAR PARA SISTEMA MASTER v8.0 - CORRIGIDO
                 console.log('🎯 Preparando dados para Sistema Master v8.0...');
                 const dadosEmbarque = converterVendaParaEmbarques(dadosVenda);
-                console.log('📄 Dados convertidos para EMBARQUES v8.0:', dadosEmbarque);
+                console.log('🔄 Dados convertidos para EMBARQUES v8.0:', dadosEmbarque);
                 
                 // ✅ PAYLOAD CORRIGIDO para Sistema Master v8.0
                 const payload = {
@@ -1684,11 +1735,11 @@ function preencherReciboSeguro() {
         }
 
         // ================================================================================
-        // 📄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - ARRAY CORRIGIDO
+        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - ARRAY CORRIGIDO
         // ================================================================================
 
         function converterVendaParaEmbarques(dadosVenda) {
-            console.log('📄 Convertendo venda para formato EMBARQUES v8.0...');
+            console.log('🔄 Convertendo venda para formato EMBARQUES v8.0...');
             
             // ✅ ESTRUTURA CORRIGIDA - campo observacoes como ARRAY
             const dadosEmbarque = {
@@ -1728,7 +1779,7 @@ function preencherReciboSeguro() {
                 // 🔧 CORREÇÃO PRINCIPAL: observacoes como ARRAY (não string!)
                 observacoes: dadosVenda.observacoes || [], // ← CORRIGIDO!
                 
-                // 📢 CONTROLE DE MÚLTIPLOS RECIBOS
+                // 🔢 CONTROLE DE MÚLTIPLOS RECIBOS
                 numeroInforme: dadosVenda.nInforme || `VENDA-${Date.now()}`,
                 datasExtras: dadosVenda.datasExtras || []
             };
@@ -1966,7 +2017,7 @@ function preencherReciboSeguro() {
         // 📝 LOGS E INFORMAÇÕES FINAIS v8.02
         // ================================================================================
         
-        console.log('✅ Sistema de Vendas CVC v8.02 carregado com sucesso!');
+        console.log('✅ Sistema de Vendas CVC v8.02 FINAL carregado com sucesso!');
         console.log('🔧 CONFIGURAÇÃO CENTRALIZADA - URL vem do config.js');
         console.log('🔗 Integração completa com Sistema Master v8.0');
         console.log('🎯 Conceito: 1 LINHA = 1 VOO ESPECÍFICO = 1 CHECK-IN INDIVIDUAL');
@@ -1979,7 +2030,8 @@ function preencherReciboSeguro() {
         console.log('   ✅ Array de observações CORRIGIDO');
         console.log('   ✅ CORS corrigido para API');
         console.log('   ✅ Configuração centralizada em config.js');
-        console.log('🚀 Sistema v8.02 pronto para produção!');
+        console.log('   🧪 SIMULAÇÃO COMPLETA INTEGRADA');
+        console.log('🚀 Sistema v8.02 FINAL pronto para produção!');
     </script>
 </body>
 </html>
