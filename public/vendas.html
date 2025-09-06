@@ -853,7 +853,7 @@
         function preencherDadosCliente() {
             console.log('👤 Preenchendo dados do cliente...');
             
-            document.getElementById('cpfCliente').value = '123.456.789-00';
+            document.getElementById('cpfCliente').value = '325.631.008-79';
             document.getElementById('nomeCliente').value = 'Maria Santos Silva';
             document.getElementById('whatsappCliente').value = '(11) 99888-7766';
             document.getElementById('vendedor').value = 'Ana Paula';
@@ -1660,7 +1660,7 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="loading-spinner"></span> Processando venda...';
                 
-                // Coletar dados do formulário
+                // Coletar dados do formulário - FUNÇÃO CORRIGIDA
                 const dadosVenda = coletarDadosFormulario(e.target);
                 console.log('📋 Dados da venda coletados:', dadosVenda);
                 
@@ -1735,7 +1735,7 @@
         }
 
         // ================================================================================
-        // 🔄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - ARRAY CORRIGIDO
+        // 📄 CONVERSÃO PARA FORMATO EMBARQUES v8.0 - ARRAY CORRIGIDO
         // ================================================================================
 
         function converterVendaParaEmbarques(dadosVenda) {
@@ -1776,10 +1776,22 @@
                 multiTrecho: dadosVenda.multiTrecho?.[0] || 'Não',
                 seguro: converterSeguro(dadosVenda.seguro),
                 
-                // 🔧 CORREÇÃO PRINCIPAL: observacoes como ARRAY (não string!)
-                observacoes: dadosVenda.observacoes || [], // ← CORRIGIDO!
+                // 🔧 CORREÇÃO PRINCIPAL: MÚLTIPLOS RECIBOS COMO ARRAYS
+                recibo: dadosVenda.recibo || [],
+                tipo: dadosVenda.tipo || [],
+                dataIda: dadosVenda.dataIda || [],
+                dataVolta: dadosVenda.dataVolta || [],
+                observacoes: dadosVenda.observacoes || [],
+                cia: dadosVenda.cia || [],
+                temBagagem: dadosVenda.temBagagem || [],
+                temAssento: dadosVenda.temAssento || [],
+                multiTrecho: dadosVenda.multiTrecho || [],
+                pedido: dadosVenda.pedido || [],
+                reserva: dadosVenda.reserva || [],
+                locGds: dadosVenda.locGds || [],
+                locCia: dadosVenda.locCia || [],
                 
-                // 🔢 CONTROLE DE MÚLTIPLOS RECIBOS
+                // 📢 CONTROLE DE MÚLTIPLOS RECIBOS
                 numeroInforme: dadosVenda.nInforme || `VENDA-${Date.now()}`,
                 datasExtras: dadosVenda.datasExtras || []
             };
@@ -1798,12 +1810,16 @@
             return mapeamento[seguroOriginal] || 'Não informado';
         }
 
+        // ================================================================================
+        // 📋 COLETA DE DADOS CORRIGIDA - MÚLTIPLOS RECIBOS
+        // ================================================================================
+
         function coletarDadosFormulario(form) {
             try {
                 const formData = new FormData(form);
                 const dados = {};
                 
-                // Processar campos simples e arrays
+                // 🔧 CORREÇÃO PRINCIPAL: Processar campos simples e arrays CORRETAMENTE
                 for (let [key, value] of formData.entries()) {
                     if (key.endsWith('[]')) {
                         const baseKey = key.slice(0, -2);
@@ -1814,6 +1830,18 @@
                     }
                 }
                 
+                // ✅ GARANTIR QUE TODOS OS CAMPOS SEJAM ARRAYS
+                const camposArray = ['recibo', 'tipo', 'dataIda', 'dataVolta', 'observacoes', 'cia', 'temBagagem', 'temAssento', 'multiTrecho', 'pedido', 'reserva', 'locGds', 'locCia'];
+                camposArray.forEach(campo => {
+                    if (dados[campo] && !Array.isArray(dados[campo])) {
+                        dados[campo] = [dados[campo]];
+                    }
+                    // Se não existe, criar array vazio
+                    if (!dados[campo]) {
+                        dados[campo] = [];
+                    }
+                });
+                
                 // Processar checkboxes de pacote
                 const pacotes = [];
                 document.querySelectorAll('input[name="pacote"]:checked').forEach(cb => {
@@ -1821,16 +1849,31 @@
                 });
                 dados.pacotes = pacotes;
                 
-                // Processar campos de bagagem e assento (checkboxes especiais)
+                // 🔧 CORREÇÃO: Processar campos de bagagem e assento CORRETAMENTE
                 const temBagagem = [];
                 const temAssento = [];
                 
+                // Buscar todos os checkboxes marcados
                 document.querySelectorAll('input[name="temBagagem[]"]:checked').forEach(cb => {
-                    temBagagem.push(cb.value);
+                    if (cb.value === 'true') {
+                        temBagagem.push('true');
+                    }
                 });
+                
                 document.querySelectorAll('input[name="temAssento[]"]:checked').forEach(cb => {
-                    temAssento.push(cb.value);
+                    if (cb.value === 'true') {
+                        temAssento.push('true');
+                    }
                 });
+                
+                // Completar arrays com 'false' para recibos sem bagagem/assento
+                const totalRecibos = dados.tipo ? dados.tipo.length : 0;
+                while (temBagagem.length < totalRecibos) {
+                    temBagagem.push('false');
+                }
+                while (temAssento.length < totalRecibos) {
+                    temAssento.push('false');
+                }
                 
                 dados.temBagagem = temBagagem;
                 dados.temAssento = temAssento;
@@ -1849,6 +1892,7 @@
                 dados.dataRegistro = new Date().toLocaleDateString('pt-BR');
                 
                 console.log('✅ Dados coletados com observações como array:', dados.observacoes);
+                console.log('📊 Total de recibos detectados:', dados.tipo?.length || 0);
                 
                 return dados;
             } catch (error) {
@@ -2014,7 +2058,7 @@
         }
         
         // ================================================================================
-        // 📝 LOGS E INFORMAÇÕES FINAIS v8.02
+        // 📍 LOGS E INFORMAÇÕES FINAIS v8.02
         // ================================================================================
         
         console.log('✅ Sistema de Vendas CVC v8.02 FINAL carregado com sucesso!');
