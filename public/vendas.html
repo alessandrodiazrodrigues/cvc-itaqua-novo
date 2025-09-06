@@ -1748,7 +1748,7 @@
                 if (alerta.parentElement) {
                     alerta.remove();
                 }
-            }, CONFIG.UI.auto_hide_alerts);
+            }, (CONFIG && CONFIG.UI && CONFIG.UI.auto_hide_alerts) ? CONFIG.UI.auto_hide_alerts : 8000);
         }
         
         // ================================================================================
