@@ -14,9 +14,10 @@ const CVC_CONFIG = {
     LAST_UPDATE: '2025-09-06',
     ENVIRONMENT: 'production',
     
-    // 🏪 CONFIGURAÇÕES DA LOJA
+    // 🏪 CONFIGURAÇÕES DA LOJA (FILIAL ÚNICA)
     FILIAL_PADRAO: '6220',
     NOME_FILIAL: 'Itaquaquecetuba',
+    FILIAL_UNICA: true, // Indica que só há uma filial ativa
     
     // 👥 VENDEDORES ATIVOS
     VENDEDORES: [
