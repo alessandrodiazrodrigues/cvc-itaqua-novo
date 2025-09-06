@@ -1061,33 +1061,33 @@
                     }
                     
                     if (tipoControle) {
-                        // ✅ CORREÇÃO: Usar mapeamento correto das 39 colunas v8.02
+                        // ✅ CORREÇÃO: Usar campos corretos e mais flexíveis
                         const embarqueProcessado = {
                             ...embarque,
-                            id: embarque['Nº do Informe'] || `emb_${index + 1}`,
-                            nomeCliente: (embarque['Nome do Cliente'] || '').toString().trim(),
-                            cpfCliente: (embarque['CPF'] || '').toString().trim(),
-                            vendedor: (embarque['Vendedor'] || '').toString().trim(),
-                            destino: 'Destino não informado', // Campo não existe na estrutura atual
-                            tipoViagem: embarque['Tipo de Pacote'] || 'Nacional',
-                            observacoes: embarque['Observações'] || '',
-                            recibo: embarque['Recibo'] || 'N/A',
-                            localizador: embarque['LOC GDS'] || embarque['Reserva'] || 'N/A',
-                            whatsappCliente: embarque['WhatsApp do Cliente'] || '',
-                            cia: embarque['CIA'] || 'N/A',
-                            filial: embarque['FILIAL'] || 'N/A',
-                            tipo: embarque['Tipo'] || 'N/A',
-                            tipoAereo: embarque['Tipo de Aéreo'] || '',
+                            id: embarque['Nº do Informe'] || embarque.numeroInforme || `emb_${index + 1}`,
+                            nomeCliente: (embarque['Nome do Cliente'] || embarque.nomeCliente || '').toString().trim(),
+                            cpfCliente: (embarque['CPF'] || embarque.cpfCliente || '').toString().trim(),
+                            vendedor: (embarque['Vendedor'] || embarque.vendedor || '').toString().trim(),
+                            destino: embarque.destino || 'Destino não informado',
+                            tipoViagem: embarque['Tipo de Pacote'] || embarque.tipoViagem || 'Nacional',
+                            observacoes: embarque['Observações'] || embarque.observacoes || '',
+                            recibo: embarque['Recibo'] || embarque.recibo || 'N/A',
+                            localizador: embarque['LOC GDS'] || embarque['Reserva'] || embarque.locGds || embarque.reserva || 'N/A',
+                            whatsappCliente: embarque['WhatsApp do Cliente'] || embarque.whatsappCliente || '',
+                            cia: embarque['CIA'] || embarque.cia || 'N/A',
+                            filial: embarque['FILIAL'] || embarque.filial || 'N/A',
+                            tipo: tipo, // Usar o tipo validado
+                            tipoAereo: tipoAereo || tipo, // Fallback para tipo principal
                             dataIda: dataIda,
                             diasParaIda: diasParaIda,
                             tipoControle: tipoControle,
-                            statusConferencia: statusConferencias[embarque['Nº do Informe']] || 'pendente',
-                            // ✅ NOVOS CAMPOS v8.02
-                            temBagagem: embarque['Tem Bagagem?'] || 'Não informado',
-                            temAssento: embarque['Tem Assento?'] || 'Não informado',
-                            multiTrecho: embarque['Multi Trecho?'] || 'Não',
-                            seguro: embarque['SEGURO'] || 'Não informado',
-                            situacao: embarque['Situação'] || 'Ativo'
+                            statusConferencia: statusConferencias[embarque['Nº do Informe'] || embarque.numeroInforme] || 'pendente',
+                            // ✅ CAMPOS v8.02 com fallbacks
+                            temBagagem: embarque['Tem Bagagem?'] || embarque.temBagagem || 'Não informado',
+                            temAssento: embarque['Tem Assento?'] || embarque.temAssento || 'Não informado',
+                            multiTrecho: embarque['Multi Trecho?'] || embarque.multiTrecho || 'Não',
+                            seguro: embarque['SEGURO'] || embarque.seguro || 'Não informado',
+                            situacao: embarque['Situação'] || embarque.situacao || 'Ativo'
                         };
                         
                         embarquesValidos.push(embarqueProcessado);
