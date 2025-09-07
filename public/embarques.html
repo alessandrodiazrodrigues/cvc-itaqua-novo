@@ -22,6 +22,25 @@
             --normal: #28a745;
         }
         
+        // Manter função original para compatibilidade (se ainda houver algum uso)
+        async function marcarComoFeito(categoria, cpf, recibo, numeroInforme, dataVoo) {
+            // Redirecionar para a nova função mais específica
+            console.log('Redirecionando para marcarVooEspecificoComoFeito...');
+            
+            // Encontrar o embarque específico
+            const embarque = embarquesData.find(e => 
+                e.cpfCliente.replace(/\D/g, '') === cpf.replace(/\D/g, '') &&
+                e.categoria === categoria &&
+                formatarData(e.dataIda) === formatarData(dataVoo)
+            );
+            
+            if (embarque) {
+                return marcarVooEspecificoComoFeito(embarque.id, categoria, cpf, recibo, numeroInforme, dataVoo);
+            } else {
+                mostrarNotificacao('Embarque específico não encontrado.', 'error');
+            }
+        }
+        
         body {
             background: linear-gradient(135deg, var(--cvc-azul) 0%, var(--cvc-azul-claro) 100%);
             min-height: 100vh;
