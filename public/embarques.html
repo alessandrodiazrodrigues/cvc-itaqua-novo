@@ -2265,7 +2265,64 @@
                 `;
                 return;
             }
-            
+            // Função para marcar como feito
+        async function marcarComoFeito(categoria, cpf, recibo, numeroInforme, dataVoo) {
+            try {
+                let action, dados;
+                
+                switch(categoria) {
+                    case 'conferencia':
+                        action = 'marcar_conferencia';
+                        dados = { cpf, recibo, numeroInforme };
+                        break;
+                    case 'checkin':
+                        action = 'marcar_checkin';
+                        dados = { cpf, recibo, dataVoo };
+                        break;
+                    case 'pos-venda':
+                        action = 'marcar_pos_venda';
+                        dados = { cpf, recibo, numeroInforme, dadosEditaveis: { observacoes: 'Realizado via dashboard' } };
+                        break;
+                    default:
+                        throw new Error('Categoria inválida: ' + categoria);
+                }
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        ...dados
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarNotificacao(`${categoria} marcada como concluída!`, 'success');
+                    carregarEmbarques();
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao marcar como feito:', error);
+                mostrarNotificacao('Erro: ' + error.message, 'error');
+            }
+        }
+
+        // Global functions for onclick events
+        window.abrirDetalhesAgrupados = abrirDetalhesAgrupados;
+        window.copiarTexto = copiarTexto;
+        window.marcarComoFeito = marcarComoFeito;
+        
+        console.log('✅ Dashboard Embarques CVC v8.03 - BASEADO NAS COLUNAS AE, AG, AI');
+    </script>
+</body>
+</html>
             // Ordenar do mais próximo para o mais distante
             embarques.sort((a, b) => {
                 const diasA = parseInt(a.diasParaVoo) || 999;
@@ -2285,3 +2342,4 @@
     </script>
 </body>
 </html>
+
