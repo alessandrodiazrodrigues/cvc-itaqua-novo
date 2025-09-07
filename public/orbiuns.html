@@ -1457,19 +1457,20 @@
             } else {
                 // Com filtros: aplicar em todos os dados
                 orbiunsFiltrados = orbiunsData.filter(orbium => {
-                    if (filtros.orbium && (!orbium.orbium || !orbium.orbium.toLowerCase().includes(filtros.orbium))) {
+                    // CORREÇÃO: Verificar se o campo existe e converter para string antes de toLowerCase
+                    if (filtros.orbium && (!orbium.orbium || !orbium.orbium.toString().toLowerCase().includes(filtros.orbium))) {
                         return false;
                     }
-                    if (filtros.status && !orbium.status.toLowerCase().includes(filtros.status)) {
+                    if (filtros.status && (!orbium.status || !orbium.status.toString().toLowerCase().includes(filtros.status))) {
                         return false;
                     }
-                    if (filtros.vendedor && (!orbium.vendedor || !orbium.vendedor.toLowerCase().includes(filtros.vendedor))) {
+                    if (filtros.vendedor && (!orbium.vendedor || !orbium.vendedor.toString().toLowerCase().includes(filtros.vendedor))) {
                         return false;
                     }
-                    if (filtros.departamento && (!orbium.departamento || !orbium.departamento.toLowerCase().includes(filtros.departamento))) {
+                    if (filtros.departamento && (!orbium.departamento || !orbium.departamento.toString().toLowerCase().includes(filtros.departamento))) {
                         return false;
                     }
-                    if (filtros.cliente && (!orbium.nome_cliente || !orbium.nome_cliente.toLowerCase().includes(filtros.cliente))) {
+                    if (filtros.cliente && (!orbium.nome_cliente || !orbium.nome_cliente.toString().toLowerCase().includes(filtros.cliente))) {
                         return false;
                     }
                     if (filtros.whatsapp && (!orbium.whats_cliente || !orbium.whats_cliente.toString().includes(filtros.whatsapp))) {
