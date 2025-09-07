@@ -963,6 +963,9 @@
         </div>
     </div>
 
+    <!-- Config.js - IMPORTANTE: Carregar ANTES dos outros scripts -->
+    <script src="config.js"></script>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -977,26 +980,44 @@
         
         function obterApiUrl() {
             try {
+                // Aguardar um pouco para garantir que o config.js carregou
+                setTimeout(() => {
+                    console.log('🔍 Verificando configurações disponíveis...');
+                    console.log('- typeof getApiUrl:', typeof getApiUrl);
+                    console.log('- typeof CVC_CONFIG:', typeof CVC_CONFIG);
+                    console.log('- window.CVC_CONFIG exists:', !!window.CVC_CONFIG);
+                }, 100);
+                
+                // Método 1: função getApiUrl
                 if (typeof getApiUrl === 'function') {
                     API_URL = getApiUrl();
                     console.log('✅ Config.js carregado via função getApiUrl()');
+                    console.log('🔗 URL obtida:', API_URL);
                     return API_URL;
                 }
                 
-                if (typeof CVC_CONFIG !== 'undefined' && CVC_CONFIG.API_URL) {
+                // Método 2: objeto CVC_CONFIG global
+                if (typeof CVC_CONFIG !== 'undefined' && CVC_CONFIG && CVC_CONFIG.API_URL) {
                     API_URL = CVC_CONFIG.API_URL;
                     console.log('✅ Config.js carregado via CVC_CONFIG');
+                    console.log('🔗 URL obtida:', API_URL);
+                    console.log('📊 Versão:', CVC_CONFIG.VERSION);
                     return API_URL;
                 }
                 
+                // Método 3: window.CVC_CONFIG
                 if (window.CVC_CONFIG && window.CVC_CONFIG.API_URL) {
                     API_URL = window.CVC_CONFIG.API_URL;
                     console.log('✅ Config.js carregado via window.CVC_CONFIG');
+                    console.log('🔗 URL obtida:', API_URL);
                     return API_URL;
                 }
                 
+                // Fallback
                 API_URL = 'https://script.google.com/macros/s/AKfycbw4u_kgqqyRWWsz8SU-Dw6H4uJnb5ssiWpYZPE9P-TOe5O7f2llEtkmbxXiutJSj1M70A/exec';
                 console.log('⚠️ Config.js não encontrado, usando URL fallback');
+                console.log('🔍 Verifique se o arquivo config.js está no mesmo diretório');
+                console.log('🔍 Verifique se não há erros de JavaScript no console');
                 return API_URL;
                 
             } catch (error) {
