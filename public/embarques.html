@@ -1660,26 +1660,78 @@
             if (!embarqueAtual) return;
             
             if (confirm(`Confirma a conclusão da conferência para ${embarqueAtual.nomeCliente}?`)) {
+                const btnConcluir = document.getElementById('btnConcluir');
+                const originalText = btnConcluir.innerHTML;
+                
                 try {
-                    // Marcar como conferido localmente
+                    // Feedback visual
+                    btnConcluir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+                    btnConcluir.disabled = true;
+                    
+                    // Marcar como conferido localmente primeiro
                     embarqueAtual.conferido = true;
                     localStorage.setItem(`conferencia_${embarqueAtual.id}`, 'true');
                     
                     // Tentar atualizar na planilha
                     await atualizarConferenciaNaPlanilha(embarqueAtual);
                     
+                    // Atualizar interface
                     atualizarEstatisticas(embarquesData);
                     renderizarEmbarques();
                     
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalhes'));
                     modal.hide();
                     
-                    alert('Conferência concluída e atualizada na planilha!');
+                    // Feedback de sucesso
+                    mostrarNotificacao('Conferência concluída e sincronizada!', 'success');
+                    
                 } catch (error) {
                     console.error('Erro ao atualizar conferência:', error);
-                    alert('Conferência marcada localmente, mas houve erro ao atualizar a planilha.');
+                    
+                    // Ainda assim manter a conferência local
+                    atualizarEstatisticas(embarquesData);
+                    renderizarEmbarques();
+                    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalhes'));
+                    modal.hide();
+                    
+                    // Feedback de erro mas conferência mantida
+                    mostrarNotificacao('Conferência salva localmente, mas houve erro na sincronização.', 'warning');
+                    
+                } finally {
+                    btnConcluir.innerHTML = originalText;
+                    btnConcluir.disabled = false;
                 }
             }
+        }
+        
+        function mostrarNotificacao(mensagem, tipo = 'info') {
+            // Criar elemento de notificação
+            const notificacao = document.createElement('div');
+            notificacao.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'info'} position-fixed`;
+            notificacao.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                min-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                border-radius: 8px;
+            `;
+            notificacao.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${mensagem}
+                </div>
+            `;
+            
+            document.body.appendChild(notificacao);
+            
+            // Remover após 5 segundos
+            setTimeout(() => {
+                if (document.body.contains(notificacao)) {
+                    document.body.removeChild(notificacao);
+                }
+            }, 5000);
         }
         
         async function atualizarConferenciaNaPlanilha(embarque) {
