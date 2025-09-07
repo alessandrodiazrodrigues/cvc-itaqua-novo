@@ -2222,11 +2222,66 @@
             log('🎉 Sistema v8.03 TOTALMENTE CORRIGIDO inicializado!');
         });
         
+        function validarEmbarque(embarque) {
+            if (!embarque.nomeCliente || embarque.nomeCliente.length < 3) return false;
+            if (!embarque.cpfCliente || embarque.cpfCliente.replace(/\D/g, '').length < 8) return false;
+            
+            const vendedoresValidos = [
+                'ADRIELLY', 'ALESSANDRO', 'ANA PAULA', 'CAROL', 'CAROLINY',
+                'JHULY', 'DAINA', 'ELAINE', 'ILANA', 'BIA', 'CONCEIÇÃO',
+                'CONCEICAO', 'ADRIANA', 'BEATRIZ', 'TESTE'
+            ];
+            
+            if (!embarque.vendedor) return false;
+            
+            const vendedorNorm = embarque.vendedor.toString().trim().toUpperCase();
+            const vendedorValido = vendedoresValidos.some(v => 
+                vendedorNorm.includes(v) || v.includes(vendedorNorm)
+            );
+            
+            if (!vendedorValido) return false;
+            if (!embarque.dataIda) return false;
+            if (embarque.situacao && embarque.situacao.toLowerCase().includes('cancelado')) return false;
+            
+            return true;
+        }
+        
+        function renderizarListaEmbarques(containerId, embarques, categoria) {
+            const container = document.getElementById(containerId);
+            
+            if (embarques.length === 0) {
+                const emptyMessage = {
+                    'conferencia': 'Nenhuma conferência pendente',
+                    'checkin': 'Nenhum check-in próximo',
+                    'pos-venda': 'Nenhum pós-venda pendente'
+                };
+                
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-${categoria === 'conferencia' ? 'clipboard-check' : categoria === 'checkin' ? 'plane' : 'phone'}"></i>
+                        <h5>${emptyMessage[categoria]}</h5>
+                        <small>Sistema v8.03 - Total processados: ${stats.total} embarques</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar do mais próximo para o mais distante
+            embarques.sort((a, b) => {
+                const diasA = parseInt(a.diasParaVoo) || 999;
+                const diasB = parseInt(b.diasParaVoo) || 999;
+                return diasA - diasB;
+            });
+            
+            container.innerHTML = embarques.map(embarque => criarCardEmbarqueCorrigido(embarque, categoria)).join('');
+        }
+        
         // Global functions for onclick events
         window.abrirDetalhesAgrupados = abrirDetalhesAgrupados;
         window.copiarTexto = copiarTexto;
+        window.marcarComoFeito = marcarComoFeito;
         
-        console.log('✅ Dashboard Embarques CVC v8.03 - TODAS AS CORREÇÕES IMPLEMENTADAS');
+        console.log('✅ Dashboard Embarques CVC v8.03 - BASEADO NAS COLUNAS AE, AG, AI');
     </script>
 </body>
 </html>
