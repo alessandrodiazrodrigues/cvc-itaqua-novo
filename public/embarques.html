@@ -1350,7 +1350,7 @@
             }
             
             // ================================================================================
-            // 🔄 ORDENAÇÃO CORRIGIDA v8.04
+            // 🔄 ORDENAÇÃO CORRIGIDA v8.04 - CHECK-IN ESPECIAL
             // ================================================================================
             
             embarques.sort((a, b) => {
@@ -1359,11 +1359,26 @@
                 const diasB = b.diasNumericos !== undefined ? b.diasNumericos : 999;
                 
                 if (categoria === 'checkin') {
-                    // CHECK-IN: ATRASO primeiro, depois ordem crescente
-                    if (diasA < 0 && diasB >= 0) return -1; // A é atraso, B não
-                    if (diasA >= 0 && diasB < 0) return 1;  // B é atraso, A não
-                    if (diasA < 0 && diasB < 0) return diasB - diasA; // Ambos atraso: mais recente primeiro
-                    return diasA - diasB; // Ordem normal para futuros
+                    // CHECK-IN: Ordenação especial
+                    // ATRASO (mais antigos primeiro) → Hoje → Amanhã → 2 dias → 3 dias
+                    
+                    // Se ambos são atraso (< 0)
+                    if (diasA < 0 && diasB < 0) {
+                        return diasA - diasB; // Mais antigo primeiro (-5, -4, -3, -2, -1)
+                    }
+                    
+                    // Se apenas A é atraso
+                    if (diasA < 0 && diasB >= 0) {
+                        return -1; // A vem primeiro
+                    }
+                    
+                    // Se apenas B é atraso
+                    if (diasA >= 0 && diasB < 0) {
+                        return 1; // B vem primeiro
+                    }
+                    
+                    // Se ambos são futuros (>= 0), ordem crescente normal
+                    return diasA - diasB; // 0 (hoje), 1 (amanhã), 2, 3...
                 } else {
                     // CONFERENCIA e POS-VENDA: ordem crescente normal
                     return diasA - diasB;
