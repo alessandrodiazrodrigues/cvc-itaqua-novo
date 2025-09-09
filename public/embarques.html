@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📋 Dashboard Embarques - CVC Itaqua v8.03 CORRIGIDO</title>
+    <title>📋 Dashboard Embarques - CVC Itaquá v8.03 CORRIGIDO</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -721,10 +721,11 @@
                         </div>
                         <div class="text-center">
                             <h1 class="header-title">
-                                <i class="fas fa-plane-departure"></i> Dashboard Embarques v8.03
+                                Dashboard Embarques
                             </h1>
                             <p class="header-subtitle">
-                                Sistema Master v8.03 - CORRIGIDO E FUNCIONAL
+                                CVC Itaquá - Sistema Master v8.03<br>
+                                <small style="font-size: 0.9rem; opacity: 0.8;">Desenvolvido por: Alessandro Diaz Rodrigues</small>
                             </p>
                         </div>
                     </div>
@@ -916,12 +917,6 @@
                     <div class="mt-3 text-center">
                         <button class="btn btn-success me-2" id="btnRecarregar">
                             <i class="fas fa-sync-alt"></i> Recarregar Dados
-                        </button>
-                        <button class="btn btn-warning me-2" id="btnLimparAntigos">
-                            <i class="fas fa-broom"></i> Limpar Antigos
-                        </button>
-                        <button class="btn btn-info" id="btnMarcarPosVendaAntigos">
-                            <i class="fas fa-check-double"></i> Marcar Pós-vendas até 20/08
                         </button>
                     </div>
                 </div>
@@ -1195,6 +1190,12 @@
                 const diffTime = dataVoo.getTime() - hoje.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
+                // CORREÇÃO: Qualquer data passada = URGENTE (vermelho)
+                if (diffDays < 0) {
+                    return { categoria: 'conferencia', urgencia: 'urgente' };
+                }
+                
+                // PÓS-VENDA: 1 dia após retorno da viagem
                 if (dataVolta) {
                     dataVolta.setHours(0, 0, 0, 0);
                     const diffRetorno = hoje.getTime() - dataVolta.getTime();
@@ -1210,6 +1211,7 @@
                     }
                 }
                 
+                // CHECK-IN: 3 dias antes de cada voo
                 if (diffDays >= -1 && diffDays <= 3) {
                     let urgencia = 'normal';
                     if (diffDays === 3) urgencia = 'normal';
@@ -1219,6 +1221,7 @@
                     return { categoria: 'checkin', urgencia };
                 }
                 
+                // CONFERÊNCIA: 12 a 3 dias antes (primeira data do recibo)
                 if (diffDays >= 4 && diffDays <= 12) {
                     let urgencia = 'normal';
                     if (diffDays >= 8 && diffDays <= 12) urgencia = 'normal';
@@ -1397,7 +1400,7 @@
                             <i class="fas fa-receipt detail-icon"></i>
                             <span class="detail-label">Recibo:</span>
                             <span class="detail-value">${embarque.recibo || 'N/A'}</span>
-                            ${embarque.recibo ? `<button class="copy-button" onclick="copiarTexto('${embarque.recibo}')"><i class="fas fa-copy"></i></button>` : ''}
+                            ${embarque.recibo ? `<button class="copy-button" onclick="copiarTexto('${embarque.recibo}', this)"><i class="fas fa-copy"></i></button>` : ''}
                         </div>
                         
                         <div class="detail-item">
@@ -1410,7 +1413,7 @@
                             <i class="fab fa-whatsapp detail-icon"></i>
                             <span class="detail-label">WhatsApp:</span>
                             <span class="detail-value">${embarque.whatsappCliente || 'N/A'}</span>
-                            ${embarque.whatsappCliente ? `<button class="copy-button" onclick="copiarTexto('${embarque.whatsappCliente}')"><i class="fas fa-copy"></i></button>` : ''}
+                            ${embarque.whatsappCliente ? `<button class="copy-button" onclick="copiarTexto('${embarque.whatsappCliente}', this)"><i class="fas fa-copy"></i></button>` : ''}
                         </div>
                     </div>
                     
@@ -1459,6 +1462,12 @@
                 const option = document.createElement('option');
                 option.value = vendedor;
                 option.textContent = vendedor;
+                
+                // TODO: Futuro sistema de login - auto-selecionar vendedor logado
+                // if (usuarioLogado && vendedor === usuarioLogado.nome) {
+                //     option.selected = true;
+                // }
+                
                 filtroVendedor.appendChild(option);
             });
         }
@@ -1516,7 +1525,7 @@
                             <div class="info-label">CPF</div>
                             <div class="info-value">
                                 ${clientePrincipal.cpfCliente}
-                                <button class="copy-button" onclick="copiarTexto('${clientePrincipal.cpfCliente}')">
+                                <button class="copy-button" onclick="copiarTexto('${clientePrincipal.cpfCliente}', this)">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -1526,7 +1535,7 @@
                             <div class="info-value">
                                 ${clientePrincipal.whatsappCliente ? 
                                     `<a href="${whatsappLink}" target="_blank" class="text-success">${clientePrincipal.whatsappCliente}</a>
-                                     <button class="copy-button" onclick="copiarTexto('${clientePrincipal.whatsappCliente}')">
+                                     <button class="copy-button" onclick="copiarTexto('${clientePrincipal.whatsappCliente}', this)">
                                          <i class="fas fa-copy"></i>
                                      </button>` : 
                                     'Não informado'
@@ -1555,7 +1564,7 @@
                             <i class="fas fa-receipt"></i> 
                             Recibo: ${recibo}
                             ${recibo !== 'Sem Recibo' ? `
-                                <button class="copy-button" onclick="copiarTexto('${recibo}')">
+                                <button class="copy-button" onclick="copiarTexto('${recibo}', this)">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             ` : ''}
@@ -1588,7 +1597,7 @@
                                         <div class="info-value">
                                             ${embarque.reserva || 'N/A'}
                                             ${embarque.reserva ? `
-                                                <button class="copy-button" onclick="copiarTexto('${embarque.reserva}')">
+                                                <button class="copy-button" onclick="copiarTexto('${embarque.reserva}', this)">
                                                     <i class="fas fa-copy"></i>
                                                 </button>
                                             ` : ''}
@@ -1599,7 +1608,7 @@
                                         <div class="info-value">
                                             ${embarque.locGds || 'N/A'}
                                             ${embarque.locGds ? `
-                                                <button class="copy-button" onclick="copiarTexto('${embarque.locGds}')">
+                                                <button class="copy-button" onclick="copiarTexto('${embarque.locGds}', this)">
                                                     <i class="fas fa-copy"></i>
                                                 </button>
                                             ` : ''}
@@ -1610,7 +1619,7 @@
                                         <div class="info-value">
                                             ${embarque.locCia || 'N/A'}
                                             ${embarque.locCia ? `
-                                                <button class="copy-button" onclick="copiarTexto('${embarque.locCia}')">
+                                                <button class="copy-button" onclick="copiarTexto('${embarque.locCia}', this)">
                                                     <i class="fas fa-copy"></i>
                                                 </button>
                                             ` : ''}
@@ -2021,83 +2030,6 @@
         }
 
         // ================================================================================
-        // 🧹 SCRIPTS DE LIMPEZA v8.03
-        // ================================================================================
-        
-        async function limparConferenciasAntigas() {
-            if (!confirm('Marcar todas as conferências antigas (antes de hoje) como concluídas?')) {
-                return;
-            }
-            
-            mostrarLoading(true);
-            
-            try {
-                let marcados = 0;
-                const hoje = new Date(DATA_HOJE);
-                
-                embarquesData.forEach(embarque => {
-                    if (embarque.categoria === 'conferencia' && !embarque.conferido) {
-                        const dataVoo = parseData(embarque.dataIda);
-                        if (dataVoo && dataVoo < hoje) {
-                            embarque.conferido = true;
-                            localStorage.setItem(`conferencia_${embarque.id}`, 'true');
-                            marcados++;
-                        }
-                    }
-                });
-                
-                atualizarEstatisticas(embarquesData);
-                renderizarEmbarques();
-                
-                mostrarNotificacao(`${marcados} conferências antigas marcadas como concluídas!`, 'success');
-                
-            } catch (error) {
-                console.error('Erro ao limpar conferências antigas:', error);
-                mostrarNotificacao('Erro ao executar limpeza: ' + error.message, 'error');
-            } finally {
-                mostrarLoading(false);
-            }
-        }
-        
-        async function marcarPosVendasAntigos() {
-            if (!confirm('Marcar todos os pós-vendas até 20/08/2025 como realizados?')) {
-                return;
-            }
-            
-            mostrarLoading(true);
-            
-            try {
-                let marcados = 0;
-                const dataLimite = new Date('2025-08-20');
-                
-                embarquesData.forEach(embarque => {
-                    if (embarque.categoria === 'pos-venda') {
-                        const dataVolta = parseData(embarque.dataVolta);
-                        if (dataVolta && dataVolta <= dataLimite) {
-                            embarque.posVendaRealizado = true;
-                            localStorage.setItem(`pos_venda_${embarque.id}`, 'true');
-                            marcados++;
-                        }
-                    }
-                });
-                
-                embarquesData = embarquesData.filter(e => !e.posVendaRealizado);
-                embarquesFiltrados = [...embarquesData];
-                
-                atualizarEstatisticas(embarquesData);
-                renderizarEmbarques();
-                
-                mostrarNotificacao(`${marcados} pós-vendas até 20/08/2025 marcados como realizados!`, 'success');
-                
-            } catch (error) {
-                console.error('Erro ao marcar pós-vendas antigos:', error);
-                mostrarNotificacao('Erro ao executar limpeza: ' + error.message, 'error');
-            } finally {
-                mostrarLoading(false);
-            }
-        }
-
-        // ================================================================================
         // 🌐 CARREGAMENTO DE DADOS DA API
         // ================================================================================
         
@@ -2221,9 +2153,11 @@
             }
         }
         
-        function copiarTexto(texto) {
+        function copiarTexto(texto, botao = null) {
             navigator.clipboard.writeText(texto).then(() => {
-                const btn = event.target.closest('button');
+                // Se botão foi passado ou se há um event global disponível
+                const btn = botao || (typeof event !== 'undefined' && event ? event.target.closest('button') : null);
+                
                 if (btn) {
                     const originalIcon = btn.innerHTML;
                     btn.innerHTML = '<i class="fas fa-check"></i>';
@@ -2294,8 +2228,6 @@
             document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltros);
             document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
             document.getElementById('btnRecarregar').addEventListener('click', carregarEmbarques);
-            document.getElementById('btnLimparAntigos').addEventListener('click', limparConferenciasAntigas);
-            document.getElementById('btnMarcarPosVendaAntigos').addEventListener('click', marcarPosVendasAntigos);
             
             // Event listeners do modal
             document.getElementById('btnMarcarConferido').addEventListener('click', marcarComoConferido);
@@ -2331,11 +2263,11 @@
         console.log('🎯 Dashboard Embarques CVC v8.03 - CORRIGIDO E FUNCIONAL CARREGADO');
         console.log('📋 Principais correções aplicadas:');
         console.log('   ✅ Bug crítico do agrupamento de recibos CORRIGIDO');
-        console.log('   ✅ Botão "Marcar Feito" desnecessário REMOVIDO');
-        console.log('   ✅ Modal simplificado com fluxo direto');
-        console.log('   ✅ Campos editáveis ADICIONADOS no modal');
-        console.log('   ✅ Refresh automático após ações');
-        console.log('   ✅ Interface limpa e responsiva');
+        console.log('   ✅ Botões desnecessários REMOVIDOS');
+        console.log('   ✅ Função copiarTexto CORRIGIDA');
+        console.log('   ✅ Lógica de urgência para datas passadas CORRIGIDA');
+        console.log('   ✅ Cabeçalho atualizado com créditos');
+        console.log('   ✅ Preparado para futuro sistema de login');
         console.log('🚀 Sistema 100% funcional e pronto para produção!');
     </script>
 </body>
